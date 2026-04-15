@@ -33,7 +33,6 @@ export async function getPrograms(userId) {
     query = query.or(`is_global.eq.true,user_id.eq.${userId}`)
   }
   const { data, error } = await query
-  console.log('getPrograms result:', { userId, count: data?.length, error })
   if (error) return []
   return data ?? []
 }
@@ -286,12 +285,10 @@ export async function getActiveProgram(userId, programs) {
 }
 
 export async function setActiveProgram(userId, programId) {
-  console.log('setActiveProgram called:', programId)
   const { error } = await supabase
     .from('profiles')
     .update({ active_program_id: programId })
     .eq('id', userId)
-  console.log('setActiveProgram result:', error)
 }
 
 // ── Rest Overrides ────────────────────────────────────────

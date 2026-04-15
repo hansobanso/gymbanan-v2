@@ -103,8 +103,6 @@ export default function ExerciseDetail() {
     if (!form || saving) return
     setSaving(true)
     setSaveErr(null)
-    console.log('saving:', form)
-    console.log('rest chip value:', form.default_rest)
     try {
       if (isOwned && dbId) {
         // User-owned exercise: save all fields
@@ -262,14 +260,14 @@ export default function ExerciseDetail() {
           <div className={styles.chips}>
             <button
               className={`${styles.chip} ${form.default_rest == null ? styles.chipActive : ''}`}
-              onClick={() => { console.log('rest chip clicked: Auto'); set('default_rest', null) }}
+              onClick={() => set('default_rest', null)}
               type="button"
             >Auto</button>
             {REST_PRESETS.map(s => (
               <button
                 key={s}
                 className={`${styles.chip} ${Number(form.default_rest) === s ? styles.chipActive : ''}`}
-                onClick={() => { console.log('rest chip clicked:', s); set('default_rest', s) }}
+                onClick={() => set('default_rest', s)}
                 type="button"
               >{fmtRest(s)}</button>
             ))}

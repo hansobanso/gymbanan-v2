@@ -118,7 +118,6 @@ export default function Workout({ session }) {
           if (!intro) return
           setIntroMessage(intro)
           if (intro.toUpperCase().includes('DELOAD')) {
-            console.log('DELOAD detected, reducing weights')
             workout.applyDeload()
           }
         })

@@ -92,12 +92,6 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
 
   const activeProgram = programs.find(p => p.id === activeProgramId) ?? programs[0] ?? null
 
-  useEffect(() => {
-    console.log('HomeScreen programs:', programs)
-    console.log('HomeScreen activeProgram:', activeProgram)
-    console.log('HomeScreen loading:', loading)
-  }, [programs, activeProgram, loading])
-
   const monday = getMonday()
   const weeklyCount = recentWorkouts.filter(w => new Date(w.finished_at) >= monday).length
 

@@ -48,27 +48,15 @@ function AppRoutes({ session }) {
 
   const [resumedWorkout, setResumedWorkout] = useState(() => {
     const raw = localStorage.getItem(ACTIVE_WORKOUT_KEY)
-    if (!raw) { console.log('found active workout: null'); return null }
+    if (!raw) return null
     try {
       const data = JSON.parse(raw)
-      console.log('found active workout:', data)
       return data
     } catch {
       localStorage.removeItem(ACTIVE_WORKOUT_KEY)
       return null
     }
   })
-
-  useEffect(() => {
-    const raw = localStorage.getItem(ACTIVE_WORKOUT_KEY)
-    console.log('at startup, localStorage key exists:', !!raw)
-    if (raw) {
-      try {
-        const parsed = JSON.parse(raw)
-        console.log('parsed workout:', parsed)
-      } catch {}
-    }
-  }, [])
 
   const tabStyle = (path) => ({
     display: p === path ? 'flex' : 'none',

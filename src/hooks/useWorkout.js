@@ -18,13 +18,14 @@ function uid() {
 }
 
 function makeSet(type, prevSets = []) {
-  const last = [...prevSets].reverse().find(s => s.type === type && s.done)
+  // Take weight/reps from the last set of this type that has a value filled in (not just done)
+  const last = [...prevSets].reverse().find(s => s.type === type && s.weight)
   return {
     id: uid(),
     type,
     weight: last?.weight ?? '',
     reps: last?.reps ?? '',
-    rir: type === 'work' ? (last?.rir ?? null) : null,
+    rir: null,  // always start empty — user fills in themselves
     done: false,
   }
 }
@@ -52,7 +53,7 @@ function sessionExToEx(ex) {
     sets: [
       ...Array.from({ length: warmupCount }, () => makeSet('warmup')),
       ...Array.from({ length: workCount }, () => makeSet('work')),
-      ...Array.from({ length: backoffCount }, () => ({ id: uid(), type: 'work', subtype: 'backoff', weight: '', reps: '', rir: 3, done: false })),
+      ...Array.from({ length: backoffCount }, () => ({ id: uid(), type: 'work', subtype: 'backoff', weight: '', reps: '', rir: null, done: false })),
     ],
   }
 }
@@ -111,7 +112,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
               ...set,
               weight: backoffWeight > 0 ? String(backoffWeight) : '',
               reps: bestR > 0 ? String(bestR + 2) : '',
-              rir: 3,
+              rir: null,  // user fills in themselves
               prefilled: backoffWeight > 0,
             }
           }
@@ -126,7 +127,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
               ...set,
               weight: String(targetW),
               reps: String(targetR),
-              rir: lastRir !== null && lastRir !== undefined ? lastRir : set.rir,
+              rir: null,  // always empty — user fills in after set
               prefilled: true,
             }
           }
@@ -194,7 +195,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
       }
       return {
         ...ex,
-        sets: [...ex.sets, { id: uid(), type: 'work', subtype: 'backoff', weight, reps, rir: 3, done: false }],
+        sets: [...ex.sets, { id: uid(), type: 'work', subtype: 'backoff', weight, reps, rir: null, done: false }],
       }
     }))
   }, [])
@@ -335,7 +336,6 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
   }, [sessionName])
 
   async function finishWorkout() {
-    console.log('finishing workout', workoutIdRef.current, exercises)
     localStorage.removeItem(ACTIVE_WORKOUT_KEY)
     const id = await ensureWorkout()
     const payload = exercises.map(ex => ({
