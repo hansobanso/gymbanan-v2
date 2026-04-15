@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run:*)",
+      "Bash(npx wrangler:*)",
+      "mcp__claude_ai_Supabase__list_projects",
+      "mcp__claude_ai_Supabase__list_tables",
+      "mcp__claude_ai_Supabase__apply_migration",
+      "Bash(wrangler pages:*)",
+      "Bash(node -e ':*)",
+      "Bash(npm install:*)",
+      "mcp__claude_ai_Supabase__execute_sql",
+      "Bash(node:*)",
+      "Bash(grep -n \"PostWorkout\\\\|postWorkout\\\\|onContinue\\\\|Fortsätt\" /Users/hannesisaksson/gymbanan-v2/src/components/workout/*.jsx)",
+      "Bash(ls /tmp/*.svg)",
+      "Bash(grep:*)"
+    ]
+  }
+}

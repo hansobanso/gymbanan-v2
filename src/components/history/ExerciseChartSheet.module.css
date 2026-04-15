@@ -1,0 +1,189 @@
+/* ── Full-screen overlay ── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: #0a0a0a;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(var(--safe-top) + 16px) 16px 12px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.backBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 15px;
+  font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+  padding: 0;
+}
+
+.closeBtn {
+  width: 30px;
+  height: 30px;
+  background: var(--surface-2);
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-2);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ── Scroll area ── */
+.scrollArea {
+  flex: 1;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: 0 0 calc(env(safe-area-inset-bottom, 0px) + 24px);
+}
+
+/* ── Search ── */
+.searchWrap {
+  padding: 12px 16px 8px;
+  flex-shrink: 0;
+}
+
+.search {
+  width: 100%;
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  font-size: 15px;
+  font-family: var(--font);
+  padding: 10px 14px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.search:focus {
+  border-color: var(--accent);
+}
+
+/* ── List items ── */
+.listItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  font-size: 15px;
+  font-family: var(--font);
+  padding: 14px 16px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.listItem:last-child {
+  border-bottom: none;
+}
+
+.listItemName {
+  font-weight: 500;
+}
+
+.listItemMeta {
+  font-size: 13px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.noResults {
+  font-size: 14px;
+  color: var(--text-3);
+  text-align: center;
+  padding: 32px 0;
+  margin: 0;
+}
+
+/* ── Chart view ── */
+.chartView {
+  padding: 20px 16px;
+}
+
+.noData {
+  font-size: 14px;
+  color: var(--text-3);
+  text-align: center;
+  padding: 48px 0;
+  margin: 0;
+}
+
+.chartMeta {
+  font-size: 12px;
+  color: var(--text-3);
+  text-align: center;
+  margin: 10px 0 0;
+}
+
+.doubleTag {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* ── SVG chart ── */
+.svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+.gridLine {
+  stroke: var(--border);
+  stroke-width: 0.8;
+}
+
+.line {
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.area {
+  fill: var(--accent);
+  opacity: 0.12;
+}
+
+.dot {
+  fill: var(--accent);
+}
+
+.axisLabel {
+  font-size: 9px;
+  fill: var(--text-3);
+  font-family: var(--font);
+}
+
+.dateLabel {
+  font-size: 9px;
+  fill: var(--text-3);
+  font-family: var(--font);
+}

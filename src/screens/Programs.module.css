@@ -1,0 +1,158 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+/* ── Header ── */
+.header {
+  display: flex;
+  align-items: center;
+  padding: calc(var(--safe-top, 44px) + 8px) 16px 12px;
+  flex-shrink: 0;
+  background: #0a0a0a;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+/* ── Body ── */
+.body {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: 16px 16px calc(var(--nav-height, 64px) + var(--safe-bottom, 0px) + 16px);
+}
+
+/* ── New program button ── */
+.newBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  background: #141414;
+  border: none;
+  border-radius: 14px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: var(--font);
+  padding: 16px;
+  cursor: pointer;
+  margin-bottom: 16px;
+  transition: opacity 0.1s;
+  box-sizing: border-box;
+}
+.newBtn:active { opacity: 0.7; }
+
+/* ── Program card ── */
+.programCard {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: #141414;
+  border-radius: 14px;
+  border: none;
+  padding: 16px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  text-align: left;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+  gap: 12px;
+}
+.programCard:active { opacity: 0.8; }
+
+.programCardActive {
+  border-color: var(--accent);
+}
+
+.programCardInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.programCardName {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.programCardNameActive { color: var(--accent); }
+
+.programCardMeta {
+  font-size: 12px;
+  color: var(--text-3);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.globalBadge {
+  font-size: 10px;
+  color: var(--text-3);
+  background: var(--surface-2);
+  border-radius: 20px;
+  padding: 1px 7px;
+}
+
+.programCardRight {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.activeCheck {
+  color: var(--accent);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.chevron {
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1;
+  padding: 4px;
+}
+
+/* ── Skeleton ── */
+.skeleton {
+  height: 76px;
+  background: #141414;
+  border-radius: 14px;
+  margin-bottom: 8px;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50%       { opacity: 0.8; }
+}
+
+/* ── Overlay (fullscreen slide-in panel) ── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: var(--bg);
+}
+
+.overlayTop {
+  z-index: 210;
+}

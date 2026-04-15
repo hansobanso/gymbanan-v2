@@ -1,0 +1,307 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+/* ── Header ── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(var(--safe-top) + 8px) 16px 12px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  gap: 8px;
+  background: var(--bg);
+}
+
+.backBtn {
+  width: 36px;
+  height: 36px;
+  background: var(--surface);
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.headerTitle {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.saveBtn {
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-md);
+  color: #000;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--font);
+  padding: 8px 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity 0.15s, background 0.2s;
+}
+.saveBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+.saveBtnDone { background: var(--surface-2); color: var(--text-2); }
+
+.copyBtn {
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-md);
+  color: var(--text-2);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font);
+  padding: 8px 14px;
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+}
+.copyBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Global notice banner ── */
+.globalBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  flex-shrink: 0;
+}
+
+.globalBannerText {
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+.copyBannerBtn {
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-md);
+  color: #000;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: var(--font);
+  padding: 7px 14px;
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+}
+.copyBannerBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Scroll body ── */
+.body {
+  flex: 1;
+  height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: 20px 16px calc(var(--nav-height) + var(--safe-bottom) + 16px);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Section ── */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-3);
+}
+
+.hint {
+  font-size: 12px;
+  color: var(--text-3);
+  margin: 0;
+}
+
+/* ── Inputs ── */
+.input {
+  background: var(--surface);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  font-size: 15px;
+  font-family: var(--font);
+  padding: 11px 14px;
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+}
+.input:focus { border-color: var(--accent); }
+.input:disabled { opacity: 0.5; }
+
+.select {
+  background: var(--surface);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  font-size: 15px;
+  font-family: var(--font);
+  padding: 11px 14px;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 7L11 1' stroke='%23888' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+}
+
+.textarea {
+  background: var(--surface);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  font-size: 15px;
+  font-family: var(--font);
+  line-height: 1.6;
+  padding: 11px 14px;
+  outline: none;
+  resize: vertical;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+.textarea:focus { border-color: var(--accent); }
+.textarea:disabled { opacity: 0.5; }
+.select:disabled { opacity: 0.5; }
+
+/* ── Two-column row ── */
+.row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* ── Rest chips ── */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-full);
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font);
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+  white-space: nowrap;
+}
+.chipActive {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #000;
+  font-weight: 700;
+}
+
+/* ── Read-only values (global exercises) ── */
+.readonlyVal {
+  font-size: 15px;
+  color: var(--text-2);
+  margin: 0;
+  padding: 11px 0;
+}
+
+.readonlyInstructions {
+  font-size: 15px;
+  color: var(--text-2);
+  margin: 0;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+/* ── Save rest button (global exercises) ── */
+.saveRestBtn {
+  align-self: flex-start;
+  margin-top: 4px;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-md);
+  color: #000;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--font);
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.saveRestBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Copy full button (global exercises) ── */
+.copyFullBtn {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 600;
+  font-family: var(--font);
+  padding: 13px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.copyFullBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.copyHint {
+  font-size: 12px;
+  color: var(--text-3);
+  margin: 0;
+  text-align: center;
+}
+
+.saveErr {
+  font-size: 13px;
+  color: #E24B4A;
+  margin: 0;
+}
+
+/* ── Reps interval ── */
+.repsRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.repsInput { flex: 1; }
+.repsDash {
+  color: var(--text-3);
+  font-size: 18px;
+  flex-shrink: 0;
+}

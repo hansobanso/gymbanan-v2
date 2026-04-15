@@ -1,0 +1,573 @@
+.blockWrapper {
+  position: relative;
+  margin-bottom: 0;
+  border-bottom: 8px solid #111111;
+}
+
+.block {
+  background: #141414;
+  overflow: hidden;
+}
+
+.progressBar {
+  position: absolute;
+  left: -1px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: rgba(245, 208, 32, 0.4);
+  border-radius: 2px 0 0 2px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.doneBar {
+  position: absolute;
+  left: -1px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: rgba(42, 122, 42, 0.4);
+  border-radius: 2px 0 0 2px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* ── Collapsed summary ── */
+.collapsedRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  gap: 10px;
+}
+
+.collapsedLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.collapsedCheck {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--success);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.collapsedName {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.collapsedMeta {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 1px;
+}
+
+.collapsedInfo {
+  min-width: 0;
+}
+
+.expandBtn {
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+/* ── Header ── */
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 12px 16px 10px;
+  cursor: default;
+  user-select: none;
+  gap: 8px;
+}
+
+.headerInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.repsRange {
+  font-size: 13px;
+  color: #666;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.repsRangeEdit {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.repsRangeInput {
+  width: 36px;
+  background: #1c1c1c;
+  border: 1px solid #F5D020;
+  border-radius: 4px;
+  color: #F5D020;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font);
+  text-align: center;
+  padding: 2px 0;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.repsRangeInput::-webkit-outer-spin-button,
+.repsRangeInput::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+.repsRangeDash {
+  font-size: 13px;
+  color: #888;
+}
+
+.nameLink {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: var(--font);
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+.nameChevron {
+  color: #F5D020;
+  font-weight: 600;
+  font-size: 20px;
+}
+
+.progressBadge {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--success);
+  background: rgba(48, 209, 88, 0.12);
+  border-radius: var(--radius-full);
+  padding: 2px 7px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  letter-spacing: 0.1px;
+}
+
+.progressionHint {
+  font-size: 11px;
+  color: #F5D020;
+  font-weight: 500;
+  margin-top: 1px;
+  opacity: 0.85;
+}
+
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.muscleTag {
+  font-size: 11px;
+  color: var(--text-3);
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+.targetTag {
+  font-size: 11px;
+  color: var(--text-3);
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+.exNotesBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.exNotes {
+  font-size: 12px;
+  color: #F5D020;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: var(--font);
+}
+
+.exNotesEmpty {
+  font-size: 12px;
+  color: #666;
+  font-family: var(--font);
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.iconBtn {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-3);
+  cursor: pointer;
+  padding: 0;
+}
+
+.iconBtn:active,
+.iconBtnActive {
+  background: var(--surface-2);
+  color: var(--text-2);
+}
+
+/* ── Dropdowns ── */
+.dropdown {
+  background: var(--bg-3);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-md);
+  margin: 0 12px 8px;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+.dropdownFixed {
+  position: fixed;
+  background: var(--bg-3);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  z-index: 200;
+  min-width: 200px;
+}
+
+.dropdownTitle {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-3);
+  padding: 10px 14px 4px;
+  margin: 0;
+}
+
+.restPresets {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  margin: 6px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.restPreset {
+  background: var(--surface-2);
+  border: none;
+  color: var(--text-2);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 12px 4px;
+  cursor: pointer;
+  font-family: var(--font);
+  text-align: center;
+}
+
+.restPreset:active { background: var(--surface-3); }
+
+.restPresetActive {
+  background: var(--accent-dim) !important;
+  color: var(--accent) !important;
+}
+
+.menuItem {
+  width: 100%;
+  padding: 13px 14px;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 15px;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font);
+}
+
+.menuItem:active { background: var(--surface-3); }
+.menuItemDanger { color: var(--danger); }
+
+.menuDivider {
+  height: 1px;
+  background: var(--border);
+  margin: 2px 0;
+}
+
+/* ── Kolumnrubriker: # | Kg | Reps | RIR | ✓ ── */
+.colHeaders {
+  display: grid;
+  grid-template-columns: 28px 1fr 1fr 42px;
+  gap: 6px;
+  padding: 3px 16px 2px;
+  align-items: center;
+}
+
+.colLabel {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #888;
+  text-align: center;
+}
+
+/* ── Sets + warmup ── */
+.sets {
+  display: flex;
+  flex-direction: column;
+}
+
+.warmupLabel {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-3);
+  padding: 6px 14px 2px;
+}
+
+.warmupDivider {
+  height: 0;
+}
+
+/* ── Footer ── */
+.footer {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  border-top: 1px solid var(--border);
+  gap: 4px;
+}
+
+.footerAdd {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font);
+  padding: 8px 0;
+  cursor: pointer;
+  text-align: left;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+.footerAdd:active { opacity: 0.7; }
+
+.footerReplace {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font);
+  padding: 8px 12px;
+  cursor: pointer;
+  flex-shrink: 0;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+.footerReplace:active { color: var(--text-2); }
+
+.footerDots {
+  width: 40px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-3);
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.footerDots:active,
+.footerDotsActive {
+  background: var(--surface-2);
+  color: var(--text-2);
+}
+
+/* ── Tidigare vikter ── */
+.prevRow {
+  padding: 4px 16px 6px;
+}
+
+.prevText {
+  font-size: 11px;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Hur kändes det? ── */
+.aiRow {
+  padding: 6px 16px 12px;
+  border-top: 1px solid var(--border);
+}
+
+.aiTextarea {
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-2);
+  font-size: 16px !important;
+  padding: 8px 0;
+  resize: none;
+  outline: none;
+  overflow: hidden;
+  min-height: 36px;
+  line-height: 1.5;
+  font-family: var(--font);
+  transition: border-color 0.15s;
+  width: 100%;
+}
+
+.aiTextarea:focus {
+  border-bottom-color: var(--accent-border);
+  color: var(--text);
+}
+
+.aiTextarea::placeholder { color: var(--text-3); }
+
+/* ── RIR Picker sheet ── */
+.rirBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 300;
+}
+
+.rirSheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg-3);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  padding: 12px 20px calc(32px + var(--safe-bottom));
+  z-index: 301;
+  box-shadow: var(--shadow-sheet);
+}
+
+.rirHandle {
+  width: 36px;
+  height: 4px;
+  background: var(--border-2);
+  border-radius: var(--radius-full);
+  margin: 0 auto 20px;
+}
+
+.rirTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+  text-align: center;
+  margin: 0 0 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.rirGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.rirOpt {
+  background: var(--surface-2);
+  border: 1.5px solid var(--border-2);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  font-size: 20px;
+  font-weight: 700;
+  padding: 16px 4px;
+  cursor: pointer;
+  font-family: var(--font);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.rirOpt:active { background: var(--surface-3); }
+
+.rirOptActive {
+  background: var(--accent-dim) !important;
+  border-color: var(--accent-border) !important;
+  color: var(--accent) !important;
+}

@@ -1,0 +1,170 @@
+import { useRef, useEffect } from 'react'
+import { motion, useMotionValue, useTransform, animate } from 'framer-motion'
+import styles from './SetRow.module.css'
+
+function epley(weight, reps) {
+  const w = parseFloat(weight), r = parseInt(reps)
+  if (!w || !r || r <= 0) return null
+  return w * (1 + r / 30)
+}
+
+function suggestReps(weight, oneRM) {
+  const w = parseFloat(weight)
+  if (!w || !oneRM || w <= 0 || w >= oneRM) return null
+  const r = Math.round((oneRM / w - 1) * 30)
+  if (r < 1 || r > 30) return null
+  return r
+}
+
+function getBest1RM(allSets) {
+  let best = 0
+  for (const s of allSets) {
+    if (s.done && s.type === 'work' && s.weight && s.reps) {
+      const rm = epley(s.weight, s.reps)
+      if (rm && rm > best) best = rm
+    }
+  }
+  return best || null
+}
+
+export default function SetRow({
+  set,
+  displayLabel,
+  isWarmup,
+  allSets,
+  prev1RM,
+  prefilled,
+  onUpdate,
+  onRemove,
+  onComplete,
+  onOpenRIR,
+}) {
+  const containerRef = useRef(null)
+  const x = useMotionValue(0)
+  const deleteBgOpacity = useTransform(x, [-80, -30], [1, 0])
+  const rowOpacity = useTransform(x, [-80, 0], [0.75, 1])
+
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+    let startX = 0, startY = 0, direction = null
+    function onTouchStart(e) {
+      startX = e.touches[0].clientX
+      startY = e.touches[0].clientY
+      direction = null
+    }
+    function onTouchMove(e) {
+      if (direction === null) {
+        const dx = Math.abs(e.touches[0].clientX - startX)
+        const dy = Math.abs(e.touches[0].clientY - startY)
+        if (dx > 5 || dy > 5) direction = dx > dy ? 'h' : 'v'
+      }
+      if (direction === 'h') e.preventDefault()
+    }
+    el.addEventListener('touchstart', onTouchStart, { passive: true })
+    el.addEventListener('touchmove', onTouchMove, { passive: false })
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart)
+      el.removeEventListener('touchmove', onTouchMove)
+    }
+  }, [])
+
+  function handleDragEnd(_, info) {
+    if (info.offset.x < -60) {
+      animate(x, -80, { type: 'spring', stiffness: 500, damping: 40 })
+    } else {
+      animate(x, 0, { type: 'spring', stiffness: 500, damping: 40 })
+    }
+  }
+
+  const best1RM = !isWarmup ? (getBest1RM(allSets) || prev1RM) : null
+  const suggested = !isWarmup && set.subtype !== 'backoff' && set.weight ? suggestReps(set.weight, best1RM) : null
+  const repPlaceholder = suggested ? `~${suggested}` : 'Reps'
+
+  const rirValue = !isWarmup && set.rir !== null && set.rir !== undefined ? String(set.rir) : null
+
+  return (
+    <div className={styles.wrapper} ref={containerRef}>
+      {/* Delete reveal */}
+      <motion.button
+        className={styles.deleteBg}
+        style={{ opacity: deleteBgOpacity }}
+        onClick={onRemove}
+        type="button"
+        aria-label="Ta bort set"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M3 6H21M8 6V4H16V6M19 6L18.1 20H5.9L5 6" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        <span className={styles.deleteBgLabel}>Ta bort</span>
+      </motion.button>
+
+      {/* Row: # | Kg | Reps(+RIR overlay) | ✓ */}
+      <motion.div
+        className={`${styles.row} ${set.done ? styles.done : ''} ${isWarmup ? styles.warmup : ''}`}
+        style={{ x, opacity: rowOpacity }}
+        drag={set.done ? false : 'x'}
+        dragConstraints={{ left: -80, right: 0 }}
+        dragElastic={{ left: 0.08, right: 0.08 }}
+        onDragEnd={handleDragEnd}
+        dragDirectionLock
+      >
+        {/* # */}
+        <span className={styles.label}>{displayLabel}</span>
+
+        {/* Kg */}
+        <input
+          className={styles.input}
+          type="number"
+          inputMode="decimal"
+          value={set.weight}
+          onChange={e => onUpdate('weight', e.target.value)}
+          onFocus={e => e.target.select()}
+          placeholder="Kg"
+          disabled={set.done}
+        />
+
+        {/* Reps + RIR split pill */}
+        <div className={`${styles.splitPill} ${set.done ? styles.splitPillDone : ''}`}>
+          <input
+            className={styles.splitInput}
+            type="number"
+            inputMode="numeric"
+            value={set.reps}
+            onChange={e => onUpdate('reps', e.target.value)}
+            onFocus={e => e.target.select()}
+            placeholder={repPlaceholder}
+            disabled={set.done}
+          />
+          {!isWarmup ? (
+            <>
+              <div className={styles.splitDivider} />
+              <button
+                className={`${styles.splitRir} ${rirValue !== null ? styles.splitRirSet : ''}`}
+                onClick={e => { e.stopPropagation(); !set.done && onOpenRIR() }}
+                type="button"
+                aria-label={rirValue !== null ? `RIR: ${rirValue}` : 'Sätt RIR'}
+              >
+                {rirValue !== null ? rirValue : 'RIR'}
+              </button>
+            </>
+          ) : (
+            <div style={{ width: 36, flexShrink: 0, visibility: 'hidden' }} />
+          )}
+        </div>
+
+        {/* ✓ */}
+        <button
+          className={`${styles.checkBtn} ${set.done ? styles.checked : ''}`}
+          onClick={() => onComplete()}
+          type="button"
+          aria-label={set.done ? 'Ångra set' : 'Markera set som klart'}
+        >
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+            <path d="M2.5 8L6.5 12L13.5 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      </motion.div>
+    </div>
+  )
+}

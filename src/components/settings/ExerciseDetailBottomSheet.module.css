@@ -1,0 +1,212 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 200;
+}
+
+.sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg-2);
+  border-radius: 16px 16px 0 0;
+  z-index: 201;
+  display: flex;
+  flex-direction: column;
+  max-height: 85dvh;
+  overflow: hidden;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ── Header ── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 14px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: calc(100% - 44px);
+}
+
+.closeBtn {
+  width: 28px;
+  height: 28px;
+  background: var(--surface-2);
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-2);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.closeBtn:active { background: var(--surface-3); }
+
+/* ── Content ── */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 8px 0 16px;
+}
+
+/* ── Stepper row ── */
+.stepperRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.stepperLabel {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.stepperControls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.stepBtn {
+  width: 32px;
+  height: 32px;
+  background: var(--surface-2);
+  border: none;
+  border-radius: 50%;
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  font-family: var(--font);
+  -webkit-tap-highlight-color: transparent;
+}
+.stepBtn:active { background: var(--surface-3); }
+
+.stepVal {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text);
+  min-width: 24px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Reps row ── */
+.repsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.repsInputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.repsInput {
+  width: 52px;
+  background: var(--surface-2);
+  border: none;
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 17px;
+  font-weight: 600;
+  font-family: var(--font);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  padding: 6px 4px;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.repsInput:focus { outline: 2px solid var(--accent); }
+
+.repsDash {
+  font-size: 16px;
+  color: var(--text-3);
+}
+
+/* ── Rest chips ── */
+.restSection {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.chip {
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  border-radius: 20px;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font);
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+  -webkit-tap-highlight-color: transparent;
+}
+.chip:active { background: var(--surface-3); }
+
+.chipActive {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #000;
+  font-weight: 700;
+}
+
+/* ── Notes ── */
+.notesSection {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.textarea {
+  background: var(--surface);
+  border: 1px solid var(--border-2);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 14px;
+  font-family: var(--font);
+  line-height: 1.5;
+  padding: 10px 12px;
+  resize: none;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+.textarea:focus { border-color: var(--accent); }

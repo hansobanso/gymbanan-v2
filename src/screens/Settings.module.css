@@ -1,0 +1,202 @@
+.screen {
+  flex: 1;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ── Header ── */
+.header {
+  padding: calc(var(--safe-top, 44px) + 8px) 16px 12px;
+  flex-shrink: 0;
+  background: #0a0a0a;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: #ffffff;
+  margin: 0;
+}
+
+/* ── Scroll ── */
+.scroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 0 calc(var(--safe-bottom, 0px) + 24px);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Section ── */
+.section {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 4px;
+}
+
+.sectionLabel {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #555;
+  padding: 8px 16px 4px;
+}
+
+/* ── Row card (ett pill-kort per rad) ── */
+.rowCard {
+  background: #141414;
+  border-radius: 14px;
+  overflow: hidden;
+  margin: 0 16px 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Rows ── */
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  width: 100%;
+  background: none;
+  border: none;
+  font-family: var(--font);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  gap: 12px;
+  min-height: 52px;
+  box-sizing: border-box;
+}
+
+.rowBorder {
+  border-bottom: 0.5px solid #1a1a1a;
+}
+
+.rowLabel {
+  flex: 1;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.rowValue {
+  font-size: 12px;
+  color: #666;
+  flex-shrink: 0;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.rowRight {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.chevron {
+  flex-shrink: 0;
+  display: block;
+}
+
+.rowDanger {
+  color: #E24B4A;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* ── Rest presets ── */
+.restGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  padding: 10px 16px 14px;
+  border-top: 0.5px solid #1a1a1a;
+}
+
+.restPreset {
+  background: var(--surface-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font);
+  padding: 9px 4px;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+  text-align: center;
+}
+
+.restPresetActive {
+  background: var(--accent-dim);
+  border-color: var(--accent-border);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* ── Display name editor ── */
+.nameEditPanel {
+  padding: 10px 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 0.5px solid #1a1a1a;
+}
+
+.nameInput {
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 16px;
+  font-family: var(--font);
+  padding: 10px 12px;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  transition: border-color 0.15s;
+}
+.nameInput:focus { border-color: var(--accent-border); }
+.nameInput::placeholder { color: var(--text-3); }
+
+.nameEditActions {
+  display: flex;
+  gap: 8px;
+}
+
+.nameSaveBtn {
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: #000;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--font);
+  padding: 9px 20px;
+  cursor: pointer;
+  transition: opacity 0.1s;
+}
+.nameSaveBtn:disabled { opacity: 0.5; }
+
+.nameCancelBtn {
+  background: none;
+  border: none;
+  color: var(--text-3);
+  font-size: 14px;
+  font-family: var(--font);
+  padding: 9px 12px;
+  cursor: pointer;
+}

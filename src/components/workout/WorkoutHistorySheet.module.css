@@ -1,0 +1,31 @@
+.entryMeta {
+  color: var(--text-3);
+  font-weight: 400;
+  margin-left: 6px;
+}
+
+.exList {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 6px;
+}
+
+.exRow {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.exName {
+  font-size: 13px;
+  color: #ccc;
+  font-weight: 500;
+}
+
+.exSets {
+  font-size: 12px;
+  color: #888;
+  padding-left: 8px;
+  font-variant-numeric: tabular-nums;
+}

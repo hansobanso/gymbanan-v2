@@ -1,0 +1,432 @@
+/* Workout-screen har ingen BottomNav – full höjd */
+.screen {
+  position: fixed;
+  inset: 0;
+  background: #0a0a0a;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: env(safe-area-inset-bottom, 34px);
+}
+
+/* ── Header ── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(var(--safe-top) + 10px) 14px 10px;
+  background: var(--bg);
+  z-index: 60;
+  min-height: var(--header-height);
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.headerLeft {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.sessionBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #F5D020;
+  letter-spacing: -0.3px;
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+  font-family: var(--font);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.headerSubRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.elapsed {
+  font-size: 12px;
+  color: #F5D020;
+  font-variant-numeric: tabular-nums;
+}
+
+.exerciseDots {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.exerciseDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #444;
+  flex-shrink: 0;
+}
+
+.exerciseDotDone {
+  background: #fff;
+}
+
+.timerPill {
+  background: #1a1a1a;
+  color: #F5D020;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 20px;
+  padding: 4px 10px;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.2px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ptBtn,
+.dotsBtn {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: #F5D020;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.1s, color 0.1s;
+}
+
+.ptBtn:active,
+.ptBtnActive,
+.dotsBtn:active,
+.dotsBtnActive {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+/* ── Header dropdown menu ── */
+.headerMenu {
+  position: absolute;
+  top: calc(var(--safe-top) + var(--header-height) + 4px);
+  right: 12px;
+  background: var(--bg-3);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-md);
+  min-width: 200px;
+  z-index: 70;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.hMenuItem {
+  width: 100%;
+  padding: 14px 16px;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 15px;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font);
+  transition: background 0.1s;
+}
+
+.hMenuItem:active {
+  background: var(--surface-3);
+}
+
+.hMenuItemDanger { color: var(--danger); }
+
+.hMenuDivider {
+  height: 1px;
+  background: var(--border);
+}
+
+/* ── Scroll area ── */
+.scroll {
+  flex: 1;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  padding: 0 0 calc(env(safe-area-inset-bottom, 0px) + 80px);
+  min-height: 0;
+  background: #0a0a0a;
+}
+
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px;
+  color: var(--text-3);
+  font-size: 14px;
+  text-align: center;
+}
+
+/* ── Avsluta pass-knapp (ej fast) ── */
+.finishWrap {
+  padding: 14px 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.addExerciseBtn {
+  width: 100%;
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-md);
+  color: var(--text-2);
+  font-size: 16px;
+  font-weight: 600;
+  padding: 16px;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: var(--font);
+}
+
+.addExerciseBtn:active {
+  background: var(--surface-3);
+}
+
+.finishBtn {
+  width: 100%;
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-md);
+  color: var(--danger);
+  font-size: 16px;
+  font-weight: 600;
+  padding: 16px;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: var(--font);
+}
+
+.finishBtn:active {
+  background: var(--danger-dim);
+  border-color: rgba(255, 59, 48, 0.25);
+}
+
+/* ── Reorder-läge ── */
+.reorderBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: var(--accent-dim);
+  border-bottom: 1px solid var(--accent-border);
+  margin-bottom: 10px;
+}
+
+.reorderBanner span {
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.reorderDone {
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: #000;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 7px 16px;
+  cursor: pointer;
+  font-family: var(--font);
+}
+
+.reorderList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reorderItem {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  gap: 14px;
+  cursor: grab;
+  user-select: none;
+}
+
+.reorderItem:active { cursor: grabbing; }
+
+.reorderHandle {
+  color: var(--text-3);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.reorderName {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.reorderMeta {
+  font-size: 12px;
+  color: var(--text-3);
+  flex-shrink: 0;
+}
+
+/* Gul indikatorlinje – visas av framer-motion layout-transition */
+.reorderIndicator {
+  height: 2px;
+  background: transparent;
+  transition: background 0.2s;
+}
+
+/* ── Undo toast ── */
+.toast {
+  position: fixed;
+  bottom: calc(var(--safe-bottom, 0px) + 90px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface-3);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-full);
+  padding: 12px 16px 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  z-index: 150;
+  box-shadow: var(--shadow-md);
+  white-space: nowrap;
+}
+
+.toastMsg {
+  font-size: 14px;
+  color: var(--text);
+}
+
+.toastUndo {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  font-family: var(--font);
+}
+
+/* ── Overlay & sheets ── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 200;
+}
+
+.confirmSheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg-3);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  padding: 12px 24px calc(32px + var(--safe-bottom, 0px));
+  z-index: 201;
+  box-shadow: var(--shadow-sheet);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.sheetHandle {
+  width: 36px;
+  height: 4px;
+  background: var(--border-2);
+  border-radius: var(--radius-full);
+  margin: 0 auto 16px;
+}
+
+.confirmTitle {
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+  margin: 0;
+}
+
+.confirmDesc {
+  font-size: 14px;
+  color: var(--text-2);
+  text-align: center;
+  margin: 0;
+}
+
+.confirmPrimary {
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-md);
+  color: #000;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 16px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  font-family: var(--font);
+}
+
+.confirmPrimary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.confirmSecondary {
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 600;
+  padding: 16px;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: var(--font);
+}
+
+.confirmSecondary:disabled { opacity: 0.5; cursor: not-allowed; }
+.confirmSecondary:active { background: var(--surface-3); }
+
+.confirmLink {
+  background: none;
+  border: none;
+  color: var(--text-3);
+  font-size: 15px;
+  font-weight: 500;
+  font-family: var(--font);
+  padding: 8px;
+  cursor: pointer;
+  text-align: center;
+  transition: color 0.15s;
+}
+
+.confirmLink:disabled { opacity: 0.4; cursor: not-allowed; }
+.confirmLink:active { color: var(--text-2); }

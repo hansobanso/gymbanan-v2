@@ -1,0 +1,178 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+/* ── Search ── */
+.searchWrap {
+  padding: 10px 16px 4px;
+  flex-shrink: 0;
+}
+
+.searchInput {
+  width: 100%;
+  background: #1a1a1a;
+  border: none;
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 15px;
+  font-family: var(--font);
+  padding: 10px 14px;
+  outline: none;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+}
+.searchInput::placeholder { color: var(--text-3); }
+
+/* ── Header ── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(var(--safe-top) + 8px) 16px 12px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  background: var(--bg);
+}
+
+.backBtn {
+  width: 36px;
+  height: 36px;
+  background: var(--surface);
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+  letter-spacing: -0.2px;
+}
+
+/* ── Chip-filter ── */
+.chips {
+  display: flex;
+  gap: 6px;
+  padding: 12px 16px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+}
+.chips::-webkit-scrollbar { display: none; }
+
+.chip {
+  flex-shrink: 0;
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-full);
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font);
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+  white-space: nowrap;
+}
+
+.chipActive {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #000;
+  font-weight: 700;
+}
+
+/* ── Scroll-body ── */
+.body {
+  flex: 1;
+  height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: 16px 16px calc(var(--nav-height) + var(--safe-bottom) + 16px);
+}
+
+/* ── Card & rader ── */
+.card {
+  background: var(--surface);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.exRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 48px;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 13px 16px;
+  font-family: var(--font);
+  cursor: pointer;
+  text-align: left;
+}
+
+.rowBorder {
+  border-bottom: 1px solid var(--border);
+}
+
+.exMainBtn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: none;
+  border: none;
+  padding: 13px 16px;
+  font-family: var(--font);
+  cursor: pointer;
+  text-align: left;
+  min-width: 0;
+}
+
+.exName {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.exMeta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.exGroup {
+  font-size: 12px;
+  color: var(--text-3);
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  padding: 2px 8px;
+}
+
+.exChevron {
+  color: #ffffff;
+  flex-shrink: 0;
+  padding: 4px;
+}

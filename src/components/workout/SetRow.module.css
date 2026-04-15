@@ -1,0 +1,209 @@
+.wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Delete reveal ── */
+.deleteBg {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 80px;
+  background: var(--danger);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.deleteBgLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 0.3px;
+}
+
+/* ── Row grid: # | kg | reps(+rir overlay) | ✓ ── */
+.row {
+  display: grid;
+  grid-template-columns: 28px 1fr 1fr 42px;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 16px;
+  background: #141414;
+  position: relative;
+  z-index: 1;
+  touch-action: pan-y;
+  cursor: grab;
+}
+
+.row:active { cursor: grabbing; }
+
+.warmup { opacity: 0.5; }
+
+.done {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* ── Label ── */
+.label {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: #1c1c1c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #666;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.2px;
+  margin: 0 auto;
+}
+
+/* ── Inputs ── */
+.input {
+  background: #1c1c1c;
+  border: none;
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 700;
+  padding: 9px 4px;
+  text-align: center;
+  outline: none;
+  width: 100%;
+  min-width: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font);
+}
+
+.input:focus {
+  background: var(--surface-3);
+}
+
+.input:disabled {
+  background: transparent;
+  color: var(--text-2);
+  cursor: default;
+}
+
+.input::-webkit-outer-spin-button,
+.input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* ── Reps + RIR split pill ── */
+.splitPill {
+  display: flex;
+  align-items: stretch;
+  border: none;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #1c1c1c;
+}
+
+.splitPillDone {
+  border-color: transparent;
+  background: transparent;
+}
+
+.splitInput {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 700;
+  padding: 9px 4px;
+  text-align: center;
+  outline: none;
+  min-width: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font);
+}
+
+.splitInput:disabled {
+  color: var(--text-2);
+  cursor: default;
+}
+
+.splitInput::-webkit-outer-spin-button,
+.splitInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.splitDivider {
+  width: 0.5px;
+  background: #333;
+  flex-shrink: 0;
+}
+
+.splitPillDone .splitDivider {
+  background: transparent;
+}
+
+.splitRir {
+  width: 36px;
+  background: transparent;
+  border: none;
+  color: var(--text-3);
+  font-size: 10px;
+  font-weight: 700;
+  font-family: var(--font);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.splitRirSet {
+  color: var(--accent);
+}
+
+/* ── Check button ── */
+.checkBtn {
+  background: var(--surface-2);
+  border: 1.5px solid var(--border-2);
+  border-radius: var(--radius-sm);
+  color: var(--text-3);
+  width: 42px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.checkBtn:active {
+  background: var(--accent-dim);
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
+.checked {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: #000 !important;
+  cursor: default;
+}

@@ -1,0 +1,151 @@
+.card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+/* ── Header ── */
+.header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 18px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  text-align: left;
+  transition: background 0.1s;
+}
+
+.header:not(:disabled) {
+  cursor: pointer;
+}
+
+.header:not(:disabled):active {
+  background: var(--surface-2);
+}
+
+.programName {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+}
+
+.chevron {
+  color: #ffffff;
+  transition: transform 0.2s var(--ease);
+  display: flex;
+}
+
+.chevronUp {
+  transform: rotate(180deg);
+}
+
+/* ── Picker ── */
+.picker {
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.pickerItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 18px;
+  background: none;
+  border: none;
+  color: var(--text-2);
+  font-size: 15px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.1s;
+  gap: 12px;
+}
+
+.pickerItem:active {
+  background: var(--surface-3);
+}
+
+.pickerItemActive {
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* ── Sessions ── */
+.sessions {
+  display: flex;
+  flex-direction: column;
+}
+
+.empty {
+  padding: 20px 18px;
+  font-size: 14px;
+  color: var(--text-3);
+  margin: 0;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  padding: 13px 18px;
+  gap: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.rowInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.rowLabel {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-3);
+}
+
+.rowName {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rowMeta {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 1px;
+}
+
+/* ── Start-knapp ── */
+.startBtn {
+  background: var(--accent);
+  color: #000;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 700;
+  padding: 9px 20px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity 0.15s, transform 0.1s;
+  letter-spacing: 0.1px;
+}
+
+.startBtn:active {
+  transform: scale(0.94);
+  opacity: 0.8;
+}
