@@ -98,7 +98,7 @@ export default function SetRow({
   }
 
   return (
-    <div className={styles.wrapper} ref={containerRef}>
+    <div className={styles.wrapper} ref={containerRef} data-set-id={set.id}>
       {/* Delete reveal */}
       <motion.button
         className={styles.deleteBg}

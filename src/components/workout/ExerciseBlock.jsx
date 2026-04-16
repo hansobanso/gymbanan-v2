@@ -113,6 +113,24 @@ export default function ExerciseBlock({
   async function handleComplete(setId) {
     const set = exercise.sets.find(s => s.id === setId)
     const wasCompleted = set?.done
+
+    // Prevent marking a set as done without weight and reps filled in.
+    // If user tries to check an empty work set, focus the first empty field instead.
+    if (!wasCompleted && set?.type === 'work') {
+      const hasWeight = set.weight !== '' && set.weight !== null && set.weight !== undefined
+      const hasReps = set.reps !== '' && set.reps !== null && set.reps !== undefined
+      if (!hasWeight || !hasReps) {
+        try { navigator.vibrate?.(20) } catch {}
+        // Focus first empty input in this row
+        const rowEl = document.querySelector(`[data-set-id="${setId}"]`)
+        const inputs = rowEl?.querySelectorAll('input[type="number"]')
+        const target = !hasWeight ? inputs?.[0] : inputs?.[1]
+        target?.focus()
+        target?.select?.()
+        return
+      }
+    }
+
     const isLastWorkSetOfExercise = !wasCompleted && set?.type === 'work' &&
       exercise.sets.filter(s => s.type === 'work' && !s.done).length === 1
     const isLastSetOfWorkout = isLastExercise && isLastWorkSetOfExercise
