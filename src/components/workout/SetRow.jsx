@@ -83,6 +83,20 @@ export default function SetRow({
 
   const rirValue = !isWarmup && set.rir !== null && set.rir !== undefined ? String(set.rir) : null
 
+  function adjustWeight(delta) {
+    if (set.done) return
+    const cur = parseFloat(set.weight) || 0
+    const next = Math.max(0, Math.round((cur + delta) * 2) / 2) // round to 0.5
+    onUpdate('weight', next > 0 ? String(next) : '')
+  }
+
+  function adjustReps(delta) {
+    if (set.done) return
+    const cur = parseInt(set.reps) || 0
+    const next = Math.max(0, cur + delta)
+    onUpdate('reps', next > 0 ? String(next) : '')
+  }
+
   return (
     <div className={styles.wrapper} ref={containerRef}>
       {/* Delete reveal */}
@@ -112,20 +126,49 @@ export default function SetRow({
         {/* # */}
         <span className={styles.label}>{displayLabel}</span>
 
-        {/* Kg */}
-        <input
-          className={styles.input}
-          type="number"
-          inputMode="decimal"
-          value={set.weight}
-          onChange={e => onUpdate('weight', e.target.value)}
-          onFocus={e => e.target.select()}
-          placeholder="Kg"
-          disabled={set.done}
-        />
+        {/* Kg stepper */}
+        <div className={`${styles.stepper} ${set.done ? styles.stepperDone : ''}`}>
+          <button
+            className={styles.stepBtn}
+            onClick={e => { e.stopPropagation(); adjustWeight(-2.5) }}
+            onPointerDown={e => e.stopPropagation()}
+            type="button"
+            disabled={set.done}
+            aria-label="Minska vikt"
+            tabIndex={-1}
+          >−</button>
+          <input
+            className={styles.stepInput}
+            type="number"
+            inputMode="decimal"
+            value={set.weight}
+            onChange={e => onUpdate('weight', e.target.value)}
+            onFocus={e => e.target.select()}
+            placeholder="Kg"
+            disabled={set.done}
+          />
+          <button
+            className={styles.stepBtn}
+            onClick={e => { e.stopPropagation(); adjustWeight(2.5) }}
+            onPointerDown={e => e.stopPropagation()}
+            type="button"
+            disabled={set.done}
+            aria-label="Öka vikt"
+            tabIndex={-1}
+          >+</button>
+        </div>
 
-        {/* Reps + RIR split pill */}
+        {/* Reps stepper + RIR split pill */}
         <div className={`${styles.splitPill} ${set.done ? styles.splitPillDone : ''}`}>
+          <button
+            className={styles.stepBtn}
+            onClick={e => { e.stopPropagation(); adjustReps(-1) }}
+            onPointerDown={e => e.stopPropagation()}
+            type="button"
+            disabled={set.done}
+            aria-label="Minska reps"
+            tabIndex={-1}
+          >−</button>
           <input
             className={styles.splitInput}
             type="number"
@@ -136,6 +179,15 @@ export default function SetRow({
             placeholder={repPlaceholder}
             disabled={set.done}
           />
+          <button
+            className={styles.stepBtn}
+            onClick={e => { e.stopPropagation(); adjustReps(1) }}
+            onPointerDown={e => e.stopPropagation()}
+            type="button"
+            disabled={set.done}
+            aria-label="Öka reps"
+            tabIndex={-1}
+          >+</button>
           {!isWarmup ? (
             <>
               <div className={styles.splitDivider} />

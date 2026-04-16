@@ -260,10 +260,12 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
     setExercises(prev => prev.map(ex => {
       if (ex.localId !== exId) return ex
 
-      // Recompute undone work sets using best completed set (or prevSets) as baseline
+      // Use only previous session's sets as baseline for progression.
+      // Progression happens BETWEEN sessions, not within — if we used doneWork from
+      // the current session, we'd double-progress (user already increased by hitting
+      // more reps this session, and then we'd suggest another +1 on top).
       const prevWork = (ex.prevSets ?? []).filter(s => s.type === 'work')
-      const doneWork = ex.sets.filter(s => s.type === 'work' && s.done && !s.subtype)
-      const baseWork = doneWork.length > 0 ? doneWork : prevWork
+      const baseWork = prevWork
 
       const bestW = baseWork.length > 0 ? Math.max(...baseWork.map(s => parseFloat(s.weight) || 0)) : 0
       const bestR = bestW > 0

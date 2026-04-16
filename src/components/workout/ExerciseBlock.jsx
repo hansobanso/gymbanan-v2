@@ -429,9 +429,17 @@ export default function ExerciseBlock({
 
       {/* ── Tidigare vikter ── */}
       {prevStr && (
-        <div className={styles.prevRow}>
+        <button
+          className={styles.prevRow}
+          onClick={() => onShowHistory?.(exercise)}
+          type="button"
+          aria-label="Visa historik för övningen"
+        >
           <span className={styles.prevText}>Förra: {prevStr}</span>
-        </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true" className={styles.prevChevron}>
+            <path d="M9 6L15 12L9 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
       )}
 
       {/* ── Footer ── */}

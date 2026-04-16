@@ -61,17 +61,31 @@ export default function TimerExpanded({ open, timer, onClose }) {
               <div className={styles.controls}>
                 <button
                   className={styles.ctrlBtn}
+                  onClick={() => addSeconds(-30)}
+                  type="button"
+                >
+                  −30s
+                </button>
+                <button
+                  className={styles.ctrlBtn}
                   onClick={() => addSeconds(-15)}
                   type="button"
                 >
                   −15s
                 </button>
                 <button
-                  className={styles.stopBtn}
-                  onClick={() => { stop(); onClose() }}
+                  className={styles.ctrlBtn}
+                  onClick={() => addSeconds(15)}
                   type="button"
                 >
-                  Avsluta
+                  +15s
+                </button>
+                <button
+                  className={styles.ctrlBtn}
+                  onClick={() => addSeconds(30)}
+                  type="button"
+                >
+                  +30s
                 </button>
                 <button
                   className={styles.ctrlBtn}
@@ -79,6 +93,13 @@ export default function TimerExpanded({ open, timer, onClose }) {
                   type="button"
                 >
                   +1 min
+                </button>
+                <button
+                  className={styles.stopBtn}
+                  onClick={() => { stop(); onClose() }}
+                  type="button"
+                >
+                  Avsluta
                 </button>
               </div>
             )}

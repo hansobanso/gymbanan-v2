@@ -1,7 +1,8 @@
 .screen {
-  min-height: 100dvh;
+  height: 100%;
   background: var(--bg);
   overflow-y: auto;
+  overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
   padding: calc(env(safe-area-inset-top, 44px) + 16px) 20px calc(env(safe-area-inset-bottom, 34px) + 16px);
   display: flex;

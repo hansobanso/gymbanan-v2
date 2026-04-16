@@ -467,13 +467,33 @@
 
 /* ── Tidigare vikter ── */
 .prevRow {
-  padding: 4px 16px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 6px 16px 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.12s;
+}
+
+.prevRow:active {
+  opacity: 0.6;
 }
 
 .prevText {
   font-size: 11px;
   color: var(--accent);
   font-variant-numeric: tabular-nums;
+}
+
+.prevChevron {
+  color: var(--text-3);
+  flex-shrink: 0;
 }
 
 /* ── Hur kändes det? ── */

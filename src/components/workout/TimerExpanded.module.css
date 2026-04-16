@@ -63,24 +63,25 @@
 }
 
 .controls {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 28px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
   width: 100%;
 }
 
 .ctrlBtn {
-  flex: 1;
   background: var(--surface-2);
   border: 1px solid var(--border-2);
   border-radius: var(--radius-md);
   color: var(--text);
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 600;
-  padding: 16px;
+  padding: 12px 4px;
   cursor: pointer;
   transition: background 0.1s;
+  font-family: var(--font);
+  font-variant-numeric: tabular-nums;
 }
 
 .ctrlBtn:active {
@@ -88,14 +89,15 @@
 }
 
 .stopBtn {
-  flex: 1.4;
+  grid-column: 1 / -1;
   background: var(--surface-2);
   border: 1px solid var(--border-2);
   border-radius: var(--radius-md);
   color: var(--danger);
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
-  padding: 16px;
+  padding: 14px;
+  margin-top: 4px;
   cursor: pointer;
   font-family: var(--font);
   transition: background 0.1s;
