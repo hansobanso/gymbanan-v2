@@ -1040,11 +1040,17 @@ function UsersTab() {
   if (loading) return <div className={styles.loading}><div className="spinner" /></div>
   if (error) return <p className={styles.errorMsg}>Fel: {error}</p>
 
+  // Start from all known profiles so we include users without workouts too
   const byUser = {}
+  for (const userId of Object.keys(profiles)) {
+    byUser[userId] = { userId, count: 0, lastAt: null }
+  }
   for (const w of workouts) {
     if (!byUser[w.user_id]) byUser[w.user_id] = { userId: w.user_id, count: 0, lastAt: w.finished_at }
     byUser[w.user_id].count++
-    if (w.finished_at > byUser[w.user_id].lastAt) byUser[w.user_id].lastAt = w.finished_at
+    if (!byUser[w.user_id].lastAt || w.finished_at > byUser[w.user_id].lastAt) {
+      byUser[w.user_id].lastAt = w.finished_at
+    }
   }
   const users = Object.values(byUser).sort((a, b) => b.count - a.count)
 
