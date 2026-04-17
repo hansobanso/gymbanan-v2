@@ -416,7 +416,6 @@
   display: flex;
   align-items: center;
   padding: 10px 16px;
-  border-top: 1px solid var(--border);
   gap: 4px;
 }
 

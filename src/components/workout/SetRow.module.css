@@ -106,10 +106,10 @@
 /* ── Stepper (Kg) ── */
 .stepper {
   display: flex;
-  align-items: stretch;
+  align-items: center;
   border: none;
   border-radius: 8px;
-  overflow: hidden;
+  overflow: visible;
   background: #1c1c1c;
 }
 
@@ -121,7 +121,7 @@
   flex: 1;
   background: transparent;
   border: none;
-  color: var(--text);
+  color: var(--accent);
   font-size: 18px;
   font-weight: 700;
   padding: 9px 0;
@@ -186,10 +186,10 @@
 /* ── Reps + RIR split pill ── */
 .splitPill {
   display: flex;
-  align-items: stretch;
+  align-items: center;
   border: none;
   border-radius: 8px;
-  overflow: hidden;
+  overflow: visible;
   background: #1c1c1c;
 }
 
@@ -202,7 +202,7 @@
   flex: 1;
   background: transparent;
   border: none;
-  color: var(--text);
+  color: var(--accent);
   font-size: 18px;
   font-weight: 700;
   padding: 9px 0;
