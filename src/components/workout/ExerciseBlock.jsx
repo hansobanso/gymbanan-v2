@@ -149,12 +149,20 @@ export default function ExerciseBlock({
       const secs = exercise.restSeconds ?? defaultRestSeconds ?? 120
       onTimerStart?.(exercise.name, secs)
     }
+    // Start 1 min rest after last warmup (next set is work)
+    if (!wasCompleted && set?.type === 'warmup') {
+      const currentIdx = exercise.sets.findIndex(s => s.id === setId)
+      const nextSet = exercise.sets[currentIdx + 1]
+      if (nextSet && nextSet.type === 'work') {
+        onTimerStart?.(exercise.name, 60)
+      }
+    }
   }
 
   const workSets = exercise.sets.filter(s => s.type === 'work')
   const doneSets = workSets.filter(s => s.done)
   const allWorkDone = workSets.length > 0 && doneSets.length === workSets.length
-  const isInProgress = doneSets.length > 0 && !allWorkDone
+  const isInProgress = !allWorkDone && !collapsed
 
   // Auto-collapse when all work sets complete
   useEffect(() => {

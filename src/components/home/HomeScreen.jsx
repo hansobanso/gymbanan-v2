@@ -73,6 +73,24 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
     return () => { cancelled = true }
   }, [session.user.id])
 
+  // Refetch workouts when returning to the app (e.g. after finishing a workout)
+  useEffect(() => {
+    function refetch() {
+      if (document.visibilityState === 'visible') {
+        getWorkouts(session.user.id, 15).then(ws => {
+          setLastWorkout(ws[0] ?? null)
+          setRecentWorkouts(ws)
+        }).catch(() => {})
+      }
+    }
+    document.addEventListener('visibilitychange', refetch)
+    window.addEventListener('focus', refetch)
+    return () => {
+      document.removeEventListener('visibilitychange', refetch)
+      window.removeEventListener('focus', refetch)
+    }
+  }, [session.user.id])
+
   const loading = !workoutsLoaded || !programsLoaded
 
   function handleStartSession(sessionData, program) {

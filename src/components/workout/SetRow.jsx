@@ -86,8 +86,8 @@ export default function SetRow({
   function adjustWeight(delta) {
     if (set.done) return
     const cur = parseFloat(set.weight) || 0
-    const next = Math.max(0, Math.round((cur + delta) * 2) / 2) // round to 0.5
-    onUpdate('weight', next > 0 ? String(next) : '')
+    const next = Math.round((cur + delta) * 2) / 2 // round to 0.5, allow negative
+    onUpdate('weight', String(next))
   }
 
   function adjustReps(delta) {

@@ -1,16 +1,36 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { createWorkout, updateWorkout, getPreviousSetsForExercise, getExerciseByName, getRestOverrides } from '../lib/db'
 
-// Given best previous work (weight, reps) and a rep range, compute target weight/reps.
-function calcProgression(bestW, bestR, repsMin, repsMax) {
-  if (!bestW || !bestR) return { targetW: bestW || 0, targetR: bestR || 0 }
-  if (repsMin != null && repsMax != null && bestR >= repsMax) {
-    const targetW = Math.round((bestW + 2.5) * 2) / 2  // round to 0.5
+// Smart progression based on last session's LAST work set + RIR.
+// Philosophy: progression happens between sessions. We look at the last set
+// (not the best) because it shows true fatigue state. RIR tells us if there
+// was room for more reps.
+//
+// Rules:
+//   RIR 0  → same reps (you were maxed out, adding a rep is the progression)
+//   RIR 1  → +1 rep
+//   RIR 2+ → +1 rep  
+//   reps >= repsMax → increase weight, reset to repsMin ("promote")
+//   no RIR → +1 rep (default, conservative)
+function calcProgression(lastW, lastR, lastRir, repsMin, repsMax) {
+  if (!lastW || !lastR) return { targetW: lastW || 0, targetR: lastR || 0 }
+
+  // If already at or above rep max → promote: increase weight, reset reps
+  if (repsMin != null && repsMax != null && lastR >= repsMax) {
+    const targetW = Math.round((lastW + 2.5) * 2) / 2  // round to 0.5
     const targetR = repsMin
     return { targetW, targetR, promoted: true }
   }
-  const targetR = repsMax != null ? Math.min(bestR + 1, repsMax) : bestR + 1
-  return { targetW: bestW, targetR }
+
+  // Calculate rep target based on RIR
+  let addReps = 1  // default: try one more rep
+  if (lastRir === 0) {
+    // Was completely maxed — just match last reps (the progression IS doing it again)
+    addReps = 0
+  }
+
+  const targetR = repsMax != null ? Math.min(lastR + addReps, repsMax) : lastR + addReps
+  return { targetW: lastW, targetR }
 }
 
 function uid() {
@@ -93,17 +113,19 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
         const restSeconds = ex.restSeconds ?? (restOverrides[ex.name] ?? null)
         if (!prevSets?.length) return { ...ex, restSeconds, exNotes, exEquipment, dataLoaded: true }
         let warmupIdx = 0
-        // Best previous work set
-        const prevWork = prevSets.filter(s => s.type === 'work')
-        const bestW = prevWork.length > 0 ? Math.max(...prevWork.map(s => parseFloat(s.weight) || 0)) : 0
-        const bestR = bestW > 0
-          ? Math.max(...prevWork.filter(s => parseFloat(s.weight) === bestW).map(s => parseInt(s.reps) || 0))
-          : 0
-        const lastRir = bestW > 0 ? (prevWork.find(s => parseFloat(s.weight) === bestW)?.rir ?? null) : null
-        const backoffWeight = bestW > 0 ? Math.round(bestW * 0.85 / 2.5) * 2.5 : 0
+        // Use LAST work set from previous session (not best) — it reflects true fatigue
+        const prevWork = prevSets.filter(s => s.type === 'work' && s.subtype !== 'backoff')
+        const lastWorkSet = prevWork.length > 0 ? prevWork[prevWork.length - 1] : null
+        const lastW = lastWorkSet ? (parseFloat(lastWorkSet.weight) || 0) : 0
+        const lastR = lastWorkSet ? (parseInt(lastWorkSet.reps) || 0) : 0
+        const lastRir = lastWorkSet?.rir ?? null
+        const backoffWeight = lastW > 0 ? Math.round(lastW * 0.85 / 2.5) * 2.5 : 0
+        // For backoff reps, use previous backoff if available, otherwise lastR + 2
+        const prevBackoff = prevSets.filter(s => s.subtype === 'backoff' && s.done && parseInt(s.reps) > 0)
+        const backoffReps = prevBackoff.length > 0 ? parseInt(prevBackoff[prevBackoff.length - 1].reps) : (lastR > 0 ? lastR + 2 : 0)
 
         // Smart progression
-        const { targetW, targetR, promoted } = calcProgression(bestW, bestR, ex.defaultRepsMin ?? null, ex.defaultRepsMax ?? null)
+        const { targetW, targetR, promoted } = calcProgression(lastW, lastR, lastRir, ex.defaultRepsMin ?? null, ex.defaultRepsMax ?? null)
         const progressionHint = promoted ? `Dags att öka → ${targetW}kg` : null
 
         const sets = ex.sets.map(set => {
@@ -111,7 +133,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
             return {
               ...set,
               weight: backoffWeight > 0 ? String(backoffWeight) : '',
-              reps: bestR > 0 ? String(bestR + 2) : '',
+              reps: backoffReps > 0 ? String(backoffReps) : '',
               rir: null,  // user fills in themselves
               prefilled: backoffWeight > 0,
             }
@@ -230,8 +252,14 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
       exerciseId: ex.id ?? null,
       name: ex.name,
       muscleGroup: ex.muscle_group ?? null,
-      restSeconds: defaultRest,
+      restSeconds: ex.default_rest ?? defaultRest,
+      defaultRepsMin: ex.default_reps_min ?? null,
+      defaultRepsMax: ex.default_reps_max ?? null,
       aiComment: '',
+      prevSets: null,
+      exNotes: ex.notes ?? ex.instructions ?? null,
+      exEquipment: ex.equipment ?? null,
+      dataLoaded: false,  // triggers fetch of previous sets
       sets: [makeSet('work')],
     }])
   }, [defaultRest])
@@ -243,14 +271,32 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
 
   const replaceExercise = useCallback((exId, newEx) => {
     setProgramChanged(true)
-    setExercises(prev => prev.map(ex =>
-      ex.localId !== exId ? ex : {
+    setExercises(prev => prev.map(ex => {
+      if (ex.localId !== exId) return ex
+      // Reset everything exercise-specific: sets, prevSets, notes, reps range
+      // Keep the same number of warmup/work/backoff sets but clear values
+      const warmupCount = ex.sets.filter(s => s.type === 'warmup').length
+      const workCount = ex.sets.filter(s => s.type === 'work' && s.subtype !== 'backoff').length
+      const backoffCount = ex.sets.filter(s => s.subtype === 'backoff').length
+      return {
         ...ex,
         exerciseId: newEx.id ?? null,
         name: newEx.name,
         muscleGroup: newEx.muscle_group ?? null,
+        prevSets: null,
+        exNotes: null,
+        exEquipment: null,
+        progressionHint: null,
+        dataLoaded: false,  // triggers re-fetch of prev sets for new exercise
+        defaultRepsMin: newEx.default_reps_min ?? null,
+        defaultRepsMax: newEx.default_reps_max ?? null,
+        sets: [
+          ...Array.from({ length: warmupCount }, () => makeSet('warmup')),
+          ...Array.from({ length: workCount }, () => makeSet('work')),
+          ...Array.from({ length: backoffCount }, () => ({ id: uid(), type: 'work', subtype: 'backoff', weight: '', reps: '', rir: null, done: false })),
+        ],
       }
-    ))
+    }))
   }, [])
 
   const [repsUpdatedAt, setRepsUpdatedAt] = useState(null)
@@ -260,19 +306,14 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
     setExercises(prev => prev.map(ex => {
       if (ex.localId !== exId) return ex
 
-      // Use only previous session's sets as baseline for progression.
-      // Progression happens BETWEEN sessions, not within — if we used doneWork from
-      // the current session, we'd double-progress (user already increased by hitting
-      // more reps this session, and then we'd suggest another +1 on top).
-      const prevWork = (ex.prevSets ?? []).filter(s => s.type === 'work')
-      const baseWork = prevWork
+      // Use last work set from previous session as baseline (consistent with prefill)
+      const prevWork = (ex.prevSets ?? []).filter(s => s.type === 'work' && s.subtype !== 'backoff')
+      const lastWorkSet = prevWork.length > 0 ? prevWork[prevWork.length - 1] : null
+      const lastW = lastWorkSet ? (parseFloat(lastWorkSet.weight) || 0) : 0
+      const lastR = lastWorkSet ? (parseInt(lastWorkSet.reps) || 0) : 0
+      const lastRir = lastWorkSet?.rir ?? null
 
-      const bestW = baseWork.length > 0 ? Math.max(...baseWork.map(s => parseFloat(s.weight) || 0)) : 0
-      const bestR = bestW > 0
-        ? Math.max(...baseWork.filter(s => parseFloat(s.weight) === bestW).map(s => parseInt(s.reps) || 0))
-        : 0
-
-      const { targetW, targetR } = calcProgression(bestW, bestR, min, max)
+      const { targetW, targetR } = calcProgression(lastW, lastR, lastRir, min, max)
       const shouldUpdate = targetW > 0
 
       const sets = ex.sets.map(s => {
