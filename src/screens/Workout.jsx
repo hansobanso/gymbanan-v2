@@ -51,6 +51,7 @@ export default function Workout({ session }) {
   const [headerMenuOpen, setHeaderMenuOpen] = useState(false)
   const [timerExpandedOpen, setTimerExpandedOpen] = useState(false)
   const [aiChatOpen, setAiChatOpen] = useState(false)
+  const [workoutNotes, setWorkoutNotes] = useState('')
   const [isReordering, setIsReordering] = useState(false)
   const [reorderSnapshot, setReorderSnapshot] = useState(null)
   const [undoToast, setUndoToast] = useState(null)
@@ -134,7 +135,7 @@ export default function Workout({ session }) {
   }, [headerMenuOpen])
 
   // Bygg kontext för AI – alltid färsk snapshot av pågående pass
-  const getContext = useCallback(() => buildWorkoutContext(sessionName, workout.exercises), [sessionName, workout.exercises])
+  const getContext = useCallback(() => buildWorkoutContext(sessionName, workout.exercises, workoutNotes), [sessionName, workout.exercises, workoutNotes])
   const getMemory = useCallback(() => aiMemory || null, [aiMemory])
 
   // ── Reorder ────────────────────────────────────────────────
@@ -182,7 +183,7 @@ export default function Workout({ session }) {
     setPostWorkout({ status: 'loading', feedbackText: null, workoutId });
     (async () => {
       try {
-        const context = buildWorkoutContext(sessionName, snapshot)
+        const context = buildWorkoutContext(sessionName, snapshot, workoutNotes)
         const feedback = await chatWithAI({
           messages: [{ role: 'user', content: 'Ge mig kort, konkret feedback på detta pass. Max 3-4 meningar. Skriv på svenska.' }],
           context,
@@ -663,6 +664,8 @@ export default function Workout({ session }) {
         getContext={getContext}
         getMemory={getMemory}
         introMessage={introMessage}
+        workoutNotes={workoutNotes}
+        onUpdateNotes={setWorkoutNotes}
         onUpdateMemory={async (note) => {
           const updated = appendUserNote(aiMemory, note)
           setAiMemory(updated)

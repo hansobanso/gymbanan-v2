@@ -131,6 +131,17 @@
   border-radius: 4px;
 }
 
+.repsRangeEmpty {
+  font-size: 13px;
+  color: var(--text-3);
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
 .repsRangeEdit {
   display: flex;
   align-items: center;

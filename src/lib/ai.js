@@ -98,16 +98,19 @@ export function appendUserNote(existingMemory, newNote) {
 /**
  * Bygger en kontextsträng från pågående pass.
  */
-export function buildWorkoutContext(sessionName, exercises) {
+export function buildWorkoutContext(sessionName, exercises, workoutNotes) {
   const lines = [`Pass: ${sessionName}`, '']
+  if (workoutNotes?.trim()) {
+    lines.push(`Anteckningar fran anvandaren: "${workoutNotes.trim()}"`, '')
+  }
   for (const ex of exercises) {
     const doneSets = ex.sets.filter(s => s.done)
     if (doneSets.length === 0) continue
     lines.push(`${ex.name}${ex.muscleGroup ? ` (${ex.muscleGroup})` : ''}:`)
     for (const s of doneSets) {
-      const label = s.type === 'warmup' ? 'Uppvärmning' : 'Set'
+      const label = s.type === 'warmup' ? 'Uppvarmning' : 'Set'
       const rir = s.rir !== null && s.rir !== undefined ? ` · RIR ${s.rir}` : ''
-      lines.push(`  ${label}: ${s.weight || '?'} kg × ${s.reps || '?'}${rir}`)
+      lines.push(`  ${label}: ${s.weight || '?'} kg x ${s.reps || '?'}${rir}`)
     }
     if (ex.aiComment?.trim()) lines.push(`  Notering: "${ex.aiComment}"`)
     lines.push('')

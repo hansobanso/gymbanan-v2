@@ -179,8 +179,11 @@ export default function ExerciseBlock({
 
   const prevStr = prevSets
     ? prevSets
-        .filter(s => s.type === 'work' && parseInt(s.reps) > 0 && parseFloat(s.weight) > 0)
-        .map(s => `${displayWeightStr(s.weight, exEquipment)}kg×${s.reps}`)
+        .filter(s => s.type === 'work' && parseInt(s.reps) > 0)
+        .map(s => {
+          const w = parseFloat(s.weight) || 0
+          return w > 0 ? `${displayWeightStr(s.weight, exEquipment)}kg×${s.reps}` : `${s.reps} reps`
+        })
         .join(' / ') || null
     : null
 
@@ -335,7 +338,19 @@ export default function ExerciseBlock({
                 >
                   {`${exercise.defaultRepsMin ?? ''}–${exercise.defaultRepsMax ?? ''}`}
                 </span>
-              ) : null
+              ) : (
+                <span
+                  className={styles.repsRangeEmpty}
+                  onClick={e => {
+                    e.stopPropagation()
+                    setRepsEditMin('')
+                    setRepsEditMax('')
+                    setEditingReps(true)
+                  }}
+                >
+                  + Mål
+                </span>
+              )
             )}
           </div>
           {exercise.progressionHint && (

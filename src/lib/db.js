@@ -253,7 +253,7 @@ export async function getPreviousSetsForExercise(userId, exerciseName) {
   for (const workout of data) {
     const ex = (workout.exercises ?? []).find(e => e.name === exerciseName)
     if (!ex) continue
-    const allSets = (ex.sets ?? []).filter(s => s.done && s.weight)
+    const allSets = (ex.sets ?? []).filter(s => s.done && (s.weight !== undefined && s.weight !== null))
     if (allSets.length > 0) return allSets
   }
   return null

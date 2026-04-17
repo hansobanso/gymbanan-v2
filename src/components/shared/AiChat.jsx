@@ -9,10 +9,11 @@ const SUGGESTIONS = [
   'Tips för nästa pass?',
 ]
 
-export default function AiChat({ open, onClose, getContext, getMemory, onUpdateMemory, introMessage }) {
+export default function AiChat({ open, onClose, getContext, getMemory, onUpdateMemory, introMessage, workoutNotes, onUpdateNotes }) {
   const [input, setInput] = useState('')
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
+  const notesRef = useRef(null)
   const { messages, loading, error, send } = useAI({ getContext, getMemory })
 
   // Fokusera input när sheeten öppnar
@@ -77,6 +78,25 @@ export default function AiChat({ open, onClose, getContext, getMemory, onUpdateM
                 </svg>
               </button>
             </div>
+
+            {/* Passnoteringar */}
+            {onUpdateNotes && (
+              <div className={styles.notesSection}>
+                <label className={styles.notesLabel}>Anteckningar till PT</label>
+                <textarea
+                  ref={notesRef}
+                  className={styles.notesInput}
+                  value={workoutNotes || ''}
+                  onChange={e => {
+                    onUpdateNotes(e.target.value)
+                    e.target.style.height = 'auto'
+                    e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`
+                  }}
+                  placeholder="T.ex. dålig sömn, ont i axeln, bytte övning..."
+                  rows={2}
+                />
+              </div>
+            )}
 
             {/* Meddelanden */}
             <div className={styles.messages}>

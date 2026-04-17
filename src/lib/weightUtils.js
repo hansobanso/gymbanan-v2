@@ -1,16 +1,13 @@
 /**
  * Returns display weight for the user.
- * Dumbbell exercises: multiply by 2 (total load both hands).
+ * Always shows the weight as logged (per hand/arm).
  */
 export function displayWeight(weight, equipment) {
-  const w = parseFloat(weight) || 0
-  if (!w) return w
-  return equipment === 'Hantel' ? w * 2 : w
+  return parseFloat(weight) || 0
 }
 
 /**
- * Format weight for display with unit.
- * e.g. displayWeightStr(20, 'Hantel') → '40'
+ * Format weight for display.
  */
 export function displayWeightStr(weight, equipment) {
   const w = displayWeight(weight, equipment)
