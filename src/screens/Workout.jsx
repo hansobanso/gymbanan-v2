@@ -441,10 +441,19 @@ export default function Workout({ session }) {
                 <p>Inga övningar ännu</p>
               </div>
             )}
-            {workout.exercises.map((ex, idx) => (
+            {workout.exercises.map((ex, idx) => {
+              // Active = first exercise that isn't fully done
+              const workSets = ex.sets.filter(s => s.type === 'work')
+              const allDone = workSets.length > 0 && workSets.every(s => s.done)
+              const isActive = !allDone && workout.exercises.slice(0, idx).every(prev => {
+                const ws = prev.sets.filter(s => s.type === 'work')
+                return ws.length > 0 && ws.every(s => s.done)
+              })
+              return (
               <ExerciseBlock
                 key={ex.localId}
                 exercise={ex}
+                isActive={isActive}
                 isLastExercise={idx === workout.exercises.length - 1}
                 defaultRestSeconds={defaultRest}
                 onUpdateSet={workout.updateSet}
@@ -463,7 +472,8 @@ export default function Workout({ session }) {
                 onTimerStart={(name, secs) => timer.start(name, secs)}
                 onShowDetail={id => setDetailExerciseId(id)}
               />
-            ))}
+              )
+            })}
 
             {/* Lägg till övning + Avsluta pass */}
             <div className={styles.finishWrap}>

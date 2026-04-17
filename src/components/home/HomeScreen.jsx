@@ -120,11 +120,6 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
   if (loading) {
     return (
       <div className={styles.screen}>
-        <div className={styles.topBar}>
-          <div className={styles.topBarLeft}>
-            <span className={styles.appTitle}>Gymbanan 🍌</span>
-          </div>
-        </div>
         <div className={styles.container}>
           <div className={styles.skeletonCard} style={{ height: 88, margin: '0 16px' }} />
           <div className={styles.skeletonCard} style={{ height: 160, margin: '12px 16px 0' }} />
@@ -140,13 +135,6 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
 
   return (
     <div className={styles.screen}>
-      {/* ── Top bar ── */}
-      <div className={styles.topBar}>
-        <div className={styles.topBarLeft}>
-          <span className={styles.appTitle}>Gymbanan 🍌</span>
-        </div>
-      </div>
-
       <div className={styles.container}>
 
         {/* ── Alla pass i programmet ── */}

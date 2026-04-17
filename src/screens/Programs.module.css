@@ -61,7 +61,7 @@
   width: 100%;
   background: #141414;
   border-radius: 14px;
-  border: none;
+  border: 1.5px solid transparent;
   padding: 16px;
   margin-bottom: 8px;
   cursor: pointer;

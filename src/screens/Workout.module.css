@@ -35,8 +35,9 @@
   padding: 0;
   font-size: 18px;
   font-weight: 700;
-  color: #F5D020;
-  letter-spacing: -0.3px;
+  color: #fff;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
   cursor: pointer;
   text-align: left;
   white-space: nowrap;

@@ -214,10 +214,11 @@
   gap: 12px;
   background: #141414;
   border-radius: 14px;
-  border: none;
+  border: 1.5px solid transparent;
 }
 
 .sessionRowNext {
+  border-color: var(--accent);
   background: rgba(245, 208, 32, 0.04);
 }
 

@@ -121,7 +121,7 @@ export default function Programs({ session, programs, setPrograms, activeProgram
   return (
     <div className={styles.screen}>
       <div className={styles.header}>
-        <h1 className={styles.title}>Program</h1>
+        
       </div>
 
       <div className={styles.body}>

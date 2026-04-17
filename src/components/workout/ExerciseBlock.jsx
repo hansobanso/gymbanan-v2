@@ -42,6 +42,7 @@ function getSetLabel(set, allSets) {
 
 export default function ExerciseBlock({
   exercise,
+  isActive,
   isLastExercise,
   defaultRestSeconds,
   userId,
@@ -162,7 +163,7 @@ export default function ExerciseBlock({
   const workSets = exercise.sets.filter(s => s.type === 'work')
   const doneSets = workSets.filter(s => s.done)
   const allWorkDone = workSets.length > 0 && doneSets.length === workSets.length
-  const isInProgress = !allWorkDone && !collapsed
+  const isInProgress = isActive && !allWorkDone && !collapsed
 
   // Auto-collapse when all work sets complete
   useEffect(() => {
