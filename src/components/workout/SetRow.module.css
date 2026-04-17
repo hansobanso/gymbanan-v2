@@ -146,11 +146,13 @@
 }
 
 .stepBtn {
-  width: 28px;
-  background: transparent;
-  border: none;
+  width: 26px;
+  height: 26px;
+  background: #1c1c1c;
+  border: 1px solid #333;
+  border-radius: 50%;
   color: var(--text-2);
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 600;
   line-height: 1;
   cursor: pointer;
@@ -161,11 +163,13 @@
   flex-shrink: 0;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
-  transition: background 0.12s;
+  transition: background 0.12s, border-color 0.12s;
+  margin: 0 2px;
 }
 
 .stepBtn:active:not(:disabled) {
   background: #2a2a2a;
+  border-color: #555;
 }
 
 .stepBtn:disabled {

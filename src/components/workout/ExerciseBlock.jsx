@@ -500,21 +500,6 @@ export default function ExerciseBlock({
         </button>
       </div>
 
-      {/* ── Hur kändes det? ── */}
-      <div className={styles.aiRow}>
-        <textarea
-          className={styles.aiTextarea}
-          value={exercise.aiComment}
-          onChange={e => {
-            onUpdateExercise(exercise.localId, 'aiComment', e.target.value)
-            e.target.style.height = 'auto'
-            e.target.style.height = e.target.scrollHeight + 'px'
-          }}
-          placeholder="Hur kändes det?"
-          rows={1}
-        />
-      </div>
-
           </motion.div>
         )}
       </AnimatePresence>
