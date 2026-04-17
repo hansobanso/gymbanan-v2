@@ -84,9 +84,6 @@ export default function Settings({ session }) {
 
   return (
     <div className={styles.screen}>
-      <div className={styles.header}>
-        
-      </div>
 
       <div className={styles.scroll}>
 

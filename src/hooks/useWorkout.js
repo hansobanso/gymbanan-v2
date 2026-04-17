@@ -149,7 +149,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
           }
         })
 
-        const progressionHint = anyPromoted ? `Dags att oka -> ${promotedWeight}kg` : null
+        const progressionHint = anyPromoted ? `Dags att öka → ${promotedWeight}kg` : null
 
         return { ...ex, restSeconds, sets, progressionHint, prevSets, exNotes, exEquipment, dataLoaded: true }
       }))

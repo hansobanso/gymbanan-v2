@@ -100,7 +100,7 @@
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: auto;
-  padding: 12px 0 24px;
+  padding: calc(var(--safe-top, 44px) + 16px) 0 24px;
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -185,15 +185,14 @@
 .startPill {
   background: var(--accent);
   border: none;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-sm);
   color: #000;
-  font-size: 14px;
-  font-weight: 800;
+  font-size: 13px;
+  font-weight: 700;
   font-family: var(--font);
-  padding: 10px 22px;
+  padding: 7px 14px;
   cursor: pointer;
   flex-shrink: 0;
-  letter-spacing: 0.1px;
   transition: opacity 0.1s;
 }
 

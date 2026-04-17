@@ -29,7 +29,7 @@
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  padding: 16px 16px calc(var(--nav-height, 64px) + var(--safe-bottom, 0px) + 16px);
+  padding: calc(var(--safe-top, 44px) + 16px) 16px calc(var(--nav-height, 64px) + var(--safe-bottom, 0px) + 16px);
 }
 
 /* ── New program button ── */
