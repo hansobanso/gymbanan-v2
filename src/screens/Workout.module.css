@@ -191,7 +191,7 @@
 
 .addExerciseBtn {
   width: 100%;
-  background: var(--surface-2);
+  background: transparent;
   border: 1px solid var(--border-2);
   border-radius: var(--radius-md);
   color: var(--text-2);
@@ -204,13 +204,13 @@
 }
 
 .addExerciseBtn:active {
-  background: var(--surface-3);
+  background: var(--surface-2);
 }
 
 .finishBtn {
   width: 100%;
-  background: var(--surface-2);
-  border: 1px solid var(--border-2);
+  background: transparent;
+  border: 1px solid rgba(255, 59, 48, 0.3);
   border-radius: var(--radius-md);
   color: var(--danger);
   font-size: 16px;
@@ -223,7 +223,7 @@
 
 .finishBtn:active {
   background: var(--danger-dim);
-  border-color: rgba(255, 59, 48, 0.25);
+  border-color: rgba(255, 59, 48, 0.5);
 }
 
 /* ── Reorder-läge ── */
