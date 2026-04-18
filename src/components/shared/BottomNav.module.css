@@ -4,7 +4,9 @@
   border-top: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  padding-bottom: var(--safe-bottom, 0px);
+  /* Safari safe-area bug fix: use fallback + env() for reliability */
+  padding-bottom: 34px; /* fallback for when env() fails */
+  padding-bottom: env(safe-area-inset-bottom, 34px);
 }
 
 .tabs {

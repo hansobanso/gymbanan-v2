@@ -126,6 +126,20 @@ function AppRoutes({ session }) {
 export default function App() {
   const [session, setSession] = useState(undefined)
 
+  // Fix iOS Safari safe-area rendering bug on initial load
+  useEffect(() => {
+    // Force Safari to recalculate env() values after initial render
+    if (typeof window !== 'undefined' && /iPhone|iPad/.test(navigator.userAgent)) {
+      const forceReflow = () => {
+        document.documentElement.style.setProperty('--force-reflow', '1')
+        requestAnimationFrame(() => {
+          document.documentElement.style.removeProperty('--force-reflow')
+        })
+      }
+      // Run after a brief delay to ensure viewport-fit has taken effect
+      setTimeout(forceReflow, 100)
+    }
+  }, [])
 
   useEffect(() => {
     localStorage.removeItem('gymbanan_active_program_id')
