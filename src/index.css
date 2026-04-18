@@ -86,7 +86,7 @@ html {
   overscroll-behavior: none;
   color-scheme: dark;
   overflow-x: hidden;
-  background: #111111;
+  background: #0a0a0a;
 }
 
 body {
@@ -96,7 +96,7 @@ body {
   font-size: 16px;
   line-height: 1.5;
   color: var(--text);
-  background: #111111;
+  background: #0a0a0a;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overscroll-behavior: none;
