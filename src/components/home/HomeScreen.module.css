@@ -227,6 +227,18 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--font);
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.12s;
+}
+
+.sessionInfo:active {
+  opacity: 0.6;
 }
 
 .sessionNameRow {

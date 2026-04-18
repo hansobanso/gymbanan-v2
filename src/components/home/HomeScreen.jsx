@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getWorkouts } from '../../lib/db'
 import MuscleMap from '../MuscleMap'
+import SessionPreview from './SessionPreview'
 import styles from './HomeScreen.module.css'
 
 function getMonday() {
@@ -60,6 +61,7 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
   const [recentWorkouts, setRecentWorkouts] = useState([])
   const [workoutsLoaded, setWorkoutsLoaded] = useState(false)
   const [lastExpanded, setLastExpanded] = useState(false)
+  const [previewSession, setPreviewSession] = useState(null) // { session, program }
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -147,7 +149,11 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
                 const isLast = s.name === lastWorkout?.session_name
                 return (
                   <div key={s._id ?? s.id ?? i} className={`${styles.sessionRow} ${isNext ? styles.sessionRowNext : ''}`}>
-                    <div className={styles.sessionInfo}>
+                    <button
+                      className={styles.sessionInfo}
+                      onClick={() => setPreviewSession({ session: s, program: activeProgram })}
+                      type="button"
+                    >
                       <div className={styles.sessionNameRow}>
                         <span className={styles.sessionName}>{s.name}</span>
                         {isNext && <span className={styles.sessionBadgeNext}>Nästa</span>}
@@ -156,7 +162,7 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
                       {(s.exercises ?? []).length > 0 && (
                         <span className={styles.sessionMeta}>{s.exercises.length} övningar</span>
                       )}
-                    </div>
+                    </button>
                     <button
                       className={isNext ? styles.startPill : styles.startBtnSmall}
                       onClick={() => handleStartSession(s, activeProgram)}
@@ -253,6 +259,21 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
         )}
 
       </div>
+
+      {/* ── Pass-förhandsgranskning ── */}
+      <SessionPreview
+        open={previewSession !== null}
+        session={previewSession?.session}
+        userId={session.user.id}
+        onStart={() => {
+          if (previewSession) {
+            const { session: s, program } = previewSession
+            setPreviewSession(null)
+            handleStartSession(s, program)
+          }
+        }}
+        onClose={() => setPreviewSession(null)}
+      />
 
     </div>
   )

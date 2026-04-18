@@ -1,0 +1,196 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 200;
+}
+
+.sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-height: 85dvh;
+  background: var(--bg-2);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  z-index: 201;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-sheet);
+  overflow: hidden;
+}
+
+.handle {
+  width: 36px;
+  height: 4px;
+  background: var(--border-2);
+  border-radius: var(--radius-full);
+  margin: 8px auto 4px;
+  flex-shrink: 0;
+}
+
+/* Header */
+.header {
+  padding: 12px 20px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 4px;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: var(--text-3);
+  margin: 0;
+}
+
+/* Body */
+.body {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.loadingText,
+.emptyText {
+  font-size: 14px;
+  color: var(--text-3);
+  text-align: center;
+  padding: 24px 0;
+  margin: 0;
+}
+
+/* Exercise row */
+.exRow {
+  background: #141414;
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.exHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.exName {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.exRange {
+  font-size: 12px;
+  color: var(--text-2);
+  font-weight: 500;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.exMeta {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.metaChip {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-3);
+  background: var(--surface-2);
+  border-radius: 20px;
+  padding: 2px 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.setsList {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 2px;
+}
+
+.setLine {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.setLabel {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-3);
+  background: #1c1c1c;
+  border-radius: 4px;
+  padding: 2px 6px;
+  min-width: 24px;
+  text-align: center;
+  letter-spacing: 0.3px;
+}
+
+.setValue {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.setValueEmpty {
+  color: var(--text-3);
+  font-style: italic;
+  font-size: 12px;
+}
+
+.noHistory {
+  font-size: 12px;
+  color: var(--text-3);
+  font-style: italic;
+  margin: 2px 0 0;
+}
+
+/* Footer */
+.footer {
+  padding: 12px 16px calc(env(safe-area-inset-bottom, 16px) + 12px);
+  flex-shrink: 0;
+  border-top: 1px solid var(--border);
+  background: var(--bg-2);
+}
+
+.startBtn {
+  width: 100%;
+  background: var(--accent);
+  color: #000;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  font-weight: 700;
+  padding: 14px;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: opacity 0.15s;
+}
+
+.startBtn:active {
+  opacity: 0.8;
+}
