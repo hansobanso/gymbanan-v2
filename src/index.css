@@ -104,7 +104,8 @@ body {
 }
 
 #root {
-  height: 100dvh;
+  position: fixed;
+  inset: 0;
   background: var(--bg);
   overflow: hidden;
   display: flex;
