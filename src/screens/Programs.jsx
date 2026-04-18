@@ -120,6 +120,9 @@ export default function Programs({ session, programs, setPrograms, activeProgram
 
   return (
     <div className={styles.screen}>
+      <header className={styles.header}>
+        <h1 className={styles.title}>Program</h1>
+      </header>
 
       <div className={styles.body}>
         <button className={styles.newBtn} onClick={() => setEditingProgram(newProgram())} type="button">

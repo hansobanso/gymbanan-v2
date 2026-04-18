@@ -42,12 +42,15 @@ export default function History({ session }) {
 
   return (
     <div className={styles.screen}>
-      <div className={styles.body}>
+      <header className={styles.header}>
+        <h1 className={styles.title}>Historik</h1>
         <button className={styles.chartBtn} onClick={() => setChartSheetOpen(true)} type="button" aria-label="Styrkegrafer">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M3 20H21M5 20V14M9 20V8M13 20V11M17 20V4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
+      </header>
+      <div className={styles.body}>
         {loading && (
           <div className={styles.skeletons}>
             {[1, 2, 3].map(i => (

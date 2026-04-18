@@ -6,6 +6,21 @@
   min-height: 0;
 }
 
+/* ── Page header (consistent across tab screens) ── */
+.pageHeader {
+  padding: calc(var(--safe-top, 44px) + 8px) 20px 12px;
+  background: #0a0a0a;
+  flex-shrink: 0;
+}
+
+.pageTitle {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: #ffffff;
+  margin: 0;
+}
+
 /* ── Top bar ── */
 .topBar {
   display: flex;
@@ -100,7 +115,7 @@
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: auto;
-  padding: calc(var(--safe-top, 44px) + 16px) 0 24px;
+  padding: 16px 0 24px;
   display: flex;
   flex-direction: column;
   gap: 0;
