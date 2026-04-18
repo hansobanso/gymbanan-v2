@@ -166,7 +166,7 @@
   overflow-y: scroll;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
-  padding: 0 0 calc(env(safe-area-inset-bottom, 0px) + 80px);
+  padding: 0;
   min-height: 0;
   background: #0a0a0a;
 }
@@ -183,7 +183,7 @@
 
 /* ── Avsluta pass-knapp (ej fast) ── */
 .finishWrap {
-  padding: 14px 16px 0;
+  padding: 14px 16px calc(var(--safe-bottom, 0px) + 14px);
   display: flex;
   flex-direction: column;
   gap: 10px;
