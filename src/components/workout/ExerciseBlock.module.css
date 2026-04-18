@@ -377,9 +377,9 @@
 /* ── Kolumnrubriker: # | Kg | Reps | RIR | ✓ ── */
 .colHeaders {
   display: grid;
-  grid-template-columns: 28px 1fr 1fr 42px;
+  grid-template-columns: 22px minmax(0, 1fr) minmax(0, 1fr) 38px;
   gap: 6px;
-  padding: 3px 16px 2px;
+  padding: 3px 10px 2px;
   align-items: center;
 }
 
