@@ -138,7 +138,7 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
   return (
     <div className={styles.screen}>
       <header className={styles.pageHeader}>
-        <h1 className={styles.pageTitle}>Hem</h1>
+        <h1 className={styles.pageTitle}>Gymbanan 🍌</h1>
       </header>
       <div className={styles.container}>
 
