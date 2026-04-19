@@ -100,13 +100,13 @@
 
 .ptBtn,
 .dotsBtn {
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: none;
-  border: 1.5px solid rgba(245, 208, 32, 0.45);
+  border: 2px solid var(--accent);
   border-radius: 50%;
   color: #F5D020;
   cursor: pointer;
@@ -132,8 +132,8 @@
 
 /* Timer icon button — no outer ring, the clock outline IS the circle */
 .timerIconBtn {
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;

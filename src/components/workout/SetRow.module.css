@@ -78,9 +78,9 @@
   cursor: default;
 }
 
-/* Warmup reps box should be narrower (no RIR content) */
+/* Warmup reps box narrower (no RIR content) */
 .warmup .splitPill {
-  max-width: 90px;
+  max-width: 105px;
   justify-self: start;
 }
 
@@ -177,6 +177,15 @@
 .splitInput:disabled {
   color: var(--text-2);
   cursor: default;
+}
+
+/* Smaller placeholder text so "Reps"/"Kg" fits even on narrow warmup rows */
+.stepInput::placeholder,
+.splitInput::placeholder {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-3);
+  letter-spacing: 0;
 }
 
 .stepInput::-webkit-outer-spin-button,
