@@ -131,7 +131,8 @@
 }
 
 /* Timer icon button — no outer ring, the clock outline IS the circle */
-.timerIconBtn {
+.timerIconBtn,
+.dotsIconBtn {
   width: 34px;
   height: 34px;
   display: flex;
@@ -145,7 +146,9 @@
   transition: opacity 0.1s;
 }
 
-.timerIconBtn:active {
+.timerIconBtn:active,
+.dotsIconBtn:active,
+.dotsBtnActive {
   opacity: 0.6;
 }
 

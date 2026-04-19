@@ -391,11 +391,13 @@
   text-transform: uppercase;
   letter-spacing: 0.6px;
   color: var(--text-3);
-  text-align: center;
+  text-align: left;
+  padding-left: 10px;
 }
 
-.colLabel:first-child {
-  text-align: left;
+.colLabel:first-child,
+.colLabel:last-child {
+  padding-left: 0;
 }
 
 /* ── Sets + warmup ── */

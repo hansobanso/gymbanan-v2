@@ -118,7 +118,7 @@
 
 /* - / + buttons — discrete character, no border */
 .stepBtn {
-  width: 28px;
+  width: 22px;
   height: 44px;
   background: transparent;
   border: none;
@@ -182,7 +182,7 @@
 /* Smaller placeholder text so "Reps"/"Kg" fits even on narrow warmup rows */
 .stepInput::placeholder,
 .splitInput::placeholder {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--text-3);
   letter-spacing: 0;
