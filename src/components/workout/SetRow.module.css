@@ -81,7 +81,7 @@
 /* Warmup rows: reps box has no RIR, so it's narrower and left-aligned.
    KG box stays full width (aligned with work set rows above/below). */
 .warmup .splitPill {
-  max-width: calc(100% - 44px);
+  max-width: calc(100% - 10px);
   justify-self: start;
 }
 
@@ -180,12 +180,12 @@
   cursor: default;
 }
 
-/* Smaller placeholder text so "Reps"/"Kg" fits even on narrow warmup rows */
+/* Placeholder text: visible white, larger than before */
 .stepInput::placeholder,
 .splitInput::placeholder {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-3);
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.55);
   letter-spacing: 0;
 }
 

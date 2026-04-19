@@ -121,7 +121,7 @@ export default function ExerciseChartSheet({ open, onClose, userId, workouts, eq
         {selected ? (
           <button className={styles.backBtn} onClick={() => setSelected(null)} type="button">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="m15 18-6-6 6-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             {selectedLabel}
           </button>

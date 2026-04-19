@@ -36,7 +36,14 @@ export default function PostWorkoutFeedback({ sessionName, exercises, feedbackSt
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.1, duration: 0.35 }}
         >
-          <span className={styles.heroIcon}>🎉</span>
+          <svg className={styles.heroIcon} width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#F5D020" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+            <path d="M4 22h16"/>
+            <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+            <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+          </svg>
           <h2 className={styles.heroTitle}>Pass klart!</h2>
           <p className={styles.heroName}>{sessionName}</p>
         </motion.div>
@@ -72,7 +79,12 @@ export default function PostWorkoutFeedback({ sessionName, exercises, feedbackSt
           transition={{ delay: 0.3, duration: 0.3 }}
         >
           <div className={styles.feedbackHeader}>
-            <span className={styles.ptBadge}>PT</span>
+            <svg className={styles.ptBadge} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F5D020" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/>
+              <path d="M12 11h.01"/>
+              <path d="M16 11h.01"/>
+              <path d="M8 11h.01"/>
+            </svg>
             <span className={styles.feedbackTitle}>Feedback på passet</span>
           </div>
 

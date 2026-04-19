@@ -65,7 +65,7 @@ export default function WorkoutCard({ workout, onShowCharts, onDelete, equipment
             )}
             <span className={`${styles.chevron} ${open ? styles.chevronOpen : ''}`}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M6 9L12 15L18 9" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="m6 9 6 6 6-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </span>
           </div>
@@ -119,7 +119,7 @@ export default function WorkoutCard({ workout, onShowCharts, onDelete, equipment
                     <span className={styles.ptBadge}>PT</span>
                     <span className={styles.ptToggleLabel}>Feedback</span>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ transform: ptOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', color: 'var(--text-3)', marginLeft: 'auto' }}>
-                      <path d="M6 9L12 15L18 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="m6 9 6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </button>
                   <AnimatePresence initial={false}>
