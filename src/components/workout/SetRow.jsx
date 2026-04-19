@@ -76,12 +76,17 @@ export default function SetRow({
       // Swipe left -> reveal delete
       animate(x, -80, { type: 'spring', stiffness: 500, damping: 40 })
     } else if (info.offset.x > 60 && onDuplicate) {
-      // Swipe right -> duplicate immediately, snap back
-      animate(x, 0, { type: 'spring', stiffness: 500, damping: 40 })
-      onDuplicate()
+      // Swipe right -> reveal duplicate (user must tap to confirm)
+      animate(x, 80, { type: 'spring', stiffness: 500, damping: 40 })
     } else {
+      // Snap back - closes both delete and duplicate reveals
       animate(x, 0, { type: 'spring', stiffness: 500, damping: 40 })
     }
+  }
+
+  function handleDuplicateClick() {
+    animate(x, 0, { type: 'spring', stiffness: 500, damping: 40 })
+    onDuplicate?.()
   }
 
   const best1RM = !isWarmup ? (getBest1RM(allSets) || prev1RM) : null
@@ -121,17 +126,19 @@ export default function SetRow({
       </motion.button>
 
       {/* Duplicate reveal (höger) */}
-      <motion.div
+      <motion.button
         className={styles.duplicateBg}
         style={{ opacity: duplicateBgOpacity }}
-        aria-hidden="true"
+        onClick={handleDuplicateClick}
+        type="button"
+        aria-label="Dubblera set"
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <rect x="9" y="9" width="11" height="11" rx="2" stroke="#000" strokeWidth="2" />
           <path d="M5 15V5a1 1 0 0 1 1-1h10" stroke="#000" strokeWidth="2" strokeLinecap="round" />
         </svg>
         <span className={styles.duplicateBgLabel}>Dubblera</span>
-      </motion.div>
+      </motion.button>
 
       {/* Row: # | Kg | Reps(+RIR overlay) | ✓ */}
       <motion.div
@@ -208,7 +215,7 @@ export default function SetRow({
             aria-label="Öka reps"
             tabIndex={-1}
           >+</button>
-          {!isWarmup ? (
+          {!isWarmup && (
             <>
               <div className={styles.splitDivider} />
               <button
@@ -230,8 +237,6 @@ export default function SetRow({
                 {rirValue !== null ? rirValue : 'RIR'}
               </button>
             </>
-          ) : (
-            <div style={{ width: 36, flexShrink: 0, visibility: 'hidden' }} />
           )}
         </div>
 

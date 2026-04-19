@@ -205,10 +205,7 @@ export default function ExerciseBlock({
     : encodeURIComponent('__builtin__' + exercise.name)
 
   const hasWarmups = exercise.sets.some(s => s.type === 'warmup')
-  const repsRangeLabel = (exercise.defaultRepsMin != null && exercise.defaultRepsMax != null)
-    ? `REPS: ${exercise.defaultRepsMin} - ${exercise.defaultRepsMax}`
-    : 'REPS'
-  const colLabels = ['#', 'KG', repsRangeLabel, '']
+  const colLabels = ['', 'KG', 'REPS', '']
 
   // Collapsed summary
   const bestWeight = doneSets.length > 0
@@ -330,7 +327,19 @@ export default function ExerciseBlock({
                 />
               </div>
             ) : (
-              (exercise.defaultRepsMin != null || exercise.defaultRepsMax != null) ? null : (
+              (exercise.defaultRepsMin != null || exercise.defaultRepsMax != null) ? (
+                <span
+                  className={styles.repsRange}
+                  onClick={e => {
+                    e.stopPropagation()
+                    setRepsEditMin(exercise.defaultRepsMin != null ? String(exercise.defaultRepsMin) : '')
+                    setRepsEditMax(exercise.defaultRepsMax != null ? String(exercise.defaultRepsMax) : '')
+                    setEditingReps(true)
+                  }}
+                >
+                  {`${exercise.defaultRepsMin ?? ''}–${exercise.defaultRepsMax ?? ''}`}
+                </span>
+              ) : (
                 <span
                   className={styles.repsRangeEmpty}
                   onClick={e => {

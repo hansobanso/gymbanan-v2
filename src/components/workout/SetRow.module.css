@@ -41,7 +41,10 @@
   align-items: center;
   justify-content: center;
   gap: 4px;
-  pointer-events: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: var(--font);
 }
 
 .duplicateBgLabel {
