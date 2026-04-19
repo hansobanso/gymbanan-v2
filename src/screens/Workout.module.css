@@ -130,6 +130,25 @@
   letter-spacing: 0.3px;
 }
 
+/* Timer icon button — no outer ring, the clock outline IS the circle */
+.timerIconBtn {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: #F5D020;
+  cursor: pointer;
+  padding: 0;
+  transition: opacity 0.1s;
+}
+
+.timerIconBtn:active {
+  opacity: 0.6;
+}
+
 /* ── Header dropdown menu ── */
 .headerMenu {
   position: absolute;
@@ -199,32 +218,32 @@
 
 .addExerciseBtn {
   width: 100%;
-  background: transparent;
-  border: 1px solid var(--border-2);
+  background: #1c1c1c;
+  border: none;
   border-radius: var(--radius-md);
-  color: var(--text-2);
+  color: #ffffff;
   font-size: 16px;
   font-weight: 600;
-  padding: 16px;
+  padding: 18px;
   cursor: pointer;
   transition: background 0.15s;
   font-family: var(--font);
 }
 
 .addExerciseBtn:active {
-  background: var(--surface-2);
+  background: var(--surface-3);
 }
 
 .finishBtn {
   width: 100%;
-  background: transparent;
-  border: 1px solid rgba(255, 59, 48, 0.3);
+  background: #1c1c1c;
+  border: none;
   border-radius: var(--radius-md);
   color: var(--danger);
   font-size: 15px;
   font-weight: 700;
   letter-spacing: 1.2px;
-  padding: 16px;
+  padding: 18px;
   cursor: pointer;
   transition: background 0.15s;
   font-family: var(--font);
@@ -232,7 +251,6 @@
 
 .finishBtn:active {
   background: var(--danger-dim);
-  border-color: rgba(255, 59, 48, 0.5);
 }
 
 /* ── Reorder-läge ── */

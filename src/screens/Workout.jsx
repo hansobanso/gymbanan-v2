@@ -332,14 +332,14 @@ export default function Workout({ session }) {
           )}
           {/* Vila-timer – öppnar expanded, startar 60s om ingen timer aktiv */}
           <button
-            className={styles.dotsBtn}
+            className={styles.timerIconBtn}
             onClick={() => { if (!timer.active) timer.start('Vila', 60); setTimerExpandedOpen(true) }}
             type="button"
             aria-label="Öppna timer"
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" />
-              <path d="M12 7V12L15 14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="12" cy="12" r="10.25" stroke="currentColor" strokeWidth="1.5" />
+              <path d="M12 6.5V12L15.5 14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
           </button>
           {/* PT-knapp */}

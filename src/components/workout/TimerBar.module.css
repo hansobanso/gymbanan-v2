@@ -1,11 +1,12 @@
 .wrapper {
   height: 10px;
   flex-shrink: 0;
+  background: #0a0a0a;
 }
 
 .track {
   height: 10px;
-  background: #1a1a1a;
+  background: transparent;
   width: 100%;
 }
 
