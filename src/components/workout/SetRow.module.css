@@ -78,6 +78,12 @@
   cursor: default;
 }
 
+/* Warmup reps box should be narrower (no RIR content) */
+.warmup .splitPill {
+  max-width: 120px;
+  justify-self: start;
+}
+
 /* ── Label (S1, V1, etc) — plain text, no bg ── */
 .label {
   width: 28px;

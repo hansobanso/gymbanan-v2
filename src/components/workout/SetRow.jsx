@@ -72,11 +72,15 @@ export default function SetRow({
   }, [])
 
   function handleDragEnd(_, info) {
-    if (info.offset.x < -60) {
-      // Swipe left -> reveal delete
+    // Higher threshold (90px) + check velocity so small/uncertain swipes always snap back cleanly
+    const offset = info.offset.x
+    const velocity = info.velocity.x
+    const passedLeft = offset < -90 || (offset < -40 && velocity < -500)
+    const passedRight = offset > 90 || (offset > 40 && velocity > 500)
+
+    if (passedLeft) {
       animate(x, -80, { type: 'spring', stiffness: 500, damping: 40 })
-    } else if (info.offset.x > 60 && onDuplicate) {
-      // Swipe right -> reveal duplicate (user must tap to confirm)
+    } else if (passedRight && onDuplicate) {
       animate(x, 80, { type: 'spring', stiffness: 500, damping: 40 })
     } else {
       // Snap back - closes both delete and duplicate reveals
