@@ -349,7 +349,7 @@ export default function Workout({ session }) {
             type="button"
             aria-label="Öppna PT-chat"
           >
-            <span style={{ fontSize: '13px', fontWeight: '700', color: '#F5D020', padding: '6px 10px', border: '1px solid #333', borderRadius: '8px' }}>PT</span>
+            <span className={styles.ptBtnLabel}>PT</span>
           </button>
           {/* ··· meny */}
           <button
@@ -461,6 +461,7 @@ export default function Workout({ session }) {
                 onAddSet={workout.addSet}
                 onAddBackoffSet={workout.addBackoffSet}
                 onRemoveSet={workout.removeSet}
+                onDuplicateSet={workout.duplicateSet}
                 onCompleteSet={workout.completeSet}
                 onUpdateExercise={workout.updateExercise}
                 onUpdateExerciseReps={workout.updateExerciseReps}
@@ -490,7 +491,7 @@ export default function Workout({ session }) {
                 onClick={() => { if (!finishCooldownRef.current) setShowFinish(true) }}
                 type="button"
               >
-                Avsluta pass
+                AVSLUTA
               </button>
             </div>
           </>

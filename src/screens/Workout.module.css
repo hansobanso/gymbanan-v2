@@ -106,12 +106,12 @@
   align-items: center;
   justify-content: center;
   background: none;
-  border: none;
-  border-radius: var(--radius-sm);
+  border: 1.5px solid rgba(245, 208, 32, 0.45);
+  border-radius: 50%;
   color: #F5D020;
   cursor: pointer;
   padding: 0;
-  transition: background 0.1s, color 0.1s;
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
 }
 
 .ptBtn:active,
@@ -120,6 +120,14 @@
 .dotsBtnActive {
   background: var(--surface-2);
   color: var(--text);
+  border-color: var(--accent);
+}
+
+.ptBtnLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: inherit;
+  letter-spacing: 0.3px;
 }
 
 /* ── Header dropdown menu ── */
@@ -213,8 +221,9 @@
   border: 1px solid rgba(255, 59, 48, 0.3);
   border-radius: var(--radius-md);
   color: var(--danger);
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
   padding: 16px;
   cursor: pointer;
   transition: background 0.15s;

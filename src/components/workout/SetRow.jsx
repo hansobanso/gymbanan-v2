@@ -36,13 +36,15 @@ export default function SetRow({
   prefilled,
   onUpdate,
   onRemove,
+  onDuplicate,
   onComplete,
   onOpenRIR,
 }) {
   const containerRef = useRef(null)
   const x = useMotionValue(0)
   const deleteBgOpacity = useTransform(x, [-80, -30], [1, 0])
-  const rowOpacity = useTransform(x, [-80, 0], [0.75, 1])
+  const duplicateBgOpacity = useTransform(x, [30, 80], [0, 1])
+  const rowOpacity = useTransform(x, [-80, 0, 80], [0.75, 1, 0.85])
 
   useEffect(() => {
     const el = containerRef.current
@@ -71,7 +73,12 @@ export default function SetRow({
 
   function handleDragEnd(_, info) {
     if (info.offset.x < -60) {
+      // Swipe left -> reveal delete
       animate(x, -80, { type: 'spring', stiffness: 500, damping: 40 })
+    } else if (info.offset.x > 60 && onDuplicate) {
+      // Swipe right -> duplicate immediately, snap back
+      animate(x, 0, { type: 'spring', stiffness: 500, damping: 40 })
+      onDuplicate()
     } else {
       animate(x, 0, { type: 'spring', stiffness: 500, damping: 40 })
     }
@@ -113,12 +120,25 @@ export default function SetRow({
         <span className={styles.deleteBgLabel}>Ta bort</span>
       </motion.button>
 
+      {/* Duplicate reveal (höger) */}
+      <motion.div
+        className={styles.duplicateBg}
+        style={{ opacity: duplicateBgOpacity }}
+        aria-hidden="true"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <rect x="9" y="9" width="11" height="11" rx="2" stroke="#000" strokeWidth="2" />
+          <path d="M5 15V5a1 1 0 0 1 1-1h10" stroke="#000" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+        <span className={styles.duplicateBgLabel}>Dubblera</span>
+      </motion.div>
+
       {/* Row: # | Kg | Reps(+RIR overlay) | ✓ */}
       <motion.div
         className={`${styles.row} ${set.done ? styles.done : ''} ${isWarmup ? styles.warmup : ''}`}
         style={{ x, opacity: rowOpacity }}
         drag={set.done ? false : 'x'}
-        dragConstraints={{ left: -80, right: 0 }}
+        dragConstraints={{ left: -80, right: 80 }}
         dragElastic={{ left: 0.08, right: 0.08 }}
         onDragEnd={handleDragEnd}
         dragDirectionLock
@@ -193,7 +213,17 @@ export default function SetRow({
               <div className={styles.splitDivider} />
               <button
                 className={`${styles.splitRir} ${rirValue !== null ? styles.splitRirSet : ''}`}
-                onClick={e => { e.stopPropagation(); !set.done && onOpenRIR() }}
+                onClick={e => {
+                  e.stopPropagation()
+                  if (set.done) return
+                  // Cycle: null → 0 → 1 → 2 → 3 → 4 → 5 → null
+                  const current = set.rir
+                  let next
+                  if (current === null || current === undefined) next = 0
+                  else if (current >= 5) next = null
+                  else next = current + 1
+                  onUpdate('rir', next)
+                }}
                 type="button"
                 aria-label={rirValue !== null ? `RIR: ${rirValue}` : 'Sätt RIR'}
               >
@@ -205,17 +235,13 @@ export default function SetRow({
           )}
         </div>
 
-        {/* ✓ */}
+        {/* Fyll-cirkel */}
         <button
           className={`${styles.checkBtn} ${set.done ? styles.checked : ''}`}
           onClick={() => onComplete()}
           type="button"
           aria-label={set.done ? 'Ångra set' : 'Markera set som klart'}
-        >
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path d="M2.5 8L6.5 12L13.5 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
+        />
       </motion.div>
     </div>
   )

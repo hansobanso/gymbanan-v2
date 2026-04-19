@@ -1,6 +1,7 @@
 .blockWrapper {
   position: relative;
-  margin-bottom: 8px;
+  margin-bottom: 0;
+  border-bottom: 1px solid #1a1a1a;
 }
 
 .block {

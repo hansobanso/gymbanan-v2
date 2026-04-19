@@ -1,16 +1,16 @@
 .wrapper {
-  height: 4px;
+  height: 10px;
   flex-shrink: 0;
 }
 
 .track {
-  height: 4px;
+  height: 10px;
   background: #1a1a1a;
   width: 100%;
 }
 
 .fill {
-  height: 4px;
+  height: 10px;
   background: #F5D020;
   transition: width 1s linear;
 }

@@ -50,6 +50,7 @@ export default function ExerciseBlock({
   onAddSet,
   onAddBackoffSet,
   onRemoveSet,
+  onDuplicateSet,
   onCompleteSet,
   onUpdateExercise,
   onUpdateExerciseReps,
@@ -204,7 +205,10 @@ export default function ExerciseBlock({
     : encodeURIComponent('__builtin__' + exercise.name)
 
   const hasWarmups = exercise.sets.some(s => s.type === 'warmup')
-  const colLabels = ['#', 'Kg', 'Reps', '']
+  const repsRangeLabel = (exercise.defaultRepsMin != null && exercise.defaultRepsMax != null)
+    ? `REPS: ${exercise.defaultRepsMin} - ${exercise.defaultRepsMax}`
+    : 'REPS'
+  const colLabels = ['#', 'KG', repsRangeLabel, '']
 
   // Collapsed summary
   const bestWeight = doneSets.length > 0
@@ -326,19 +330,7 @@ export default function ExerciseBlock({
                 />
               </div>
             ) : (
-              (exercise.defaultRepsMin != null || exercise.defaultRepsMax != null) ? (
-                <span
-                  className={styles.repsRange}
-                  onClick={e => {
-                    e.stopPropagation()
-                    setRepsEditMin(exercise.defaultRepsMin != null ? String(exercise.defaultRepsMin) : '')
-                    setRepsEditMax(exercise.defaultRepsMax != null ? String(exercise.defaultRepsMax) : '')
-                    setEditingReps(true)
-                  }}
-                >
-                  {`${exercise.defaultRepsMin ?? ''}–${exercise.defaultRepsMax ?? ''}`}
-                </span>
-              ) : (
+              (exercise.defaultRepsMin != null || exercise.defaultRepsMax != null) ? null : (
                 <span
                   className={styles.repsRangeEmpty}
                   onClick={e => {
@@ -422,6 +414,19 @@ export default function ExerciseBlock({
             transition={{ duration: 0.15 }}
             onPointerDown={e => e.stopPropagation()}
           >
+            <button className={styles.menuItem} onClick={() => { onAddSet(exercise.localId, 'warmup'); setMenuOpen(false) }}>
+              + Uppvärmningsset
+            </button>
+            <button className={styles.menuItem} onClick={() => { onAddSet(exercise.localId, 'work'); setMenuOpen(false) }}>
+              + Arbetsset
+            </button>
+            <button className={styles.menuItem} onClick={() => { onAddBackoffSet?.(exercise.localId); setMenuOpen(false) }}>
+              + Back-off set
+            </button>
+            <div className={styles.menuDivider} />
+            <button className={styles.menuItem} onClick={() => { onReplaceExercise?.(exercise); setMenuOpen(false) }}>
+              Byt övning
+            </button>
             <button className={styles.menuItem} onClick={() => { onShowHistory?.(exercise); setMenuOpen(false) }}>Historik</button>
             <button className={styles.menuItem} onClick={() => { onShowInstructions?.(exercise); setMenuOpen(false) }}>Övningsinstruktioner</button>
             <div className={styles.menuDivider} />
@@ -461,6 +466,7 @@ export default function ExerciseBlock({
                 prefilled={!!set.prefilled}
                 onUpdate={(field, value) => onUpdateSet(exercise.localId, set.id, field, value)}
                 onRemove={() => onRemoveSet(exercise.localId, set.id)}
+                onDuplicate={() => onDuplicateSet?.(exercise.localId, set.id)}
                 onComplete={() => handleComplete(set.id)}
                 onOpenRIR={() => setRirSetId(set.id)}
               />
@@ -483,22 +489,6 @@ export default function ExerciseBlock({
           </svg>
         </button>
       )}
-
-      {/* ── Footer ── */}
-      <div className={styles.footer}>
-        <button className={styles.footerAdd} onClick={() => onAddSet(exercise.localId, 'warmup')} type="button">
-          + Värm
-        </button>
-        <button className={styles.footerAdd} onClick={() => onAddSet(exercise.localId, 'work')} type="button">
-          + Set
-        </button>
-        <button className={styles.footerAdd} onClick={() => onAddBackoffSet?.(exercise.localId)} type="button">
-          + Back-off
-        </button>
-        <button className={styles.footerReplace} onClick={() => onReplaceExercise?.(exercise)} type="button">
-          ⇄ Byt
-        </button>
-      </div>
 
           </motion.div>
         )}

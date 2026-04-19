@@ -241,6 +241,27 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
     ))
   }, [])
 
+  const duplicateSet = useCallback((exId, setId) => {
+    setProgramChanged(true)
+    setExercises(prev => prev.map(ex => {
+      if (ex.localId !== exId) return ex
+      const idx = ex.sets.findIndex(s => s.id === setId)
+      if (idx === -1) return ex
+      const orig = ex.sets[idx]
+      // Clone the set with a new id and reset done/completedAt
+      const cloned = {
+        ...orig,
+        id: uid(),
+        done: false,
+        completedAt: null,
+        prefilled: false,
+      }
+      const sets = [...ex.sets]
+      sets.splice(idx + 1, 0, cloned)
+      return { ...ex, sets }
+    }))
+  }, [])
+
   const addExercise = useCallback((ex) => {
     setProgramChanged(true)
     setExercises(prev => [...prev, {
@@ -416,6 +437,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
     addSet,
     addBackoffSet,
     removeSet,
+    duplicateSet,
     addExercise,
     removeExercise,
     replaceExercise,
