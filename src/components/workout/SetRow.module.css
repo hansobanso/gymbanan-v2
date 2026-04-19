@@ -55,11 +55,11 @@
 /* minmax(0, 1fr) is critical — otherwise 1fr columns will not shrink below content min-width */
 .row {
   display: grid;
-  grid-template-columns: 22px minmax(0, 1fr) minmax(0, 1fr) 38px;
+  grid-template-columns: 28px minmax(0, 1fr) minmax(0, 1fr) 34px;
   align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  background: #141414;
+  gap: 10px;
+  padding: 5px 16px;
+  background: transparent;
   position: relative;
   z-index: 1;
   touch-action: pan-y;
@@ -68,24 +68,21 @@
 
 .row:active { cursor: grabbing; }
 
-.warmup { opacity: 0.5; }
+.warmup { opacity: 0.55; }
 
 .done {
   opacity: 0.55;
   cursor: default;
 }
 
-/* ── Label (S1, V1, etc) ── */
+/* ── Label (S1, V1, etc) — plain text, no bg ── */
 .label {
-  width: 22px;
-  height: 22px;
-  border-radius: 5px;
-  background: #1c1c1c;
+  width: 28px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  font-weight: 700;
+  justify-content: flex-start;
+  font-size: 13px;
+  font-weight: 500;
   color: var(--text-3);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.2px;
@@ -97,27 +94,28 @@
   display: flex;
   align-items: center;
   background: #1c1c1c;
-  border-radius: 8px;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
   min-width: 0;
-  height: 36px;
+  height: 44px;
+  padding: 0 4px;
 }
 
 .stepperDone,
 .splitPillDone {
   background: transparent;
+  border-color: transparent;
 }
 
-/* Step +/- button — small rounded square */
+/* Step +/- button — discrete character, no border */
 .stepBtn {
-  width: 20px;
-  height: 20px;
-  margin: 0 4px;
+  width: 28px;
+  height: 44px;
   background: transparent;
-  border: 1px solid #333;
-  border-radius: 5px;
-  color: var(--text-2);
-  font-size: 13px;
-  font-weight: 600;
+  border: none;
+  color: var(--text-3);
+  font-size: 18px;
+  font-weight: 400;
   line-height: 1;
   cursor: pointer;
   padding: 0;
@@ -127,12 +125,11 @@
   flex-shrink: 0;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
-  transition: background 0.12s, border-color 0.12s;
+  transition: color 0.12s;
 }
 
 .stepBtn:active:not(:disabled) {
-  background: #2a2a2a;
-  border-color: #555;
+  color: var(--text);
 }
 
 .stepBtn:disabled {
@@ -146,7 +143,7 @@
   pointer-events: none;
 }
 
-/* Input field inside stepper */
+/* Input field inside stepper — larger, white (not yellow) */
 .stepInput,
 .splitInput {
   flex: 1;
@@ -154,8 +151,8 @@
   width: 100%;
   background: transparent;
   border: none;
-  color: var(--accent);
-  font-size: 17px;
+  color: #ffffff;
+  font-size: 22px;
   font-weight: 700;
   padding: 0;
   text-align: center;
@@ -164,6 +161,7 @@
   appearance: none;
   font-variant-numeric: tabular-nums;
   font-family: var(--font);
+  letter-spacing: -0.3px;
 }
 
 .stepInput:disabled,
@@ -182,25 +180,21 @@
 
 /* RIR badge — small, inside reps pill */
 .splitDivider {
-  width: 1px;
-  height: 20px;
-  background: #333;
-  flex-shrink: 0;
-  margin: 0 2px;
+  display: none;
 }
 
 .splitPillDone .splitDivider {
-  background: transparent;
+  display: none;
 }
 
 .splitRir {
-  width: 28px;
-  height: 36px;
+  width: 34px;
+  height: 44px;
   background: transparent;
   border: none;
   color: var(--text-3);
-  font-size: 9px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
   font-family: var(--font);
   font-variant-numeric: tabular-nums;
   cursor: pointer;
@@ -214,18 +208,21 @@
 
 .splitRirSet {
   color: var(--accent);
+  font-size: 14px;
+  font-weight: 700;
 }
 
-/* ── Check button ── */
+/* ── Check button — discrete outline circle ── */
 .checkBtn {
   background: transparent;
-  border: 1.5px solid var(--border-2);
+  border: 1.5px solid #333;
   border-radius: 50%;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   cursor: pointer;
   padding: 0;
   flex-shrink: 0;
+  justify-self: center;
   transition: background 0.15s, border-color 0.15s;
 }
 

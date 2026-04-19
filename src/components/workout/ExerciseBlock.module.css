@@ -2,11 +2,13 @@
   position: relative;
   margin-bottom: 0;
   border-bottom: 1px solid #1a1a1a;
+  padding-bottom: 18px;
 }
 
 .block {
-  background: #141414;
-  overflow: hidden;
+  background: transparent;
+  overflow: visible;
+  padding-top: 18px;
 }
 
 .progressBar {
@@ -374,12 +376,12 @@
   margin: 2px 0;
 }
 
-/* ── Kolumnrubriker: # | Kg | Reps | RIR | ✓ ── */
+/* ── Kolumnrubriker: # | Kg | Reps | ✓ ── */
 .colHeaders {
   display: grid;
-  grid-template-columns: 22px minmax(0, 1fr) minmax(0, 1fr) 38px;
-  gap: 6px;
-  padding: 3px 10px 2px;
+  grid-template-columns: 28px minmax(0, 1fr) minmax(0, 1fr) 34px;
+  gap: 10px;
+  padding: 10px 16px 6px;
   align-items: center;
 }
 
@@ -387,9 +389,13 @@
   font-size: 11px;
   font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #888;
+  letter-spacing: 0.6px;
+  color: var(--text-3);
   text-align: center;
+}
+
+.colLabel:first-child {
+  text-align: left;
 }
 
 /* ── Sets + warmup ── */
