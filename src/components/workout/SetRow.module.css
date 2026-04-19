@@ -58,7 +58,7 @@
 /* minmax(0, 1fr) is critical — otherwise 1fr columns will not shrink below content min-width */
 .row {
   display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) minmax(0, 1fr) 34px;
+  grid-template-columns: 28px minmax(0, 0.85fr) minmax(0, 1.15fr) 34px;
   align-items: center;
   gap: 10px;
   padding: 5px 16px;
@@ -78,9 +78,10 @@
   cursor: default;
 }
 
-/* Warmup reps box narrower (no RIR content) */
+/* Warmup rows: reps box has no RIR, so it's narrower and left-aligned.
+   KG box stays full width (aligned with work set rows above/below). */
 .warmup .splitPill {
-  max-width: 105px;
+  max-width: calc(100% - 44px);
   justify-self: start;
 }
 
