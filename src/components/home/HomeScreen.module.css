@@ -177,6 +177,38 @@
   font-size: 12px;
 }
 
+/* "3 pass denna vecka  |  + Starta fritt pass" */
+.freeRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 20px 8px;
+  gap: 12px;
+}
+
+.weeklyCount {
+  font-size: 14px;
+  color: var(--text-3);
+  font-weight: 500;
+}
+
+.freeLink {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 4px 0;
+  font-family: var(--font);
+  transition: opacity 0.12s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.freeLink:active {
+  opacity: 0.6;
+}
+
 .weeklyCountRow {
   font-size: 12px;
   color: #555;
@@ -219,34 +251,19 @@
   color: var(--text-3);
 }
 
-.startPill {
-  background: var(--accent);
-  border: none;
-  border-radius: var(--radius-sm);
-  color: #000;
-  font-size: 13px;
-  font-weight: 700;
-  font-family: var(--font);
-  padding: 7px 14px;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: opacity 0.1s;
-}
-
-.startPill:active { opacity: 0.75; }
-
 /* ── Session list ── */
 .sessionList {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+  padding: 0 20px;
 }
 
 .sessionRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
+  padding: 16px 16px 16px 20px;
   gap: 12px;
   background: #141414;
   border-radius: 14px;
@@ -255,7 +272,7 @@
 
 .sessionRowNext {
   border-color: var(--accent);
-  background: rgba(245, 208, 32, 0.04);
+  background: rgba(245, 208, 32, 0.03);
 }
 
 .sessionInfo {
@@ -263,7 +280,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   background: none;
   border: none;
   padding: 0;
@@ -278,65 +295,84 @@
   opacity: 0.6;
 }
 
-.sessionNameRow {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  min-width: 0;
-}
-
 .sessionName {
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 22px;
+  font-weight: 700;
   color: var(--text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  letter-spacing: -0.3px;
+  line-height: 1.1;
+}
+
+.sessionMetaRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
 }
 
 .sessionBadgeNext {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.4px;
-  color: #000;
-  background: var(--accent);
-  border-radius: 20px;
-  padding: 2px 8px;
+  letter-spacing: 0.6px;
+  color: var(--text-3);
+  background: none;
+  padding: 0;
   flex-shrink: 0;
 }
 
 .sessionBadgeLast {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.6px;
   color: var(--text-3);
-  background: var(--surface-2);
-  border-radius: 20px;
-  padding: 2px 8px;
+  background: none;
+  padding: 0;
   flex-shrink: 0;
 }
 
 .sessionMeta {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-3);
+  font-weight: 500;
 }
 
-.startBtnSmall {
-  background: var(--surface-2);
+/* Starta-knapp med chevron */
+.sessionStartBtn {
+  background: transparent;
   border: none;
-  border-radius: var(--radius-sm);
-  color: var(--text-2);
-  font-size: 13px;
-  font-weight: 600;
-  padding: 7px 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0 4px 8px;
   cursor: pointer;
-  flex-shrink: 0;
   font-family: var(--font);
-  transition: background 0.1s;
+  flex-shrink: 0;
+  color: #ffffff;
+  transition: opacity 0.12s;
+  -webkit-tap-highlight-color: transparent;
 }
-.startBtnSmall:active { background: var(--surface-3); }
+
+.sessionStartBtn:active {
+  opacity: 0.5;
+}
+
+.sessionStartLabel {
+  font-size: 17px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+/* Legacy styles - kept for backwards compat */
+.startPill,
+.startBtnSmall,
+.sessionNameRow {
+  display: none;
+}
 
 /* ── Senaste passet (kollapsbart) ── */
 .lastCard {
@@ -392,7 +428,7 @@
   transition: transform 0.25s ease;
 }
 .lastChevronOpen {
-  transform: rotate(180deg);
+  transform: rotate(90deg);
 }
 
 .lastMeta {

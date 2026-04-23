@@ -165,21 +165,25 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
                       onClick={() => setPreviewSession({ session: s, program: activeProgram })}
                       type="button"
                     >
-                      <div className={styles.sessionNameRow}>
-                        <span className={styles.sessionName}>{s.name}</span>
-                        {isNext && <span className={styles.sessionBadgeNext}>Nästa</span>}
-                        {isLast && !isNext && <span className={styles.sessionBadgeLast}>Senast</span>}
+                      <span className={styles.sessionName}>{s.name}</span>
+                      <div className={styles.sessionMetaRow}>
+                        {isNext && <span className={styles.sessionBadgeNext}>NÄSTA</span>}
+                        {isLast && !isNext && <span className={styles.sessionBadgeLast}>SENAST</span>}
+                        {(s.exercises ?? []).length > 0 && (
+                          <span className={styles.sessionMeta}>{s.exercises.length} övningar</span>
+                        )}
                       </div>
-                      {(s.exercises ?? []).length > 0 && (
-                        <span className={styles.sessionMeta}>{s.exercises.length} övningar</span>
-                      )}
                     </button>
                     <button
-                      className={isNext ? styles.startPill : styles.startBtnSmall}
+                      className={styles.sessionStartBtn}
                       onClick={() => handleStartSession(s, activeProgram)}
                       type="button"
+                      aria-label={`Starta ${s.name}`}
                     >
-                      Starta
+                      <span className={styles.sessionStartLabel}>Starta</span>
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="m9 18 6-6-6-6"/>
+                      </svg>
                     </button>
                   </div>
                 )
@@ -200,15 +204,14 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
           </div>
         )}
 
-        {/* Fritt pass-knapp */}
+        {/* Fritt pass + veckocount på samma rad */}
         {activeProgram && (
-          <>
-            <button className={styles.freeWorkoutBtn} style={{ marginTop: 8, marginLeft: 16, marginRight: 16, width: 'calc(100% - 32px)' }} onClick={handleStartFreeWorkout} type="button">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/></svg>
-              Starta fritt pass
+          <div className={styles.freeRow}>
+            <span className={styles.weeklyCount}>{weeklyCount} pass denna vecka</span>
+            <button className={styles.freeLink} onClick={handleStartFreeWorkout} type="button">
+              + Starta fritt pass
             </button>
-            <p className={styles.weeklyCountRow}>{weeklyCount} pass denna vecka</p>
-          </>
+          </div>
         )}
 
         {/* ── Senaste passet (kollapsbart) ── */}
@@ -232,9 +235,9 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
                 </div>
                 <svg
                   className={`${styles.lastChevron} ${lastExpanded ? styles.lastChevronOpen : ''}`}
-                  width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"
+                  width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
                 >
-                  <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="m9 18 6-6-6-6"/>
                 </svg>
               </button>
 
