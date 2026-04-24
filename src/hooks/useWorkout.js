@@ -4,25 +4,22 @@ import { createWorkout, updateWorkout, getPreviousSetsForExercise, getExerciseBy
 // Smart per-set progression based on previous session.
 // Each set matches its corresponding set from last session (S1→S1, S2→S2).
 // Always push forward: +1 rep regardless of RIR.
-// When reps reach repsMax → promote: increase weight, reset to repsMin.
-// Bodyweight exercises (prevW = 0) progress via reps. When rep max is hit,
-// suggest adding 2.5kg (e.g. weight belt for pullups/dips/sissy squat) with
-// reps reset to repsMin — user can still log 0 weight if they don't have a belt.
-function calcProgression(prevW, prevR, repsMin, repsMax) {
+// Promotion (add weight, reset reps) ONLY happens when ALL work sets from last
+// session hit the rep max. Otherwise just add reps to the lagging sets — the
+// goal is for the user to max reps on every set before moving up in weight.
+function calcProgression(prevW, prevR, repsMin, repsMax, shouldPromote) {
   if (!prevR) return { targetW: prevW || 0, targetR: prevR || 0 }
 
   const isBodyweight = !prevW || prevW === 0
 
-  // Rep max reached → promote (add weight, reset reps)
-  if (repsMin != null && repsMax != null && prevR >= repsMax) {
-    // Bodyweight: suggest starting to add weight (belt/plate) at 2.5kg
-    // Non-bodyweight: add 2.5kg as usual
+  // Exercise-level promotion: add weight (or start adding weight for bodyweight)
+  if (shouldPromote && repsMin != null) {
     const targetW = isBodyweight ? 2.5 : Math.round((prevW + 2.5) * 2) / 2
     const targetR = repsMin
     return { targetW, targetR, promoted: true }
   }
 
-  // Always +1 rep from previous session's corresponding set
+  // No promotion: push reps forward (cap at repsMax so we stay in the range)
   const targetR = repsMax != null ? Math.min(prevR + 1, repsMax) : prevR + 1
   return { targetW: prevW || 0, targetR }
 }
@@ -115,6 +112,12 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
         const bestPrevW = prevWork.length > 0 ? Math.max(...prevWork.map(s => parseFloat(s.weight) || 0)) : 0
         const backoffWeight = bestPrevW > 0 ? Math.round(bestPrevW * 0.85 / 2.5) * 2.5 : 0
 
+        // Exercise-level promotion decision: ALL work sets must have hit rep max.
+        // This enforces "max reps on every set before adding weight" progression.
+        const repsMax = ex.defaultRepsMax ?? null
+        const shouldPromote = repsMax != null && prevWork.length > 0 &&
+          prevWork.every(s => (parseInt(s.reps) || 0) >= repsMax)
+
         // Check if any set got promoted (for hint display)
         let anyPromoted = false
         let promotedWeight = 0
@@ -146,7 +149,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
           // For bodyweight (prevW = 0 but prevR > 0), we still want progression.
           if (prevW <= 0 && prevR <= 0) return set
 
-          const { targetW, targetR, promoted } = calcProgression(prevW, prevR, ex.defaultRepsMin ?? null, ex.defaultRepsMax ?? null)
+          const { targetW, targetR, promoted } = calcProgression(prevW, prevR, ex.defaultRepsMin ?? null, repsMax, shouldPromote)
           if (promoted) { anyPromoted = true; promotedWeight = targetW }
 
           return {
@@ -336,6 +339,10 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
       const prevWork = (ex.prevSets ?? []).filter(s => s.type === 'work' && s.subtype !== 'backoff')
       let workIdx = 0
 
+      // Exercise-level promotion decision based on new rep max
+      const shouldPromote = max != null && prevWork.length > 0 &&
+        prevWork.every(s => (parseInt(s.reps) || 0) >= max)
+
       const sets = ex.sets.map(s => {
         if (s.type !== 'work' || s.subtype === 'backoff' || s.done) return s
         const prevSet = prevWork[workIdx++]
@@ -344,7 +351,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
         const prevR = parseInt(prevSet.reps) || 0
         if (prevW <= 0 && prevR <= 0) return s
 
-        const { targetW, targetR } = calcProgression(prevW, prevR, min, max)
+        const { targetW, targetR } = calcProgression(prevW, prevR, min, max, shouldPromote)
         return {
           ...s,
           weight: targetW > 0 ? String(targetW) : '',
