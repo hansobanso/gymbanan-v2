@@ -5,11 +5,18 @@ import { createWorkout, updateWorkout, getPreviousSetsForExercise, getExerciseBy
 // Each set matches its corresponding set from last session (S1→S1, S2→S2).
 // Always push forward: +1 rep regardless of RIR.
 // When reps reach repsMax → increase weight, reset to repsMin ("promote").
+// For bodyweight exercises (prevW = 0), progression happens via reps only.
 function calcProgression(prevW, prevR, repsMin, repsMax) {
-  if (!prevW || !prevR) return { targetW: prevW || 0, targetR: prevR || 0 }
+  if (!prevR) return { targetW: prevW || 0, targetR: prevR || 0 }
 
-  // If already at or above rep max → promote: increase weight, reset reps
+  const isBodyweight = !prevW || prevW === 0
+
+  // If already at or above rep max → promote
   if (repsMin != null && repsMax != null && prevR >= repsMax) {
+    if (isBodyweight) {
+      // Bodyweight: can't add weight, just keep pushing reps up beyond max
+      return { targetW: 0, targetR: prevR + 1 }
+    }
     const targetW = Math.round((prevW + 2.5) * 2) / 2  // round to 0.5
     const targetR = repsMin
     return { targetW, targetR, promoted: true }
@@ -17,7 +24,7 @@ function calcProgression(prevW, prevR, repsMin, repsMax) {
 
   // Always +1 rep from previous session's corresponding set
   const targetR = repsMax != null ? Math.min(prevR + 1, repsMax) : prevR + 1
-  return { targetW: prevW, targetR }
+  return { targetW: prevW || 0, targetR }
 }
 
 function uid() {
@@ -135,14 +142,16 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
           if (!prevSet) return set
           const prevW = parseFloat(prevSet.weight) || 0
           const prevR = parseInt(prevSet.reps) || 0
-          if (prevW <= 0) return set
+          // Skip if there's NO data at all (no weight AND no reps).
+          // For bodyweight (prevW = 0 but prevR > 0), we still want progression.
+          if (prevW <= 0 && prevR <= 0) return set
 
           const { targetW, targetR, promoted } = calcProgression(prevW, prevR, ex.defaultRepsMin ?? null, ex.defaultRepsMax ?? null)
           if (promoted) { anyPromoted = true; promotedWeight = targetW }
 
           return {
             ...set,
-            weight: String(targetW),
+            weight: targetW > 0 ? String(targetW) : '',
             reps: String(targetR),
             rir: null,
             prefilled: true,
@@ -333,10 +342,15 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
         if (!prevSet) return s
         const prevW = parseFloat(prevSet.weight) || 0
         const prevR = parseInt(prevSet.reps) || 0
-        if (prevW <= 0) return s
+        if (prevW <= 0 && prevR <= 0) return s
 
         const { targetW, targetR } = calcProgression(prevW, prevR, min, max)
-        return { ...s, weight: String(targetW), reps: String(targetR), prefilled: true }
+        return {
+          ...s,
+          weight: targetW > 0 ? String(targetW) : '',
+          reps: String(targetR),
+          prefilled: true,
+        }
       })
 
       const anyUpdated = sets.some((s, i) => s !== ex.sets[i])
