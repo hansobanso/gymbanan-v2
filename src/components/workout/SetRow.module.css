@@ -78,11 +78,13 @@
   cursor: default;
 }
 
-/* Warmup rows: reps box has no RIR, so it's narrower and left-aligned.
-   KG box stays full width (aligned with work set rows above/below). */
-.warmup .splitPill {
-  max-width: calc(100% - 10px);
-  justify-self: start;
+/* Invisible spacer on warmup rows that takes the same width as the RIR button
+   on work set rows. Ensures the + buttons on every row line up vertically,
+   regardless of whether the row has a RIR button or not. */
+.rirSpacer {
+  width: 34px;
+  height: 44px;
+  flex-shrink: 0;
 }
 
 /* ── Label (S1, V1, etc) — plain text, no bg ── */

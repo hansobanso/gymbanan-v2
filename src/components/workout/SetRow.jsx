@@ -242,6 +242,7 @@ export default function SetRow({
               </button>
             </>
           )}
+          {isWarmup && <div className={styles.rirSpacer} aria-hidden="true" />}
         </div>
 
         {/* Fyll-cirkel */}
