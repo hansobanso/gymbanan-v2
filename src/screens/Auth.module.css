@@ -126,21 +126,20 @@
   border: none;
   border-radius: var(--radius-md);
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
   padding: 16px;
   cursor: pointer;
-  transition: opacity 0.15s, transform 0.1s;
+  transition: opacity 0.15s;
   margin-top: 6px;
   width: 100%;
+  font-family: var(--font);
 }
 
 .submitBtn:active {
-  transform: scale(0.98);
-  opacity: 0.85;
+  opacity: 0.8;
 }
 
 .submitBtn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  transform: none;
 }
