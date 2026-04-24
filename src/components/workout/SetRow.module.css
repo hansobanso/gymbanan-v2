@@ -269,13 +269,13 @@
   border-color: transparent;
 }
 
-/* ── Check button — discrete outline circle ── */
+/* ── Check button — same shape as RIR box for visual consistency ── */
 .checkBtn {
-  background: transparent;
-  border: 1.5px solid #333;
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
+  background: #1c1c1c;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  width: 34px;
+  height: 44px;
   cursor: pointer;
   padding: 0;
   flex-shrink: 0;
