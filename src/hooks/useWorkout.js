@@ -4,20 +4,20 @@ import { createWorkout, updateWorkout, getPreviousSetsForExercise, getExerciseBy
 // Smart per-set progression based on previous session.
 // Each set matches its corresponding set from last session (S1→S1, S2→S2).
 // Always push forward: +1 rep regardless of RIR.
-// When reps reach repsMax → increase weight, reset to repsMin ("promote").
-// For bodyweight exercises (prevW = 0), progression happens via reps only.
+// When reps reach repsMax → promote: increase weight, reset to repsMin.
+// Bodyweight exercises (prevW = 0) progress via reps. When rep max is hit,
+// suggest adding 2.5kg (e.g. weight belt for pullups/dips/sissy squat) with
+// reps reset to repsMin — user can still log 0 weight if they don't have a belt.
 function calcProgression(prevW, prevR, repsMin, repsMax) {
   if (!prevR) return { targetW: prevW || 0, targetR: prevR || 0 }
 
   const isBodyweight = !prevW || prevW === 0
 
-  // If already at or above rep max → promote
+  // Rep max reached → promote (add weight, reset reps)
   if (repsMin != null && repsMax != null && prevR >= repsMax) {
-    if (isBodyweight) {
-      // Bodyweight: can't add weight, just keep pushing reps up beyond max
-      return { targetW: 0, targetR: prevR + 1 }
-    }
-    const targetW = Math.round((prevW + 2.5) * 2) / 2  // round to 0.5
+    // Bodyweight: suggest starting to add weight (belt/plate) at 2.5kg
+    // Non-bodyweight: add 2.5kg as usual
+    const targetW = isBodyweight ? 2.5 : Math.round((prevW + 2.5) * 2) / 2
     const targetR = repsMin
     return { targetW, targetR, promoted: true }
   }
