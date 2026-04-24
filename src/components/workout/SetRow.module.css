@@ -99,7 +99,7 @@
   border: 1px solid #2a2a2a;
   border-radius: 10px;
   min-width: 0;
-  height: 44px;
+  height: 38px;
   padding: 0 4px;
 }
 
@@ -111,7 +111,7 @@
   display: flex;
   align-items: center;
   min-width: 0;
-  height: 44px;
+  height: 38px;
   gap: 0;
 }
 
@@ -123,7 +123,7 @@
   background: #1c1c1c;
   border: 1px solid #2a2a2a;
   border-radius: 10px;
-  height: 44px;
+  height: 38px;
   padding: 0 4px;
 }
 
@@ -140,7 +140,7 @@
 /* - / + buttons — discrete character, no border */
 .stepBtn {
   width: 22px;
-  height: 44px;
+  height: 38px;
   background: transparent;
   border: none;
   color: #ffffff;
