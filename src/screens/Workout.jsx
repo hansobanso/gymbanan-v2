@@ -212,7 +212,7 @@ export default function Workout({ session }) {
     }
 
     window.dispatchEvent(new CustomEvent('workoutsChanged'))
-    getWorkouts(session.user.id, 5).then(recent => {
+    getWorkouts(session.user.id, 50).then(recent => {
       const newMemory = buildMemoryContent(recent, aiMemory)
       setAiMemory(newMemory)
       return upsertAiMemory(session.user.id, newMemory)

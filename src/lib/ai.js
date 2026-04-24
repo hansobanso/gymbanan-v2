@@ -94,7 +94,7 @@ export function buildMemoryContent(recentWorkouts, existingMemory) {
     : ''
 
   const lines = ['--- TRÄNINGSHISTORIK ---']
-  for (const w of recentWorkouts.slice(0, 5)) {
+  for (const w of recentWorkouts.slice(0, 50)) {
     const date = new Date(w.finished_at).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' })
     lines.push(`\n${date}: ${w.session_name ?? 'Pass'}`)
     for (const ex of w.exercises ?? []) {
