@@ -78,15 +78,6 @@
   cursor: default;
 }
 
-/* Invisible spacer on warmup rows that takes the same width as the RIR button
-   on work set rows. Ensures the + buttons on every row line up vertically,
-   regardless of whether the row has a RIR button or not. */
-.rirSpacer {
-  width: 34px;
-  height: 44px;
-  flex-shrink: 0;
-}
-
 /* ── Label (S1, V1, etc) — plain text, no bg ── */
 .label {
   width: 28px;
@@ -101,8 +92,7 @@
 }
 
 /* ── Stepper (shared for KG and Reps) ── */
-.stepper,
-.splitPill {
+.stepper {
   display: flex;
   align-items: center;
   background: #1c1c1c;
@@ -113,8 +103,36 @@
   padding: 0 4px;
 }
 
-.stepperDone,
-.splitPillDone {
+/* splitPill wraps the reps stepper AND the RIR button/spacer side-by-side.
+   The background lives on the inner .splitBox only (the stepper part),
+   so the RIR area is visually detached. This keeps + buttons aligned across
+   warmup and work set rows since both reserve the same space on the right. */
+.splitPill {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  height: 44px;
+  gap: 0;
+}
+
+.splitBox {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  background: #1c1c1c;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  height: 44px;
+  padding: 0 4px;
+}
+
+.stepperDone {
+  background: transparent;
+  border-color: transparent;
+}
+
+.splitPillDone .splitBox {
   background: transparent;
   border-color: transparent;
 }
@@ -199,15 +217,9 @@
   margin: 0;
 }
 
-/* RIR badge — small, inside reps pill */
-.splitDivider {
-  display: none;
-}
-
-.splitPillDone .splitDivider {
-  display: none;
-}
-
+/* RIR badge — sits OUTSIDE the stepper box, to the right.
+   Same width as rirSpacer so warmup/work rows have identical total width
+   and the + button aligns vertically across all rows. */
 .splitRir {
   width: 34px;
   height: 44px;
@@ -231,6 +243,14 @@
   color: var(--accent);
   font-size: 14px;
   font-weight: 700;
+}
+
+/* Invisible placeholder on warmup rows — reserves RIR space so reps box
+   is the same width as on work rows, and + button aligns vertically. */
+.rirSpacer {
+  width: 34px;
+  height: 44px;
+  flex-shrink: 0;
 }
 
 /* ── Check button — discrete outline circle ── */

@@ -191,58 +191,58 @@ export default function SetRow({
 
         {/* Reps stepper + RIR split pill */}
         <div className={`${styles.splitPill} ${set.done ? styles.splitPillDone : ''}`}>
-          <button
-            className={styles.stepBtn}
-            onClick={e => { e.stopPropagation(); adjustReps(-1) }}
-            onPointerDown={e => e.stopPropagation()}
-            type="button"
-            disabled={set.done}
-            aria-label="Minska reps"
-            tabIndex={-1}
-          >−</button>
-          <input
-            className={styles.splitInput}
-            type="number"
-            inputMode="numeric"
-            value={set.reps}
-            onChange={e => onUpdate('reps', e.target.value)}
-            onFocus={e => e.target.select()}
-            placeholder={repPlaceholder}
-            disabled={set.done}
-          />
-          <button
-            className={styles.stepBtn}
-            onClick={e => { e.stopPropagation(); adjustReps(1) }}
-            onPointerDown={e => e.stopPropagation()}
-            type="button"
-            disabled={set.done}
-            aria-label="Öka reps"
-            tabIndex={-1}
-          >+</button>
-          {!isWarmup && (
-            <>
-              <div className={styles.splitDivider} />
-              <button
-                className={`${styles.splitRir} ${rirValue !== null ? styles.splitRirSet : ''}`}
-                onClick={e => {
-                  e.stopPropagation()
-                  if (set.done) return
-                  // Cycle: null → 0 → 1 → 2 → 3 → 4 → 5 → null
-                  const current = set.rir
-                  let next
-                  if (current === null || current === undefined) next = 0
-                  else if (current >= 5) next = null
-                  else next = current + 1
-                  onUpdate('rir', next)
-                }}
-                type="button"
-                aria-label={rirValue !== null ? `RIR: ${rirValue}` : 'Sätt RIR'}
-              >
-                {rirValue !== null ? rirValue : 'RIR'}
-              </button>
-            </>
+          <div className={styles.splitBox}>
+            <button
+              className={styles.stepBtn}
+              onClick={e => { e.stopPropagation(); adjustReps(-1) }}
+              onPointerDown={e => e.stopPropagation()}
+              type="button"
+              disabled={set.done}
+              aria-label="Minska reps"
+              tabIndex={-1}
+            >−</button>
+            <input
+              className={styles.splitInput}
+              type="number"
+              inputMode="numeric"
+              value={set.reps}
+              onChange={e => onUpdate('reps', e.target.value)}
+              onFocus={e => e.target.select()}
+              placeholder={repPlaceholder}
+              disabled={set.done}
+            />
+            <button
+              className={styles.stepBtn}
+              onClick={e => { e.stopPropagation(); adjustReps(1) }}
+              onPointerDown={e => e.stopPropagation()}
+              type="button"
+              disabled={set.done}
+              aria-label="Öka reps"
+              tabIndex={-1}
+            >+</button>
+          </div>
+          {!isWarmup ? (
+            <button
+              className={`${styles.splitRir} ${rirValue !== null ? styles.splitRirSet : ''}`}
+              onClick={e => {
+                e.stopPropagation()
+                if (set.done) return
+                // Cycle: null → 0 → 1 → 2 → 3 → 4 → 5 → null
+                const current = set.rir
+                let next
+                if (current === null || current === undefined) next = 0
+                else if (current >= 5) next = null
+                else next = current + 1
+                onUpdate('rir', next)
+              }}
+              type="button"
+              aria-label={rirValue !== null ? `RIR: ${rirValue}` : 'Sätt RIR'}
+            >
+              {rirValue !== null ? rirValue : 'RIR'}
+            </button>
+          ) : (
+            <div className={styles.rirSpacer} aria-hidden="true" />
           )}
-          {isWarmup && <div className={styles.rirSpacer} aria-hidden="true" />}
         </div>
 
         {/* Fyll-cirkel */}
