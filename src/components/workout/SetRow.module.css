@@ -252,14 +252,14 @@
   border-color: transparent;
 }
 
-/* Placeholder on warmup rows — same grey box, just empty/non-interactive.
-   Reserves identical space so + buttons align vertically across rows. */
+/* Placeholder on warmup rows — blends into the background so only work
+   rows visibly show a RIR box. Still reserves identical 34px width so
+   + buttons align vertically across all rows. */
 .rirSpacer {
   width: 34px;
   height: 44px;
-  background: #1c1c1c;
-  border: 1px solid #2a2a2a;
-  border-radius: 10px;
+  background: transparent;
+  border: none;
   flex-shrink: 0;
   margin-left: 6px;
 }
