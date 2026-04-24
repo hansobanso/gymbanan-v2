@@ -362,10 +362,10 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
         // Toggle set
         let sets = ex.sets.map(s => s.id !== setId ? s : { ...s, done: !s.done })
         // Copy weight to next undone work set when completing a work set
-        if (!wasCompleted && completingSet?.type === 'work' && completingSet.weight) {
+        if (!wasCompleted && completingSet?.type === 'work' && completingSet.subtype !== 'backoff' && completingSet.weight) {
           const completedIdx = sets.findIndex(s => s.id === setId)
           const nextWorkIdx = sets.findIndex((s, i) =>
-            i > completedIdx && s.type === 'work' && !s.done
+            i > completedIdx && s.type === 'work' && s.subtype !== 'backoff' && !s.done
           )
           if (nextWorkIdx !== -1) {
             const nextSet = sets[nextWorkIdx]
@@ -373,6 +373,31 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
               sets = sets.map((s, i) =>
                 i === nextWorkIdx ? { ...s, weight: completingSet.weight, prefilled: false } : s
               )
+            }
+          }
+
+          // Auto-fill back-off sets when this is the LAST work set being completed
+          // Back-off uses ~85% of this work set's weight and +3 reps (more volume at lighter load)
+          const remainingWorkSets = sets.filter(s =>
+            s.type === 'work' && s.subtype !== 'backoff' && !s.done
+          )
+          if (remainingWorkSets.length === 0) {
+            const workW = parseFloat(completingSet.weight) || 0
+            const workR = parseInt(completingSet.reps) || 0
+            if (workW > 0 && workR > 0) {
+              const backoffW = Math.round(workW * 0.85 / 2.5) * 2.5
+              const backoffR = workR + 3
+              sets = sets.map(s => {
+                if (s.subtype !== 'backoff' || s.done) return s
+                // Only auto-fill if empty or prefilled (respect user's manual edits)
+                if (s.weight && !s.prefilled) return s
+                return {
+                  ...s,
+                  weight: String(backoffW),
+                  reps: String(backoffR),
+                  prefilled: true,
+                }
+              })
             }
           }
         }

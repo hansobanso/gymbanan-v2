@@ -320,16 +320,21 @@ export default function Workout({ session }) {
         </div>
         <div className={styles.headerRight}>
           {/* Timer-pill – visas bara när timern är aktiv */}
-          {timer.active && (
-            <button
-              className={styles.timerPill}
-              onClick={() => setTimerExpandedOpen(true)}
-              type="button"
-              aria-label="Öppna timer"
-            >
-              {`${Math.floor(timer.secondsLeft / 60)}:${String(timer.secondsLeft % 60).padStart(2, '0')}`}
-            </button>
-          )}
+          {timer.active && (() => {
+            const ratio = timer.totalSeconds > 0 ? timer.secondsLeft / timer.totalSeconds : 0
+            const color = ratio > 0.6 ? 'var(--timer-safe)' : ratio > 0.3 ? 'var(--timer-warn)' : 'var(--timer-danger)'
+            return (
+              <button
+                className={styles.timerPill}
+                onClick={() => setTimerExpandedOpen(true)}
+                type="button"
+                aria-label="Öppna timer"
+                style={{ color }}
+              >
+                {`${Math.floor(timer.secondsLeft / 60)}:${String(timer.secondsLeft % 60).padStart(2, '0')}`}
+              </button>
+            )
+          })()}
           {/* Vila-timer – öppnar expanded, startar 60s om ingen timer aktiv */}
           <button
             className={styles.timerIconBtn}
