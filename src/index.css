@@ -53,6 +53,14 @@
   --radius-xl: 24px;
   --radius-full: 9999px;
 
+  /* ── Card / Row design tokens ── */
+  --card-bg: #141414;
+  --card-radius: 14px;
+  --card-padding: 14px 16px;
+  --card-gap: 10px;
+  --row-min-height: 56px;
+  --row-padding-x: 16px;
+
   /* ── Skuggor ── */
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.6);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.6);

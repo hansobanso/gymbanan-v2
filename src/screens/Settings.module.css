@@ -51,8 +51,8 @@
 
 /* ── Row card (ett pill-kort per rad) ── */
 .rowCard {
-  background: #141414;
-  border-radius: 14px;
+  background: var(--card-bg);
+  border-radius: var(--card-radius);
   overflow: hidden;
   margin: 0 16px 8px;
   display: flex;
@@ -75,7 +75,7 @@
   text-align: left;
   cursor: pointer;
   gap: 12px;
-  min-height: 52px;
+  min-height: var(--row-min-height);
   box-sizing: border-box;
 }
 
@@ -113,7 +113,12 @@
 .rowDanger {
   color: #E24B4A;
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 600;
+  justify-content: center;
+}
+
+.signOutCard {
+  margin-top: 24px;
 }
 
 /* ── Rest presets ── */

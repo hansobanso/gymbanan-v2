@@ -174,7 +174,7 @@ export default function Settings({ session }) {
             )}
           </div>
 
-          <div className={styles.rowCard}>
+          <div className={`${styles.rowCard} ${styles.signOutCard}`}>
             <button className={`${styles.row} ${styles.rowDanger}`} onClick={handleSignOut} type="button">
               Logga ut
             </button>

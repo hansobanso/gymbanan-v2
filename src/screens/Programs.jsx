@@ -122,16 +122,20 @@ export default function Programs({ session, programs, setPrograms, activeProgram
     <div className={styles.screen}>
       <header className={styles.header}>
         <h1 className={styles.title}>Program</h1>
+        <button
+          className={styles.headerAddBtn}
+          onClick={() => setEditingProgram(newProgram())}
+          type="button"
+          aria-label="Nytt program"
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M5 12h14"/>
+            <path d="M12 5v14"/>
+          </svg>
+        </button>
       </header>
 
       <div className={styles.body}>
-        <button className={styles.newBtn} onClick={() => setEditingProgram(newProgram())} type="button">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
-          </svg>
-          Nytt program
-        </button>
-
         {loading && [0, 1, 2].map(i => <div key={i} className={styles.skeleton} />)}
 
         {!loading && programs.map(p => {
