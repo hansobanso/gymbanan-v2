@@ -62,19 +62,19 @@
 .exerciseDots {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
 }
 
 .exerciseDot {
-  width: 14px;
-  height: 14px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #444;
   flex-shrink: 0;
-  color: rgba(255, 255, 255, 0.5);
-  transition: color 0.2s ease;
 }
 
 .exerciseDotDone {
-  color: var(--accent);
+  background: #fff;
 }
 
 .timerPill {
