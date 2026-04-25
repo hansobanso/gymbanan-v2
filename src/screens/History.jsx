@@ -45,8 +45,11 @@ export default function History({ session }) {
       <header className={styles.header}>
         <h1 className={styles.title}>Historik</h1>
         <button className={styles.chartBtn} onClick={() => setChartSheetOpen(true)} type="button" aria-label="Styrkegrafer">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M3 20H21M5 20V14M9 20V8M13 20V11M17 20V4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M3 3v16a2 2 0 0 0 2 2h16"/>
+            <path d="M7 16h8"/>
+            <path d="M7 11h12"/>
+            <path d="M7 6h3"/>
           </svg>
         </button>
       </header>
