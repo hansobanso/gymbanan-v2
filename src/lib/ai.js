@@ -44,32 +44,135 @@ Stil: direkt, konkret, på svenska. Inga generella fraser.`
 }
 
 /**
- * Genererar en kort PT-intro inför ett pass.
+ * Analyserar träningshistorik och aktuellt pass för att hitta
+ * konkreta händelser PT:n ska kommentera proaktivt.
+ *
+ * Returnerar en sträng med insikter som skickas in till AI:n
+ * tillsammans med vanlig kontext.
  */
-export async function generateWorkoutIntro({ context, memory }) {
+export function analyzeWorkoutContext(recentWorkouts, currentExercises) {
+  const insights = []
+  if (!recentWorkouts || recentWorkouts.length === 0) {
+    insights.push('FÖRSTA PASSET: Användaren har inga tidigare loggade pass.')
+    return insights.join('\n')
+  }
+
+  // 1) PR-detektion: jämför aktuell övnings tilltänkta vikter mot tidigare maxvikt
+  const currentExNames = new Set((currentExercises ?? []).map(e => e.name))
+  const exHistory = {} // { exName: [{ date, maxWeight, maxReps }] }
+  for (const w of recentWorkouts) {
+    for (const ex of (w.exercises ?? [])) {
+      if (!exHistory[ex.name]) exHistory[ex.name] = []
+      const workSets = (ex.sets ?? []).filter(s => s.type === 'work' && s.done)
+      if (workSets.length === 0) continue
+      const maxWeight = Math.max(...workSets.map(s => Number(s.weight) || 0))
+      const repsAtMax = workSets
+        .filter(s => Number(s.weight) === maxWeight)
+        .map(s => Number(s.reps) || 0)
+      const maxReps = repsAtMax.length ? Math.max(...repsAtMax) : 0
+      exHistory[ex.name].push({
+        date: w.finished_at,
+        maxWeight,
+        maxReps,
+      })
+    }
+  }
+
+  // 2) Övningar som inte tränats på länge (i aktuellt pass)
+  const NOW = Date.now()
+  const DAYS = (ms) => Math.round(ms / (1000 * 60 * 60 * 24))
+  for (const exName of currentExNames) {
+    const hist = exHistory[exName]
+    if (!hist || hist.length === 0) {
+      insights.push(`OBEKANT ÖVNING: "${exName}" - användaren har inte loggat denna övning tidigare. Föreslå försiktig ingångsvikt.`)
+      continue
+    }
+    const lastDate = new Date(hist[0].date).getTime()
+    const daysSince = DAYS(NOW - lastDate)
+    if (daysSince > 21) {
+      insights.push(`PAUS: "${exName}" har inte tränats på ${daysSince} dagar. Ta det lugnt med vikten på första set, kanske 80% av tidigare max.`)
+    }
+  }
+
+  // 3) Stagnation: samma vikt × samma reps i 3+ pass i rad
+  for (const exName of currentExNames) {
+    const hist = exHistory[exName]?.slice(0, 5) ?? []
+    if (hist.length < 3) continue
+    const top3 = hist.slice(0, 3)
+    const sameW = top3.every(h => h.maxWeight === top3[0].maxWeight)
+    const sameR = top3.every(h => h.maxReps === top3[0].maxReps)
+    if (sameW && sameR && top3[0].maxWeight > 0) {
+      insights.push(`STAGNATION: "${exName}" har varit på ${top3[0].maxWeight}kg × ${top3[0].maxReps} reps i 3 pass i rad. Dags att försöka öka eller variera.`)
+    }
+  }
+
+  // 4) PR-närhet: senaste pass var stark, antyd att en PR är möjlig idag
+  for (const exName of currentExNames) {
+    const hist = exHistory[exName]?.slice(0, 4) ?? []
+    if (hist.length < 2) continue
+    const allTimeMax = Math.max(...hist.map(h => h.maxWeight))
+    const lastMax = hist[0].maxWeight
+    if (lastMax === allTimeMax && lastMax > 0) {
+      const repsAtMax = hist[0].maxReps
+      if (repsAtMax >= 8) {
+        insights.push(`PR-NÄRHET: "${exName}" - senaste passet körde ${lastMax}kg × ${repsAtMax} reps (vid all-time-max). Du kan nog öka vikten idag.`)
+      }
+    }
+  }
+
+  // 5) Veckostatistik: hur många pass senaste 7 dagarna
+  const last7d = recentWorkouts.filter(w => {
+    const t = new Date(w.finished_at).getTime()
+    return DAYS(NOW - t) <= 7
+  })
+  const last30d = recentWorkouts.filter(w => {
+    const t = new Date(w.finished_at).getTime()
+    return DAYS(NOW - t) <= 30
+  })
+  if (last7d.length >= 4) {
+    insights.push(`HÖGFREKVENS: ${last7d.length} pass senaste 7 dagarna. Notera om återhämtningen verkar stressad.`)
+  }
+
+  // 6) Deload-signal: stagnation över hela passet + hög volym
+  const stagnationCount = insights.filter(i => i.startsWith('STAGNATION')).length
+  if (stagnationCount >= 2 && last30d.length >= 8) {
+    insights.push(`DELOAD-SIGNAL: Flera övningar har stagnerat samtidigt och användaren har tränat ${last30d.length} pass senaste 30 dagarna. Föreslå en deload-vecka (sänk vikt 10-15%, halvera volym).`)
+  }
+
+  if (insights.length === 0) {
+    insights.push('Inga särskilda flaggor i datan - ge en generell, kort genomgång.')
+  }
+  return insights.join('\n')
+}
+
+/**
+ * Genererar en kort PT-intro inför ett pass, nu med proaktiva insikter.
+ */
+export async function generateWorkoutIntro({ context, memory, recentWorkouts, currentExercises }) {
+  const insights = analyzeWorkoutContext(recentWorkouts, currentExercises)
   const body = {
     model: AI_MODEL,
-    max_tokens: 256,
+    max_tokens: 320,
     messages: [{ role: 'user', content: 'Ge mig en kort genomgång inför detta pass.' }],
     system: [
-`Du är en PT som ser användarens träningsdata (siffror från tidigare pass). Ge en kort, personlig genomgång inför detta pass – max 3–4 meningar.
+`Du är en PT som ser användarens träningsdata (siffror från tidigare pass). Ge en kort, personlig genomgång inför detta pass – max 3-4 meningar.
 
-Fokusera på vad data visar:
-- Om vikter har stigit / stagnerat på vissa övningar
-- Om något inte tränats på länge (ta det lugnt, ingångsvikt)
-- Om progression går bra (pusha lite)
-- Volym/intensitet-signaler
+VAD DU SKA GÖRA:
+- Plocka 1-2 saker från PROAKTIVA INSIKTER nedan och kommentera konkret. Det är viktigast.
+- Fira PR-närhet med entusiasm ("Du kan ta din rekord idag på X!")
+- Varna mjukt om paus/stagnation/deload med konkret action.
+- Om inga insikter finns: ge generell men kort genomgång baserat på programmet.
 
 FÖRBJUDET:
 - Kommentera ALDRIG form, teknik, rörelsekontroll eller utförande - du kan inte se detta.
 - Inga generella klyschor ("bra jobbat!", "håll kvar där") utan data bakom.
-- Säg inte "bra form på senaste passet" - du ser bara siffror.
 
 VIKTIGT: Om du rekommenderar en lättare dag (deload, återhämtning) - skriv ordet DELOAD i svaret så appen kan justera vikterna automatiskt.
 
 Svara på svenska, direkt och konkret.`,
       memory ? `\nAnvändarens träningshistorik:\n${memory}` : '',
       context ? `\nDetta pass:\n${context}` : '',
+      `\nPROAKTIVA INSIKTER (analyserat från användarens data):\n${insights}`,
     ].join(''),
   }
   const res = await fetch(AI_ENDPOINT, {

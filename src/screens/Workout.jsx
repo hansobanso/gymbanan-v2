@@ -98,6 +98,9 @@ export default function Workout({ session }) {
 
       if (sessionExercises.length === 0) return
 
+      // Hämta recent workouts för proaktiv analys (PR, stagnation, deload)
+      const recentWorkouts = await getWorkouts(session.user.id, 50).catch(() => [])
+
       // Bygg kontext inför passet med föregående data
       const prevSetsArray = await Promise.all(
         sessionExercises.map(ex => getPreviousSetsForExercise(session.user.id, ex.name))
@@ -114,7 +117,12 @@ export default function Workout({ session }) {
       })
       const preContext = lines.join('\n')
 
-      generateWorkoutIntro({ context: preContext, memory: memory || null })
+      generateWorkoutIntro({
+        context: preContext,
+        memory: memory || null,
+        recentWorkouts,
+        currentExercises: sessionExercises,
+      })
         .then(intro => {
           if (!intro) return
           setIntroMessage(intro)
