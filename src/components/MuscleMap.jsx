@@ -78,11 +78,11 @@ function stroke(id, intensities) {
   return muscleStroke(muscle, intensities)
 }
 
-function BodyFront({ intensities }) {
+function BodyFront({ intensities, width = "150" }) {
   const f = id => fill(id, intensities)
   const s = id => stroke(id, intensities)
   return (
-    <svg viewBox="0 0 130 275" width="150" style={{ display: "block" }}>
+    <svg viewBox="0 0 130 275" width={width} style={{ display: "block" }}>
       <ellipse cx="65" cy="16" rx="14" ry="15" fill="#1e1e1e" stroke="#2a2a2a" strokeWidth="1"/>
       <rect x="59" y="31" width="12" height="10" rx="4" fill="#1e1e1e" stroke="#2a2a2a" strokeWidth="1"/>
       <rect x="38" y="31" width="19" height="11" rx="5" fill={f('f-trap-l')} stroke={s('f-trap-l')} strokeWidth="1"/>
@@ -117,11 +117,11 @@ function BodyFront({ intensities }) {
   )
 }
 
-function BodyBack({ intensities }) {
+function BodyBack({ intensities, width = "150" }) {
   const f = id => fill(id, intensities)
   const s = id => stroke(id, intensities)
   return (
-    <svg viewBox="0 0 130 275" width="150" style={{ display: "block" }}>
+    <svg viewBox="0 0 130 275" width={width} style={{ display: "block" }}>
       <ellipse cx="65" cy="16" rx="14" ry="15" fill="#1e1e1e" stroke="#2a2a2a" strokeWidth="1"/>
       <rect x="59" y="31" width="12" height="10" rx="4" fill="#1e1e1e" stroke="#2a2a2a" strokeWidth="1"/>
       <rect x="38" y="31" width="19" height="11" rx="5" fill={f('b-trap-l')} stroke={s('b-trap-l')} strokeWidth="1"/>
@@ -150,16 +150,17 @@ function BodyBack({ intensities }) {
   )
 }
 
-export default function MuscleMap({ workouts = [] }) {
-  const intensities = computeIntensities(workouts)
+export default function MuscleMap({ workouts = [], intensities: customIntensities, compact = false }) {
+  const intensities = customIntensities ?? computeIntensities(workouts)
+  const bodySize = compact ? '100' : '150'
   return (
-    <div style={{ display: 'flex', gap: '30px', justifyContent: 'center' }}>
+    <div style={{ display: 'flex', gap: compact ? '16px' : '30px', justifyContent: 'center' }}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-        <BodyFront intensities={intensities} />
+        <BodyFront intensities={intensities} width={bodySize} />
         <span style={{ fontSize: '11px', color: '#555' }}>Fram</span>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-        <BodyBack intensities={intensities} />
+        <BodyBack intensities={intensities} width={bodySize} />
         <span style={{ fontSize: '11px', color: '#555' }}>Bak</span>
       </div>
     </div>

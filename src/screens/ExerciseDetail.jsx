@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { updateExercise, copyExerciseForUser, upsertRestOverride, deleteRestOverride } from '../lib/db'
 import { EXERCISES, MUSCLE_GROUPS } from '../data/exercises'
+import MuscleMap from '../components/MuscleMap'
 import styles from './ExerciseDetail.module.css'
 
 const EQUIPMENT = ['Skivstång', 'Hantel', 'Maskin', 'Kabel', 'Kroppsvikt', 'Övrigt']
@@ -39,11 +40,12 @@ export default function ExerciseDetail() {
   const [userId, setUserId]   = useState(null)
   const [form, setForm]       = useState(null)
   const [dbId, setDbId]       = useState(null)
-  const [isOwned, setIsOwned] = useState(false) // true if user owns this row
+  const [isOwned, setIsOwned] = useState(false)
   const [saving, setSaving]   = useState(false)
   const [saved, setSaved]     = useState(false)
   const [copying, setCopying] = useState(false)
   const [saveErr, setSaveErr] = useState(null)
+  const [editingMode, setEditingMode] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -53,7 +55,6 @@ export default function ExerciseDetail() {
 
       if (isBuiltin) {
         const base = builtinDefaults(builtinName)
-        // Load rest override from user_rest_overrides (not from exercises copy)
         if (uid) {
           const { data: restRow } = await supabase
             .from('user_rest_overrides')
@@ -73,7 +74,6 @@ export default function ExerciseDetail() {
           setDbId(data.id)
           setIsOwned(owned)
           if (!owned && uid) {
-            // Global exercise: load rest override from user_rest_overrides
             const { data: restRow } = await supabase
               .from('user_rest_overrides')
               .select('rest_seconds')
@@ -90,8 +90,17 @@ export default function ExerciseDetail() {
     load()
   }, [decoded, isBuiltin, builtinName])
 
-  // True when viewing a global (shared) exercise without a user-owned copy
   const isGlobal = !isOwned && (isBuiltin || (form != null && form.user_id === null))
+  const canEdit = isOwned && editingMode
+
+  // Build muscle intensities for MuscleMap from primary/secondary muscle
+  const muscleIntensities = useMemo(() => {
+    if (!form) return {}
+    const out = {}
+    if (form.muscle_group) out[form.muscle_group] = 1.0
+    if (form.secondary_muscle) out[form.secondary_muscle] = 0.5
+    return out
+  }, [form])
 
   function set(field, value) {
     setForm(prev => ({ ...prev, [field]: value }))
@@ -105,7 +114,6 @@ export default function ExerciseDetail() {
     setSaveErr(null)
     try {
       if (isOwned && dbId) {
-        // User-owned exercise: save all fields
         const payload = {
           name:             form.name,
           muscle_group:     form.muscle_group     || null,
@@ -118,23 +126,19 @@ export default function ExerciseDetail() {
         const result = await updateExercise(dbId, payload)
         if (result && result.id) {
           setSaved(true)
+          setEditingMode(false)
         } else {
           setSaveErr('Kunde inte spara. Försök igen.')
-          console.error('updateExercise returned no result')
         }
       } else {
-        // Global/builtin exercise: save rest to user_rest_overrides table (no copy created)
         if (!userId) { setSaveErr('Inte inloggad.'); return }
         if (form.default_rest == null) {
           await deleteRestOverride(userId, form.name)
           setSaved(true)
         } else {
           const result = await upsertRestOverride(userId, form.name, form.default_rest)
-          if (result) {
-            setSaved(true)
-          } else {
-            setSaveErr('Kunde inte spara. Försök igen.')
-          }
+          if (result) setSaved(true)
+          else setSaveErr('Kunde inte spara. Försök igen.')
         }
       }
     } finally {
@@ -166,7 +170,7 @@ export default function ExerciseDetail() {
             </svg>
           </button>
           <span className={styles.headerTitle}>Laddar…</span>
-          <div style={{ width: 60 }} />
+          <div style={{ width: 36 }} />
         </div>
       </div>
     )
@@ -183,80 +187,131 @@ export default function ExerciseDetail() {
         </button>
         <span className={styles.headerTitle} title={form.name}>{form.name}</span>
         {isOwned ? (
-          <button
-            className={`${styles.saveBtn} ${saved ? styles.saveBtnDone : ''}`}
-            onClick={handleSave}
-            disabled={saving}
-            type="button"
-          >
-            {saving ? 'Sparar…' : saved ? 'Sparat ✓' : 'Spara'}
-          </button>
+          editingMode ? (
+            <button
+              className={`${styles.saveBtn} ${saved ? styles.saveBtnDone : ''}`}
+              onClick={handleSave}
+              disabled={saving}
+              type="button"
+            >
+              {saving ? 'Sparar…' : saved ? 'Sparat ✓' : 'Spara'}
+            </button>
+          ) : (
+            <button
+              className={styles.editBtn}
+              onClick={() => setEditingMode(true)}
+              type="button"
+              aria-label="Redigera"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M12 20h9"/>
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+              </svg>
+            </button>
+          )
         ) : (
-          <div style={{ width: 60 }} />
+          <div style={{ width: 36 }} />
         )}
       </div>
 
       <div className={styles.body}>
-
-        {/* Namn */}
-        <div className={styles.section}>
-          <label className={styles.label}>Namn</label>
-          {isGlobal
-            ? <p className={styles.readonlyVal}>{form.name}</p>
-            : <input className={styles.input} value={form.name} onChange={e => set('name', e.target.value)} placeholder="Övningsnamn" />
-          }
+        {/* ── Muscle hero section ── */}
+        <div className={styles.heroSection}>
+          <MuscleMap intensities={muscleIntensities} compact />
+          <div className={styles.heroTags}>
+            {form.muscle_group && (
+              <div className={styles.heroTagPrimary}>
+                <span className={styles.heroDot} />
+                {form.muscle_group}
+              </div>
+            )}
+            {form.secondary_muscle && (
+              <div className={styles.heroTagSecondary}>
+                <span className={styles.heroDotSecondary} />
+                {form.secondary_muscle}
+              </div>
+            )}
+            {!form.muscle_group && !form.secondary_muscle && (
+              <span className={styles.heroEmptyHint}>Inga muskelgrupper angivna</span>
+            )}
+          </div>
         </div>
 
-        {/* Muskelgrupper */}
-        <div className={styles.section}>
-          <label className={styles.label}>Primär muskelgrupp</label>
-          {isGlobal
-            ? <p className={styles.readonlyVal}>{form.muscle_group || '–'}</p>
-            : <select className={styles.select} value={form.muscle_group ?? ''} onChange={e => set('muscle_group', e.target.value)}>
+        {/* ── Info card ── */}
+        <div className={styles.infoCard}>
+          {canEdit && (
+            <>
+              <div className={styles.infoRow}>
+                <span className={styles.infoLabel}>Namn</span>
+                <input
+                  className={styles.infoInput}
+                  value={form.name}
+                  onChange={e => set('name', e.target.value)}
+                  placeholder="Övningsnamn"
+                />
+              </div>
+              <div className={styles.divider} />
+            </>
+          )}
+
+          <div className={styles.infoRow}>
+            <span className={styles.infoLabel}>Primär muskel</span>
+            {canEdit ? (
+              <select className={styles.infoSelect} value={form.muscle_group ?? ''} onChange={e => set('muscle_group', e.target.value)}>
                 <option value="">Välj…</option>
                 {MUSCLE_GROUPS.map(mg => <option key={mg} value={mg}>{mg}</option>)}
               </select>
-          }
-        </div>
+            ) : (
+              <span className={styles.infoValue}>{form.muscle_group || '–'}</span>
+            )}
+          </div>
 
-        <div className={styles.section}>
-          <label className={styles.label}>Sekundär muskelgrupp</label>
-          {isGlobal
-            ? <p className={styles.readonlyVal}>{form.secondary_muscle || '–'}</p>
-            : <select className={styles.select} value={form.secondary_muscle ?? ''} onChange={e => set('secondary_muscle', e.target.value)}>
+          <div className={styles.divider} />
+
+          <div className={styles.infoRow}>
+            <span className={styles.infoLabel}>Sekundär</span>
+            {canEdit ? (
+              <select className={styles.infoSelect} value={form.secondary_muscle ?? ''} onChange={e => set('secondary_muscle', e.target.value)}>
                 <option value="">Ingen</option>
                 {MUSCLE_GROUPS.map(mg => <option key={mg} value={mg}>{mg}</option>)}
               </select>
-          }
+            ) : (
+              <span className={styles.infoValue}>{form.secondary_muscle || '–'}</span>
+            )}
+          </div>
+
+          <div className={styles.divider} />
+
+          <div className={styles.infoRow}>
+            <span className={styles.infoLabel}>Utrustning</span>
+            {canEdit ? (
+              <select className={styles.infoSelect} value={form.equipment ?? ''} onChange={e => set('equipment', e.target.value)}>
+                <option value="">Välj…</option>
+                {EQUIPMENT.map(eq => <option key={eq} value={eq}>{eq}</option>)}
+              </select>
+            ) : (
+              <span className={styles.infoValue}>{form.equipment || '–'}</span>
+            )}
+          </div>
+
+          <div className={styles.divider} />
+
+          <div className={styles.infoRow}>
+            <span className={styles.infoLabel}>Rörelsemönster</span>
+            {canEdit ? (
+              <select className={styles.infoSelect} value={form.movement_pattern ?? ''} onChange={e => set('movement_pattern', e.target.value)}>
+                <option value="">Välj…</option>
+                {MOVEMENT.map(m => <option key={m} value={m}>{m}</option>)}
+              </select>
+            ) : (
+              <span className={styles.infoValue}>{form.movement_pattern || '–'}</span>
+            )}
+          </div>
         </div>
 
-        {/* Utrustning + Rörelsemönster */}
-        <div className={styles.row2}>
-          <div className={styles.section}>
-            <label className={styles.label}>Utrustning</label>
-            {isGlobal
-              ? <p className={styles.readonlyVal}>{form.equipment || '–'}</p>
-              : <select className={styles.select} value={form.equipment ?? ''} onChange={e => set('equipment', e.target.value)}>
-                  <option value="">Välj…</option>
-                  {EQUIPMENT.map(eq => <option key={eq} value={eq}>{eq}</option>)}
-                </select>
-            }
-          </div>
-          <div className={styles.section}>
-            <label className={styles.label}>Rörelsemönster</label>
-            {isGlobal
-              ? <p className={styles.readonlyVal}>{form.movement_pattern || '–'}</p>
-              : <select className={styles.select} value={form.movement_pattern ?? ''} onChange={e => set('movement_pattern', e.target.value)}>
-                  <option value="">Välj…</option>
-                  {MOVEMENT.map(m => <option key={m} value={m}>{m}</option>)}
-                </select>
-            }
-          </div>
-        </div>
-
-        {/* Standardvila – always editable */}
+        {/* ── Standardvila ── */}
         <div className={styles.section}>
-          <label className={styles.label}>Standardvila</label>
+          <span className={styles.sectionLabel}>Standardvila</span>
           <div className={styles.chips}>
             <button
               className={`${styles.chip} ${form.default_rest == null ? styles.chipActive : ''}`}
@@ -272,7 +327,6 @@ export default function ExerciseDetail() {
               >{fmtRest(s)}</button>
             ))}
           </div>
-          {/* Save button for global exercises (only shows rest preference) */}
           {isGlobal && (
             <button
               className={styles.saveRestBtn}
@@ -286,22 +340,25 @@ export default function ExerciseDetail() {
           {saveErr && <p className={styles.saveErr}>{saveErr}</p>}
         </div>
 
-        {/* Instruktioner */}
-        <div className={styles.section}>
-          <label className={styles.label}>Instruktioner</label>
-          {isGlobal
-            ? <p className={styles.readonlyInstructions}>{form.instructions || '–'}</p>
-            : <textarea
+        {/* ── Instructions ── */}
+        {(canEdit || form.instructions) && (
+          <div className={styles.section}>
+            <span className={styles.sectionLabel}>Instruktioner</span>
+            {canEdit ? (
+              <textarea
                 className={styles.textarea}
                 value={form.instructions ?? ''}
                 onChange={e => set('instructions', e.target.value)}
                 placeholder="Teknikpunkter, personliga cues…"
                 rows={5}
               />
-          }
-        </div>
+            ) : (
+              <p className={styles.readonlyInstructions}>{form.instructions}</p>
+            )}
+          </div>
+        )}
 
-        {/* Kopiera och anpassa – längst ner för globala övningar */}
+        {/* ── Copy and customize for global exercises ── */}
         {isGlobal && (
           <div className={styles.section}>
             <button
@@ -315,7 +372,6 @@ export default function ExerciseDetail() {
             <p className={styles.copyHint}>Skapar en redigerbar kopia i ditt bibliotek</p>
           </div>
         )}
-
       </div>
     </div>
   )
