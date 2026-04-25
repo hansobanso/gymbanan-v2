@@ -175,6 +175,25 @@ function ExerciseRow({ ex, onTap, onRemove }) {
           onTouchEnd={handleTouchEnd}
           onClick={handleClick}
         >
+          {/* Drag handle - drar omedelbart utan long-press */}
+          <span
+            className={styles.exRowDragHandle}
+            onPointerDown={(e) => {
+              if (e.button !== undefined && e.button !== 0) return
+              e.stopPropagation()
+              clearTimeout(dragTimerRef.current)
+              isDraggingNow.current = true
+              setDragging(true)
+              try { navigator.vibrate?.(20) } catch {}
+              dragControls.start(e)
+            }}
+            aria-label="Flytta övning"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M4 7H20M4 12H20M4 17H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </span>
+
           <div className={styles.exRowContent}>
             <div className={styles.exRowName}>{ex.name}</div>
             <div className={styles.exRowBadges}>
