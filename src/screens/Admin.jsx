@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   DndContext,
   DragOverlay,
@@ -621,18 +622,41 @@ function ProgramEditor({ program, allExercises, onSave, onBack, saveError }) {
 
 function ExercisesTab() {
   const [exercises, setExercises] = useState([])
+  const [usageStats, setUsageStats] = useState({}) // { exName: { programs: n, workouts: n } }
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [filterGroup, setFilterGroup] = useState(null)
   const [selectedId, setSelectedId] = useState(null)
   const [form, setForm] = useState(null)        // draft for detail panel
+  const [original, setOriginal] = useState(null) // last-saved snapshot for dirty-check
   const [saving, setSaving] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
   const [saveError, setSaveError] = useState(null)
 
   useEffect(() => {
-    adminGetExercises().then(data => {
-      setExercises(data)
+    Promise.all([
+      adminGetExercises(),
+      adminGetGlobalPrograms(),
+      adminGetWorkouts(),
+    ]).then(([exs, programs, workouts]) => {
+      setExercises(exs)
+      // Build usage stats: how many programs and workouts use each exercise name
+      const stats = {}
+      for (const p of programs) {
+        for (const s of (p.sessions ?? [])) {
+          for (const e of (s.exercises ?? [])) {
+            if (!stats[e.name]) stats[e.name] = { programs: 0, workouts: 0 }
+            stats[e.name].programs++
+          }
+        }
+      }
+      for (const w of workouts) {
+        for (const e of (w.exercises ?? [])) {
+          if (!stats[e.name]) stats[e.name] = { programs: 0, workouts: 0 }
+          stats[e.name].workouts++
+        }
+      }
+      setUsageStats(stats)
       setLoading(false)
     }).catch(() => setLoading(false))
   }, [])
@@ -655,21 +679,25 @@ function ExercisesTab() {
 
   function selectExercise(ex) {
     setSelectedId(ex.id)
-    setForm({
+    const formData = {
       name: ex.name ?? '',
       muscle_group: ex.muscle_group ?? '',
       secondary_muscle: ex.secondary_muscle ?? '',
       equipment: ex.equipment ?? '',
       movement_pattern: ex.movement_pattern ?? '',
       notes: ex.notes ?? '',
-    })
+    }
+    setForm(formData)
+    setOriginal(formData)
     setSaveError(null)
     setDeleteConfirm(false)
   }
 
   function startNew() {
     setSelectedId('__new__')
-    setForm({ name: '', muscle_group: '', secondary_muscle: '', equipment: '', movement_pattern: '', notes: '' })
+    const formData = { name: '', muscle_group: '', secondary_muscle: '', equipment: '', movement_pattern: '', notes: '' }
+    setForm(formData)
+    setOriginal(formData)
     setSaveError(null)
     setDeleteConfirm(false)
   }
@@ -692,6 +720,14 @@ function ExercisesTab() {
       ? form.secondary_muscle
       : null
     try {
+      const savedFormData = {
+        name: form.name.trim(),
+        muscle_group: form.muscle_group ?? '',
+        secondary_muscle: secondaryMuscle ?? '',
+        equipment: form.equipment ?? '',
+        movement_pattern: form.movement_pattern ?? '',
+        notes: form.notes ?? '',
+      }
       if (selectedId === '__new__') {
         const saved = await adminSaveExercise({
           name: form.name.trim(),
@@ -706,6 +742,7 @@ function ExercisesTab() {
           return g !== 0 ? g : a.name.localeCompare(b.name, 'sv')
         }))
         setSelectedId(saved.id)
+        setOriginal(savedFormData)
       } else {
         const updated = await adminUpdateExercise(selectedId, {
           name: form.name.trim(),
@@ -716,6 +753,8 @@ function ExercisesTab() {
           notes: form.notes || null,
         })
         setExercises(prev => prev.map(e => e.id === selectedId ? updated : e))
+        setForm(savedFormData)
+        setOriginal(savedFormData)
       }
     } catch (e) {
       setSaveError(friendlyError(e))
@@ -739,6 +778,16 @@ function ExercisesTab() {
     ? exercises.find(e => e.id === selectedId)
     : null
 
+  // Dirty check: form differs from original (or new with name)
+  const isDirty = form && original && (
+    form.name !== original.name ||
+    form.muscle_group !== original.muscle_group ||
+    form.secondary_muscle !== original.secondary_muscle ||
+    form.equipment !== original.equipment ||
+    form.movement_pattern !== original.movement_pattern ||
+    form.notes !== original.notes
+  )
+
   if (loading) return <div className={styles.loading}><div className="spinner" /></div>
 
   return (
@@ -750,6 +799,7 @@ function ExercisesTab() {
             className={styles.exListSearch}
             value={search}
             onChange={e => setSearch(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Escape') setSearch('') }}
             placeholder="Sök övning…"
           />
           <button className={styles.addBtn} onClick={startNew} type="button">+ Ny</button>
@@ -816,6 +866,19 @@ function ExercisesTab() {
                 >Ta bort</button>
               )}
             </div>
+
+            {/* Usage info for existing exercises */}
+            {selectedId !== '__new__' && selectedEx && (
+              <div className={styles.usageInfo}>
+                <span className={styles.usageItem}>
+                  <strong>{usageStats[selectedEx.name]?.programs ?? 0}</strong> globala program
+                </span>
+                <span className={styles.usageDivider}>·</span>
+                <span className={styles.usageItem}>
+                  <strong>{usageStats[selectedEx.name]?.workouts ?? 0}</strong> loggade pass
+                </span>
+              </div>
+            )}
 
             {deleteConfirm && (
               <div className={styles.deleteConfirmBar}>
@@ -909,14 +972,14 @@ function ExercisesTab() {
               <button
                 className={styles.saveProgBtn}
                 onClick={handleSave}
-                disabled={!form.name.trim() || saving}
+                disabled={!form.name.trim() || saving || !isDirty}
                 type="button"
               >
-                {saving ? 'Sparar…' : 'Spara'}
+                {saving ? 'Sparar…' : isDirty ? 'Spara' : 'Sparat'}
               </button>
               <button
                 className={styles.cancelRowBtn}
-                onClick={() => { setSelectedId(null); setForm(null) }}
+                onClick={() => { setSelectedId(null); setForm(null); setOriginal(null) }}
                 type="button"
               >Avbryt</button>
             </div>
@@ -1244,6 +1307,7 @@ const TABS = [
 ]
 
 export default function Admin() {
+  const navigate = useNavigate()
   const [unlocked, setUnlocked] = useState(() => sessionStorage.getItem('admin_auth') === '1')
   const [pw, setPw] = useState('')
   const [pwError, setPwError] = useState(false)
@@ -1316,13 +1380,25 @@ export default function Admin() {
             </button>
           ))}
         </nav>
-        <button
-          className={styles.logoutBtn}
-          onClick={() => { sessionStorage.removeItem('admin_auth'); setUnlocked(false) }}
-          type="button"
-        >
-          Logga ut
-        </button>
+        <div className={styles.sidebarFooter}>
+          <button
+            className={styles.backToAppBtn}
+            onClick={() => navigate('/')}
+            type="button"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="m15 18-6-6 6-6"/>
+            </svg>
+            Tillbaka till app
+          </button>
+          <button
+            className={styles.logoutBtn}
+            onClick={() => { sessionStorage.removeItem('admin_auth'); setUnlocked(false) }}
+            type="button"
+          >
+            Logga ut
+          </button>
+        </div>
       </aside>
 
       <main className={styles.content}>
