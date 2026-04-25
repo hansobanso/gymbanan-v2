@@ -131,14 +131,14 @@
 }
 
 .restPreset {
-  background: var(--surface-2);
+  background: #1c1c1c;
   border: 1px solid transparent;
   border-radius: var(--radius-md);
   color: var(--text-2);
   font-size: 13px;
   font-weight: 500;
   font-family: var(--font);
-  padding: 9px 4px;
+  padding: 10px 4px;
   cursor: pointer;
   transition: background 0.1s, color 0.1s, border-color 0.1s;
   text-align: center;
