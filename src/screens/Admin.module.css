@@ -1675,3 +1675,11 @@
     padding: 12px 16px;
   }
 }
+
+/* Program summary wrapper - sticky bottom bar i program-editorn */
+.progSummaryWrap {
+  flex-shrink: 0;
+  padding: 16px 28px 20px;
+  border-top: 1px solid #1e1e1e;
+  background: #0d0d0d;
+}

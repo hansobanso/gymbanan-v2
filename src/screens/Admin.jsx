@@ -17,6 +17,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { supabase } from '../lib/supabase'
+import { ProgramMuscleSetSummary } from '../components/settings/MuscleSetSummary'
 import styles from './Admin.module.css'
 
 const ADMIN_PASSWORD = 'banana2024'
@@ -614,6 +615,12 @@ function ProgramEditor({ program, allExercises, onSave, onBack, saveError }) {
           )}
         </DragOverlay>
       </DndContext>
+
+      {sessions.length > 0 && (
+        <div className={styles.progSummaryWrap}>
+          <ProgramMuscleSetSummary sessions={sessions} allExercises={allExercises} />
+        </div>
+      )}
     </div>
   )
 }
