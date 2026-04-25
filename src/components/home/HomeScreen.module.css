@@ -267,6 +267,14 @@
   background: var(--card-bg);
   border-radius: var(--card-radius);
   border: 1.5px solid transparent;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sessionRow:active {
+  transform: scale(0.98);
+  opacity: 0.85;
 }
 
 .sessionRowNext {

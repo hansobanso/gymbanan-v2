@@ -77,6 +77,12 @@
   gap: 12px;
   min-height: var(--row-min-height);
   box-sizing: border-box;
+  transition: background 0.1s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.row:active {
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .rowBorder {

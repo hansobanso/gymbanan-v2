@@ -89,11 +89,15 @@
   cursor: pointer;
   text-align: left;
   box-sizing: border-box;
-  transition: border-color 0.15s;
+  transition: border-color 0.15s, transform 0.15s ease, opacity 0.15s ease;
   gap: 12px;
   min-height: var(--row-min-height);
+  -webkit-tap-highlight-color: transparent;
 }
-.programCard:active { opacity: 0.8; }
+.programCard:active {
+  transform: scale(0.98);
+  opacity: 0.85;
+}
 
 .programCardActive {
   border-color: var(--accent);

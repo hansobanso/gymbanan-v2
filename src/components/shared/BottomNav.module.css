@@ -27,6 +27,11 @@
   transition: color 0.15s;
   min-height: 32px;
   justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tab:active .icon {
+  transform: scale(0.88);
 }
 
 .active {
@@ -39,6 +44,7 @@
   justify-content: center;
   width: 24px;
   height: 24px;
+  transition: transform 0.15s ease;
 }
 
 .label {
