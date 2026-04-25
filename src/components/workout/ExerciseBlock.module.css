@@ -212,11 +212,10 @@
 }
 
 .progressionHint {
-  font-size: 11px;
-  color: #F5D020;
-  font-weight: 500;
-  margin-top: 1px;
-  opacity: 0.85;
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 600;
+  margin-top: 2px;
 }
 
 .metaRow {
@@ -504,8 +503,8 @@
 }
 
 .prevText {
-  font-size: 11px;
-  color: var(--text);
+  font-size: 12px;
+  color: var(--text-2);
   font-variant-numeric: tabular-nums;
 }
 

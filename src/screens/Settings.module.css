@@ -10,7 +10,7 @@
 
 /* ── Header ── */
 .header {
-  padding: calc(var(--safe-top, 44px) + 8px) 20px 12px;
+  padding: calc(var(--safe-top, 44px) + 8px) 16px 12px;
   flex-shrink: 0;
   background: #0a0a0a;
 }
@@ -41,12 +41,12 @@
 }
 
 .sectionLabel {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.8px;
-  color: #555;
-  padding: 8px 16px 4px;
+  letter-spacing: 0.7px;
+  color: var(--text-3);
+  padding: 8px 16px 8px;
 }
 
 /* ── Row card (ett pill-kort per rad) ── */
