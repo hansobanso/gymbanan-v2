@@ -308,10 +308,20 @@ export default function Workout({ session }) {
                   const workSets = ex.sets.filter(s => s.type === 'work')
                   const done = workSets.length > 0 && workSets.every(s => s.done)
                   return (
-                    <span
+                    <svg
                       key={ex.localId}
                       className={`${styles.exerciseDot} ${done ? styles.exerciseDotDone : ''}`}
-                    />
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.4"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M4 13c3.5-2 8-2 10 2a5.5 5.5 0 0 1 8 5"/>
+                      <path d="M5.15 17.89c5.52-1.52 8.65-6.89 7-12C11.55 4 11.5 2 13 2c3.22 0 5 5.5 5 8 0 6.5-4.2 12-10.49 12C5.55 22 4 21.3 4 20c0-1.1.5-2.31 1.15-2.11Z"/>
+                    </svg>
                   )
                 })}
               </div>
@@ -530,7 +540,6 @@ export default function Workout({ session }) {
         {undoToast && (
           <motion.div
             className={styles.toast}
-            style={{ bottom: 'calc(var(--safe-bottom, 0px) + 90px)' }}
             initial={{ y: 80, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 80, opacity: 0 }}
