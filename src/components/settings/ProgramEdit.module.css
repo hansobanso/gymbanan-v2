@@ -114,16 +114,27 @@
   border: 1px solid var(--border);
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px 12px 12px 10px;
+  gap: 6px;
+  padding: 8px 12px 8px 4px;
+  touch-action: none;  /* förhindra att webbläsaren scrollar när man drar */
 }
 
 .dragHandle {
   color: var(--text-3);
   display: flex;
   align-items: center;
+  justify-content: center;
   flex-shrink: 0;
   cursor: grab;
+  width: 40px;
+  height: 44px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+}
+
+.dragHandle:active {
+  cursor: grabbing;
+  color: var(--accent);
 }
 
 .sessionInfo {
