@@ -81,6 +81,11 @@
   background: #0a0a0a;
   color: #fff;
   font-family: inherit;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  box-sizing: border-box;
 }
 
 /* ── Sidebar ── */
@@ -1460,4 +1465,213 @@
   display: flex;
   gap: 8px;
   align-items: center;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Responsive: iPad landscape (1024px wide) and below
+   ───────────────────────────────────────────────────────────── */
+
+/* iPad landscape and below: thinner sidebar */
+@media (max-width: 1099px) {
+  .sidebar {
+    width: 180px;
+  }
+  .exListPanel {
+    width: 240px;
+  }
+  /* Tighter sidebar on iPad */
+  .sidebarBrand {
+    padding: 16px 12px 12px;
+  }
+  .brandName {
+    font-size: 14px;
+  }
+  .brandSub {
+    font-size: 10px;
+  }
+  .navItem {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+}
+
+/* iPad portrait and below: collapsible sidebar */
+@media (max-width: 880px) {
+  .adminLayout {
+    flex-direction: column;
+    min-height: 100dvh;
+    height: 100dvh;
+  }
+  .sidebar {
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    align-items: center;
+    border-right: none;
+    border-bottom: 1px solid #1e1e1e;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding: 0 8px;
+    gap: 4px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .sidebar::-webkit-scrollbar { display: none; }
+
+  .sidebarBrand {
+    padding: 10px 12px;
+    border-bottom: none;
+    border-right: 1px solid #1e1e1e;
+    flex-shrink: 0;
+    margin-right: 4px;
+  }
+  .brandText { display: none; }
+
+  .sidebarNav {
+    flex-direction: row;
+    flex: 1;
+    padding: 0;
+    gap: 2px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .sidebarNav::-webkit-scrollbar { display: none; }
+
+  .navItem {
+    padding: 12px 14px;
+    font-size: 13px;
+    white-space: nowrap;
+    border-radius: 8px;
+    min-height: 44px;  /* touch target minimum */
+  }
+
+  .sidebarFooter {
+    flex-direction: row;
+    border-top: none;
+    border-left: 1px solid #1e1e1e;
+    padding: 8px;
+    flex-shrink: 0;
+  }
+
+  .backToAppBtn,
+  .logoutBtn {
+    padding: 10px 12px;
+    font-size: 12px;
+    min-height: 44px;
+  }
+  .backToAppBtn span,
+  .logoutBtn {
+    font-size: 12px;
+  }
+
+  .content {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .contentHeader {
+    padding: 16px;
+  }
+  .contentTitle {
+    font-size: 22px;
+  }
+  .contentBody {
+    padding: 0 16px 16px;
+  }
+
+  /* Master/detail: stack on small screens */
+  .exMasterDetail {
+    flex-direction: column;
+  }
+  .exListPanel {
+    width: 100%;
+    max-height: 40vh;
+    border-right: none;
+    border-bottom: 1px solid #1e1e1e;
+  }
+  .exDetailPanel {
+    flex: 1;
+  }
+
+  /* Stack form fields on portrait */
+  .exDetailFieldRow {
+    flex-direction: column;
+  }
+
+  /* Stats grid: 2 cols on small */
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Tables scroll horizontally */
+  .tableWrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Hide user ID column on small screens (it's just noise) */
+  .table th:nth-child(2),
+  .table td:nth-child(2) {
+    display: none;
+  }
+}
+
+/* iPhone-size: even tighter */
+@media (max-width: 600px) {
+  .contentHeader {
+    padding: 12px 16px;
+  }
+  .contentTitle {
+    font-size: 20px;
+  }
+
+  /* Stats grid: 1 col on phone */
+  .statsGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Backboard scroll - kanban needs horizontal scroll on phone */
+  .progBoard {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Larger touch targets for steppers */
+  .stepper button {
+    min-width: 36px;
+    min-height: 36px;
+  }
+}
+
+/* Touch-friendly: ensure buttons have minimum 44px hit area on touch devices */
+@media (hover: none) and (pointer: coarse) {
+  .navItem,
+  .addBtn,
+  .saveProgBtn,
+  .cancelRowBtn,
+  .deleteRowBtn,
+  .editRowBtn,
+  .confirmDeleteBtn,
+  .backToAppBtn,
+  .logoutBtn,
+  .gateBtn {
+    min-height: 44px;
+  }
+
+  .exCardExpandBtn,
+  .exCardRemove,
+  .sessionColDelete {
+    min-width: 36px;
+    min-height: 36px;
+    padding: 6px;
+  }
+
+  .exListItem {
+    min-height: 56px;
+    padding: 12px 16px;
+  }
 }

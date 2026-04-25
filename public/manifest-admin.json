@@ -1,8 +1,9 @@
 {
-  "name": "Gymbanan",
-  "short_name": "Gymbanan",
-  "description": "Din personliga gymtracker",
-  "start_url": "/",
+  "name": "Gymbanan Admin",
+  "short_name": "Gym Admin",
+  "description": "Gymbanan administrationsverktyg",
+  "start_url": "/admin",
+  "scope": "/admin",
   "display_override": ["standalone"],
   "display": "standalone",
   "background_color": "#0a0a0a",
@@ -10,7 +11,6 @@
   "icons": [
     { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png", "purpose": "any maskable" },
     { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
-    { "src": "/apple-touch-icon.svg", "sizes": "any", "type": "image/svg+xml" }
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ]
 }

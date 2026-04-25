@@ -1314,6 +1314,17 @@ export default function Admin() {
   const [tab, setTab] = useState('exercises')
   const [allExercises, setAllExercises] = useState([])
 
+  // Switch manifest to admin-specific so 'Add to Home Screen' creates an
+  // admin shortcut (separate from the main app)
+  useEffect(() => {
+    const link = document.querySelector('link[rel="manifest"]')
+    const original = link?.getAttribute('href')
+    if (link) link.setAttribute('href', '/manifest-admin.json')
+    return () => {
+      if (link && original) link.setAttribute('href', original)
+    }
+  }, [])
+
   useEffect(() => {
     if (!unlocked) return
     adminGetExercises().then(setAllExercises).catch(() => {})
