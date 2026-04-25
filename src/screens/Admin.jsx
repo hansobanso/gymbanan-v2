@@ -1314,14 +1314,26 @@ export default function Admin() {
   const [tab, setTab] = useState('exercises')
   const [allExercises, setAllExercises] = useState([])
 
-  // Switch manifest to admin-specific so 'Add to Home Screen' creates an
-  // admin shortcut (separate from the main app)
+  // Switch manifest + iOS meta-taggar till admin-specifika så att
+  // 'Lägg till på hemskärmen' skapar en separat admin-shortcut som
+  // öppnar direkt till /admin med titeln 'Gym Admin'.
+  // useLayoutEffect så det körs innan första paint.
   useEffect(() => {
-    const link = document.querySelector('link[rel="manifest"]')
-    const original = link?.getAttribute('href')
-    if (link) link.setAttribute('href', '/manifest-admin.json')
+    const manifestLink = document.querySelector('link[rel="manifest"]')
+    const appleTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]')
+    const docTitle = document.title
+
+    const originalManifest = manifestLink?.getAttribute('href')
+    const originalAppleTitle = appleTitle?.getAttribute('content')
+
+    if (manifestLink) manifestLink.setAttribute('href', '/manifest-admin.json')
+    if (appleTitle) appleTitle.setAttribute('content', 'Gym Admin')
+    document.title = 'Gymbanan Admin'
+
     return () => {
-      if (link && original) link.setAttribute('href', original)
+      if (manifestLink && originalManifest) manifestLink.setAttribute('href', originalManifest)
+      if (appleTitle && originalAppleTitle) appleTitle.setAttribute('content', originalAppleTitle)
+      document.title = docTitle
     }
   }, [])
 

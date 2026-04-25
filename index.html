@@ -14,7 +14,22 @@
 
     <link rel="icon" href="/favicon-32.png" sizes="32x32" />
     <link rel="icon" href="/apple-touch-icon.png" sizes="180x180" />
-    <link rel="manifest" href="/manifest.json" />
+    <link rel="manifest" href="/manifest.json" id="app-manifest" />
+
+    <!-- Synkront: använd admin-manifest om vi är på /admin-sidan.
+         Detta körs INNAN React laddas så att Safari läser rätt manifest
+         när användaren trycker 'Lägg till på hemskärmen'. -->
+    <script>
+      (function() {
+        if (window.location.pathname.startsWith('/admin')) {
+          var link = document.getElementById('app-manifest');
+          if (link) link.setAttribute('href', '/manifest-admin.json');
+          var appleTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+          if (appleTitle) appleTitle.setAttribute('content', 'Gym Admin');
+          document.title = 'Gymbanan Admin';
+        }
+      })();
+    </script>
 
     <title>Gymbanan</title>
   </head>

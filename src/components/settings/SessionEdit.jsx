@@ -1,10 +1,60 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import { Reorder, useDragControls } from 'framer-motion'
 import ExerciseDetailBottomSheet from './ExerciseDetailBottomSheet'
-import { MUSCLE_GROUPS } from '../../data/exercises'
+import { MUSCLE_GROUPS, EXERCISES } from '../../data/exercises'
 import styles from './SessionEdit.module.css'
 
 const DEFAULT_REST = 120
+
+// ── Muscle set summary ─────────────────────────────────────────
+// Räknar effektiv volym per muskelgrupp baserat på övningarnas
+// primary/secondary muscles. Primär = 1 set, sekundär = 0.5 set.
+function computeMuscleSets(exercises, allExercises) {
+  const lookupBy = {}
+  for (const ex of allExercises ?? []) lookupBy[ex.name] = ex
+  const totals = {}
+  for (const ex of exercises) {
+    const sets = (ex.workSets ?? 3) + (ex.backoffSets ?? 0)
+    if (sets <= 0) continue
+    const data = lookupBy[ex.name] ?? EXERCISES[ex.name] ?? {}
+    const primary = data.muscle_group
+    const secondary = data.secondary_muscle
+    if (primary) totals[primary] = (totals[primary] ?? 0) + sets
+    if (secondary && secondary !== primary) {
+      totals[secondary] = (totals[secondary] ?? 0) + sets * 0.5
+    }
+  }
+  return Object.entries(totals)
+    .map(([muscle, sets]) => ({ muscle, sets: Math.round(sets * 10) / 10 }))
+    .sort((a, b) => b.sets - a.sets)
+}
+
+function MuscleSetSummary({ exercises, allExercises }) {
+  const breakdown = useMemo(() => computeMuscleSets(exercises, allExercises), [exercises, allExercises])
+  if (breakdown.length === 0) return null
+  const totalSets = exercises.reduce((n, ex) => n + (ex.workSets ?? 3) + (ex.backoffSets ?? 0), 0)
+  return (
+    <div className={styles.muscleSummary}>
+      <div className={styles.muscleSummaryHeader}>
+        <span className={styles.muscleSummaryLabel}>Set per muskel</span>
+        <span className={styles.muscleSummaryTotal}>{totalSets} totalt</span>
+      </div>
+      <div className={styles.muscleSummaryList}>
+        {breakdown.map(({ muscle, sets }) => {
+          const isInteger = sets === Math.floor(sets)
+          return (
+            <div key={muscle} className={styles.muscleSummaryRow}>
+              <span className={styles.muscleSummaryName}>{muscle}</span>
+              <span className={styles.muscleSummaryCount}>
+                {isInteger ? sets : sets.toFixed(1)}
+              </span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
 
 function fmtRest(s) {
   if (!s) return 'Auto'
@@ -441,6 +491,10 @@ export default function SessionEdit({ session, allExercises, onSave, onDelete, o
             <p className={styles.emptyHint}>Inga övningar ännu – tryck "+ Lägg till"</p>
           )}
         </div>
+
+        {exercises.length > 0 && (
+          <MuscleSetSummary exercises={exercises} allExercises={allExercises} />
+        )}
       </div>
 
       <div style={{ height: 'env(safe-area-inset-bottom, 0px)', background: 'var(--bg)', flexShrink: 0 }} />
