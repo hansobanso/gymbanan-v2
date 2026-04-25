@@ -14,7 +14,8 @@
 }
 
 .gateLogo {
-  font-size: 48px;
+  width: 48px;
+  height: 48px;
   margin-bottom: 12px;
 }
 
@@ -103,7 +104,11 @@
   border-bottom: 1px solid #1e1e1e;
 }
 
-.brandIcon { font-size: 28px; line-height: 1; }
+.brandIcon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
 
 .brandText {
   display: flex;
@@ -512,8 +517,8 @@
 }
 
 .exCardBodyExpanded {
-  max-height: 500px;
-  padding: 0 8px 8px 28px;
+  max-height: 800px;
+  padding: 8px 8px 8px 28px;
 }
 
 .exCardSteppers {

@@ -188,9 +188,16 @@ function SortableExerciseRow({ exercise, sessionId, onUpdate, onRemove }) {
           type="button"
           aria-label={expanded ? 'Kollapsa' : 'Expandera'}
         >
-          {expanded ? '∧' : '∨'}
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}>
+            <path d="m6 9 6 6 6-6"/>
+          </svg>
         </button>
-        <button className={styles.exCardRemove} onClick={onRemove} type="button" aria-label="Ta bort övning">×</button>
+        <button className={styles.exCardRemove} onClick={onRemove} type="button" aria-label="Ta bort övning">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M18 6 6 18"/>
+            <path d="m6 6 12 12"/>
+          </svg>
+        </button>
       </div>
       <div className={`${styles.exCardBody} ${expanded ? styles.exCardBodyExpanded : ''}`}>
         <div className={styles.exCardSteppers}>
@@ -298,7 +305,12 @@ function SessionColumn({ session, allExercises, isOver, onUpdateName, onAddExerc
           value={session.name}
           onChange={e => onUpdateName(e.target.value)}
         />
-        <button className={styles.sessionColDelete} onClick={onRemoveSession} type="button" aria-label="Ta bort pass">×</button>
+        <button className={styles.sessionColDelete} onClick={onRemoveSession} type="button" aria-label="Ta bort pass">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M18 6 6 18"/>
+            <path d="m6 6 12 12"/>
+          </svg>
+        </button>
       </div>
 
       {/* Exercise list */}
@@ -674,12 +686,17 @@ function ExercisesTab() {
     if (!form?.name?.trim()) return
     setSaving(true)
     setSaveError(null)
+    // Guard: secondary muscle must be different from primary (else null)
+    const primaryMuscle = form.muscle_group || null
+    const secondaryMuscle = form.secondary_muscle && form.secondary_muscle !== form.muscle_group
+      ? form.secondary_muscle
+      : null
     try {
       if (selectedId === '__new__') {
         const saved = await adminSaveExercise({
           name: form.name.trim(),
-          muscle_group: form.muscle_group || null,
-          secondary_muscle: form.secondary_muscle || null,
+          muscle_group: primaryMuscle,
+          secondary_muscle: secondaryMuscle,
           equipment: form.equipment || null,
           movement_pattern: form.movement_pattern || null,
           notes: form.notes || null,
@@ -692,8 +709,8 @@ function ExercisesTab() {
       } else {
         const updated = await adminUpdateExercise(selectedId, {
           name: form.name.trim(),
-          muscle_group: form.muscle_group || null,
-          secondary_muscle: form.secondary_muscle || null,
+          muscle_group: primaryMuscle,
+          secondary_muscle: secondaryMuscle,
           equipment: form.equipment || null,
           movement_pattern: form.movement_pattern || null,
           notes: form.notes || null,
@@ -824,7 +841,7 @@ function ExercisesTab() {
 
               <div className={styles.exDetailFieldRow}>
                 <div className={styles.exDetailField}>
-                  <label className={styles.exDetailLabel}>Muskelgrupp</label>
+                  <label className={styles.exDetailLabel}>Primär muskel</label>
                   <select
                     className={styles.cellSelect}
                     value={form.muscle_group}
@@ -837,7 +854,7 @@ function ExercisesTab() {
                 </div>
 
                 <div className={styles.exDetailField}>
-                  <label className={styles.exDetailLabel}>Sekundär muskelgrupp</label>
+                  <label className={styles.exDetailLabel}>Sekundär muskel</label>
                   <select
                     className={styles.cellSelect}
                     value={form.secondary_muscle}
@@ -845,7 +862,7 @@ function ExercisesTab() {
                     style={{ width: '100%' }}
                   >
                     <option value="">Ingen</option>
-                    {MUSCLE_GROUPS.map(g => <option key={g} value={g}>{g}</option>)}
+                    {MUSCLE_GROUPS.filter(g => g !== form.muscle_group).map(g => <option key={g} value={g}>{g}</option>)}
                   </select>
                 </div>
 
@@ -1109,7 +1126,7 @@ function UsersTab() {
                   </td>
                   <td className={styles.td}><span className={styles.monoText}>{u.userId}</span></td>
                   <td className={styles.td}><span className={styles.cellText}>{u.count}</span></td>
-                  <td className={styles.td}><span className={styles.cellText}>{new Date(u.lastAt).toLocaleDateString('sv-SE')}</span></td>
+                  <td className={styles.td}><span className={styles.cellText}>{u.lastAt ? new Date(u.lastAt).toLocaleDateString('sv-SE') : '—'}</span></td>
                 </tr>
               )
             })}
@@ -1127,17 +1144,30 @@ function UsersTab() {
 
 function StatsTab() {
   const [workouts, setWorkouts] = useState([])
+  const [profiles, setProfiles] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    adminGetWorkouts().then(setWorkouts).catch(e => setError(e.message)).finally(() => setLoading(false))
+    Promise.all([adminGetWorkouts(), adminGetProfiles()])
+      .then(([wks, profs]) => {
+        setWorkouts(wks)
+        setProfiles(profs)
+      })
+      .catch(e => setError(e.message))
+      .finally(() => setLoading(false))
   }, [])
 
   if (loading) return <div className={styles.loading}><div className="spinner" /></div>
   if (error) return <p className={styles.errorMsg}>Fel: {error}</p>
 
-  const users = new Set(workouts.map(w => w.user_id)).size
+  // Total registered users = profiles + any workout user_ids without profile
+  const profileIds = new Set(profiles.map(p => p.id))
+  const workoutUserIds = new Set(workouts.map(w => w.user_id))
+  const allUserIds = new Set([...profileIds, ...workoutUserIds])
+  const users = allUserIds.size
+  const activeUsers = workoutUserIds.size
+
   const totalSets = workouts.reduce((n, w) =>
     n + (w.exercises ?? []).reduce((m, e) =>
       m + (e.sets ?? []).filter(s => s.done && s.type === 'work').length, 0), 0)
@@ -1148,7 +1178,11 @@ function StatsTab() {
       exCount[e.name] = (exCount[e.name] ?? 0) + 1
     }
   }
-  const top10 = Object.entries(exCount).sort((a, b) => b[1] - a[1]).slice(0, 10)
+  // Sort by count desc, then alphabetically for stability when ties occur
+  const top10 = Object.entries(exCount).sort((a, b) => {
+    if (b[1] !== a[1]) return b[1] - a[1]
+    return a[0].localeCompare(b[0], 'sv')
+  }).slice(0, 10)
 
   return (
     <div className={styles.tabContent}>
@@ -1156,6 +1190,10 @@ function StatsTab() {
         <div className={styles.statCard}>
           <div className={styles.statCardValue}>{users}</div>
           <div className={styles.statCardLabel}>Totalt antal användare</div>
+        </div>
+        <div className={styles.statCard}>
+          <div className={styles.statCardValue}>{activeUsers}</div>
+          <div className={styles.statCardLabel}>Har loggat minst ett pass</div>
         </div>
         <div className={styles.statCard}>
           <div className={styles.statCardValue}>{workouts.length}</div>
@@ -1231,7 +1269,10 @@ export default function Admin() {
   if (!unlocked) {
     return (
       <div className={styles.gate}>
-        <div className={styles.gateLogo}>🍌</div>
+        <svg className={styles.gateLogo} viewBox="0 0 24 24" fill="none" stroke="#F5D020" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M4 13c3.5-2 8-2 10 2a5.5 5.5 0 0 1 8 5"/>
+          <path d="M5.15 17.89c5.52-1.52 8.65-6.89 7-12C11.55 4 11.5 2 13 2c3.22 0 5 5.5 5 8 0 6.5-4.2 12-10.49 12C5.55 22 4 21.3 4 20c0-1.1.5-2.31 1.15-2.11Z"/>
+        </svg>
         <h2 className={styles.gateTitle}>Gymbanan Admin</h2>
         <form className={styles.gateForm} onSubmit={handleUnlock}>
           <input
@@ -1254,7 +1295,10 @@ export default function Admin() {
     <div className={styles.adminLayout}>
       <aside className={styles.sidebar}>
         <div className={styles.sidebarBrand}>
-          <span className={styles.brandIcon}>🍌</span>
+          <svg className={styles.brandIcon} viewBox="0 0 24 24" fill="none" stroke="#F5D020" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M4 13c3.5-2 8-2 10 2a5.5 5.5 0 0 1 8 5"/>
+            <path d="M5.15 17.89c5.52-1.52 8.65-6.89 7-12C11.55 4 11.5 2 13 2c3.22 0 5 5.5 5 8 0 6.5-4.2 12-10.49 12C5.55 22 4 21.3 4 20c0-1.1.5-2.31 1.15-2.11Z"/>
+          </svg>
           <div className={styles.brandText}>
             <span className={styles.brandName}>Gymbanan</span>
             <span className={styles.brandSub}>Admin</span>
