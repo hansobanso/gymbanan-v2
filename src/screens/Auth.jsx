@@ -43,7 +43,10 @@ export default function Auth() {
   return (
     <div className={styles.container}>
       <div className={styles.logo}>
-        <span className={styles.logoIcon}>🍌</span>
+        <svg className={styles.logoIcon} viewBox="0 0 24 24" fill="none" stroke="#F5D020" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M4 13c3.5-2 8-2 10 2a5.5 5.5 0 0 1 8 5"/>
+          <path d="M5.15 17.89c5.52-1.52 8.65-6.89 7-12C11.55 4 11.5 2 13 2c3.22 0 5 5.5 5 8 0 6.5-4.2 12-10.49 12C5.55 22 4 21.3 4 20c0-1.1.5-2.31 1.15-2.11Z"/>
+        </svg>
         <span className={styles.logoText}>Gymbanan</span>
       </div>
 

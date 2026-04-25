@@ -16,8 +16,9 @@
 }
 
 .logoIcon {
-  font-size: 36px;
-  line-height: 1;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
 }
 
 .logoText {

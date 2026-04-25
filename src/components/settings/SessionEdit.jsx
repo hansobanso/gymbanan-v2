@@ -206,6 +206,7 @@ export default function SessionEdit({ session, allExercises, onSave, onDelete, o
   const [muscleFilter, setMuscleFilter] = useState(null)
   const [saving, setSaving]           = useState(false)
   const [selectedExId, setSelectedExId] = useState(null)
+  const [swappingExId, setSwappingExId] = useState(null)
   const searchRef = useRef(null)
 
   const filteredExercises = allExercises.filter(e => {
@@ -230,7 +231,13 @@ export default function SessionEdit({ session, allExercises, onSave, onDelete, o
   const selectedEx = exercises.find(e => e._id === selectedExId) ?? null
 
   function addExercise(exName) {
-    setExercises(prev => [...prev, newExercise(exName)])
+    if (swappingExId) {
+      // Swap mode: replace name on existing exercise (keep sets/reps/rest/notes)
+      setExercises(prev => prev.map(e => e._id === swappingExId ? { ...e, name: exName } : e))
+      setSwappingExId(null)
+    } else {
+      setExercises(prev => [...prev, newExercise(exName)])
+    }
     setSearch('')
     setMuscleFilter(null)
     setShowSearch(false)
@@ -238,6 +245,7 @@ export default function SessionEdit({ session, allExercises, onSave, onDelete, o
 
   function closePicker() {
     setShowSearch(false)
+    setSwappingExId(null)
     setSearch('')
     setMuscleFilter(null)
   }
@@ -417,6 +425,13 @@ export default function SessionEdit({ session, allExercises, onSave, onDelete, o
         exercise={selectedEx}
         onUpdate={patch => selectedExId && updateEx(selectedExId, patch)}
         onClose={() => setSelectedExId(null)}
+        onSwap={() => {
+          // Open the exercise picker in "swap" mode
+          setSwappingExId(selectedExId)
+          setSelectedExId(null)
+          setShowSearch(true)
+          setTimeout(() => searchRef.current?.focus(), 50)
+        }}
       />
     </div>
   )
