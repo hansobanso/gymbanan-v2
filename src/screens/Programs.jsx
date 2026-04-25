@@ -172,6 +172,7 @@ export default function Programs({ session, programs, setPrograms, activeProgram
           <motion.div key="editProgram" className={styles.overlay} {...SLIDE}>
             <ProgramEdit
               program={editingProgram}
+              allExercises={allExercises}
               onSave={handleProgramSave}
               onDelete={handleProgramDelete}
               onBack={() => { setEditingProgram(null); setSaveError(null) }}

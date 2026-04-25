@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import styles from './ExerciseDetailBottomSheet.module.css'
 
 const REST_OPTIONS = [
+  { label: 'Auto',  value: null },
   { label: '30s',   value: 30 },
   { label: '1m',    value: 60 },
   { label: '1m30s', value: 90 },

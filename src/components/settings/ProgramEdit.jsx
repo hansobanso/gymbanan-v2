@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Reorder } from 'framer-motion'
+import { ProgramMuscleSetSummary } from './MuscleSetSummary'
 import styles from './ProgramEdit.module.css'
 
 function newSession() {
@@ -11,7 +12,7 @@ function newSession() {
   }
 }
 
-export default function ProgramEdit({ program, onSave, onDelete, onBack, onEditSession, saveError, activeProgramId, onSetActive }) {
+export default function ProgramEdit({ program, allExercises, onSave, onDelete, onBack, onEditSession, saveError, activeProgramId, onSetActive }) {
   const [name, setName] = useState(program.name ?? '')
   const [sessions, setSessions] = useState(
     (program.sessions ?? []).map(s => ({ _id: Math.random().toString(36).slice(2), ...s }))
@@ -140,6 +141,12 @@ export default function ProgramEdit({ program, onSave, onDelete, onBack, onEditS
             ))}
           </Reorder.Group>
         </div>
+
+        {sessions.length > 0 && (
+          <div className={styles.summarySection}>
+            <ProgramMuscleSetSummary sessions={sessions} allExercises={allExercises} />
+          </div>
+        )}
       </div>
 
       <div className={styles.footer}>
