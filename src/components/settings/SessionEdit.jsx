@@ -207,6 +207,7 @@ export default function SessionEdit({ session, allExercises, onSave, onDelete, o
   const [saving, setSaving]           = useState(false)
   const [selectedExId, setSelectedExId] = useState(null)
   const [swappingExId, setSwappingExId] = useState(null)
+  const [headerMenuOpen, setHeaderMenuOpen] = useState(false)
   const searchRef = useRef(null)
 
   const filteredExercises = allExercises.filter(e => {
@@ -278,7 +279,46 @@ export default function SessionEdit({ session, allExercises, onSave, onDelete, o
           </svg>
         </button>
         <span className={styles.topBarTitle}>Redigera pass</span>
-        <div style={{ width: 36 }} />
+        <div className={styles.topBarRight}>
+          <button
+            className={styles.topBarSaveBtn}
+            onClick={handleSave}
+            disabled={!name.trim() || saving}
+            type="button"
+          >
+            {saving ? 'Sparar…' : 'Spara'}
+          </button>
+          {!session._isNew && (
+            <div className={styles.topBarMenuWrap}>
+              <button
+                className={styles.topBarMenuBtn}
+                onClick={(e) => { e.stopPropagation(); setHeaderMenuOpen(v => !v) }}
+                type="button"
+                aria-label="Mer"
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="1"/>
+                  <circle cx="12" cy="5" r="1"/>
+                  <circle cx="12" cy="19" r="1"/>
+                </svg>
+              </button>
+              {headerMenuOpen && (
+                <>
+                  <div className={styles.menuOverlay} onClick={() => setHeaderMenuOpen(false)} />
+                  <div className={styles.menu}>
+                    <button
+                      className={styles.menuItemDanger}
+                      onClick={() => { setHeaderMenuOpen(false); onDelete(session) }}
+                      type="button"
+                    >
+                      Ta bort pass
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className={styles.scroll}>
@@ -296,7 +336,12 @@ export default function SessionEdit({ session, allExercises, onSave, onDelete, o
         {/* Övningar */}
         <div className={styles.exercisesSection}>
           <div className={styles.sectionHeader}>
-            <span className={styles.label}>Övningar</span>
+            <span className={styles.label}>
+              Övningar
+              {exercises.length > 0 && (
+                <span className={styles.labelCount}>{exercises.length}</span>
+              )}
+            </span>
             <button
               className={styles.addBtn}
               onClick={() => { setShowSearch(true); setTimeout(() => searchRef.current?.focus(), 50) }}
@@ -398,26 +443,6 @@ export default function SessionEdit({ session, allExercises, onSave, onDelete, o
         </div>
       </div>
 
-      {/* ── Footer ── */}
-      <div className={styles.footer}>
-        <button
-          className={styles.saveBtn}
-          onClick={handleSave}
-          disabled={!name.trim() || saving}
-          type="button"
-        >
-          {saving ? 'Sparar…' : 'Spara pass'}
-        </button>
-        {session._isNew ? null : (
-          <button
-            className={styles.deleteBtn}
-            onClick={() => onDelete(session)}
-            type="button"
-          >
-            Ta bort pass
-          </button>
-        )}
-      </div>
       <div style={{ height: 'env(safe-area-inset-bottom, 0px)', background: 'var(--bg)', flexShrink: 0 }} />
 
       {/* ── Övningsdetalj bottom sheet ── */}

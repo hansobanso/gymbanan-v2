@@ -367,38 +367,84 @@
   margin: 0;
 }
 
-/* ── Footer ── */
-.footer {
-  padding: 12px 16px 8px;
-  border-top: 1px solid var(--border);
-  background: var(--bg);
-  flex-shrink: 0;
+/* ── Top bar Save + menu ── */
+.topBarRight {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
 }
 
-.saveBtn {
+.topBarSaveBtn {
   background: var(--accent);
   color: #000;
   border: none;
   border-radius: var(--radius-md);
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 700;
-  padding: 16px;
-  cursor: pointer;
   font-family: var(--font);
+  padding: 8px 16px;
+  cursor: pointer;
   transition: opacity 0.15s;
 }
-.saveBtn:disabled { opacity: 0.4; cursor: not-allowed; }
+.topBarSaveBtn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-.deleteBtn {
+.topBarMenuWrap {
+  position: relative;
+}
+
+.topBarMenuBtn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.topBarMenuBtn:active { opacity: 0.6; }
+
+.menuOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background: #1c1c1c;
+  border-radius: var(--card-radius);
+  min-width: 180px;
+  z-index: 101;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.menuItemDanger {
+  width: 100%;
   background: none;
   border: none;
   color: var(--danger);
-  font-size: 14px;
   font-family: var(--font);
+  font-size: 15px;
+  font-weight: 600;
+  padding: 14px 18px;
+  text-align: left;
   cursor: pointer;
-  text-align: center;
-  padding: 4px;
+}
+.menuItemDanger:active { background: rgba(255, 255, 255, 0.04); }
+
+/* ── Övningar count badge ── */
+.labelCount {
+  display: inline-block;
+  margin-left: 8px;
+  color: var(--text-3);
+  font-weight: 500;
+  font-size: 13px;
 }
