@@ -49,20 +49,23 @@ async function adminGetExercises() {
 }
 
 async function adminSaveExercise(ex) {
-  const { data, error } = await supabase.from('exercises').insert(ex).select().single()
+  const { data, error } = await supabase.from('exercises').insert(ex).select().maybeSingle()
   if (error) throw error
+  if (!data) throw new Error('Kunde inte spara övning - är du inloggad som admin?')
   return data
 }
 
 async function adminUpdateExercise(id, patch) {
-  const { data, error } = await supabase.from('exercises').update(patch).eq('id', id).select().single()
+  const { data, error } = await supabase.from('exercises').update(patch).eq('id', id).select().maybeSingle()
   if (error) throw error
+  if (!data) throw new Error('Kunde inte uppdatera övningen - inga rader påverkades. Är du inloggad som admin?')
   return data
 }
 
 async function adminDeleteExercise(id) {
-  const { error } = await supabase.from('exercises').delete().eq('id', id)
+  const { error, count } = await supabase.from('exercises').delete({ count: 'exact' }).eq('id', id)
   if (error) throw error
+  if (count === 0) throw new Error('Kunde inte ta bort övningen - inga rader påverkades. Är du inloggad som admin?')
 }
 
 async function adminGetGlobalPrograms() {
@@ -1320,6 +1323,36 @@ export default function Admin() {
   const [pwError, setPwError] = useState(false)
   const [tab, setTab] = useState('exercises')
   const [allExercises, setAllExercises] = useState([])
+  const [authStatus, setAuthStatus] = useState({ loading: true, user: null, isAdmin: false })
+
+  // Kolla om användaren är inloggad i Supabase OCH har admin-rollen.
+  // Admin-sidans password-gate är separat - utan Supabase-auth fungerar
+  // INTE database-uppdateringar pga RLS.
+  useEffect(() => {
+    if (!unlocked) return
+    let cancelled = false
+    async function check() {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (cancelled) return
+      if (!session?.user) {
+        setAuthStatus({ loading: false, user: null, isAdmin: false })
+        return
+      }
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('display_name, is_admin')
+        .eq('id', session.user.id)
+        .maybeSingle()
+      if (cancelled) return
+      setAuthStatus({
+        loading: false,
+        user: { id: session.user.id, name: profile?.display_name ?? session.user.email },
+        isAdmin: !!profile?.is_admin,
+      })
+    }
+    check()
+    return () => { cancelled = true }
+  }, [unlocked])
 
   // Switch manifest + iOS meta-taggar till admin-specifika så att
   // 'Lägg till på hemskärmen' skapar en separat admin-shortcut som
@@ -1434,6 +1467,27 @@ export default function Admin() {
       <main className={styles.content}>
         <div className={styles.contentHeader}>
           <h1 className={styles.contentTitle}>{TABS.find(t => t.id === tab)?.label}</h1>
+          {!authStatus.loading && (
+            <>
+              {!authStatus.user && (
+                <div className={styles.authBanner + ' ' + styles.authBannerError}>
+                  <strong>Inte inloggad i appen!</strong> Database-ändringar funkar inte pga RLS.
+                  Öppna huvudappen och logga in först, kom sen tillbaka hit.
+                </div>
+              )}
+              {authStatus.user && !authStatus.isAdmin && (
+                <div className={styles.authBanner + ' ' + styles.authBannerError}>
+                  <strong>Inloggad som "{authStatus.user.name}"</strong> – men inte som admin.
+                  Database-ändringar på globala övningar och program kommer misslyckas.
+                </div>
+              )}
+              {authStatus.user && authStatus.isAdmin && (
+                <div className={styles.authBanner + ' ' + styles.authBannerOk}>
+                  Inloggad som <strong>{authStatus.user.name}</strong> (admin)
+                </div>
+              )}
+            </>
+          )}
         </div>
         <div className={styles.contentBody}>
           {tab === 'exercises' && <ExercisesTab />}

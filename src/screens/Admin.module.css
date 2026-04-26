@@ -1683,3 +1683,31 @@
   border-top: 1px solid #1e1e1e;
   background: #0d0d0d;
 }
+
+/* ── Auth banner ── */
+.authBanner {
+  margin-top: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.authBanner strong {
+  font-weight: 700;
+}
+
+.authBannerError {
+  background: rgba(255, 100, 100, 0.1);
+  border: 1px solid rgba(255, 100, 100, 0.35);
+  color: #ff8888;
+}
+
+.authBannerOk {
+  background: rgba(120, 200, 120, 0.08);
+  border: 1px solid rgba(120, 200, 120, 0.25);
+  color: #88c888;
+  font-size: 12px;
+  padding: 8px 12px;
+}
