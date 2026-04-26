@@ -191,6 +191,8 @@
   transition: background 0.1s, border-color 0.1s;
 }
 
+.backToAppText { display: inline; }
+
 .backToAppBtn:hover {
   background: rgba(245, 208, 32, 0.08);
   border-color: rgba(245, 208, 32, 0.3);
@@ -206,8 +208,15 @@
   padding: 9px 12px;
   cursor: pointer;
   text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   transition: color 0.1s, border-color 0.1s;
 }
+
+.logoutText { display: inline; }
+.logoutIcon { display: none; }
 
 .logoutBtn:hover { color: #888; border-color: #333; }
 
@@ -1622,28 +1631,343 @@
 
 /* iPhone-size: even tighter */
 @media (max-width: 600px) {
+  /* ── Admin layout: use full screen, hide chrome ── */
+  .adminLayout {
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  /* Sidebar: kompaktare horisontell topp-nav */
+  .sidebar {
+    padding: 0;
+    gap: 0;
+  }
+
+  .sidebarBrand {
+    padding: 8px 10px;
+    gap: 4px;
+  }
+  .brandIcon { width: 22px; height: 22px; }
+
+  .navItem {
+    padding: 10px 12px;
+    font-size: 12px;
+    min-height: 44px;
+    gap: 4px;
+  }
+
+  .sidebarFooter {
+    padding: 6px;
+    gap: 4px;
+  }
+
+  .backToAppBtn {
+    padding: 8px 10px;
+    font-size: 11px;
+    min-height: 44px;
+  }
+  .backToAppText { display: none; }  /* bara ikonen pa mobil */
+
+  .logoutBtn {
+    padding: 8px 10px;
+    font-size: 11px;
+    min-height: 44px;
+  }
+  .logoutText { display: none; }
+  .logoutIcon { display: inline-block; color: #888; }
+
+  /* Content area */
   .contentHeader {
-    padding: 12px 16px;
+    padding: 10px 12px 8px;
+    gap: 6px;
   }
   .contentTitle {
-    font-size: 20px;
+    font-size: 18px;
+  }
+  .contentBody {
+    padding: 0 12px 12px;
   }
 
-  /* Stats grid: 1 col on phone */
+  /* Auth banner */
+  .authBanner {
+    margin-top: 4px;
+    padding: 8px 10px;
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  /* ─── Exercises tab ─── */
+  /* Master/detail: list och detail tar varsin halv */
+  .exMasterDetail {
+    flex-direction: column;
+    height: 100%;
+  }
+  .exListPanel {
+    width: 100%;
+    max-height: 38vh;
+    border-right: none;
+    border-bottom: 1px solid #1e1e1e;
+  }
+  .exDetailPanel {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 12px;
+  }
+
+  /* Sokfalt + Ny-knapp */
+  .exListTop {
+    padding: 10px 12px 6px;
+    gap: 6px;
+  }
+  .exListSearch {
+    font-size: 16px;  /* Forhindrar iOS auto-zoom vid focus */
+    padding: 9px 12px;
+    min-height: 40px;
+  }
+  .exListAddBtn {
+    font-size: 13px;
+    padding: 8px 12px;
+    min-height: 40px;
+    flex-shrink: 0;
+  }
+
+  /* Filter-chips: kompakt scroll */
+  .filterRow {
+    padding: 4px 12px 8px;
+    gap: 5px;
+  }
+  .filterChip {
+    font-size: 11px;
+    padding: 5px 10px;
+    min-height: 28px;
+  }
+
+  /* Listan */
+  .exListGroupLabel {
+    font-size: 10px;
+    padding: 6px 12px 2px;
+    letter-spacing: 0.5px;
+  }
+  .exListItem {
+    padding: 10px 12px;
+    min-height: 50px;
+  }
+  .exListItemName {
+    font-size: 14px;
+  }
+  .exListItemMeta {
+    font-size: 11px;
+  }
+
+  /* Detaljpanelens form */
+  .exDetailHeader {
+    margin-bottom: 8px;
+  }
+  .exDetailTitle {
+    font-size: 17px;
+  }
+  .deleteRowBtn,
+  .editRowBtn {
+    padding: 8px 12px;
+    font-size: 12px;
+    min-height: 40px;
+  }
+
+  .usageInfo {
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    font-size: 12px;
+    flex-wrap: wrap;
+  }
+
+  .exDetailFieldRow {
+    flex-direction: column;
+    gap: 8px !important;
+  }
+  .exDetailFields {
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .exDetailField {
+    gap: 4px;
+  }
+  .exDetailLabel {
+    font-size: 10px;
+  }
+
+  /* Forhindra iOS-zoom: alla form-input >= 16px */
+  .cellSelect,
+  .exDetailTextarea {
+    font-size: 16px !important;
+    padding: 10px 12px;
+    min-height: 42px;
+  }
+  .exDetailTextarea {
+    min-height: 80px;
+  }
+
+  /* Save/cancel bar */
+  .exDetailActions {
+    flex-direction: column-reverse;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .saveProgBtn,
+  .cancelRowBtn {
+    width: 100%;
+    padding: 12px;
+    min-height: 44px;
+    font-size: 14px;
+  }
+
+  /* Delete confirmation */
+  .deleteConfirmBar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .confirmDeleteBtn,
+  .cancelDeleteBtn {
+    width: 100%;
+    padding: 12px;
+    min-height: 44px;
+  }
+
+  /* ─── Programs tab ─── */
+  .progEditor { padding: 0; }
+  .progEditorTop {
+    flex-wrap: wrap;
+    padding: 0 12px 10px;
+    gap: 8px;
+  }
+  .backLinkBtn {
+    padding: 8px 12px;
+    font-size: 13px;
+    min-height: 40px;
+  }
+  .progNameInput {
+    font-size: 16px;  /* iOS-zoom prevention */
+    padding: 10px 12px;
+    flex: 1 1 100%;
+    order: 3;
+  }
+  .saveProgBtn {
+    flex-shrink: 0;
+    padding: 8px 14px;
+    font-size: 13px;
+    min-height: 40px;
+  }
+
+  /* Kanban-kolumner: bredare och scroll-snap */
+  .progBoard {
+    padding: 0 12px 12px;
+    gap: 10px;
+    scroll-snap-type: x mandatory;
+    scroll-padding: 12px;
+  }
+  .sessionCol {
+    min-width: 86vw;     /* en kolumn at gangen synlig */
+    max-width: 86vw;
+    flex-shrink: 0;
+    scroll-snap-align: start;
+  }
+  .sessionColTitle {
+    font-size: 14px;
+  }
+  .sessionColInput {
+    font-size: 16px !important;
+    padding: 8px 10px;
+  }
+
+  /* Ovningskort i programs */
+  .exCard {
+    padding: 8px 10px;
+    gap: 6px;
+  }
+  .exCardName {
+    font-size: 13px;
+  }
+  .exCardBody {
+    gap: 4px;
+  }
+  .stepper {
+    gap: 4px;
+  }
+  .stepperLabel {
+    font-size: 11px;
+  }
+  .stepperValue {
+    font-size: 13px;
+    min-width: 24px;
+  }
+
+  /* Programlistan */
+  .programRow {
+    padding: 12px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .programRowName {
+    font-size: 14px;
+    flex: 1 1 100%;
+  }
+  .programRowMeta {
+    font-size: 12px;
+    flex: 1 1 auto;
+  }
+
+  /* ─── Users tab ─── */
+  .table {
+    font-size: 12px;
+  }
+  .table th,
+  .table td {
+    padding: 8px 10px;
+  }
+  /* Goem User ID kolumn pa mobil */
+  .table th:nth-child(2),
+  .table td:nth-child(2) {
+    display: none;
+  }
+
+  /* ─── Stats tab ─── */
   .statsGrid {
     grid-template-columns: 1fr !important;
+    gap: 8px;
+  }
+  .statCard {
+    padding: 14px;
+  }
+  .statCardValue {
+    font-size: 28px;
   }
 
-  /* Backboard scroll - kanban needs horizontal scroll on phone */
-  .progBoard {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* Larger touch targets for steppers */
+  /* Storre touch-targets pa steppers */
   .stepper button {
     min-width: 36px;
     min-height: 36px;
+  }
+
+  /* Program summary i botten */
+  .progSummaryWrap {
+    padding: 12px;
+  }
+}
+
+/* iOS Safari: forhindra zoom pa alla input-typer som har under 16px font */
+@media (max-width: 600px) {
+  input[type="text"],
+  input[type="number"],
+  input[type="search"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="password"],
+  textarea,
+  select {
+    font-size: 16px !important;
   }
 }
 
