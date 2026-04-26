@@ -35,10 +35,11 @@ Om användaren beskriver en omständighet som motiverar att passet anpassas (sju
 
 <adjustment>
 {
-  "summary": "Sänkt vikter 30% och färre reps på allt - sjukpass",
+  "summary": "Sjukpass: 30% lättare och färre reps",
   "changes": [
     { "exerciseName": "Bänkpress", "weightMultiplier": 0.7, "repsMin": 6, "repsMax": 8 },
-    { "exerciseName": "Hantelrodd", "weightMultiplier": 0.7, "repsMin": 8, "repsMax": 10 }
+    { "exerciseName": "Pullups", "repsMultiplier": 0.7 },
+    { "exerciseName": "Hantelrodd", "weightMultiplier": 0.7, "setMultiplier": 0.67 }
   ]
 }
 </adjustment>
@@ -47,12 +48,23 @@ Regler för JSON-blocket:
 - Inkludera ALLA övningar i passet (du ser dem under "Aktuellt pass" nedan).
 - "exerciseName" måste exakt matcha namnen i passet.
 - "weightMultiplier" är en faktor mot förra passets vikter (0.7 = 70%, 1.1 = 110%).
-- "repsMin"/"repsMax" är de nya rep-målen. Utelämna fältet om de inte ändras.
-- "summary" är en KORT mening (max ca 60 tecken) som visas på knappen "Tillämpa".
-- Föreslå BARA en justering om användaren faktiskt ber om det eller beskriver en situation som motiverar det. Vid vanliga frågor (progression, teknik, etc.): inget JSON-block.
+  Påverkar uppvärmning, arbetsset OCH back-off.
+- "repsMultiplier" är en faktor som SÄNKER reps - använd för kroppsviktsövningar
+  (pullups, dips, push-ups, hängande benlyft etc) som saknar vikt. Då finns
+  ingen vikt att justera, så reps är det enda som kan ändras.
+- "repsMin"/"repsMax" är de nya rep-målen för övningen (mer specifikt än repsMultiplier).
+  Använd om du har ett konkret rep-intervall i åtanke.
+- "setMultiplier" gångrar antalet ARBETSSET (0.5 = halvera, 0.67 = 2/3 etc).
+  Använd vid deload eller om någon kör många set och behöver volym-reducering.
+  Värdet 1 (oförändrat) ska utelämnas. Bara värden < 1 fungerar (kan inte lägga till set).
+- "summary" är en KORT mening på SVENSKA (max ca 60 tecken) som visas på knappen.
+- ALLT i svaret OCH i summary måste vara på svenska. Inga engelska ord eller fraser.
+- Föreslå BARA en justering om användaren faktiskt ber om det eller beskriver en
+  situation som motiverar det. Vid vanliga frågor (progression, teknik, etc.):
+  inget JSON-block.
 - Skriv inget mer text efter JSON-blocket.
 
-Stil: direkt, konkret, på svenska. Inga generella fraser.`
+Stil: direkt, konkret, på svenska. Inga generella fraser. Inga engelska låneord.`
   ]
   if (memory) parts.push(`\nHär är träningshistorik och kontext för den här användaren:\n${memory}`)
   if (context) parts.push(`\nAktuellt pass:\n${context}`)

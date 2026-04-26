@@ -460,10 +460,11 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
 
   const applyDeload = useCallback(() => {
     setExercises(prev => prev.map(ex => {
-      const hasPrefilled = ex.sets.some(s => s.type === 'work' && s.prefilled && s.weight)
+      const hasPrefilled = ex.sets.some(s => s.prefilled && s.weight)
       if (!hasPrefilled) return ex
+      // Sänk vikt 10% på alla prefilled sets (warmup + work + backoff)
       const sets = ex.sets.map(s => {
-        if (s.type !== 'work' || !s.prefilled || !s.weight) return s
+        if (!s.prefilled || !s.weight) return s
         const w = parseFloat(s.weight)
         if (!w) return s
         return { ...s, weight: String(Math.round(w * 0.9 / 2.5) * 2.5) }
@@ -475,7 +476,13 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
 
   /**
    * Tillämpar ett strukturerat justeringsförslag från PT.
-   * adjustment = { summary, changes: [{ exerciseName, weightMultiplier?, repsMin?, repsMax? }] }
+   * adjustment = { summary, changes: [{ exerciseName, weightMultiplier?, repsMultiplier?, repsMin?, repsMax?, setMultiplier? }] }
+   *
+   * - weightMultiplier: gångrar vikter på alla icke-gjorda sets (warmup + work + backoff).
+   * - repsMultiplier: gångrar prefilled reps på alla icke-gjorda sets (för kroppsviktsövningar
+   *   som inte har vikt - då sänks reps istället).
+   * - repsMin/repsMax: skriver om exercise-level rep-mål.
+   * - setMultiplier: gångrar antalet WORK-sets (avrundas, minst 1). Warmup oförändrad.
    */
   const applyAdjustment = useCallback((adjustment) => {
     if (!adjustment?.changes?.length) return false
@@ -484,16 +491,49 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
       if (!change) return ex
 
       let sets = ex.sets
-      // Justera vikter via multiplikator (bara på prefilled work-sets - icke gjorda)
+
+      // Justera vikter på alla icke-gjorda sets (warmup, work, backoff)
       if (typeof change.weightMultiplier === 'number' && change.weightMultiplier > 0) {
         sets = sets.map(s => {
-          if (s.type !== 'work' || s.done) return s
+          if (s.done) return s
           if (!s.weight) return s
           const w = parseFloat(s.weight)
           if (!w) return s
           const newW = Math.round(w * change.weightMultiplier / 2.5) * 2.5
           return { ...s, weight: String(newW), prefilled: true }
         })
+      }
+
+      // Justera reps på alla icke-gjorda sets (för kroppsvikt-övningar utan vikt)
+      if (typeof change.repsMultiplier === 'number' && change.repsMultiplier > 0) {
+        sets = sets.map(s => {
+          if (s.done) return s
+          if (!s.reps) return s
+          const r = parseFloat(s.reps)
+          if (!r) return s
+          const newR = Math.max(1, Math.round(r * change.repsMultiplier))
+          return { ...s, reps: String(newR), prefilled: true }
+        })
+      }
+
+      // Justera antal work-sets
+      if (typeof change.setMultiplier === 'number' && change.setMultiplier > 0 && change.setMultiplier !== 1) {
+        const workSets = sets.filter(s => s.type === 'work' && !s.done)
+        const targetCount = Math.max(1, Math.round(workSets.length * change.setMultiplier))
+        if (targetCount < workSets.length) {
+          // Ta bort sets från slutet (work-typen, icke-gjorda)
+          const toRemove = workSets.length - targetCount
+          // Ta bort de sista N icke-gjorda work-setsen (bevarar gjorda)
+          let removed = 0
+          sets = sets.slice().reverse().filter(s => {
+            if (removed < toRemove && s.type === 'work' && !s.done) {
+              removed++
+              return false
+            }
+            return true
+          }).reverse()
+        }
+        // Att lägga till sets är inte säkert (subtype-logik etc.), så vi sänker bara antal.
       }
 
       const next = { ...ex, sets }
