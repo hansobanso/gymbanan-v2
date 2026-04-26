@@ -170,6 +170,10 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
   }, [userId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const [programChanged, setProgramChanged] = useState(false)
+  // True när passet har anpassats av PT (sjukpass, deload, etc) - vid spara
+  // ska vi INTE fråga om programmet ska uppdateras, eftersom anpassningen
+  // bara gäller det här specifika passet, inte programmet i stort.
+  const [isAdjustedSession, setIsAdjustedSession] = useState(false)
   const [workoutId, setWorkoutId] = useState(resumed?.workoutId ?? null)
   const workoutIdRef = useRef(resumed?.workoutId ?? null)
   const ensurePromiseRef = useRef(null)
@@ -459,6 +463,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
   }
 
   const applyDeload = useCallback(() => {
+    setIsAdjustedSession(true)
     setExercises(prev => prev.map(ex => {
       const hasPrefilled = ex.sets.some(s => s.prefilled && s.weight)
       if (!hasPrefilled) return ex
@@ -486,6 +491,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
    */
   const applyAdjustment = useCallback((adjustment) => {
     if (!adjustment?.changes?.length) return false
+    setIsAdjustedSession(true)
     setExercises(prev => prev.map(ex => {
       const change = adjustment.changes.find(c => c.exerciseName === ex.name)
       if (!change) return ex
@@ -567,6 +573,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
     applyDeload,
     applyAdjustment,
     programChanged,
+    isAdjustedSession,
     repsUpdatedAt,
   }
 }

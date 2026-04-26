@@ -231,7 +231,7 @@ export default function Workout({ session }) {
 
     const snapshot = [...workout.exercises]
 
-    if (workout.programChanged && program) {
+    if (workout.programChanged && !workout.isAdjustedSession && program) {
       pendingFinishRef.current = { workoutId, snapshot }
       setShowSyncDialog(true)
     } else {
