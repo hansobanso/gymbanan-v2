@@ -9,12 +9,12 @@ const SUGGESTIONS = [
   'Tips för nästa pass?',
 ]
 
-export default function AiChat({ open, onClose, getContext, getMemory, onUpdateMemory, introMessage, workoutNotes, onUpdateNotes, onApplyAdjustment }) {
+export default function AiChat({ open, onClose, getContext, getMemory, getDeloadStatus, onUpdateMemory, introMessage, workoutNotes, onUpdateNotes, onApplyAdjustment, onApplyDeload }) {
   const [input, setInput] = useState('')
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
   const notesRef = useRef(null)
-  const { messages, loading, error, send, markAdjustmentApplied } = useAI({ getContext, getMemory })
+  const { messages, loading, error, send, markAdjustmentApplied, markDeloadApplied } = useAI({ getContext, getMemory, getDeloadStatus })
 
   // Fokusera input när sheeten öppnar
   useEffect(() => {
@@ -159,6 +159,29 @@ export default function AiChat({ open, onClose, getContext, getMemory, onUpdateM
                         <path d="M20 6 9 17l-5-5"/>
                       </svg>
                       Tillämpat
+                    </div>
+                  )}
+                  {msg.role === 'assistant' && msg.deload && !msg.deloadApplied && onApplyDeload && (
+                    <button
+                      className={styles.deloadBtn}
+                      onClick={async () => {
+                        const ok = await onApplyDeload(msg.deload)
+                        if (ok !== false) markDeloadApplied(i)
+                      }}
+                      type="button"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                      </svg>
+                      <span className={styles.adjustmentBtnText}>{msg.deload.summary}</span>
+                    </button>
+                  )}
+                  {msg.role === 'assistant' && msg.deloadApplied && (
+                    <div className={styles.adjustmentApplied}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M20 6 9 17l-5-5"/>
+                      </svg>
+                      Deload-vecka aktiverad
                     </div>
                   )}
                 </motion.div>

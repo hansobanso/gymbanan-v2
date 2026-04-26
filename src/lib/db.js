@@ -291,6 +291,67 @@ export async function setActiveProgram(userId, programId) {
     .eq('id', userId)
 }
 
+// ── Deload week ────────────────────────────────────────
+// Returns { deloadUntil, deloadStartedAt, isActive, daysLeft } or null
+export async function getDeloadStatus(userId) {
+  const { data } = await supabase
+    .from('user_settings')
+    .select('deload_until, deload_started_at')
+    .eq('user_id', userId)
+    .maybeSingle()
+  if (!data?.deload_until) return { deloadUntil: null, deloadStartedAt: null, isActive: false, daysLeft: 0 }
+  const until = new Date(data.deload_until)
+  const now = new Date()
+  const isActive = until > now
+  const daysLeft = isActive ? Math.ceil((until - now) / (1000 * 60 * 60 * 24)) : 0
+  return {
+    deloadUntil: data.deload_until,
+    deloadStartedAt: data.deload_started_at,
+    isActive,
+    daysLeft,
+  }
+}
+
+// Starta en deload-vecka. days = antal dagar (default 7).
+export async function startDeloadWeek(userId, days = 7) {
+  const now = new Date()
+  const until = new Date(now.getTime() + days * 24 * 60 * 60 * 1000)
+  const { data: existing } = await supabase
+    .from('user_settings')
+    .select('user_id')
+    .eq('user_id', userId)
+    .maybeSingle()
+  if (existing) {
+    const { error } = await supabase
+      .from('user_settings')
+      .update({
+        deload_until: until.toISOString(),
+        deload_started_at: now.toISOString(),
+      })
+      .eq('user_id', userId)
+    if (error) throw error
+  } else {
+    const { error } = await supabase
+      .from('user_settings')
+      .insert({
+        user_id: userId,
+        deload_until: until.toISOString(),
+        deload_started_at: now.toISOString(),
+      })
+    if (error) throw error
+  }
+  return { deloadUntil: until.toISOString(), daysLeft: days }
+}
+
+// Avsluta deload-veckan i förtid
+export async function endDeloadWeek(userId) {
+  const { error } = await supabase
+    .from('user_settings')
+    .update({ deload_until: null, deload_started_at: null })
+    .eq('user_id', userId)
+  if (error) throw error
+}
+
 // ── Rest Overrides ────────────────────────────────────────
 // Returns { exerciseName: restSeconds } map for the user
 export async function getRestOverrides(userId) {

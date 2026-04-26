@@ -461,3 +461,29 @@
   font-size: 13px;
   font-weight: 600;
 }
+
+/* ── Deload button (PT föreslår deload-vecka) ── */
+.deloadBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: #2a3f55;
+  border: 1px solid #3a5777;
+  border-radius: var(--radius-md);
+  color: #c5deff;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--font);
+  cursor: pointer;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.15s, transform 0.15s;
+}
+
+.deloadBtn:active {
+  transform: scale(0.98);
+  opacity: 0.85;
+}

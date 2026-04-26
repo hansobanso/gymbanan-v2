@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getWorkouts } from '../../lib/db'
+import { getWorkouts, getDeloadStatus, endDeloadWeek } from '../../lib/db'
 import MuscleMap from '../MuscleMap'
 import SessionPreview from './SessionPreview'
 import styles from './HomeScreen.module.css'
@@ -62,6 +62,7 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
   const [workoutsLoaded, setWorkoutsLoaded] = useState(false)
   const [lastExpanded, setLastExpanded] = useState(false)
   const [previewSession, setPreviewSession] = useState(null) // { session, program }
+  const [deloadStatus, setDeloadStatus] = useState({ isActive: false, daysLeft: 0 })
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -72,6 +73,9 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
       setRecentWorkouts(ws)
       setWorkoutsLoaded(true)
     }).catch(() => { if (!cancelled) setWorkoutsLoaded(true) })
+    getDeloadStatus(session.user.id).then(s => {
+      if (!cancelled) setDeloadStatus(s)
+    }).catch(() => {})
     return () => { cancelled = true }
   }, [session.user.id])
 
@@ -83,6 +87,7 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
           setLastWorkout(ws[0] ?? null)
           setRecentWorkouts(ws)
         }).catch(() => {})
+        getDeloadStatus(session.user.id).then(setDeloadStatus).catch(() => {})
       }
     }
     document.addEventListener('visibilitychange', refetch)
@@ -147,6 +152,39 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
         </h1>
       </header>
       <div className={styles.container}>
+
+        {/* ── Deload-banner ── */}
+        {deloadStatus.isActive && (
+          <div className={styles.deloadBanner}>
+            <div className={styles.deloadBannerContent}>
+              <span className={styles.deloadBannerIcon}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                  <path d="m9 11 3 3L22 4"/>
+                </svg>
+              </span>
+              <div className={styles.deloadBannerText}>
+                <span className={styles.deloadBannerTitle}>Deload-vecka aktiv</span>
+                <span className={styles.deloadBannerSub}>
+                  {deloadStatus.daysLeft} {deloadStatus.daysLeft === 1 ? 'dag' : 'dagar'} kvar · vikter automatiskt sänkta
+                </span>
+              </div>
+            </div>
+            <button
+              className={styles.deloadBannerEnd}
+              onClick={async () => {
+                if (window.confirm('Avsluta deload-veckan i förtid?')) {
+                  await endDeloadWeek(session.user.id).catch(() => {})
+                  setDeloadStatus({ isActive: false, daysLeft: 0 })
+                }
+              }}
+              type="button"
+              aria-label="Avsluta deload-vecka"
+            >
+              ✕
+            </button>
+          </div>
+        )}
 
         {/* ── Alla pass i programmet ── */}
         {activeProgram && (activeProgram.sessions ?? []).length > 0 && (

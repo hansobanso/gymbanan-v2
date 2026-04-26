@@ -4,7 +4,7 @@ import { Reorder, AnimatePresence, motion } from 'framer-motion'
 import { useWorkout } from '../hooks/useWorkout'
 import { useTimer } from '../hooks/useTimer'
 import { buildWorkoutContext, buildMemoryContent, appendUserNote, chatWithAI, generateWorkoutIntro } from '../lib/ai'
-import { updateWorkout, getWorkouts, getAiMemory, upsertAiMemory, getPreviousSetsForExercise, getEquipmentMap, updateProgram, saveProgram } from '../lib/db'
+import { updateWorkout, getWorkouts, getAiMemory, upsertAiMemory, getPreviousSetsForExercise, getEquipmentMap, updateProgram, saveProgram, getDeloadStatus, startDeloadWeek } from '../lib/db'
 import TimerBar from '../components/workout/TimerBar'
 import TimerExpanded from '../components/workout/TimerExpanded'
 import ExerciseBlock from '../components/workout/ExerciseBlock'
@@ -67,6 +67,7 @@ export default function Workout({ session }) {
   const [postWorkout, setPostWorkout] = useState(null)
   const [postEquipmentMap, setPostEquipmentMap] = useState({})
   const [introMessage, setIntroMessage] = useState(null)
+  const [deloadStatus, setDeloadStatus] = useState({ isActive: false, daysLeft: 0 })
   const [showRepsToast, setShowRepsToast] = useState(false)
   const repsToastTimerRef = useRef(null)
   const [showSyncDialog, setShowSyncDialog] = useState(false)
@@ -89,6 +90,30 @@ export default function Workout({ session }) {
     const id = setInterval(() => setElapsed(fmtElapsed(workout.startedAt)), 15_000)
     return () => clearInterval(id)
   }, [workout.startedAt])
+
+  // Hämta deload-status vid mount och applicera automatiskt om aktiv
+  useEffect(() => {
+    if (!session?.user?.id) return
+    getDeloadStatus(session.user.id).then(status => {
+      setDeloadStatus(status)
+      if (status.isActive) {
+        // Auto-applicera deload på passet (vikt -15%, ett set mindre)
+        // Använd applyAdjustment för att få mer kontroll än applyDeload
+        const changes = sessionExercises.map(ex => ({
+          exerciseName: ex.name,
+          weightMultiplier: 0.85,
+          setMultiplier: 0.8, // ~ ett set mindre vid 4-5 set
+        }))
+        if (changes.length > 0) {
+          workout.applyAdjustment({
+            summary: `Deload-vecka aktiv (${status.daysLeft} dagar kvar)`,
+            changes,
+          })
+        }
+      }
+    }).catch(() => {})
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user?.id])
 
   // Ladda AI-minne + generera pass-intro
   useEffect(() => {
@@ -682,6 +707,7 @@ export default function Workout({ session }) {
         onClose={() => setAiChatOpen(false)}
         getContext={getContext}
         getMemory={getMemory}
+        getDeloadStatus={() => deloadStatus}
         introMessage={introMessage}
         workoutNotes={workoutNotes}
         onUpdateNotes={setWorkoutNotes}
@@ -691,6 +717,28 @@ export default function Workout({ session }) {
           await upsertAiMemory(session.user.id, updated)
         }}
         onApplyAdjustment={(adjustment) => workout.applyAdjustment(adjustment)}
+        onApplyDeload={async (deload) => {
+          try {
+            const result = await startDeloadWeek(session.user.id, deload.days || 7)
+            setDeloadStatus({ isActive: true, daysLeft: result.daysLeft, deloadUntil: result.deloadUntil })
+            // Också applicera på aktuella passet direkt
+            const changes = sessionExercises.map(ex => ({
+              exerciseName: ex.name,
+              weightMultiplier: deload.weightMultiplier ?? 0.85,
+              setMultiplier: deload.setReduction ? 1 - (deload.setReduction / 4) : 0.8,
+            }))
+            if (changes.length > 0) {
+              workout.applyAdjustment({
+                summary: deload.summary,
+                changes,
+              })
+            }
+            return true
+          } catch (err) {
+            console.error('startDeloadWeek error:', err)
+            return false
+          }
+        }}
       />
 
       {/* ── Byt övning ── */}

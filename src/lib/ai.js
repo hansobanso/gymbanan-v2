@@ -5,7 +5,7 @@ const AI_MODEL = 'claude-haiku-4-5-20251001'
  * Skickar meddelanden + kontext till PT-endpointen.
  * Returnerar AI:ns svarstext.
  */
-export async function chatWithAI({ messages, context, memory }) {
+export async function chatWithAI({ messages, context, memory, deloadStatus }) {
   const body = {
     model: AI_MODEL,
     max_tokens: 1024,
@@ -28,7 +28,7 @@ Vad du KAN bedöma utifrån data:
 - Om användaren följer sitt program eller inte
 
 ═══ ANPASSA AKTUELLT PASS ═══
-Om användaren beskriver en omständighet som motiverar att passet anpassas (sjuk, trött, dålig sömn, ont någonstans, deload, kort om tid, vill köra tyngre, vill köra lättare, etc.) ska du:
+Om användaren beskriver en omständighet som motiverar att passet anpassas (sjuk, trött, dålig sömn, ont någonstans, kort om tid, vill köra tyngre, vill köra lättare, etc.) ska du:
 
 1. Förklara kort i ord vad du föreslår och varför.
 2. Avsluta MED ett JSON-block exakt så här:
@@ -64,8 +64,39 @@ Regler för JSON-blocket:
   inget JSON-block.
 - Skriv inget mer text efter JSON-blocket.
 
+═══ DELOAD-VECKA ═══
+En deload-vecka är 7 dagar där alla pass automatiskt körs lättare för återhämtning.
+När användaren ber om en deload-vecka (eller du tycker datan tydligt visar att de behöver),
+föreslå det med ett SEPARAT JSON-format:
+
+<deload>
+{
+  "summary": "Deload-vecka: -15% vikt, ett set mindre",
+  "days": 7,
+  "weightMultiplier": 0.85,
+  "setReduction": 1
+}
+</deload>
+
+Regler för deload-blocket:
+- Använd <deload>...</deload>-taggar (NOT <adjustment>).
+- "days" är 7 som standard, eller mer/mindre om användaren ber om det.
+- "weightMultiplier" är 0.85 (= -15%) som standard.
+- "setReduction" är hur många arbetsset som ska tas bort per övning (default 1).
+- "summary" är en kort mening på svenska.
+- Använd <deload>-blocket BARA när användaren faktiskt vill köra en deload-vecka,
+  inte bara ett enstaka lättare pass (då används <adjustment> istället).
+
+VIKTIGT om deload kontra anpassning:
+- "Jag är sjuk idag" -> <adjustment> (bara detta pass)
+- "Jag känner mig sliten, kanske dags för deload?" -> <deload> (hela veckan)
+- "Jag vill köra deload" -> <deload>
+
 Stil: direkt, konkret, på svenska. Inga generella fraser. Inga engelska låneord.`
   ]
+  if (deloadStatus?.isActive) {
+    parts.push(`\n═══ AKTIV DELOAD-VECKA ═══\nAnvändaren kör just nu en deload-vecka (${deloadStatus.daysLeft} dagar kvar). Vikterna är redan automatiskt sänkta. Föreslå INTE en ny deload, och kommentera INTE stagnationer som problem - det är meningen att vikterna är låga nu.`)
+  }
   if (memory) parts.push(`\nHär är träningshistorik och kontext för den här användaren:\n${memory}`)
   if (context) parts.push(`\nAktuellt pass:\n${context}`)
   body.system = parts.join('\n')
@@ -326,4 +357,29 @@ export function parseAdjustment(aiText) {
   }
   const displayText = aiText.replace(match[0], '').trim()
   return { displayText, adjustment }
+}
+
+/**
+ * Parsar ett AI-svar och hittar ett <deload>...</deload>-block.
+ * Returnerar { displayText, deload } där deload är förslaget eller null.
+ */
+export function parseDeload(aiText) {
+  if (!aiText) return { displayText: aiText, deload: null }
+  const match = aiText.match(/<deload>\s*([\s\S]*?)\s*<\/deload>/i)
+  if (!match) return { displayText: aiText, deload: null }
+  const jsonStr = match[1].trim()
+  let deload = null
+  try {
+    const parsed = JSON.parse(jsonStr)
+    deload = {
+      summary: typeof parsed.summary === 'string' ? parsed.summary : 'Starta deload-vecka',
+      days: Number.isFinite(parsed.days) ? parsed.days : 7,
+      weightMultiplier: Number.isFinite(parsed.weightMultiplier) ? parsed.weightMultiplier : 0.85,
+      setReduction: Number.isFinite(parsed.setReduction) ? parsed.setReduction : 1,
+    }
+  } catch {
+    // ogiltig JSON
+  }
+  const displayText = aiText.replace(match[0], '').trim()
+  return { displayText, deload }
 }

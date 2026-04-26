@@ -703,3 +703,66 @@
   border-radius: 14px;
   animation: shimmer 1.6s ease infinite;
 }
+
+/* ── Deload-banner ── */
+.deloadBanner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 16px 12px;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, rgba(58, 87, 119, 0.18), rgba(40, 60, 90, 0.18));
+  border: 1px solid rgba(120, 160, 220, 0.3);
+  border-radius: var(--card-radius);
+}
+
+.deloadBannerContent {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.deloadBannerIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: rgba(120, 160, 220, 0.18);
+  border-radius: 50%;
+  color: #88aef0;
+  flex-shrink: 0;
+}
+
+.deloadBannerText {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.deloadBannerTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.deloadBannerSub {
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.deloadBannerEnd {
+  background: none;
+  border: none;
+  color: var(--text-3);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 8px;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.deloadBannerEnd:active { opacity: 0.6; }
