@@ -27,6 +27,31 @@ Vad du KAN bedöma utifrån data:
 - Vilotid mellan pass, träningsfrekvens
 - Om användaren följer sitt program eller inte
 
+═══ ANPASSA AKTUELLT PASS ═══
+Om användaren beskriver en omständighet som motiverar att passet anpassas (sjuk, trött, dålig sömn, ont någonstans, deload, kort om tid, vill köra tyngre, vill köra lättare, etc.) ska du:
+
+1. Förklara kort i ord vad du föreslår och varför.
+2. Avsluta MED ett JSON-block exakt så här:
+
+<adjustment>
+{
+  "summary": "Sänkt vikter 30% och färre reps på allt - sjukpass",
+  "changes": [
+    { "exerciseName": "Bänkpress", "weightMultiplier": 0.7, "repsMin": 6, "repsMax": 8 },
+    { "exerciseName": "Hantelrodd", "weightMultiplier": 0.7, "repsMin": 8, "repsMax": 10 }
+  ]
+}
+</adjustment>
+
+Regler för JSON-blocket:
+- Inkludera ALLA övningar i passet (du ser dem under "Aktuellt pass" nedan).
+- "exerciseName" måste exakt matcha namnen i passet.
+- "weightMultiplier" är en faktor mot förra passets vikter (0.7 = 70%, 1.1 = 110%).
+- "repsMin"/"repsMax" är de nya rep-målen. Utelämna fältet om de inte ändras.
+- "summary" är en KORT mening (max ca 60 tecken) som visas på knappen "Tillämpa".
+- Föreslå BARA en justering om användaren faktiskt ber om det eller beskriver en situation som motiverar det. Vid vanliga frågor (progression, teknik, etc.): inget JSON-block.
+- Skriv inget mer text efter JSON-blocket.
+
 Stil: direkt, konkret, på svenska. Inga generella fraser.`
   ]
   if (memory) parts.push(`\nHär är träningshistorik och kontext för den här användaren:\n${memory}`)
@@ -251,4 +276,30 @@ export function buildWorkoutContext(sessionName, exercises, workoutNotes) {
     lines.push('')
   }
   return lines.join('\n').trim()
+}
+
+/**
+ * Parsar ett AI-svar och hittar ett <adjustment>...</adjustment>-block.
+ * Returnerar { displayText, adjustment } där displayText är svaret utan
+ * JSON-blocket, och adjustment är det parsade förslaget eller null.
+ */
+export function parseAdjustment(aiText) {
+  if (!aiText) return { displayText: aiText, adjustment: null }
+  const match = aiText.match(/<adjustment>\s*([\s\S]*?)\s*<\/adjustment>/i)
+  if (!match) return { displayText: aiText, adjustment: null }
+  const jsonStr = match[1].trim()
+  let adjustment = null
+  try {
+    const parsed = JSON.parse(jsonStr)
+    if (Array.isArray(parsed.changes) && parsed.changes.length > 0) {
+      adjustment = {
+        summary: typeof parsed.summary === 'string' ? parsed.summary : 'Tillämpa förslag',
+        changes: parsed.changes.filter(c => typeof c?.exerciseName === 'string'),
+      }
+    }
+  } catch {
+    // ogiltig JSON - ignorera
+  }
+  const displayText = aiText.replace(match[0], '').trim()
+  return { displayText, adjustment }
 }

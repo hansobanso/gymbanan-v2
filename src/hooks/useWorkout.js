@@ -473,6 +473,38 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
     }))
   }, [])
 
+  /**
+   * Tillämpar ett strukturerat justeringsförslag från PT.
+   * adjustment = { summary, changes: [{ exerciseName, weightMultiplier?, repsMin?, repsMax? }] }
+   */
+  const applyAdjustment = useCallback((adjustment) => {
+    if (!adjustment?.changes?.length) return false
+    setExercises(prev => prev.map(ex => {
+      const change = adjustment.changes.find(c => c.exerciseName === ex.name)
+      if (!change) return ex
+
+      let sets = ex.sets
+      // Justera vikter via multiplikator (bara på prefilled work-sets - icke gjorda)
+      if (typeof change.weightMultiplier === 'number' && change.weightMultiplier > 0) {
+        sets = sets.map(s => {
+          if (s.type !== 'work' || s.done) return s
+          if (!s.weight) return s
+          const w = parseFloat(s.weight)
+          if (!w) return s
+          const newW = Math.round(w * change.weightMultiplier / 2.5) * 2.5
+          return { ...s, weight: String(newW), prefilled: true }
+        })
+      }
+
+      const next = { ...ex, sets }
+      if (typeof change.repsMin === 'number') next.repsMin = change.repsMin
+      if (typeof change.repsMax === 'number') next.repsMax = change.repsMax
+      next.progressionHint = `PT: ${adjustment.summary}`
+      return next
+    }))
+    return true
+  }, [])
+
   return {
     workoutId,
     loading,
@@ -493,6 +525,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
     finishWorkout,
     ensureWorkout,
     applyDeload,
+    applyAdjustment,
     programChanged,
     repsUpdatedAt,
   }

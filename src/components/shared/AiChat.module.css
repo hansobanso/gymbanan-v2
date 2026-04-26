@@ -413,3 +413,51 @@
   padding: 9px 16px;
   cursor: pointer;
 }
+
+/* ── Adjustment button (PT föreslår passändring) ── */
+.adjustmentBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-md);
+  color: #000;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--font);
+  cursor: pointer;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.15s, transform 0.15s;
+}
+
+.adjustmentBtn:active {
+  transform: scale(0.98);
+  opacity: 0.85;
+}
+
+.adjustmentBtnText {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.adjustmentApplied {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: rgba(245, 208, 32, 0.1);
+  border: 1px solid rgba(245, 208, 32, 0.25);
+  border-radius: 10px;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+}

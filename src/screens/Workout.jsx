@@ -690,6 +690,7 @@ export default function Workout({ session }) {
           setAiMemory(updated)
           await upsertAiMemory(session.user.id, updated)
         }}
+        onApplyAdjustment={(adjustment) => workout.applyAdjustment(adjustment)}
       />
 
       {/* ── Byt övning ── */}

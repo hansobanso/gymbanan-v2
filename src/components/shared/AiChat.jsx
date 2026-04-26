@@ -9,12 +9,12 @@ const SUGGESTIONS = [
   'Tips för nästa pass?',
 ]
 
-export default function AiChat({ open, onClose, getContext, getMemory, onUpdateMemory, introMessage, workoutNotes, onUpdateNotes }) {
+export default function AiChat({ open, onClose, getContext, getMemory, onUpdateMemory, introMessage, workoutNotes, onUpdateNotes, onApplyAdjustment }) {
   const [input, setInput] = useState('')
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
   const notesRef = useRef(null)
-  const { messages, loading, error, send } = useAI({ getContext, getMemory })
+  const { messages, loading, error, send, markAdjustmentApplied } = useAI({ getContext, getMemory })
 
   // Fokusera input när sheeten öppnar
   useEffect(() => {
@@ -137,7 +137,30 @@ export default function AiChat({ open, onClose, getContext, getMemory, onUpdateM
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2 }}
                 >
-                  {msg.content}
+                  {msg.displayContent ?? msg.content}
+                  {msg.role === 'assistant' && msg.adjustment && !msg.adjustmentApplied && onApplyAdjustment && (
+                    <button
+                      className={styles.adjustmentBtn}
+                      onClick={() => {
+                        const ok = onApplyAdjustment(msg.adjustment)
+                        if (ok !== false) markAdjustmentApplied(i)
+                      }}
+                      type="button"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M20 6 9 17l-5-5"/>
+                      </svg>
+                      <span className={styles.adjustmentBtnText}>{msg.adjustment.summary}</span>
+                    </button>
+                  )}
+                  {msg.role === 'assistant' && msg.adjustmentApplied && (
+                    <div className={styles.adjustmentApplied}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M20 6 9 17l-5-5"/>
+                      </svg>
+                      Tillämpat
+                    </div>
+                  )}
                 </motion.div>
               ))}
 
