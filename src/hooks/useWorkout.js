@@ -458,6 +458,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
     await updateWorkout(id, {
       finished_at: new Date().toISOString(),
       exercises: payload,
+      adjusted: isAdjustedSession,
     })
     return id
   }

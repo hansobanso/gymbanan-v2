@@ -244,12 +244,23 @@ export async function updateWorkout(id, updates) {
 export async function getPreviousSetsForExercise(userId, exerciseName) {
   const { data, error } = await supabase
     .from('workouts')
-    .select('exercises')
+    .select('exercises, adjusted')
     .eq('user_id', userId)
     .not('finished_at', 'is', null)
     .order('finished_at', { ascending: false })
     .limit(15)
   if (error || !data) return null
+  // Hoppa över anpassade pass (sjukpass, deload, manuell PT-justering) -
+  // de representerar inte användarens normala progression.
+  for (const workout of data) {
+    if (workout.adjusted) continue
+    const ex = (workout.exercises ?? []).find(e => e.name === exerciseName)
+    if (!ex) continue
+    const allSets = (ex.sets ?? []).filter(s => s.done && (s.weight !== undefined && s.weight !== null))
+    if (allSets.length > 0) return allSets
+  }
+  // Fallback: om INGA icke-anpassade pass finns, ta första bästa - hellre någon
+  // data än ingen alls.
   for (const workout of data) {
     const ex = (workout.exercises ?? []).find(e => e.name === exerciseName)
     if (!ex) continue

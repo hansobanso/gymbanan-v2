@@ -64,6 +64,26 @@ Regler för JSON-blocket:
   inget JSON-block.
 - Skriv inget mer text efter JSON-blocket.
 
+═══ ÅTERKOMST EFTER PAUS ═══
+Om användaren tränar igen efter en paus (sjukdom, deload, semester etc.) - följ
+denna praxis:
+
+- **1-3 dagar borta:** Ta vid där du var, ingen regression.
+- **4-7 dagar borta:** Fungerar oftast med samma vikter. Ingen sänkning krävs.
+- **8-14 dagar borta:** Sänk vikten ~10% första passet (weightMultiplier: 0.9).
+  Ramp upp över 1-2 pass.
+- **15-28 dagar borta:** Sänk vikten 15-20% (weightMultiplier: 0.8). Ramp upp
+  över 2-3 pass.
+- **1+ månad borta:** Sänk vikten 20-30% (weightMultiplier: 0.75). Ramp upp
+  över 2-3 veckor.
+
+EFTER DELOAD-VECKA: Användaren förväntas vara *starkare* (återhämtad), inte
+svagare. Ingen extra sänkning. Fortsätt progressionen som vanligt.
+
+EFTER ANPASSAT PASS (sjukpass, lättare): Senaste passet är inte representativt
+för normal styrka. Hoppa över dess vikter när du föreslår progression - använd
+passet före det.
+
 ═══ DELOAD-VECKA ═══
 En deload-vecka är 7 dagar där alla pass automatiskt körs lättare för återhämtning.
 När användaren ber om en deload-vecka (eller du tycker datan tydligt visar att de behöver),
@@ -125,6 +145,35 @@ export function analyzeWorkoutContext(recentWorkouts, currentExercises) {
     return insights.join('\n')
   }
 
+  const NOW = Date.now()
+  const DAYS = (ms) => Math.round(ms / (1000 * 60 * 60 * 24))
+
+  // 0) FRÅNVARO-DETEKTION: hur länge sedan senaste pass?
+  // Hoppa över anpassade pass (sjuk/deload) - de räknas inte som "tränat normalt"
+  const lastNormalWorkout = recentWorkouts.find(w => !w.adjusted)
+  if (lastNormalWorkout) {
+    const daysSinceLast = DAYS(NOW - new Date(lastNormalWorkout.finished_at).getTime())
+    if (daysSinceLast >= 7 && daysSinceLast <= 10) {
+      insights.push(`ÅTERKOMST EFTER PAUS: ${daysSinceLast} dagar sedan senaste normala pass. Föreslå att köra samma vikter som tidigare - kort paus ger ingen detraining. Säg "välkommen tillbaka" och håll vikterna oförändrade.`)
+    } else if (daysSinceLast >= 11 && daysSinceLast <= 14) {
+      insights.push(`ÅTERKOMST EFTER PAUS: ${daysSinceLast} dagar sedan senaste normala pass (1-2 veckor). Rekommendera att SÄNKA vikten 10% första passet, sedan ramp:a upp över 1-2 pass. Använd <adjustment> med weightMultiplier 0.9 för alla övningar.`)
+    } else if (daysSinceLast >= 15 && daysSinceLast <= 28) {
+      insights.push(`LÅNG FRÅNVARO: ${daysSinceLast} dagar sedan senaste normala pass (2-4 veckor). Sänk vikten 15-20% första passet och ramp:a upp över 2-3 pass. Använd <adjustment> med weightMultiplier 0.8 för alla övningar.`)
+    } else if (daysSinceLast > 28) {
+      insights.push(`MYCKET LÅNG FRÅNVARO: ${daysSinceLast} dagar sedan senaste normala pass (1+ månad). Sänk vikten 20-30% och ramp:a upp över 2-3 veckor. Använd <adjustment> med weightMultiplier 0.75.`)
+    }
+  }
+
+  // 0b) Återkomst efter sjukperiod: senaste 1-2 pass var anpassade men nu kör användaren igen
+  const recentAdjusted = recentWorkouts.slice(0, 3).filter(w => w.adjusted).length
+  const lastWasAdjusted = recentWorkouts[0]?.adjusted
+  if (lastWasAdjusted && recentAdjusted >= 1) {
+    const daysSinceLastAny = DAYS(NOW - new Date(recentWorkouts[0].finished_at).getTime())
+    if (daysSinceLastAny <= 7) {
+      insights.push(`ÅTERKOMST EFTER SJUKPASS: Senaste pass var anpassat (sjuk/lättare). Om användaren mår bra idag - ta vid där det var INNAN sjukpasset. Hoppa över de anpassade vikterna när du föreslår progression.`)
+    }
+  }
+
   // 1) PR-detektion: jämför aktuell övnings tilltänkta vikter mot tidigare maxvikt
   const currentExNames = new Set((currentExercises ?? []).map(e => e.name))
   const exHistory = {} // { exName: [{ date, maxWeight, maxReps }] }
@@ -147,8 +196,6 @@ export function analyzeWorkoutContext(recentWorkouts, currentExercises) {
   }
 
   // 2) Övningar som inte tränats på länge (i aktuellt pass)
-  const NOW = Date.now()
-  const DAYS = (ms) => Math.round(ms / (1000 * 60 * 60 * 24))
   for (const exName of currentExNames) {
     const hist = exHistory[exName]
     if (!hist || hist.length === 0) {
