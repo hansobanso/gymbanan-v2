@@ -145,23 +145,35 @@ export function analyzeWorkoutContext(recentWorkouts, currentExercises) {
     }
   }
 
-  // 5) Veckostatistik: hur många pass senaste 7 dagarna
+  // 5) Veckostatistik: relativa mått
+  // Räkna pass per vecka senaste 7 dagar, jämfört med användarens normala frekvens
+  // (genomsnitt över de 30 dagar som föregick senaste 7 dagarna).
   const last7d = recentWorkouts.filter(w => {
     const t = new Date(w.finished_at).getTime()
     return DAYS(NOW - t) <= 7
   })
-  const last30d = recentWorkouts.filter(w => {
-    const t = new Date(w.finished_at).getTime()
-    return DAYS(NOW - t) <= 30
+  // Beräkna baseline: pass mellan dag 8 och dag 37 (en månad innan denna vecka)
+  const baselineWindow = recentWorkouts.filter(w => {
+    const days = DAYS(NOW - new Date(w.finished_at).getTime())
+    return days > 7 && days <= 37
   })
-  if (last7d.length >= 4) {
-    insights.push(`HÖGFREKVENS: ${last7d.length} pass senaste 7 dagarna. Notera om återhämtningen verkar stressad.`)
+  const baselinePerWeek = baselineWindow.length / 4.3 // ≈ 30/7
+
+  // Bara flagga om denna vecka är MARKANT högre än användarens normala
+  // (minst 50% mer pass än vanligt OCH minst 5 pass)
+  if (last7d.length >= 5 && baselinePerWeek > 0 && last7d.length > baselinePerWeek * 1.5) {
+    insights.push(`HÖGFREKVENS: ${last7d.length} pass senaste 7 dagarna (vanligtvis ~${baselinePerWeek.toFixed(1)} pass/vecka). Återhämtning kan vara stressad.`)
   }
 
-  // 6) Deload-signal: stagnation över hela passet + hög volym
+  // 6) Deload-signal: bygger på stagnation som primärsignal, inte total volym
+  // Stagnation över flera övningar = trolig överbelastning, oavsett om användaren
+  // kör 2 eller 5 pass/vecka. Ett program med många pass är inte i sig en deload-signal.
   const stagnationCount = insights.filter(i => i.startsWith('STAGNATION')).length
-  if (stagnationCount >= 2 && last30d.length >= 8) {
-    insights.push(`DELOAD-SIGNAL: Flera övningar har stagnerat samtidigt och användaren har tränat ${last30d.length} pass senaste 30 dagarna. Föreslå en deload-vecka (sänk vikt 10-15%, halvera volym).`)
+  if (stagnationCount >= 3) {
+    insights.push(`DELOAD-SIGNAL: ${stagnationCount} övningar har stagnerat samtidigt - tecken på att kroppen behöver återhämtning. Föreslå en deload-vecka (sänk vikt 10-15%, halvera volym).`)
+  } else if (stagnationCount >= 2 && last7d.length >= 4 && baselinePerWeek > 0 && last7d.length > baselinePerWeek * 1.3) {
+    // Sekundärsignal: 2 stagnationer + en vecka som är högre än användarens normala
+    insights.push(`DELOAD-SIGNAL: 2 övningar har stagnerat och denna vecka är ovanligt intensiv (${last7d.length} pass vs vanligt ~${baselinePerWeek.toFixed(1)}). Överväg lättare vecka.`)
   }
 
   if (insights.length === 0) {
