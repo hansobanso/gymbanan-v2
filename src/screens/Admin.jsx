@@ -61,7 +61,45 @@ async function adminSaveExercise(ex) {
 }
 
 async function adminUpdateExercise(id, patch) {
-  const { data, error } = await supabase.from('exercises').update(patch).eq('id', id).select().maybeSingle()
+  // Hamta gamla namnet for att jamfora
+  const { data: existing, error: fetchErr } = await supabase
+    .from('exercises')
+    .select('name')
+    .eq('id', id)
+    .maybeSingle()
+  if (fetchErr) throw fetchErr
+  if (!existing) throw new Error('Övningen hittades inte.')
+
+  const oldName = existing.name
+  const newName = patch.name
+  const nameChanged = newName && newName !== oldName
+
+  // Om namnet andrats: anropa rename_exercise_globally som sankar
+  // namnet i programs.sessions och workouts.exercises ocksa.
+  if (nameChanged) {
+    const { error: rpcErr } = await supabase.rpc('rename_exercise_globally', {
+      exercise_id: id,
+      new_name: newName,
+    })
+    if (rpcErr) throw rpcErr
+  }
+
+  // Uppdatera ovriga falt (allt utom name, det ar redan gjort om det andrats)
+  const { name: _name, ...otherFields } = patch
+  if (Object.keys(otherFields).length > 0) {
+    const { error } = await supabase
+      .from('exercises')
+      .update(otherFields)
+      .eq('id', id)
+    if (error) throw error
+  }
+
+  // Hamta uppdaterade raden for att returnera
+  const { data, error } = await supabase
+    .from('exercises')
+    .select()
+    .eq('id', id)
+    .maybeSingle()
   if (error) throw error
   if (!data) throw new Error('Kunde inte uppdatera övningen - inga rader påverkades. Är du inloggad som admin?')
   return data
