@@ -1143,30 +1143,60 @@
   background: #141414;
   border: 1px solid #1e1e1e;
   border-radius: 10px;
-  padding: 14px 16px;
+  padding: 8px 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
+}
+
+.progCardMap {
+  flex-shrink: 0;
+  width: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .progCardInfo {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
   flex: 1;
   min-width: 0;
 }
 
 .progCardName {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   color: #e0e0e0;
 }
 
 .progCardMeta {
-  font-size: 12px;
-  color: #555;
+  font-size: 11px;
+  color: #666;
+}
+
+.progCardMuscles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.progMuscleChip {
+  font-size: 10px;
+  font-weight: 500;
+  color: #aaa;
+  background: rgba(245, 208, 32, 0.06);
+  border: 1px solid rgba(245, 208, 32, 0.15);
+  padding: 1px 6px;
+  border-radius: 8px;
+}
+
+.progMuscleChip strong {
+  color: #F5D020;
+  font-weight: 700;
 }
 
 
@@ -1391,6 +1421,58 @@
   gap: 16px;
   color: #444;
   font-size: 14px;
+  padding: 32px;
+}
+
+.exEmptyStat {
+  text-align: center;
+}
+
+.exEmptyNumber {
+  font-size: 56px;
+  font-weight: 800;
+  color: #F5D020;
+  line-height: 1;
+  letter-spacing: -2px;
+}
+
+.exEmptyLabel {
+  font-size: 12px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-top: 4px;
+}
+
+.exEmptyMuscles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(140px, 1fr));
+  gap: 4px 24px;
+  margin: 8px 0;
+  max-width: 380px;
+}
+
+.exEmptyMuscleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #aaa;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.exEmptyMuscleRow strong {
+  color: #F5D020;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.exEmptyHint {
+  font-size: 12px;
+  color: #444;
+  margin: 0;
 }
 
 .exDetailForm {

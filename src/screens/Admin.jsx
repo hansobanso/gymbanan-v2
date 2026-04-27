@@ -17,7 +17,8 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { supabase } from '../lib/supabase'
-import { ProgramMuscleSetSummary } from '../components/settings/MuscleSetSummary'
+import { ProgramMuscleSetSummary, computeProgramMuscleSets } from '../components/settings/MuscleSetSummary'
+import MuscleMap from '../components/shared/MuscleMap'
 import styles from './Admin.module.css'
 
 const ADMIN_PASSWORD = 'banana2024'
@@ -233,14 +234,10 @@ function SortableExerciseRow({ exercise, sessionId, onUpdate, onRemove }) {
         <div className={styles.exCardMain}>
           <div className={styles.exCardName}>{exercise.name}</div>
           <div className={styles.exCardMeta}>
-            {(exercise.warmupSets ?? 1) > 0 && <span>{exercise.warmupSets ?? 1} WU</span>}
             <span>{exercise.workSets ?? 3} set</span>
             {(exercise.backoffSets ?? 0) > 0 && <span>{exercise.backoffSets} BO</span>}
             {(exercise.repsMin || exercise.repsMax) && (
               <span>{exercise.repsMin ?? ''}–{exercise.repsMax ?? ''} reps</span>
-            )}
-            {exercise.restSeconds != null && (
-              <span>{Math.floor(exercise.restSeconds / 60)}{exercise.restSeconds % 60 ? `m${exercise.restSeconds % 60}s` : 'm'}</span>
             )}
           </div>
         </div>
@@ -925,8 +922,24 @@ function ExercisesTab() {
       <div className={styles.exDetailPanel}>
         {!form ? (
           <div className={styles.exDetailEmpty}>
-            <p>Välj en övning för att redigera</p>
+            <div className={styles.exEmptyStat}>
+              <div className={styles.exEmptyNumber}>{exercises.length}</div>
+              <div className={styles.exEmptyLabel}>övningar totalt</div>
+            </div>
+            <div className={styles.exEmptyMuscles}>
+              {MUSCLE_GROUPS.map(group => {
+                const count = exercises.filter(e => e.muscle_group === group).length
+                if (count === 0) return null
+                return (
+                  <div key={group} className={styles.exEmptyMuscleRow}>
+                    <span>{group}</span>
+                    <strong>{count}</strong>
+                  </div>
+                )
+              })}
+            </div>
             <button className={styles.addBtn} onClick={startNew} type="button">+ Ny övning</button>
+            <p className={styles.exEmptyHint}>eller välj en övning till vänster</p>
           </div>
         ) : (
           <div className={styles.exDetailForm}>
@@ -1145,30 +1158,52 @@ function ProgramsTab({ allExercises }) {
 
       <div className={styles.progList}>
         {programs.length === 0 && <p className={styles.empty}>Inga globala program ännu.</p>}
-        {programs.map(prog => (
-          <div key={prog.id} className={styles.progCard}>
-            <div className={styles.progCardInfo}>
-              <span className={styles.progCardName}>{prog.name}</span>
-              <span className={styles.progCardMeta}>
-                {(prog.sessions ?? []).length} pass ·{' '}
-                {(prog.sessions ?? []).reduce((n, s) => n + (s.exercises ?? []).length, 0)} övningar
-              </span>
-            </div>
-            <div className={styles.rowActions}>
-              {deleteConfirm === prog.id ? (
-                <>
-                  <button className={styles.confirmDeleteBtn} onClick={() => handleDelete(prog.id)} type="button">Ja, ta bort</button>
-                  <button className={styles.cancelRowBtn} onClick={() => setDeleteConfirm(null)} type="button">Avbryt</button>
-                </>
-              ) : (
-                <>
+        {programs.map(prog => {
+          const sessions = prog.sessions ?? []
+          const numPass = sessions.length
+          const numEx = sessions.reduce((n, s) => n + (s.exercises ?? []).length, 0)
+          const totalSets = sessions.reduce(
+            (n, s) => n + (s.exercises ?? []).reduce((m, ex) => m + (ex.workSets ?? 3) + (ex.backoffSets ?? 0), 0),
+            0
+          )
+          const breakdown = computeProgramMuscleSets(sessions, allExercises)
+          const top3 = breakdown.slice(0, 3)
+          return (
+            <div key={prog.id} className={styles.progCard}>
+              <div className={styles.progCardMap}>
+                <MuscleMap breakdown={breakdown} size={56} />
+              </div>
+              <div className={styles.progCardInfo}>
+                <span className={styles.progCardName}>{prog.name}</span>
+                <span className={styles.progCardMeta}>
+                  {numPass} pass · {numEx} övn · {totalSets} set/v
+                </span>
+                {top3.length > 0 && (
+                  <div className={styles.progCardMuscles}>
+                    {top3.map(({ muscle, sets }) => (
+                      <span key={muscle} className={styles.progMuscleChip}>
+                        {muscle} <strong>{sets}</strong>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className={styles.rowActions}>
+                {deleteConfirm === prog.id ? (
+                  <>
+                    <button className={styles.confirmDeleteBtn} onClick={() => handleDelete(prog.id)} type="button">Ja, ta bort</button>
+                    <button className={styles.cancelRowBtn} onClick={() => setDeleteConfirm(null)} type="button">Avbryt</button>
+                  </>
+                ) : (
+                  <>
                   <button className={styles.editRowBtn} onClick={() => setEditing(prog)} type="button">Redigera</button>
                   <button className={styles.deleteRowBtn} onClick={() => setDeleteConfirm(prog.id)} type="button">Ta bort</button>
                 </>
               )}
             </div>
           </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )
