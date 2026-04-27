@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { updateExercise, copyExerciseForUser, upsertRestOverride, deleteRestOverride } from '../lib/db'
 import { EXERCISES, MUSCLE_GROUPS } from '../data/exercises'
-import MuscleMap from '../components/MuscleMap'
+import MuscleMap from '../components/shared/MuscleMap'
 import styles from './ExerciseDetail.module.css'
 
 const EQUIPMENT = ['Skivstång', 'Hantel', 'Maskin', 'Kabel', 'Kroppsvikt', 'Övrigt']

@@ -1152,7 +1152,7 @@
 
 .progCardMap {
   flex-shrink: 0;
-  width: 56px;
+  width: 240px;
   display: flex;
   align-items: center;
   justify-content: center;

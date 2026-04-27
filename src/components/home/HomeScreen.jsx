@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getWorkouts, getDeloadStatus, endDeloadWeek } from '../../lib/db'
-import MuscleMap from '../MuscleMap'
+import MuscleMap from '../shared/MuscleMap'
 import SessionPreview from './SessionPreview'
 import styles from './HomeScreen.module.css'
 
@@ -300,7 +300,9 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
         {recentWorkouts.length > 0 && (
           <section className={styles.section}>
             <span className={styles.sectionTitle}>Muskelåterhämtning</span>
-            <MuscleMap workouts={recentWorkouts} />
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <MuscleMap workouts={recentWorkouts} size={140} />
+            </div>
           </section>
         )}
 

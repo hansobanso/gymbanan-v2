@@ -1,39 +1,83 @@
 /**
  * MuscleMap - stiliserad gubbe (framsida + baksida) dar muskelgrupper
- * lyser upp gult baserat pa volym (set/vecka).
+ * lyser upp gult baserat pa volym.
  *
- * Props:
- *   breakdown: array of { muscle: string, sets: number }
- *   size: width i pixlar (default 60)
+ * Acceptable input (en av tre):
+ *   breakdown:    [{ muscle, sets }]            - for ProgramEdit/Admin
+ *   workouts:     [{ exercises: [...] }]        - for HomeScreen (7d-vag)
+ *   intensities:  { Brost: 0.7, Rygg: 1, ... }  - direkt 0-1 (ExerciseDetail)
+ *
+ * Andra props:
+ *   size: figur-bredd i px (default 60). Total svg-bredd ar size*2.
  */
 
-function intensity(sets) {
+import { EXERCISES } from '../../data/exercises'
+
+// Intensitet 0-1 fran sets-antal (anvands av breakdown-API:et)
+function intensityFromSets(sets) {
   if (!sets || sets <= 0) return 0
   return Math.min(1, sets / 12)
 }
 
-function muscleColor(map, muscle) {
-  const i = intensity(map[muscle])
+// Berakna 7-dagars-vagd intensitet fran workouts-array
+function intensitiesFromWorkouts(workouts) {
+  const scores = {}
+  const now = Date.now()
+  for (const w of workouts ?? []) {
+    const finishedAt = w.finished_at ? new Date(w.finished_at).getTime() : now
+    const ageDays = (now - finishedAt) / 86_400_000
+    if (ageDays > 7) continue
+    const decay = Math.max(0, 1 - ageDays / 7)
+    for (const ex of w.exercises ?? []) {
+      const mg = ex.muscle_group ?? EXERCISES[ex.name]?.muscle_group
+      if (!mg) continue
+      const workSets = (ex.sets ?? []).filter(
+        s => s.done && s.type !== 'warmup' && s.type !== 'backoff'
+      )
+      if (workSets.length === 0) continue
+      scores[mg] = (scores[mg] ?? 0) + workSets.length * decay
+    }
+  }
+  const out = {}
+  for (const [m, s] of Object.entries(scores)) out[m] = Math.min(1, s / 8)
+  return out
+}
+
+// Konvertera valfritt input till en intensities-map { muscle: 0-1 }
+function resolveIntensities({ breakdown, workouts, intensities }) {
+  if (intensities) return intensities
+  if (workouts) return intensitiesFromWorkouts(workouts)
+  if (breakdown) {
+    const out = {}
+    for (const { muscle, sets } of breakdown) out[muscle] = intensityFromSets(sets)
+    return out
+  }
+  return {}
+}
+
+function colorFor(intensities, muscle) {
+  const i = intensities[muscle] ?? 0
   if (i === 0) return '#1f1f1f'
   const alpha = 0.28 + i * 0.72
   return `rgba(245, 208, 32, ${alpha})`
 }
 
-function toMap(breakdown) {
-  const map = {}
-  for (const { muscle, sets } of breakdown ?? []) map[muscle] = sets
-  return map
-}
-
 const BODY_FILL = '#0e0e0e'
 const BODY_STROKE = '#2a2a2a'
 
-export default function MuscleMap({ breakdown, size = 60 }) {
-  const map = toMap(breakdown)
+export default function MuscleMap({ breakdown, workouts, intensities: customIntensities, size = 60, compact = false }) {
+  const intensities = resolveIntensities({
+    breakdown,
+    workouts,
+    intensities: customIntensities,
+  })
+  const muscleColor = (m) => colorFor(intensities, m)
+  // 'compact' fran gamla API:et: gor figuren mindre
+  const figureSize = compact ? Math.min(size, 50) : size
   return (
     <svg
-      width={size * 2}
-      height={size * 2 * (1668 / 2388)}
+      width={figureSize * 2}
+      height={figureSize * 2 * (1668 / 2388)}
       viewBox="0 0 2388 1668"
       xmlns="http://www.w3.org/2000/svg"
       style={{ display: 'block' }}
@@ -104,7 +148,7 @@ export default function MuscleMap({ breakdown, size = 60 }) {
       {/* Framsida: muskler */}
       <g>
         {/* Brost */}
-        <g fill={muscleColor(map, 'Bröst')}>
+        <g fill={muscleColor('Bröst')}>
           <g transform="matrix(0.888268,0,0,1.37442,-379.638,-178.525)">
             <path d="M1119.5,470.198C1119.5,465.895 1116.97,461.768 1112.45,458.726C1107.94,455.683 1101.82,453.974 1095.43,453.974C1050.92,453.974 997.07,449.632 971.782,466.7C946.493,483.768 922.664,540.468 943.701,556.381C964.738,572.294 1065.63,562.179 1098.01,562.179C1103.71,562.179 1109.17,560.652 1113.21,557.934C1117.24,555.217 1119.5,551.531 1119.5,547.688C1119.5,527.551 1119.5,491.219 1119.5,470.198Z" />
           </g>
@@ -114,7 +158,7 @@ export default function MuscleMap({ breakdown, size = 60 }) {
         </g>
 
         {/* Underarmar (4 paths - bada armar pa bada figurer) */}
-        <g fill={muscleColor(map, 'Underarmar')} transform="matrix(1,0,0,1,655.346,-4.88802)">
+        <g fill={muscleColor('Underarmar')} transform="matrix(1,0,0,1,655.346,-4.88802)">
           <g transform="matrix(0.848298,0.235606,-0.403629,1.45326,363.959,-435.375)">
             <path d="M361.1,717.748C403.621,713.925 404.562,732.406 405.415,757.311C406.22,780.813 409.206,799.259 383.491,801.532C359.681,803.637 348.709,785.894 337.293,762.746C326.424,740.706 316.423,721.765 361.1,717.748Z" />
           </g>
@@ -130,14 +174,14 @@ export default function MuscleMap({ breakdown, size = 60 }) {
         </g>
 
         {/* Mage / Core */}
-        <g fill={muscleColor(map, 'Core')}>
+        <g fill={muscleColor('Core')}>
           <g transform="matrix(1.39703,0,0,1.42932,-246.132,-258.826)">
             <path d="M620.599,612.999C662.725,612.999 695.337,644.658 696.925,683.582C699.958,757.899 547.327,758.142 544.273,683.582C542.679,644.658 578.474,612.999 620.599,612.999Z" />
           </g>
         </g>
 
         {/* Biceps */}
-        <g fill={muscleColor(map, 'Biceps')}>
+        <g fill={muscleColor('Biceps')}>
           <g transform="matrix(1.32375,0.374362,-0.357966,1.26578,46.8103,-332.088)">
             <path d="M437.061,562.322C449.422,564.13 456.981,584.763 460.42,610.921C464.696,643.446 464.789,665.566 436.687,668.66C422.141,670.261 413.148,641.859 410.186,609.174C406.135,564.477 424.482,560.482 437.061,562.322Z" />
           </g>
@@ -147,7 +191,7 @@ export default function MuscleMap({ breakdown, size = 60 }) {
         </g>
 
         {/* Quads */}
-        <g fill={muscleColor(map, 'Quads')}>
+        <g fill={muscleColor('Quads')}>
           <g transform="matrix(1.60077,0.46992,-0.256693,0.874416,-28.2624,-144.471)">
             <path d="M479.527,824.536C498.557,832.713 523.864,852.573 523.864,898.884C523.864,945.195 519.382,1007.81 480.392,1011.94C448.153,1015.35 446.094,961.432 445.761,893.308C445.574,854.972 464.08,817.899 479.527,824.536Z" />
           </g>
@@ -160,7 +204,7 @@ export default function MuscleMap({ breakdown, size = 60 }) {
       {/* Baksida: muskler */}
       <g transform="matrix(1,0,0,1,655.346,-4.88802)">
         {/* Rumpa */}
-        <g fill={muscleColor(map, 'Rumpa')}>
+        <g fill={muscleColor('Rumpa')}>
           <g transform="matrix(1.39703,0,0,1.76508,-249.718,-502.317)">
             <path d="M580.692,708.417C611.682,709.169 616.363,718.183 617.952,757.106C620.984,831.424 480.506,796.253 516.562,730.48C533.851,698.942 538.579,707.395 580.692,708.417Z" />
           </g>
@@ -170,7 +214,7 @@ export default function MuscleMap({ breakdown, size = 60 }) {
         </g>
 
         {/* Triceps */}
-        <g fill={muscleColor(map, 'Triceps')}>
+        <g fill={muscleColor('Triceps')}>
           <g transform="matrix(-1.32375,0.374362,0.357966,1.26578,1197.52,-331.804)">
             <path d="M444.897,538.686C457.258,540.494 451.033,546.277 459.37,587.656C465.843,619.782 457.306,659.394 429.203,662.488C414.657,664.089 399.384,639.599 396.422,606.914C394.362,584.184 403.257,573.48 422.448,555.125C435.715,542.436 438.715,537.782 444.897,538.686Z" />
           </g>
@@ -186,7 +230,7 @@ export default function MuscleMap({ breakdown, size = 60 }) {
         </g>
 
         {/* Hamstrings */}
-        <g fill={muscleColor(map, 'Hamstrings')}>
+        <g fill={muscleColor('Hamstrings')}>
           <g transform="matrix(1.60077,0.46992,-0.217375,0.740482,-72.4852,5.9337)">
             <path d="M483.517,915.073C502.547,923.25 507.062,913.462 513.563,922.242C533.919,949.736 518.921,1013.79 479.932,1017.92C447.692,1021.33 449.863,955.192 448.485,930.106C446.976,902.643 468.07,908.436 483.517,915.073Z" />
           </g>
@@ -196,7 +240,7 @@ export default function MuscleMap({ breakdown, size = 60 }) {
         </g>
 
         {/* Vader */}
-        <g fill={muscleColor(map, 'Vader')}>
+        <g fill={muscleColor('Vader')}>
           <g transform="matrix(0.595461,0.254083,-0.375778,0.880662,594.35,-18.1693)">
             <path d="M404.36,1057.61C396.617,1031.82 511.446,1000.71 535.856,1036.29C550.349,1057.41 533.172,1085.12 492.405,1095.25C434.923,1109.53 409.842,1075.87 404.36,1057.61Z" />
           </g>
@@ -212,7 +256,7 @@ export default function MuscleMap({ breakdown, size = 60 }) {
         </g>
 
         {/* Rygg - Lats + Landrygg + Traps */}
-        <g fill={muscleColor(map, 'Rygg')}>
+        <g fill={muscleColor('Rygg')}>
           <g transform="matrix(1,0,0,1,-655.346,4.88802)">
             <path d="M1338.84,452.121C1325.58,469.44 1310.61,545.636 1285.38,572.209C1279.53,578.37 1280.69,585.486 1281.22,594.514C1281.71,603.061 1282.32,611.085 1285.15,617.133C1295.77,639.843 1335.13,694.8 1345.17,718.649C1351.17,732.903 1374.49,723.204 1401.48,716.175C1419.22,711.553 1415.79,635.275 1441.12,575.567C1453.69,545.925 1409.58,465.702 1406.07,452.114C1401.87,435.836 1389.06,416.3 1382.11,418.573C1360.55,425.625 1352.93,433.74 1338.84,452.121Z" />
           </g>
@@ -242,7 +286,7 @@ export default function MuscleMap({ breakdown, size = 60 }) {
         </g>
 
         {/* Axlar */}
-        <g fill={muscleColor(map, 'Axlar')} transform="matrix(1,0,0,1,-655.346,4.88802)">
+        <g fill={muscleColor('Axlar')} transform="matrix(1,0,0,1,-655.346,4.88802)">
           <g transform="matrix(0.810237,0.586103,-0.627478,0.867434,386.29,-185.061)">
             <path d="M423.724,416.367C445.733,416.367 449.273,444.006 449.273,475.452C449.273,506.898 435.148,538.413 413.139,538.413C391.131,538.413 376.238,513.109 376.238,481.663C376.238,450.218 401.716,416.367 423.724,416.367Z" />
           </g>
