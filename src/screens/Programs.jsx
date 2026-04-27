@@ -24,6 +24,7 @@ export default function Programs({ session, programs, setPrograms, activeProgram
   const [saveError, setSaveError]       = useState(null)
   const [editingProgram, setEditingProgram] = useState(null)
   const [editingSession, setEditingSession] = useState(null)
+  const [previewGlobal, setPreviewGlobal]   = useState(null)
 
   const isAdmin = session?.user?.email === ADMIN_EMAIL
 
@@ -111,8 +112,11 @@ export default function Programs({ session, programs, setPrograms, activeProgram
   function openProgram(p) {
     const isGlobal = p.user_id === null
     if (isGlobal && !isAdmin) {
-      // Non-admin: copy instead of edit
-      handleCopyProgram(p)
+      // Icke-admin som klickar pa globalt program: visa preview-sheet
+      // med val 'Satt som aktivt' eller 'Anpassa & kopiera'.
+      // Tidigare auto-kopierades programmet vilket gjorde att man INTE
+      // kunde folja det globala programmet.
+      setPreviewGlobal(p)
     } else {
       setEditingProgram({ _id: p.id, ...p })
     }
@@ -155,7 +159,6 @@ export default function Programs({ session, programs, setPrograms, activeProgram
                 <div className={styles.programCardMeta}>
                   <span>{(p.sessions ?? []).length} pass</span>
                   {isGlobal && <span className={styles.globalBadge}>Global</span>}
-                  {isGlobal && !isAdmin && <span className={styles.globalBadge}>Tryck för att kopiera</span>}
                 </div>
               </div>
               <div className={styles.programCardRight}>
@@ -196,6 +199,80 @@ export default function Programs({ session, programs, setPrograms, activeProgram
               onBack={() => setEditingSession(null)}
             />
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Preview-sheet for globala program (icke-admin) */}
+      <AnimatePresence>
+        {previewGlobal && (
+          <>
+            <motion.div
+              key="globalPreviewBackdrop"
+              className={styles.previewBackdrop}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setPreviewGlobal(null)}
+            />
+            <motion.div
+              key="globalPreviewSheet"
+              className={styles.previewSheet}
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', stiffness: 380, damping: 36 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div className={styles.previewHandle} />
+              <h3 className={styles.previewTitle}>{previewGlobal.name}</h3>
+              <p className={styles.previewSub}>
+                {(previewGlobal.sessions ?? []).length} pass ·{' '}
+                {(previewGlobal.sessions ?? []).reduce((n, s) => n + (s.exercises ?? []).length, 0)} övningar
+              </p>
+              <div className={styles.previewSessions}>
+                {(previewGlobal.sessions ?? []).map((s, i) => (
+                  <div key={i} className={styles.previewSession}>
+                    <span className={styles.previewSessionName}>{s.name}</span>
+                    <span className={styles.previewSessionMeta}>{(s.exercises ?? []).length} övn</span>
+                  </div>
+                ))}
+              </div>
+              {activeProgramId === previewGlobal.id ? (
+                <button className={styles.previewActiveBtn} disabled type="button">
+                  ✓ Aktivt program
+                </button>
+              ) : (
+                <button
+                  className={styles.previewPrimaryBtn}
+                  onClick={() => {
+                    onSetActive(previewGlobal.id)
+                    setPreviewGlobal(null)
+                  }}
+                  type="button"
+                >
+                  Sätt som aktivt
+                </button>
+              )}
+              <button
+                className={styles.previewSecondaryBtn}
+                onClick={() => {
+                  const p = previewGlobal
+                  setPreviewGlobal(null)
+                  handleCopyProgram(p)
+                }}
+                type="button"
+              >
+                Anpassa &amp; kopiera till mitt eget
+              </button>
+              <button
+                className={styles.previewCancelBtn}
+                onClick={() => setPreviewGlobal(null)}
+                type="button"
+              >
+                Stäng
+              </button>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </div>

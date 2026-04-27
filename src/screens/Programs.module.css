@@ -192,3 +192,123 @@
 .overlayTop {
   z-index: 210;
 }
+
+/* ── Globalt-program preview-sheet ── */
+.previewBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 100;
+}
+
+.previewSheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #161616;
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+  padding: 12px 20px 24px;
+  z-index: 101;
+  max-height: 85vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.previewHandle {
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: #444;
+  margin: 0 auto 8px;
+}
+
+.previewTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+  text-align: center;
+}
+
+.previewSub {
+  font-size: 13px;
+  color: #888;
+  text-align: center;
+  margin: 0 0 8px;
+}
+
+.previewSessions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0 0 8px;
+}
+
+.previewSession {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: #1e1e1e;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+}
+
+.previewSessionName {
+  font-size: 14px;
+  font-weight: 500;
+  color: #e0e0e0;
+}
+
+.previewSessionMeta {
+  font-size: 12px;
+  color: #666;
+}
+
+.previewPrimaryBtn,
+.previewActiveBtn,
+.previewSecondaryBtn,
+.previewCancelBtn {
+  width: 100%;
+  border: none;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: opacity 0.1s, background 0.1s;
+}
+
+.previewPrimaryBtn {
+  background: #F5D020;
+  color: #000;
+}
+.previewPrimaryBtn:active { opacity: 0.85; }
+
+.previewActiveBtn {
+  background: rgba(120, 200, 120, 0.15);
+  border: 1px solid rgba(120, 200, 120, 0.4);
+  color: #88c888;
+  cursor: default;
+}
+
+.previewSecondaryBtn {
+  background: #1e1e1e;
+  border: 1px solid #2a2a2a;
+  color: #ccc;
+}
+.previewSecondaryBtn:active {
+  background: #252525;
+}
+
+.previewCancelBtn {
+  background: none;
+  color: #666;
+  font-weight: 500;
+  padding: 10px;
+}
