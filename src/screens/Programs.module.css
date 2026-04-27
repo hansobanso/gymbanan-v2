@@ -250,23 +250,67 @@
 
 .previewSession {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 6px;
   padding: 10px 14px;
   background: #1e1e1e;
   border: 1px solid #2a2a2a;
   border-radius: 8px;
 }
 
+.previewSessionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
 .previewSessionName {
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   color: #e0e0e0;
 }
 
 .previewSessionMeta {
+  font-size: 11px;
+  color: #888;
+  font-variant-numeric: tabular-nums;
+}
+
+.previewExerciseList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-top: 1px solid #2a2a2a;
+  padding-top: 6px;
+}
+
+.previewExerciseRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  padding: 2px 0;
+}
+
+.previewExerciseName {
+  color: #bbb;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.previewExerciseSets {
+  color: #F5D020;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
   font-size: 12px;
-  color: #666;
+  flex-shrink: 0;
 }
 
 .previewPrimaryBtn,

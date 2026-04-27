@@ -230,12 +230,36 @@ export default function Programs({ session, programs, setPrograms, activeProgram
                 {(previewGlobal.sessions ?? []).reduce((n, s) => n + (s.exercises ?? []).length, 0)} övningar
               </p>
               <div className={styles.previewSessions}>
-                {(previewGlobal.sessions ?? []).map((s, i) => (
-                  <div key={i} className={styles.previewSession}>
-                    <span className={styles.previewSessionName}>{s.name}</span>
-                    <span className={styles.previewSessionMeta}>{(s.exercises ?? []).length} övn</span>
-                  </div>
-                ))}
+                {(previewGlobal.sessions ?? []).map((s, i) => {
+                  const exercises = s.exercises ?? []
+                  const totalWorkSets = exercises.reduce(
+                    (n, ex) => n + (ex.workSets ?? 3) + (ex.backoffSets ?? 0),
+                    0
+                  )
+                  return (
+                    <div key={i} className={styles.previewSession}>
+                      <div className={styles.previewSessionHeader}>
+                        <span className={styles.previewSessionName}>{s.name}</span>
+                        <span className={styles.previewSessionMeta}>
+                          {exercises.length} övn · {totalWorkSets} set
+                        </span>
+                      </div>
+                      {exercises.length > 0 && (
+                        <ul className={styles.previewExerciseList}>
+                          {exercises.map((ex, j) => {
+                            const workSets = (ex.workSets ?? 3) + (ex.backoffSets ?? 0)
+                            return (
+                              <li key={j} className={styles.previewExerciseRow}>
+                                <span className={styles.previewExerciseName}>{ex.name}</span>
+                                <span className={styles.previewExerciseSets}>{workSets}×</span>
+                              </li>
+                            )
+                          })}
+                        </ul>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
               {activeProgramId === previewGlobal.id ? (
                 <button className={styles.previewActiveBtn} disabled type="button">
