@@ -604,6 +604,7 @@ function ProgramEditor({ program, allExercises, onSave, onBack, saveError }) {
           onChange={e => setName(e.target.value)}
           placeholder="Programnamn"
         />
+        <div className={styles.progEditorSpacer} />
         <button className={styles.saveProgBtn} onClick={handleSave} disabled={!name.trim() || saving} type="button">
           {saving ? 'Sparar…' : 'Spara program'}
         </button>
