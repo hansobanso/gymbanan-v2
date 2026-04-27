@@ -1171,7 +1171,7 @@ function ProgramsTab({ allExercises }) {
           return (
             <div key={prog.id} className={styles.progCard}>
               <div className={styles.progCardMap}>
-                <MuscleMap breakdown={breakdown} size={120} />
+                <MuscleMap breakdown={breakdown} size={80} />
               </div>
               <div className={styles.progCardInfo}>
                 <span className={styles.progCardName}>{prog.name}</span>

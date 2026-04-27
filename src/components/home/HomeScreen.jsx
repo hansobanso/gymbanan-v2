@@ -301,7 +301,7 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
           <section className={styles.section}>
             <span className={styles.sectionTitle}>Muskelåterhämtning</span>
             <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <MuscleMap workouts={recentWorkouts} size={280} />
+              <MuscleMap workouts={recentWorkouts} size={160} />
             </div>
           </section>
         )}
