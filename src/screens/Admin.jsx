@@ -49,7 +49,12 @@ async function adminGetExercises() {
 }
 
 async function adminSaveExercise(ex) {
-  const { data, error } = await supabase.from('exercises').insert(ex).select().maybeSingle()
+  // RLS-policyn 'Admins can insert global exercises' kräver att
+  // is_global=true OCH user_id=null OCH is_admin(). Vi sätter dessa
+  // alltid när admin skapar en övning - alla nya övningar i admin-flödet
+  // ska vara globala.
+  const payload = { ...ex, is_global: true, user_id: null }
+  const { data, error } = await supabase.from('exercises').insert(payload).select().maybeSingle()
   if (error) throw error
   if (!data) throw new Error('Kunde inte spara övning - är du inloggad som admin?')
   return data
