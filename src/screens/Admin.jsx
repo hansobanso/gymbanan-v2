@@ -203,6 +203,7 @@ function GripIcon() {
 // ── REST labels ──────────────────────────────────────────────────
 
 const REST_OPTS = [
+  { label: 'Auto',  value: '' },
   { label: '30s',   value: '30' },
   { label: '1m',    value: '60' },
   { label: '1m30s', value: '90' },
@@ -808,6 +809,14 @@ function ExercisesTab() {
         setExercises(prev => prev.map(e => e.id === selectedId ? updated : e))
         setForm(savedFormData)
         setOriginal(savedFormData)
+        // Om namnet andrats: signalera till andra tabbar (Programs, Stats)
+        // att de ska ladda om sin data, eftersom rename_exercise_globally
+        // har uppdaterat programs.sessions och workouts.exercises.
+        if (original?.name !== form.name.trim()) {
+          window.dispatchEvent(new CustomEvent('admin:exercise-renamed', {
+            detail: { id: selectedId, oldName: original?.name, newName: form.name.trim() },
+          }))
+        }
       }
     } catch (e) {
       setSaveError(friendlyError(e))
@@ -1054,6 +1063,18 @@ function ProgramsTab({ allExercises }) {
 
   useEffect(() => {
     adminGetGlobalPrograms().then(setPrograms).finally(() => setLoading(false))
+  }, [])
+
+  // Lyssna pa rename-event fran Exercises-tab. Nar en ovning byter
+  // namn syncas det till programs.sessions via SQL-funktionen, sa vi
+  // maste hamta in fraschvarianten for att UI:n inte ska ha cachat
+  // det gamla namnet.
+  useEffect(() => {
+    function onRename() {
+      adminGetGlobalPrograms().then(setPrograms).catch(() => {})
+    }
+    window.addEventListener('admin:exercise-renamed', onRename)
+    return () => window.removeEventListener('admin:exercise-renamed', onRename)
   }, [])
 
   async function handleSaveProg(payload) {
