@@ -296,21 +296,20 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
           </section>
         )}
 
-        {/* Muskelkarta */}
-        {recentWorkouts.length > 0 && (
-          <section className={styles.section}>
-            <span className={styles.sectionTitle}>Muskelåterhämtning</span>
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <MuscleMap workouts={recentWorkouts} size={160} />
-            </div>
-          </section>
-        )}
-
-        {recentWorkouts.length === 0 && programs.length > 0 && (
-          <div className={styles.welcomeHint}>
-            <p>Starta ditt första pass för att se statistik här</p>
+        {/* Muskelkarta - visas alltid, dimmad om inga pass an */}
+        <section className={styles.section}>
+          <span className={styles.sectionTitle}>
+            {recentWorkouts.length > 0 ? 'Muskelåterhämtning' : 'Muskelgrupper'}
+          </span>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <MuscleMap workouts={recentWorkouts} size={160} />
           </div>
-        )}
+          {recentWorkouts.length === 0 && (
+            <p className={styles.muscleMapHint}>
+              Lyser upp baserat på dina träningspass
+            </p>
+          )}
+        </section>
 
       </div>
 
