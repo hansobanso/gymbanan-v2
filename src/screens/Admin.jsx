@@ -230,7 +230,20 @@ function SortableExerciseRow({ exercise, sessionId, onUpdate, onRemove }) {
         <div className={styles.exCardHandle} {...attributes} {...listeners}>
           <GripIcon />
         </div>
-        <div className={styles.exCardName}>{exercise.name}</div>
+        <div className={styles.exCardMain}>
+          <div className={styles.exCardName}>{exercise.name}</div>
+          <div className={styles.exCardMeta}>
+            {(exercise.warmupSets ?? 1) > 0 && <span>{exercise.warmupSets ?? 1} WU</span>}
+            <span>{exercise.workSets ?? 3} set</span>
+            {(exercise.backoffSets ?? 0) > 0 && <span>{exercise.backoffSets} BO</span>}
+            {(exercise.repsMin || exercise.repsMax) && (
+              <span>{exercise.repsMin ?? ''}–{exercise.repsMax ?? ''} reps</span>
+            )}
+            {exercise.restSeconds != null && (
+              <span>{Math.floor(exercise.restSeconds / 60)}{exercise.restSeconds % 60 ? `m${exercise.restSeconds % 60}s` : 'm'}</span>
+            )}
+          </div>
+        </div>
         <button
           className={styles.exCardExpandBtn}
           onClick={() => setExpanded(v => !v)}
