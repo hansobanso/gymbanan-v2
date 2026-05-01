@@ -71,6 +71,75 @@ function sessionExToEx(ex) {
 
 const ACTIVE_WORKOUT_KEY = 'gymbanan_active_workout'
 
+// Hamtar prev-historik + ovningsmetadata for en ovning och returnerar
+// en uppdaterad version av ex med dataLoaded: true. Anvands bade vid
+// mount och vid byte av ovning mid-pass.
+async function loadExerciseData(ex, userId, restOverrides) {
+  const [prevSets, exData] = await Promise.all([
+    getPreviousSetsForExercise(userId, ex.name ?? 'Övning'),
+    getExerciseByName(ex.name ?? 'Övning'),
+  ])
+  const exNotes = exData?.notes || exData?.instructions || null
+  const exEquipment = exData?.equipment || null
+  const restSeconds = ex.restSeconds ?? (restOverrides?.[ex.name] ?? null)
+
+  if (!prevSets?.length) {
+    return { ...ex, restSeconds, exNotes, exEquipment, prevSets: null, progressionHint: null, dataLoaded: true }
+  }
+
+  let warmupIdx = 0
+  let workIdx = 0
+  const prevWork = prevSets.filter(s => s.type === 'work' && s.subtype !== 'backoff')
+  const prevBackoffSets = prevSets.filter(s => s.subtype === 'backoff' && s.done && parseInt(s.reps) > 0)
+  const bestPrevW = prevWork.length > 0 ? Math.max(...prevWork.map(s => parseFloat(s.weight) || 0)) : 0
+  const backoffWeight = bestPrevW > 0 ? Math.round(bestPrevW * 0.85 / 2.5) * 2.5 : 0
+
+  const repsMax = ex.defaultRepsMax ?? null
+  const shouldPromote = repsMax != null && prevWork.length > 0 &&
+    prevWork.every(s => (parseInt(s.reps) || 0) >= repsMax)
+
+  let anyPromoted = false
+  let promotedWeight = 0
+
+  const sets = ex.sets.map(set => {
+    if (set.subtype === 'backoff') {
+      const prevBo = prevBackoffSets[0]
+      const boReps = prevBo ? parseInt(prevBo.reps) : 0
+      return {
+        ...set,
+        weight: backoffWeight > 0 ? String(backoffWeight) : '',
+        reps: boReps > 0 ? String(boReps) : '',
+        rir: null,
+        prefilled: backoffWeight > 0,
+      }
+    }
+    if (set.type === 'warmup') {
+      const prev = prevSets.filter(s => s.type === 'warmup')[warmupIdx++]
+      if (!prev) return set
+      return { ...set, weight: prev.weight ?? set.weight, reps: prev.reps ?? set.reps }
+    }
+    const prevSet = prevWork[workIdx++]
+    if (!prevSet) return set
+    const prevW = parseFloat(prevSet.weight) || 0
+    const prevR = parseInt(prevSet.reps) || 0
+    if (prevW <= 0 && prevR <= 0) return set
+
+    const { targetW, targetR, promoted } = calcProgression(prevW, prevR, ex.defaultRepsMin ?? null, repsMax, shouldPromote)
+    if (promoted) { anyPromoted = true; promotedWeight = targetW }
+
+    return {
+      ...set,
+      weight: targetW > 0 ? String(targetW) : '',
+      reps: String(targetR),
+      rir: null,
+      prefilled: true,
+    }
+  })
+
+  const progressionHint = anyPromoted ? `Dags att öka → ${promotedWeight}kg` : null
+  return { ...ex, restSeconds, sets, progressionHint, prevSets, exNotes, exEquipment, dataLoaded: true }
+}
+
 export function useWorkout({ sessionName, sessionExercises = [], programId, userId, resumed, aiMemory = '', defaultRest = 120 }) {
   const [exercises, setExercises] = useState(() =>
     resumed
@@ -84,89 +153,22 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
   // Pre-fill weight/reps/rir from last session + preload exercise metadata
   useEffect(() => {
     if (!userId || sessionExercises.length === 0 || resumed) { setLoading(false); return }
-    Promise.all([
-      Promise.all(
-        sessionExercises.map(ex => Promise.all([
-          getPreviousSetsForExercise(userId, ex.name ?? 'Övning'),
-          getExerciseByName(ex.name ?? 'Övning'),
-        ]))
-      ),
-      getRestOverrides(userId),
-    ]).then(([results, restOverrides]) => {
-      const prevSetsArray = results.map(([sets]) => sets)
-      const exDataArray = results.map(([, exData]) => exData)
-      setExercises(prev => prev.map((ex, i) => {
-        const prevSets = prevSetsArray[i]
-        const exData = exDataArray[i]
-        const exNotes = exData?.notes || exData?.instructions || null
-        const exEquipment = exData?.equipment || null
-        // Apply per-exercise rest override if no program-level restSeconds is set
-        const restSeconds = ex.restSeconds ?? (restOverrides[ex.name] ?? null)
-        if (!prevSets?.length) return { ...ex, restSeconds, exNotes, exEquipment, dataLoaded: true }
-        let warmupIdx = 0
-        let workIdx = 0
-        // Separate previous work sets (non-backoff) and backoff sets
-        const prevWork = prevSets.filter(s => s.type === 'work' && s.subtype !== 'backoff')
-        const prevBackoffSets = prevSets.filter(s => s.subtype === 'backoff' && s.done && parseInt(s.reps) > 0)
-        // Use highest weight from previous work sets for backoff calculation
-        const bestPrevW = prevWork.length > 0 ? Math.max(...prevWork.map(s => parseFloat(s.weight) || 0)) : 0
-        const backoffWeight = bestPrevW > 0 ? Math.round(bestPrevW * 0.85 / 2.5) * 2.5 : 0
-
-        // Exercise-level promotion decision: ALL work sets must have hit rep max.
-        // This enforces "max reps on every set before adding weight" progression.
-        const repsMax = ex.defaultRepsMax ?? null
-        const shouldPromote = repsMax != null && prevWork.length > 0 &&
-          prevWork.every(s => (parseInt(s.reps) || 0) >= repsMax)
-
-        // Check if any set got promoted (for hint display)
-        let anyPromoted = false
-        let promotedWeight = 0
-
-        const sets = ex.sets.map(set => {
-          if (set.subtype === 'backoff') {
-            // Match backoff sets per-index too
-            const prevBo = prevBackoffSets[0] // typically only one backoff
-            const boReps = prevBo ? parseInt(prevBo.reps) : 0
-            return {
-              ...set,
-              weight: backoffWeight > 0 ? String(backoffWeight) : '',
-              reps: boReps > 0 ? String(boReps) : '',
-              rir: null,
-              prefilled: backoffWeight > 0,
-            }
-          }
-          if (set.type === 'warmup') {
-            const prev = prevSets.filter(s => s.type === 'warmup')[warmupIdx++]
-            if (!prev) return set
-            return { ...set, weight: prev.weight ?? set.weight, reps: prev.reps ?? set.reps }
-          }
-          // Work set — match per-index against previous session's work sets
-          const prevSet = prevWork[workIdx++]
-          if (!prevSet) return set
-          const prevW = parseFloat(prevSet.weight) || 0
-          const prevR = parseInt(prevSet.reps) || 0
-          // Skip if there's NO data at all (no weight AND no reps).
-          // For bodyweight (prevW = 0 but prevR > 0), we still want progression.
-          if (prevW <= 0 && prevR <= 0) return set
-
-          const { targetW, targetR, promoted } = calcProgression(prevW, prevR, ex.defaultRepsMin ?? null, repsMax, shouldPromote)
-          if (promoted) { anyPromoted = true; promotedWeight = targetW }
-
-          return {
-            ...set,
-            weight: targetW > 0 ? String(targetW) : '',
-            reps: String(targetR),
-            rir: null,
-            prefilled: true,
-          }
+    let cancelled = false
+    getRestOverrides(userId).then(restOverrides => {
+      if (cancelled) return
+      setExercises(prev => {
+        // Ladda data for varje ovning parallellt och uppdatera state nar svar kommer.
+        prev.forEach(ex => {
+          loadExerciseData(ex, userId, restOverrides).then(updated => {
+            if (cancelled) return
+            setExercises(curr => curr.map(e => e.localId === ex.localId ? { ...updated, localId: e.localId } : e))
+          }).catch(() => {})
         })
-
-        const progressionHint = anyPromoted ? `Dags att öka → ${promotedWeight}kg` : null
-
-        return { ...ex, restSeconds, sets, progressionHint, prevSets, exNotes, exEquipment, dataLoaded: true }
-      }))
+        return prev
+      })
       setLoading(false)
     }).catch(() => { setLoading(false) })
+    return () => { cancelled = true }
   }, [userId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const [programChanged, setProgramChanged] = useState(false)
@@ -326,7 +328,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
         exNotes: null,
         exEquipment: null,
         progressionHint: null,
-        dataLoaded: false,  // triggers re-fetch of prev sets for new exercise
+        dataLoaded: false,
         defaultRepsMin: keepRepsMin,
         defaultRepsMax: keepRepsMax,
         sets: [
@@ -336,7 +338,22 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
         ],
       }
     }))
-  }, [])
+    // Hamta nya ovningens senaste historik och sla ihop in i state.
+    // Vi maste lasa ut den uppdaterade ovningen ur state via en fresh
+    // setExercises-callback eftersom prev-variabeln ovan har gamla namnet.
+    if (userId) {
+      getRestOverrides(userId).then(restOverrides => {
+        setExercises(curr => {
+          const target = curr.find(e => e.localId === exId)
+          if (!target) return curr
+          loadExerciseData(target, userId, restOverrides).then(updated => {
+            setExercises(c => c.map(e => e.localId === exId ? { ...updated, localId: e.localId } : e))
+          }).catch(() => {})
+          return curr
+        })
+      }).catch(() => {})
+    }
+  }, [userId])
 
   const [repsUpdatedAt, setRepsUpdatedAt] = useState(null)
 
