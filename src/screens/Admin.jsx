@@ -28,6 +28,27 @@ const MUSCLE_GROUPS = [
   'Quads', 'Hamstrings', 'Rumpa', 'Core', 'Vader', 'Underarmar', 'Övrigt',
 ]
 
+// Dampade fargchips per muskelgrupp - matchar appens morka estetik.
+// Bakgrund med ~12% alpha + textfarg pa ~75% alpha for att kannas integrerat.
+const MUSCLE_CHIP_COLORS = {
+  'Bröst':      { bg: 'rgba(245, 142, 142, 0.13)', fg: 'rgba(245, 142, 142, 0.85)' },
+  'Rygg':       { bg: 'rgba(142, 188, 245, 0.13)', fg: 'rgba(142, 188, 245, 0.85)' },
+  'Axlar':      { bg: 'rgba(245, 200, 100, 0.13)', fg: 'rgba(245, 200, 100, 0.85)' },
+  'Biceps':     { bg: 'rgba(180, 142, 245, 0.13)', fg: 'rgba(180, 142, 245, 0.85)' },
+  'Triceps':    { bg: 'rgba(142, 220, 245, 0.13)', fg: 'rgba(142, 220, 245, 0.85)' },
+  'Quads':      { bg: 'rgba(142, 245, 175, 0.13)', fg: 'rgba(142, 245, 175, 0.85)' },
+  'Hamstrings': { bg: 'rgba(220, 245, 142, 0.13)', fg: 'rgba(220, 245, 142, 0.85)' },
+  'Rumpa':      { bg: 'rgba(245, 142, 200, 0.13)', fg: 'rgba(245, 142, 200, 0.85)' },
+  'Core':       { bg: 'rgba(245, 220, 142, 0.13)', fg: 'rgba(245, 220, 142, 0.85)' },
+  'Vader':      { bg: 'rgba(160, 220, 200, 0.13)', fg: 'rgba(160, 220, 200, 0.85)' },
+  'Underarmar': { bg: 'rgba(200, 200, 200, 0.13)', fg: 'rgba(200, 200, 200, 0.85)' },
+  'Övrigt':     { bg: 'rgba(140, 140, 140, 0.10)', fg: 'rgba(170, 170, 170, 0.85)' },
+}
+
+function chipColors(group) {
+  return MUSCLE_CHIP_COLORS[group] ?? MUSCLE_CHIP_COLORS['Övrigt']
+}
+
 const EQUIPMENT_OPTIONS = [
   'Skivstång', 'Hantel', 'Maskin', 'Kabel',
   'Kroppsvikt', 'Smithmaskin', 'Övrigt',
@@ -189,6 +210,19 @@ function hydrateSession(s) {
   }
 }
 
+// Duplicerar en session med nya _id pa alla nivaer (kravs av dnd-kit).
+// Lamnar namnet ororet - inline-edit oppnas direkt efter.
+function duplicateSession(s) {
+  return {
+    ...s,
+    _id: Math.random().toString(36).slice(2),
+    exercises: (s.exercises ?? []).map(e => ({
+      ...e,
+      _id: Math.random().toString(36).slice(2),
+    })),
+  }
+}
+
 // ── GripIcon ─────────────────────────────────────────────────────
 
 function GripIcon() {
@@ -214,12 +248,31 @@ const REST_OPTS = [
 
 // ── SortableExerciseRow ──────────────────────────────────────────
 
-function SortableExerciseRow({ exercise, sessionId, onUpdate, onRemove }) {
+function SortableExerciseRow({ exercise, sessionId, allExercises, onUpdate, onRemove }) {
   const [expanded, setExpanded] = useState(false)
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: exercise._id,
     data: { type: 'exercise', exercise, sessionId },
   })
+
+  // Slap upp muskelgrupp via namn (exercise i programs.sessions har inget muscle_group).
+  const muscleGroup = exercise.muscle_group
+    ?? allExercises.find(e => e.name === exercise.name)?.muscle_group
+    ?? null
+  const chip = muscleGroup ? chipColors(muscleGroup) : null
+
+  // Formatera vila kort (t.ex. "1m30s" -> "1:30", "60" -> "1m")
+  const restLabel = (() => {
+    if (exercise.restSeconds == null) return null
+    const s = exercise.restSeconds
+    if (s < 60) return `${s}s`
+    if (s % 60 === 0) return `${s / 60}m`
+    return `${Math.floor(s / 60)}m${s % 60}s`
+  })()
+
+  const repsLabel = (exercise.repsMin || exercise.repsMax)
+    ? `${exercise.repsMin ?? ''}–${exercise.repsMax ?? ''}`
+    : null
 
   return (
     <div
@@ -234,11 +287,17 @@ function SortableExerciseRow({ exercise, sessionId, onUpdate, onRemove }) {
         <div className={styles.exCardMain}>
           <div className={styles.exCardName}>{exercise.name}</div>
           <div className={styles.exCardMeta}>
-            <span>{exercise.workSets ?? 3} set</span>
-            {(exercise.backoffSets ?? 0) > 0 && <span>{exercise.backoffSets} BO</span>}
-            {(exercise.repsMin || exercise.repsMax) && (
-              <span>{exercise.repsMin ?? ''}–{exercise.repsMax ?? ''} reps</span>
+            {chip && (
+              <span
+                className={styles.exCardChip}
+                style={{ background: chip.bg, color: chip.fg }}
+              >
+                {muscleGroup}
+              </span>
             )}
+            <span>{exercise.workSets ?? 3}×{repsLabel ?? '—'}</span>
+            {(exercise.backoffSets ?? 0) > 0 && <span>+{exercise.backoffSets} BO</span>}
+            {restLabel && <span>{restLabel} vila</span>}
           </div>
         </div>
         <button
@@ -316,7 +375,7 @@ function Stepper({ label, value, min = 0, onChange }) {
 
 // ── SessionColumn ────────────────────────────────────────────────
 
-function SessionColumn({ session, allExercises, isOver, onUpdateName, onAddExercise, onRemoveExercise, onUpdateExercise, onRemoveSession }) {
+function SessionColumn({ session, allExercises, isOver, autoFocusName, onUpdateName, onAddExercise, onRemoveExercise, onUpdateExercise, onRemoveSession, onDuplicateSession }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: session._id,
     data: { type: 'session' },
@@ -324,6 +383,15 @@ function SessionColumn({ session, allExercises, isOver, onUpdateName, onAddExerc
 
   const [search, setSearch] = useState('')
   const [showPicker, setShowPicker] = useState(false)
+  const nameInputRef = useRef(null)
+
+  // Auto-fokusera namnet nar autoFocusName-flaggan satts (t.ex. efter duplicering).
+  useEffect(() => {
+    if (autoFocusName && nameInputRef.current) {
+      nameInputRef.current.focus()
+      nameInputRef.current.select()
+    }
+  }, [autoFocusName])
 
   const filtered = allExercises.filter(e =>
     !search.trim() || e.name.toLowerCase().includes(search.toLowerCase())
@@ -360,10 +428,23 @@ function SessionColumn({ session, allExercises, isOver, onUpdateName, onAddExerc
           <GripIcon />
         </div>
         <input
+          ref={nameInputRef}
           className={styles.sessionColName}
           value={session.name}
           onChange={e => onUpdateName(e.target.value)}
         />
+        <button
+          className={styles.sessionColDuplicate}
+          onClick={onDuplicateSession}
+          type="button"
+          aria-label="Duplicera pass"
+          title="Duplicera pass"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+          </svg>
+        </button>
         <button className={styles.sessionColDelete} onClick={onRemoveSession} type="button" aria-label="Ta bort pass">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M18 6 6 18"/>
@@ -380,6 +461,7 @@ function SessionColumn({ session, allExercises, isOver, onUpdateName, onAddExerc
               key={ex._id}
               exercise={ex}
               sessionId={session._id}
+              allExercises={allExercises}
               onUpdate={patch => onUpdateExercise(ex._id, patch)}
               onRemove={() => onRemoveExercise(ex._id)}
             />
@@ -441,6 +523,8 @@ function ProgramEditor({ program, allExercises, onSave, onBack, saveError }) {
     (program.sessions ?? []).map(hydrateSession)
   )
   const [saving, setSaving] = useState(false)
+  // Hojer sig nar en ny session skapats via duplicering - SessionColumn fokuserar input.
+  const [autoFocusSessionId, setAutoFocusSessionId] = useState(null)
 
   // DnD state
   const [activeId, setActiveId]     = useState(null)
@@ -552,6 +636,19 @@ function ProgramEditor({ program, allExercises, onSave, onBack, saveError }) {
     setSessions(prev => [...prev, newSession()])
   }
 
+  function duplicateSessionById(id) {
+    setSessions(prev => {
+      const idx = prev.findIndex(s => s._id === id)
+      if (idx === -1) return prev
+      const copy = duplicateSession(prev[idx])
+      const next = [...prev]
+      next.splice(idx + 1, 0, copy) // satt direkt efter originalet
+      // Triggar fokus pa det nya passets namn-input
+      setAutoFocusSessionId(copy._id)
+      return next
+    })
+  }
+
   function removeSession(id) {
     setSessions(prev => prev.filter(s => s._id !== id))
   }
@@ -640,11 +737,13 @@ function ProgramEditor({ program, allExercises, onSave, onBack, saveError }) {
                   session={session}
                   allExercises={allExercises}
                   isOver={overColId === session._id && activeType === 'exercise'}
+                  autoFocusName={autoFocusSessionId === session._id}
                   onUpdateName={val => updateSessionName(session._id, val)}
                   onAddExercise={name => addExercise(session._id, name)}
                   onRemoveExercise={exId => removeExercise(session._id, exId)}
                   onUpdateExercise={(exId, patch) => updateExercise(session._id, exId, patch)}
                   onRemoveSession={() => removeSession(session._id)}
+                  onDuplicateSession={() => duplicateSessionById(session._id)}
                 />
               ))}
 

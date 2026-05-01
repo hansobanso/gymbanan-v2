@@ -479,6 +479,21 @@
 }
 .sessionColDelete:hover { color: #ff3b30; }
 
+.sessionColDuplicate {
+  background: none;
+  border: none;
+  color: #3a3a3a;
+  cursor: pointer;
+  padding: 4px;
+  flex-shrink: 0;
+  transition: color 0.1s;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sessionColDuplicate:hover { color: #F5D020; }
+
 /* ── Exercise list inside column ── */
 .sessionExList {
   flex: 1;
@@ -559,6 +574,16 @@
 
 .exCardMeta span {
   white-space: nowrap;
+}
+
+.exCardChip {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  padding: 2px 6px;
+  border-radius: 8px;
+  text-transform: uppercase;
+  line-height: 1.3;
 }
 
 .exCardExpandBtn {
