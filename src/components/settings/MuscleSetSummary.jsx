@@ -42,24 +42,41 @@ function fmt(sets) {
 }
 
 // ── UI: SessionMuscleSetSummary (used in SessionEdit) ─────────
-export default function MuscleSetSummary({ exercises, allExercises, label = 'Set per muskel', totalLabel = 'totalt' }) {
+export default function MuscleSetSummary({ exercises, allExercises, label = 'Set per muskel', totalLabel = 'totalt', defaultOpen = false }) {
+  const [open, setOpen] = useState(defaultOpen)
   const breakdown = useMemo(() => computeMuscleSets(exercises, allExercises), [exercises, allExercises])
   if (breakdown.length === 0) return null
   const totalSets = exercises.reduce((n, ex) => n + (ex.workSets ?? 3) + (ex.backoffSets ?? 0), 0)
   return (
     <div className={styles.summary}>
-      <div className={styles.header}>
+      <button
+        type="button"
+        className={styles.headerToggle}
+        onClick={() => setOpen(o => !o)}
+        aria-expanded={open}
+      >
         <span className={styles.label}>{label}</span>
         <span className={styles.total}>{totalSets} {totalLabel}</span>
-      </div>
-      <div className={styles.list}>
-        {breakdown.map(({ muscle, sets }) => (
-          <div key={muscle} className={styles.row}>
-            <span className={styles.name}>{muscle}</span>
-            <span className={styles.count}>{fmt(sets)}</span>
-          </div>
-        ))}
-      </div>
+        <svg
+          width="14" height="14" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" strokeWidth="2.4"
+          strokeLinecap="round" strokeLinejoin="round"
+          style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.15s' }}
+          aria-hidden="true"
+        >
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+      {open && (
+        <div className={styles.list}>
+          {breakdown.map(({ muscle, sets }) => (
+            <div key={muscle} className={styles.row}>
+              <span className={styles.name}>{muscle}</span>
+              <span className={styles.count}>{fmt(sets)}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

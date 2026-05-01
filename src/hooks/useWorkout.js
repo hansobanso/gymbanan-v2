@@ -306,11 +306,17 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
     setProgramChanged(true)
     setExercises(prev => prev.map(ex => {
       if (ex.localId !== exId) return ex
-      // Reset everything exercise-specific: sets, prevSets, notes, reps range
+      // Reset everything exercise-specific: sets, prevSets, notes
       // Keep the same number of warmup/work/backoff sets but clear values
       const warmupCount = ex.sets.filter(s => s.type === 'warmup').length
       const workCount = ex.sets.filter(s => s.type === 'work' && s.subtype !== 'backoff').length
       const backoffCount = ex.sets.filter(s => s.subtype === 'backoff').length
+      // Behall passets rep-intervall om det fanns - det reflekterar
+      // hur PT:n eller anvandaren satte upp passet, inte den nya
+      // ovningens defaults. Bara om passet inte hade satta reps faller
+      // vi tillbaka pa den nya ovningens default.
+      const keepRepsMin = ex.defaultRepsMin ?? newEx.default_reps_min ?? null
+      const keepRepsMax = ex.defaultRepsMax ?? newEx.default_reps_max ?? null
       return {
         ...ex,
         exerciseId: newEx.id ?? null,
@@ -321,8 +327,8 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
         exEquipment: null,
         progressionHint: null,
         dataLoaded: false,  // triggers re-fetch of prev sets for new exercise
-        defaultRepsMin: newEx.default_reps_min ?? null,
-        defaultRepsMax: newEx.default_reps_max ?? null,
+        defaultRepsMin: keepRepsMin,
+        defaultRepsMax: keepRepsMax,
         sets: [
           ...Array.from({ length: warmupCount }, () => makeSet('warmup')),
           ...Array.from({ length: workCount }, () => makeSet('work')),
