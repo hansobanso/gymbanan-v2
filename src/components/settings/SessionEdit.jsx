@@ -1,8 +1,8 @@
 import { useState, useRef } from 'react'
 import { Reorder, useDragControls } from 'framer-motion'
 import ExerciseDetailBottomSheet from './ExerciseDetailBottomSheet'
+import ExercisePicker from '../workout/ExercisePicker'
 import MuscleSetSummary from './MuscleSetSummary'
-import { MUSCLE_GROUPS } from '../../data/exercises'
 import styles from './SessionEdit.module.css'
 
 const DEFAULT_REST = 120
@@ -221,54 +221,36 @@ export default function SessionEdit({ session, allExercises, onSave, onDelete, o
   const [exercises, setExercises] = useState(
     (session.exercises ?? []).map(e => ({ _id: Math.random().toString(36).slice(2), notes: '', ...e }))
   )
-  const [search, setSearch]           = useState('')
   const [showSearch, setShowSearch]   = useState(false)
-  const [muscleFilter, setMuscleFilter] = useState(null)
   const [saving, setSaving]           = useState(false)
   const [selectedExId, setSelectedExId] = useState(null)
   const [swappingExId, setSwappingExId] = useState(null)
   const [headerMenuOpen, setHeaderMenuOpen] = useState(false)
-  const searchRef = useRef(null)
-
-  const filteredExercises = allExercises.filter(e => {
-    const matchQ = !search.trim() || e.name.toLowerCase().includes(search.toLowerCase())
-    const matchG = !muscleFilter || e.muscle_group === muscleFilter
-    return matchQ && matchG
-  })
-
-  const noResults = search.trim() && filteredExercises.length === 0
-
-  const pickerGroups = filteredExercises.reduce((acc, ex) => {
-    const g = ex.muscle_group || 'Övrigt'
-    if (!acc[g]) acc[g] = []
-    acc[g].push(ex)
-    return acc
-  }, {})
-
-  const sortedPickerGroups = Object.entries(pickerGroups)
-    .sort(([a], [b]) => a.localeCompare(b, 'sv'))
-    .map(([g, exs]) => [g, exs.sort((a, b) => a.name.localeCompare(b.name, 'sv'))])
 
   const selectedEx = exercises.find(e => e._id === selectedExId) ?? null
 
-  function addExercise(exName) {
+  // Slap upp ovningen som ska bytas (om swap-lage) - skickas till ExercisePicker
+  // som "replacingExercise" sa "Liknande ovningar"-grupp kan visas.
+  const swappingEx = swappingExId ? exercises.find(e => e._id === swappingExId) : null
+
+  // ExercisePicker.onSelect skickar ett ovning-objekt {name, muscle_group, ...}.
+  // Vi anvander bara namnet - sets/reps/rest behalls fran ursprung vid swap.
+  function handlePickerSelect(ex) {
+    const exName = ex.name
     if (swappingExId) {
-      // Swap mode: replace name on existing exercise (keep sets/reps/rest/notes)
+      // Swap mode: byt namn pa befintlig ovning, behall sets/reps/rest/notes
       setExercises(prev => prev.map(e => e._id === swappingExId ? { ...e, name: exName } : e))
       setSwappingExId(null)
     } else {
+      // Add mode: skapa ny ovning med standardvarden
       setExercises(prev => [...prev, newExercise(exName)])
     }
-    setSearch('')
-    setMuscleFilter(null)
     setShowSearch(false)
   }
 
   function closePicker() {
     setShowSearch(false)
     setSwappingExId(null)
-    setSearch('')
-    setMuscleFilter(null)
   }
 
   function removeExercise(id) {
@@ -364,77 +346,12 @@ export default function SessionEdit({ session, allExercises, onSave, onDelete, o
             </span>
             <button
               className={styles.addBtn}
-              onClick={() => { setShowSearch(true); setTimeout(() => searchRef.current?.focus(), 50) }}
+              onClick={() => setShowSearch(true)}
               type="button"
             >
               + Lägg till
             </button>
           </div>
-
-          {showSearch && (
-            <>
-              {/* Backdrop */}
-              <div
-                style={{ position: 'fixed', inset: 0, zIndex: 9 }}
-                onClick={closePicker}
-              />
-              {/* Picker panel */}
-              <div className={styles.picker} onClick={e => e.stopPropagation()}>
-                {/* Search + close */}
-                <div className={styles.pickerTopBar}>
-                  <input
-                    ref={searchRef}
-                    className={styles.pickerInput}
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    placeholder="Sök övning…"
-                    autoFocus
-                  />
-                  <button className={styles.pickerCloseBtn} onClick={closePicker} type="button">Stäng</button>
-                </div>
-
-                {/* Muscle group chips */}
-                <div className={styles.pickerChips}>
-                  <button
-                    className={`${styles.pickerChip} ${!muscleFilter ? styles.pickerChipActive : ''}`}
-                    onClick={() => setMuscleFilter(null)}
-                    type="button"
-                  >Alla</button>
-                  {MUSCLE_GROUPS.map(mg => (
-                    <button
-                      key={mg}
-                      className={`${styles.pickerChip} ${muscleFilter === mg ? styles.pickerChipActive : ''}`}
-                      onClick={() => setMuscleFilter(g => g === mg ? null : mg)}
-                      type="button"
-                    >{mg}</button>
-                  ))}
-                </div>
-
-                {/* Grouped list */}
-                <div className={styles.pickerList}>
-                  {noResults ? (
-                    <button className={styles.pickerItemNew} onClick={() => addExercise(search.trim())} type="button">
-                      + Skapa &quot;{search.trim()}&quot;
-                    </button>
-                  ) : (
-                    sortedPickerGroups.map(([group, exs]) => (
-                      <div key={group}>
-                        <div className={styles.pickerGroupHeader}>{group}</div>
-                        {exs.map(ex => (
-                          <button
-                            key={ex.id ?? ex.name}
-                            className={styles.pickerItem}
-                            onClick={() => addExercise(ex.name)}
-                            type="button"
-                          >{ex.name}</button>
-                        ))}
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            </>
-          )}
 
           {exercises.length > 0 && (
             <div className={styles.exListScroll}>
@@ -479,8 +396,15 @@ export default function SessionEdit({ session, allExercises, onSave, onDelete, o
           setSwappingExId(selectedExId)
           setSelectedExId(null)
           setShowSearch(true)
-          setTimeout(() => searchRef.current?.focus(), 50)
         }}
+      />
+
+      {/* ── Ovningsval (delad sheet-modal med ExercisePicker) ── */}
+      <ExercisePicker
+        open={showSearch}
+        replacingExercise={swappingEx}
+        onSelect={handlePickerSelect}
+        onClose={closePicker}
       />
     </div>
   )
