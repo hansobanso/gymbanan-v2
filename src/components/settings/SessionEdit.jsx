@@ -2,7 +2,6 @@ import { useState, useRef } from 'react'
 import { Reorder, useDragControls } from 'framer-motion'
 import ExerciseDetailBottomSheet from './ExerciseDetailBottomSheet'
 import ExercisePicker from '../workout/ExercisePicker'
-import MuscleSetSummary from './MuscleSetSummary'
 import styles from './SessionEdit.module.css'
 
 const DEFAULT_REST = 120
@@ -378,10 +377,6 @@ export default function SessionEdit({ session, allExercises, onSave, onDelete, o
             <p className={styles.emptyHint}>Inga övningar ännu – tryck "+ Lägg till"</p>
           )}
         </div>
-
-        {exercises.length > 0 && (
-          <MuscleSetSummary exercises={exercises} allExercises={allExercises} />
-        )}
       </div>
 
       <div style={{ height: 'env(safe-area-inset-bottom, 0px)', background: 'var(--bg)', flexShrink: 0 }} />
