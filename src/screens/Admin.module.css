@@ -1907,6 +1907,51 @@
     min-height: 40px;
   }
 
+  /* Programkort i listan: vertikal stack pa mobil istallet for horisontell flex.
+     Desktop-layouten med 240px-bred muskelfigur + info + actions sida-vid-sida
+     fick texten att kvavas och radbryta pa varje mellanslag. */
+  .progCard {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px;
+    gap: 10px;
+  }
+  .progCardMap {
+    width: 100%;
+    max-height: 140px;
+  }
+  .progCardMap > * {
+    max-width: 200px;
+    height: auto;
+  }
+  .progCardInfo {
+    flex: none;
+    width: 100%;
+    gap: 6px;
+  }
+  .progCardName {
+    font-size: 16px;
+  }
+  .progCardMeta {
+    font-size: 12px;
+  }
+  .progCardMuscles {
+    margin-top: 4px;
+  }
+  .progMuscleChip {
+    font-size: 11px;
+    padding: 2px 8px;
+  }
+  /* rowActions blir egen rad nederst, knappar i full bredd */
+  .progCard .rowActions {
+    width: 100%;
+    flex-direction: row;
+    gap: 8px;
+  }
+  .progCard .rowActions > button {
+    flex: 1;
+  }
+
   .usageInfo {
     margin-bottom: 12px;
     padding: 8px 12px;
@@ -2219,7 +2264,8 @@
 
   .exCardExpandBtn,
   .exCardRemove,
-  .sessionColDelete {
+  .sessionColDelete,
+  .sessionColDuplicate {
     min-width: 36px;
     min-height: 36px;
     padding: 6px;
