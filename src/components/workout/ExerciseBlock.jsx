@@ -349,7 +349,7 @@ export default function ExerciseBlock({
                     setEditingReps(true)
                   }}
                 >
-                  + Mål
+                  + Sätt mål
                 </span>
               )
             )}
@@ -357,6 +357,33 @@ export default function ExerciseBlock({
           {exercise.progressionHint && (
             <div className={styles.progressionHint}>{exercise.progressionHint}</div>
           )}
+          {/* Varning vid saknat rep-mal pa aktiv ovning - utan mal kan vi inte
+              gora progression (vet inte nar vi ska oka vikt vs reps). Visas
+              bara nar ovningen ar igang sa det inte storre alla rader pa en gang. */}
+          {isActive
+            && exercise.defaultRepsMin == null
+            && exercise.defaultRepsMax == null
+            && !editingReps
+            && (
+              <div className={styles.repsWarning}>
+                Inget rep-mål är satt — progression kommer inte fungera. Tryck
+                {' '}
+                <button
+                  type="button"
+                  className={styles.repsWarningLink}
+                  onClick={e => {
+                    e.stopPropagation()
+                    setRepsEditMin('')
+                    setRepsEditMax('')
+                    setEditingReps(true)
+                  }}
+                >
+                  + Sätt mål
+                </button>
+                {' '}
+                för att aktivera.
+              </div>
+            )}
           {exercise.muscleGroup && (
             <div className={styles.metaRow}>
               <span className={styles.muscleTag}>{exercise.muscleGroup}</span>
