@@ -217,24 +217,7 @@ export default function ExerciseDetail() {
       <div className={styles.body}>
         {/* ── Muscle hero section ── */}
         <div className={styles.heroSection}>
-          <MuscleMap intensities={muscleIntensities} compact />
-          <div className={styles.heroTags}>
-            {form.muscle_group && (
-              <div className={styles.heroTagPrimary}>
-                <span className={styles.heroDot} />
-                {form.muscle_group}
-              </div>
-            )}
-            {form.secondary_muscle && (
-              <div className={styles.heroTagSecondary}>
-                <span className={styles.heroDotSecondary} />
-                {form.secondary_muscle}
-              </div>
-            )}
-            {!form.muscle_group && !form.secondary_muscle && (
-              <span className={styles.heroEmptyHint}>Inga muskelgrupper angivna</span>
-            )}
-          </div>
+          <MuscleMap intensities={muscleIntensities} size={140} />
         </div>
 
         {/* ── Info card ── */}
@@ -310,7 +293,7 @@ export default function ExerciseDetail() {
         </div>
 
         {/* ── Standardvila ── */}
-        <div className={styles.section}>
+        <div className={styles.restCard}>
           <span className={styles.sectionLabel}>Standardvila</span>
           <div className={styles.chips}>
             <button
