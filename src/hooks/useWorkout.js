@@ -168,17 +168,17 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
     let cancelled = false
     getRestOverrides(userId).then(restOverrides => {
       if (cancelled) return
-      setExercises(prev => {
-        // Ladda data for varje ovning parallellt och uppdatera state nar svar kommer.
-        prev.forEach(ex => {
-          loadExerciseData(ex, userId, restOverrides).then(updated => {
-            if (cancelled) return
-            setExercises(curr => curr.map(e => e.localId === ex.localId ? { ...updated, localId: e.localId } : e))
-          }).catch(() => {})
-        })
-        return prev
+      // Ladda data for varje ovning parallellt. Uppdatera state per ovning
+      // sa svar syns direkt, men vanta pa ALLA innan loading sätts till false.
+      const promises = exercises.map(ex =>
+        loadExerciseData(ex, userId, restOverrides).then(updated => {
+          if (cancelled) return
+          setExercises(curr => curr.map(e => e.localId === ex.localId ? { ...updated, localId: e.localId } : e))
+        }).catch(() => {})
+      )
+      Promise.all(promises).then(() => {
+        if (!cancelled) setLoading(false)
       })
-      setLoading(false)
     }).catch(() => { setLoading(false) })
     return () => { cancelled = true }
   }, [userId]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -561,11 +561,15 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
         })
       }
 
-      // Justera reps på alla icke-gjorda sets (för kroppsvikt-övningar utan vikt)
+      // Justera reps pa icke-gjorda sets UTAN vikt (kroppsviktsovningar).
+      // Ovningar som har vikt justeras via weightMultiplier istallet.
       if (typeof change.repsMultiplier === 'number' && change.repsMultiplier > 0) {
         sets = sets.map(s => {
           if (s.done) return s
           if (!s.reps) return s
+          // Hoppa over sets som har vikt — de justeras av weightMultiplier
+          const hasWeight = s.weight && parseFloat(s.weight) > 0
+          if (hasWeight) return s
           const r = parseFloat(s.reps)
           if (!r) return s
           const newR = Math.max(1, Math.round(r * change.repsMultiplier))

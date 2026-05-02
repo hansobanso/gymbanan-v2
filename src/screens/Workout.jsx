@@ -103,6 +103,7 @@ export default function Workout({ session }) {
         const changes = sessionExercises.map(ex => ({
           exerciseName: ex.name,
           weightMultiplier: 0.85,
+          repsMultiplier: 0.8, // for kroppsviktsovningar utan vikt
           setMultiplier: 0.8,
         }))
         if (changes.length > 0) {
@@ -159,6 +160,7 @@ export default function Workout({ session }) {
               changes: sessionExercises.map(ex => ({
                 exerciseName: ex.name,
                 weightMultiplier: 0.9,
+                repsMultiplier: 0.85, // for kroppsviktsovningar utan vikt (dips, pullups)
               })),
             })
           }
