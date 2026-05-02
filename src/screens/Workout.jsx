@@ -92,20 +92,21 @@ export default function Workout({ session }) {
   }, [workout.startedAt])
 
   // Hämta deload-status vid mount och applicera automatiskt om aktiv
+  // Sparar pending-adjustment tills loading ar klar (exercises har prefilled-data).
+  const [pendingDeload, setPendingDeload] = useState(null)
+
   useEffect(() => {
     if (!session?.user?.id) return
     getDeloadStatus(session.user.id).then(status => {
       setDeloadStatus(status)
       if (status.isActive) {
-        // Auto-applicera deload på passet (vikt -15%, ett set mindre)
-        // Använd applyAdjustment för att få mer kontroll än applyDeload
         const changes = sessionExercises.map(ex => ({
           exerciseName: ex.name,
           weightMultiplier: 0.85,
-          setMultiplier: 0.8, // ~ ett set mindre vid 4-5 set
+          setMultiplier: 0.8,
         }))
         if (changes.length > 0) {
-          workout.applyAdjustment({
+          setPendingDeload({
             summary: `Deload-vecka aktiv (${status.daysLeft} dagar kvar)`,
             changes,
           })
@@ -152,12 +153,29 @@ export default function Workout({ session }) {
           if (!intro) return
           setIntroMessage(intro)
           if (intro.toUpperCase().includes('DELOAD')) {
-            workout.applyDeload()
+            // Spara som pending — appliceras nar loading ar klar
+            setPendingDeload(prev => prev ?? {
+              summary: 'AI-PT rekommenderar lättare pass',
+              changes: sessionExercises.map(ex => ({
+                exerciseName: ex.name,
+                weightMultiplier: 0.9,
+              })),
+            })
           }
         })
         .catch(() => {})
     }).catch(() => {})
   }, [session.user.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Applicera pending deload EFTER att exercises har laddats klart.
+  // Race condition fix: applyDeload/applyAdjustment kollar s.prefilled
+  // vilket bara satts av loadExerciseData. Om vi kör det innan loading
+  // ar klar hittas inga sets att justera.
+  useEffect(() => {
+    if (workout.loading || !pendingDeload) return
+    workout.applyAdjustment(pendingDeload)
+    setPendingDeload(null)
+  }, [workout.loading, pendingDeload]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Stäng header-meny vid klick utanför
   useEffect(() => {
