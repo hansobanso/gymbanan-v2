@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { updateExercise, copyExerciseForUser, upsertRestOverride, deleteRestOverride } from '../lib/db'
+import { updateExercise, copyExerciseForUser, upsertRestOverride, deleteRestOverride, getUserExerciseNote, upsertUserExerciseNote } from '../lib/db'
 import { EXERCISES, MUSCLE_GROUPS } from '../data/exercises'
 import MuscleMap from '../components/shared/MuscleMap'
 import styles from './ExerciseDetail.module.css'
@@ -46,6 +46,9 @@ export default function ExerciseDetail() {
   const [copying, setCopying] = useState(false)
   const [saveErr, setSaveErr] = useState(null)
   const [editingMode, setEditingMode] = useState(false)
+  const [personalNote, setPersonalNote] = useState('')
+  const [noteSaving, setNoteSaving] = useState(false)
+  const [noteSaved, setNoteSaved] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -53,7 +56,10 @@ export default function ExerciseDetail() {
       const uid = session?.user?.id ?? null
       setUserId(uid)
 
+      let exerciseName = null
+
       if (isBuiltin) {
+        exerciseName = builtinName
         const base = builtinDefaults(builtinName)
         if (uid) {
           const { data: restRow } = await supabase
@@ -70,6 +76,7 @@ export default function ExerciseDetail() {
         const { data, error } = await supabase
           .from('exercises').select('*').eq('id', decoded).single()
         if (!error && data) {
+          exerciseName = data.name
           const owned = data.user_id === uid
           setDbId(data.id)
           setIsOwned(owned)
@@ -85,6 +92,12 @@ export default function ExerciseDetail() {
             setForm(data)
           }
         }
+      }
+
+      // Hamta personlig anteckning
+      if (uid && exerciseName) {
+        const note = await getUserExerciseNote(uid, exerciseName)
+        setPersonalNote(note ?? '')
       }
     }
     load()
@@ -338,6 +351,36 @@ export default function ExerciseDetail() {
             ) : (
               <p className={styles.readonlyInstructions}>{form.instructions}</p>
             )}
+          </div>
+        )}
+
+        {/* ── Personlig anteckning ── */}
+        {userId && (
+          <div className={styles.restCard}>
+            <span className={styles.sectionLabel}>Min anteckning</span>
+            <textarea
+              className={styles.textarea}
+              value={personalNote}
+              onChange={e => { setPersonalNote(e.target.value); setNoteSaved(false) }}
+              placeholder="Personliga noteringar om övningen…"
+              rows={3}
+            />
+            <button
+              className={styles.saveRestBtn}
+              onClick={async () => {
+                if (noteSaving || !form?.name) return
+                setNoteSaving(true)
+                try {
+                  await upsertUserExerciseNote(userId, form.name, personalNote)
+                  setNoteSaved(true)
+                } catch { /* ignore */ }
+                setNoteSaving(false)
+              }}
+              disabled={noteSaving}
+              type="button"
+            >
+              {noteSaving ? 'Sparar…' : noteSaved ? 'Sparat ✓' : 'Spara anteckning'}
+            </button>
           </div>
         )}
 

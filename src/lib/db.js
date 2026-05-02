@@ -476,3 +476,31 @@ export async function getConversations(userId, limit = 20) {
   if (error) return []
   return data ?? []
 }
+
+// ── Personliga anteckningar (user_exercise_notes) ─────────────
+
+export async function getUserExerciseNote(userId, exerciseName) {
+  if (!userId || !exerciseName) return null
+  const { data, error } = await supabase
+    .from('user_exercise_notes')
+    .select('note')
+    .eq('user_id', userId)
+    .eq('exercise_name', exerciseName)
+    .maybeSingle()
+  if (error) return null
+  return data?.note ?? null
+}
+
+export async function upsertUserExerciseNote(userId, exerciseName, note) {
+  if (!userId || !exerciseName) return null
+  const { data, error } = await supabase
+    .from('user_exercise_notes')
+    .upsert(
+      { user_id: userId, exercise_name: exerciseName, note: note ?? '', updated_at: new Date().toISOString() },
+      { onConflict: 'user_id,exercise_name' }
+    )
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}

@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { createWorkout, updateWorkout, getPreviousSetsForExercise, getExerciseByName, getRestOverrides } from '../lib/db'
+import { createWorkout, updateWorkout, getPreviousSetsForExercise, getExerciseByName, getRestOverrides, getUserExerciseNote } from '../lib/db'
 
 // Smart per-set progression based on previous session.
 // Each set matches its corresponding set from last session (S1→S1, S2→S2).
@@ -58,7 +58,8 @@ function sessionExToEx(ex) {
     aiComment: '',
     progressionHint: null,
     prevSets: null,
-    exNotes: null,
+    exInstructions: null,  // globala instruktioner (exercises.instructions)
+    exNotes: null,         // personlig anteckning (user_exercise_notes)
     exEquipment: null,
     dataLoaded: false,
     sets: [
@@ -75,16 +76,18 @@ const ACTIVE_WORKOUT_KEY = 'gymbanan_active_workout'
 // en uppdaterad version av ex med dataLoaded: true. Anvands bade vid
 // mount och vid byte av ovning mid-pass.
 async function loadExerciseData(ex, userId, restOverrides) {
-  const [prevSets, exData] = await Promise.all([
+  const [prevSets, exData, userNote] = await Promise.all([
     getPreviousSetsForExercise(userId, ex.name ?? 'Övning'),
     getExerciseByName(ex.name ?? 'Övning'),
+    getUserExerciseNote(userId, ex.name ?? 'Övning'),
   ])
-  const exNotes = exData?.notes || exData?.instructions || null
+  const exInstructions = exData?.instructions || null
+  const exNotes = userNote ?? null
   const exEquipment = exData?.equipment || null
   const restSeconds = ex.restSeconds ?? (restOverrides?.[ex.name] ?? null)
 
   if (!prevSets?.length) {
-    return { ...ex, restSeconds, exNotes, exEquipment, prevSets: null, progressionHint: null, dataLoaded: true }
+    return { ...ex, restSeconds, exInstructions, exNotes, exEquipment, prevSets: null, progressionHint: null, dataLoaded: true }
   }
 
   let warmupIdx = 0
@@ -137,7 +140,7 @@ async function loadExerciseData(ex, userId, restOverrides) {
   })
 
   const progressionHint = anyPromoted ? `Dags att öka → ${promotedWeight}kg` : null
-  return { ...ex, restSeconds, sets, progressionHint, prevSets, exNotes, exEquipment, dataLoaded: true }
+  return { ...ex, restSeconds, sets, progressionHint, prevSets, exInstructions, exNotes, exEquipment, dataLoaded: true }
 }
 
 export function useWorkout({ sessionName, sessionExercises = [], programId, userId, resumed, aiMemory = '', defaultRest = 120 }) {
@@ -292,7 +295,8 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
       defaultRepsMax: ex.default_reps_max ?? null,
       aiComment: '',
       prevSets: null,
-      exNotes: ex.notes ?? ex.instructions ?? null,
+      exInstructions: ex.instructions ?? null,
+      exNotes: null, // personlig anteckning - laddas via loadExerciseData
       exEquipment: ex.equipment ?? null,
       dataLoaded: false,  // triggers fetch of previous sets
       sets: [makeSet('work')],
@@ -325,6 +329,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
         name: newEx.name,
         muscleGroup: newEx.muscle_group ?? null,
         prevSets: null,
+        exInstructions: null,
         exNotes: null,
         exEquipment: null,
         progressionHint: null,

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '../lib/supabase'
-import { getExerciseByName, updateExercise, upsertExerciseByName } from '../lib/db'
+import { getExerciseByName, updateExercise, upsertExerciseByName, getUserExerciseNote, upsertUserExerciseNote } from '../lib/db'
 import { EXERCISES, MUSCLE_GROUPS } from '../data/exercises'
 import detailStyles from './ExerciseDetail.module.css'
 import styles from './ExerciseDetailSheet.module.css'
@@ -35,6 +35,7 @@ export default function ExerciseDetailSheet({ id, onClose, onNotesSaved, context
   const [userId, setUserId] = useState(null)
   const [form, setForm]     = useState(null)
   const [dbId, setDbId]     = useState(null)
+  const [personalNote, setPersonalNote] = useState('')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved]   = useState(false)
 
@@ -42,9 +43,13 @@ export default function ExerciseDetailSheet({ id, onClose, onNotesSaved, context
     if (!id) return
     async function load() {
       const { data: { session } } = await supabase.auth.getSession()
-      setUserId(session?.user?.id ?? null)
+      const uid = session?.user?.id ?? null
+      setUserId(uid)
+
+      let exerciseName = null
 
       if (isBuiltin) {
+        exerciseName = builtinName
         const base = builtinDefaults(builtinName)
         const override = await getExerciseByName(builtinName)
         if (override) {
@@ -58,8 +63,15 @@ export default function ExerciseDetailSheet({ id, onClose, onNotesSaved, context
           .from('exercises').select('*').eq('id', decoded).single()
         if (!error && data) {
           setDbId(data.id)
+          exerciseName = data.name
           setForm({ ...data, isBuiltin: false })
         }
+      }
+
+      // Hamta personlig anteckning
+      if (uid && exerciseName) {
+        const note = await getUserExerciseNote(uid, exerciseName)
+        setPersonalNote(note ?? '')
       }
     }
     load()
@@ -74,27 +86,37 @@ export default function ExerciseDetailSheet({ id, onClose, onNotesSaved, context
     if (!form || saving) return
     setSaving(true)
     try {
-      const payload = {
-        muscle_group:     form.muscle_group     || null,
-        secondary_muscle: form.secondary_muscle || null,
-        equipment:        form.equipment        || null,
-        movement_pattern: form.movement_pattern || null,
-        default_rest:     form.default_rest     || null,
-        default_reps_min: form.default_reps_min ? Number(form.default_reps_min) : null,
-        default_reps_max: form.default_reps_max ? Number(form.default_reps_max) : null,
-        instructions:     form.instructions     || null,
-        notes:            form.notes            || null,
+      // Spara personlig anteckning (alla users, bade workout + settings)
+      if (userId && form.name) {
+        await upsertUserExerciseNote(userId, form.name, personalNote)
       }
 
-      if (isBuiltin) {
-        const savedEx = await upsertExerciseByName(builtinName, payload, userId)
-        if (savedEx?.id) setDbId(savedEx.id)
-      } else {
-        await updateExercise(dbId, { name: form.name, ...payload })
+      // Spara ovnings-metadata (instruktioner, muskler, etc) - bara om vi
+      // ar i settings-kontext, inte under pagaende pass.
+      if (!isWorkoutContext) {
+        const payload = {
+          muscle_group:     form.muscle_group     || null,
+          secondary_muscle: form.secondary_muscle || null,
+          equipment:        form.equipment        || null,
+          movement_pattern: form.movement_pattern || null,
+          default_rest:     form.default_rest     || null,
+          default_reps_min: form.default_reps_min ? Number(form.default_reps_min) : null,
+          default_reps_max: form.default_reps_max ? Number(form.default_reps_max) : null,
+          instructions:     form.instructions     || null,
+          notes:            form.notes            || null,
+        }
+
+        if (isBuiltin) {
+          const savedEx = await upsertExerciseByName(builtinName, payload, userId)
+          if (savedEx?.id) setDbId(savedEx.id)
+        } else {
+          await updateExercise(dbId, { name: form.name, ...payload })
+        }
       }
+
       setSaved(true)
-      const savedNotes = payload.notes || payload.instructions || null
-      onNotesSaved?.(form.name, savedNotes)
+      // Skicka tillbaka personlig anteckning till Workout-vyn via callback
+      onNotesSaved?.(form.name, personalNote)
       setTimeout(() => onClose(), 300)
     } finally {
       setSaving(false)
@@ -182,24 +204,37 @@ export default function ExerciseDetailSheet({ id, onClose, onNotesSaved, context
                 </>
               )}
 
-              <div className={detailStyles.section}>
-                <label className={detailStyles.label}>Instruktioner</label>
-                <textarea
-                  className={detailStyles.textarea}
-                  value={form.instructions ?? ''}
-                  onChange={e => set('instructions', e.target.value)}
-                  placeholder="Teknikpunkter, personliga cues…"
-                  rows={5}
-                />
-              </div>
+              {/* Instruktioner - globala, admin-redigerbara.
+                  I workout-kontext visas de som lasbar text.
+                  I settings-kontext ar de redigerbara. */}
+              {isWorkoutContext ? (
+                form.instructions ? (
+                  <div className={detailStyles.section}>
+                    <label className={detailStyles.label}>Instruktioner</label>
+                    <div className={styles.instructionsReadonly}>{form.instructions}</div>
+                  </div>
+                ) : null
+              ) : (
+                <div className={detailStyles.section}>
+                  <label className={detailStyles.label}>Instruktioner</label>
+                  <textarea
+                    className={detailStyles.textarea}
+                    value={form.instructions ?? ''}
+                    onChange={e => set('instructions', e.target.value)}
+                    placeholder="Teknikpunkter, personliga cues…"
+                    rows={5}
+                  />
+                </div>
+              )}
 
+              {/* Personlig anteckning - sparas per user, synkas inte globalt */}
               <div className={detailStyles.section}>
-                <label className={detailStyles.label}>Anteckningar</label>
+                <label className={detailStyles.label}>Min anteckning</label>
                 <textarea
                   className={detailStyles.textarea}
-                  value={form.notes ?? ''}
-                  onChange={e => set('notes', e.target.value)}
-                  placeholder="Kortare noteringar…"
+                  value={personalNote}
+                  onChange={e => { setPersonalNote(e.target.value); setSaved(false) }}
+                  placeholder="Personliga noteringar om övningen…"
                   rows={3}
                 />
               </div>
