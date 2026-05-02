@@ -308,7 +308,7 @@ export default function ExerciseDetail() {
         {/* ── Standardvila ── */}
         <div className={styles.restCard}>
           <div className={styles.restRow}>
-            <span className={styles.sectionLabel}>Standardvila</span>
+            <span className={styles.restLabel}>Standardvila</span>
             <select
               className={styles.restSelect}
               value={form.default_rest ?? ''}
@@ -319,17 +319,17 @@ export default function ExerciseDetail() {
                 <option key={s} value={s}>{fmtRest(s)}</option>
               ))}
             </select>
+            {isGlobal && (
+              <button
+                className={styles.saveRestBtn}
+                onClick={handleSave}
+                disabled={saving}
+                type="button"
+              >
+                {saving ? '…' : saved ? '✓' : 'Spara'}
+              </button>
+            )}
           </div>
-          {isGlobal && (
-            <button
-              className={styles.saveRestBtn}
-              onClick={handleSave}
-              disabled={saving}
-              type="button"
-            >
-              {saving ? 'Sparar…' : saved ? 'Vila sparad ✓' : 'Spara vila'}
-            </button>
-          )}
           {saveErr && <p className={styles.saveErr}>{saveErr}</p>}
         </div>
 

@@ -197,87 +197,58 @@
 
 /* ── Vila-kort: dropdown istallet for chips ── */
 .restCard {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
   background: var(--card-bg);
   border-radius: var(--card-radius);
-  padding: 14px 16px;
+  padding: 0 16px;
   flex-shrink: 0;
 }
 
 .restRow {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
+  min-height: var(--row-min-height);
+  padding: 12px 0;
 }
 
-.restRow .sectionLabel {
-  padding: 0;
-  margin: 0;
+.restLabel {
+  font-size: 15px;
+  color: var(--text);
+  flex: 1;
+  min-width: 0;
 }
 
 .restSelect {
   appearance: none;
   -webkit-appearance: none;
-  background: #1c1c1c url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23666' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 10px center;
+  background: #1c1c1c;
   border: 1px solid #2a2a2a;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   color: var(--text);
   font-size: 14px;
   font-weight: 500;
   font-family: var(--font);
-  padding: 8px 30px 8px 12px;
+  padding: 6px 28px 6px 10px;
   cursor: pointer;
-  min-width: 90px;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23666' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
 }
 .restSelect:focus { border-color: var(--accent); outline: none; }
 
-.restCard .sectionLabel {
-  padding: 0;
-}
-
-/* ── Rest chips ── */
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.chip {
-  background: #1c1c1c;
-  border: 1px solid transparent;
-  border-radius: var(--radius-full);
-  color: var(--text-2);
-  font-size: 13px;
-  font-weight: 500;
-  font-family: var(--font);
-  padding: 7px 14px;
-  cursor: pointer;
-  transition: background 0.1s, color 0.1s, border-color 0.1s;
-  white-space: nowrap;
-}
-.chipActive {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #000;
-  font-weight: 700;
-}
-
 .saveRestBtn {
-  width: 100%;
   background: var(--accent);
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   color: #000;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   font-family: var(--font);
-  padding: 12px 16px;
+  padding: 6px 12px;
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
   transition: opacity 0.15s;
-  margin-top: 4px;
 }
 .saveRestBtn:disabled { opacity: 0.5; cursor: not-allowed; }
 
