@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { updateExercise, copyExerciseForUser, upsertRestOverride, deleteRestOverride, getUserExerciseNote, upsertUserExerciseNote } from '../lib/db'
@@ -28,6 +28,58 @@ function builtinDefaults(name) {
     instructions:     '',
     isBuiltin:        true,
   }
+}
+
+const REST_OPTIONS = [
+  { value: null, label: 'Auto' },
+  ...REST_PRESETS.map(s => ({ value: s, label: fmtRest(s) })),
+]
+
+function RestDropdown({ value, onChange }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+  const currentLabel = REST_OPTIONS.find(o => o.value === value)?.label ?? 'Auto'
+
+  // Stang vid klick utanfor
+  useEffect(() => {
+    if (!open) return
+    function handleClick(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false)
+    }
+    document.addEventListener('pointerdown', handleClick)
+    return () => document.removeEventListener('pointerdown', handleClick)
+  }, [open])
+
+  return (
+    <div className={styles.restDropdown} ref={ref}>
+      <button
+        type="button"
+        className={styles.restDropdownTrigger}
+        onClick={() => setOpen(o => !o)}
+        aria-expanded={open}
+      >
+        {currentLabel}
+        <svg width="10" height="6" viewBox="0 0 10 6" fill="none" aria-hidden="true"
+          style={{ transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}>
+          <path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </button>
+      {open && (
+        <div className={styles.restDropdownMenu}>
+          {REST_OPTIONS.map(opt => (
+            <button
+              key={opt.label}
+              type="button"
+              className={`${styles.restDropdownItem} ${opt.value === value ? styles.restDropdownItemActive : ''}`}
+              onClick={() => { onChange(opt.value); setOpen(false) }}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
 }
 
 export default function ExerciseDetail() {
@@ -309,16 +361,10 @@ export default function ExerciseDetail() {
         <div className={styles.restCard}>
           <div className={styles.restRow}>
             <span className={styles.restLabel}>Standardvila</span>
-            <select
-              className={styles.restSelect}
-              value={form.default_rest ?? ''}
-              onChange={e => set('default_rest', e.target.value === '' ? null : Number(e.target.value))}
-            >
-              <option value="">Auto</option>
-              {REST_PRESETS.map(s => (
-                <option key={s} value={s}>{fmtRest(s)}</option>
-              ))}
-            </select>
+            <RestDropdown
+              value={form.default_rest}
+              onChange={val => set('default_rest', val)}
+            />
             {isGlobal && (
               <button
                 className={styles.saveRestBtn}
