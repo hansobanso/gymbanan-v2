@@ -307,21 +307,18 @@ export default function ExerciseDetail() {
 
         {/* ── Standardvila ── */}
         <div className={styles.restCard}>
-          <span className={styles.sectionLabel}>Standardvila</span>
-          <div className={styles.chips}>
-            <button
-              className={`${styles.chip} ${form.default_rest == null ? styles.chipActive : ''}`}
-              onClick={() => set('default_rest', null)}
-              type="button"
-            >Auto</button>
-            {REST_PRESETS.map(s => (
-              <button
-                key={s}
-                className={`${styles.chip} ${Number(form.default_rest) === s ? styles.chipActive : ''}`}
-                onClick={() => set('default_rest', s)}
-                type="button"
-              >{fmtRest(s)}</button>
-            ))}
+          <div className={styles.restRow}>
+            <span className={styles.sectionLabel}>Standardvila</span>
+            <select
+              className={styles.restSelect}
+              value={form.default_rest ?? ''}
+              onChange={e => set('default_rest', e.target.value === '' ? null : Number(e.target.value))}
+            >
+              <option value="">Auto</option>
+              {REST_PRESETS.map(s => (
+                <option key={s} value={s}>{fmtRest(s)}</option>
+              ))}
+            </select>
           </div>
           {isGlobal && (
             <button
