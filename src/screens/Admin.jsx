@@ -957,7 +957,7 @@ function ExercisesTab() {
     form.secondary_muscle !== original.secondary_muscle ||
     form.equipment !== original.equipment ||
     form.movement_pattern !== original.movement_pattern ||
-    form.notes !== original.notes
+    form.instructions !== original.instructions
   )
 
   if (loading) return <div className={styles.loading}><div className="spinner" /></div>
