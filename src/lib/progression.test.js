@@ -98,7 +98,7 @@ describe('computeProgression', () => {
     expect(result.action).toBe('keep_weight_add_reps')
     expect(result.nextWeight).toBe(80)
     expect(result.nextTargetTotalReps).toBe(20) // 19 + 1
-    expect(result.messageToUser).toContain('20')
+    expect(result.messageToUser).toContain('80 kg')
   })
 
   // ── Punkt 3: alla set vid repMax → höj vikt ──

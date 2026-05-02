@@ -231,7 +231,7 @@ export function computeProgression({
             nextWeight: currentWeight,
             nextTargetTotalReps: bufferedTarget,
             nextTargetRepsPerSet: distributeReps(bufferedTarget, numWorkSets, repsMin, repsMax + 1),
-            messageToUser: `Tung basövning — vi vill se ${bufferedTarget} totalreps (en extra buffert) innan vi höjer vikt.`,
+            messageToUser: `Tung basövning utan RIR-data — tryck lite extra reps innan viktökning.`,
             reason: 'heavy_compound_no_rir_buffer',
           }
         }
@@ -258,7 +258,7 @@ export function computeProgression({
           nextWeight: currentWeight,
           nextTargetTotalReps: requiredTotal,
           nextTargetRepsPerSet: distributeReps(requiredTotal, numWorkSets, repsMin, repsMax + Math.ceil(extraReps / numWorkSets)),
-          messageToUser: `${jumpReason} Sikta på ${requiredTotal} totalreps innan du höjer till ${nextWeight} kg.`,
+          messageToUser: `Stort viktsteg till ${nextWeight} kg — tryck lite fler reps på ${currentWeight} kg först.`,
           reason: 'large_weight_jump_extra_reps',
         }
       }
@@ -270,19 +270,22 @@ export function computeProgression({
       nextWeight: isBodyweight ? weightIncrement : nextWeight,
       nextTargetTotalReps: repsMin != null ? repsMin * numWorkSets : prevTotal,
       nextTargetRepsPerSet: Array(numWorkSets).fill(repsMin ?? Math.floor(prevTotal / numWorkSets)),
-      messageToUser: `Snyggt — alla set på ${repsMax} reps! Höj till ${isBodyweight ? weightIncrement : nextWeight} kg och sikta på ${repsMin ?? '?'} reps per set.`,
+      messageToUser: `Dags att öka! → ${isBodyweight ? weightIncrement : nextWeight} kg, sikta på ${repsMin ?? '?'} reps per set.`,
       reason: 'all_sets_at_rep_max',
     }
   }
 
   // ── Punkt 2: Behåll vikten, öka totalreps ──
   const nextTargetTotal = prevTotal + 1
+  // Berakna per-set-mal for meddelandet
+  const perSetTarget = distributeReps(nextTargetTotal, numWorkSets, repsMin, repsMax)
+  const perSetStr = perSetTarget.join(' + ')
   return {
     action: 'keep_weight_add_reps',
     nextWeight: currentWeight,
     nextTargetTotalReps: nextTargetTotal,
-    nextTargetRepsPerSet: distributeReps(nextTargetTotal, numWorkSets, repsMin, repsMax),
-    messageToUser: `Du körde ${prevTotal} totalreps. Behåll ${currentWeight} kg och sikta på ${nextTargetTotal} nästa gång.`,
+    nextTargetRepsPerSet: perSetTarget,
+    messageToUser: `Behåll ${currentWeight} kg — sikta på ${perSetStr} reps.`,
     reason: 'total_reps_progressing',
   }
 }

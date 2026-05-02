@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { Reorder, AnimatePresence, motion } from 'framer-motion'
 import { useWorkout } from '../hooks/useWorkout'
 import { useTimer } from '../hooks/useTimer'
-import { buildWorkoutContext, buildMemoryContent, appendUserNote, chatWithAI, generateWorkoutIntro } from '../lib/ai'
+import { buildWorkoutContext, buildMemoryContent, appendUserNote, chatWithAI, generateWorkoutIntro, detectGapAdjustment } from '../lib/ai'
 import { updateWorkout, getWorkouts, getAiMemory, upsertAiMemory, getPreviousSetsForExercise, getEquipmentMap, updateProgram, saveProgram, getDeloadStatus, startDeloadWeek } from '../lib/db'
 import TimerBar from '../components/workout/TimerBar'
 import TimerExpanded from '../components/workout/TimerExpanded'
@@ -91,8 +91,7 @@ export default function Workout({ session }) {
     return () => clearInterval(id)
   }, [workout.startedAt])
 
-  // Hämta deload-status vid mount och applicera automatiskt om aktiv
-  // Sparar pending-adjustment tills loading ar klar (exercises har prefilled-data).
+  // Hämta deload-status vid mount
   const [pendingDeload, setPendingDeload] = useState(null)
 
   useEffect(() => {
@@ -100,24 +99,21 @@ export default function Workout({ session }) {
     getDeloadStatus(session.user.id).then(status => {
       setDeloadStatus(status)
       if (status.isActive) {
-        const changes = sessionExercises.map(ex => ({
-          exerciseName: ex.name,
-          weightMultiplier: 0.85,
-          repsMultiplier: 0.8, // for kroppsviktsovningar utan vikt
-          setMultiplier: 0.8,
-        }))
-        if (changes.length > 0) {
-          setPendingDeload({
-            summary: `Deload-vecka aktiv (${status.daysLeft} dagar kvar)`,
-            changes,
-          })
-        }
+        setPendingDeload({
+          summary: `Deload-vecka aktiv (${status.daysLeft} dagar kvar)`,
+          changes: sessionExercises.map(ex => ({
+            exerciseName: ex.name,
+            weightMultiplier: 0.85,
+            repsMultiplier: 0.8,
+            setMultiplier: 0.8,
+          })),
+        })
       }
     }).catch(() => {})
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user?.id])
 
-  // Ladda AI-minne + generera pass-intro
+  // Ladda AI-minne + generera pass-intro + detektera uppehåll
   useEffect(() => {
     getAiMemory(session.user.id).then(async mem => {
       const memory = mem?.content || ''
@@ -125,8 +121,14 @@ export default function Workout({ session }) {
 
       if (sessionExercises.length === 0) return
 
-      // Hämta recent workouts för proaktiv analys (PR, stagnation, deload)
       const recentWorkouts = await getWorkouts(session.user.id, 50).catch(() => [])
+
+      // Detektera traningsuppehall DIREKT i koden — ingen AI behövs.
+      // Om 8+ dagar sedan senaste pass → sänk vikter/reps automatiskt.
+      const gapAdj = detectGapAdjustment(recentWorkouts, sessionExercises.map(e => e.name))
+      if (gapAdj && !pendingDeload) {
+        setPendingDeload(gapAdj)
+      }
 
       // Bygg kontext inför passet med föregående data
       const prevSetsArray = await Promise.all(
@@ -151,28 +153,13 @@ export default function Workout({ session }) {
         currentExercises: sessionExercises,
       })
         .then(intro => {
-          if (!intro) return
-          setIntroMessage(intro)
-          if (intro.toUpperCase().includes('DELOAD')) {
-            // Spara som pending — appliceras nar loading ar klar
-            setPendingDeload(prev => prev ?? {
-              summary: 'AI-PT rekommenderar lättare pass',
-              changes: sessionExercises.map(ex => ({
-                exerciseName: ex.name,
-                weightMultiplier: 0.9,
-                repsMultiplier: 0.85, // for kroppsviktsovningar utan vikt (dips, pullups)
-              })),
-            })
-          }
+          if (intro) setIntroMessage(intro)
         })
         .catch(() => {})
     }).catch(() => {})
   }, [session.user.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Applicera pending deload EFTER att exercises har laddats klart.
-  // Race condition fix: applyDeload/applyAdjustment kollar s.prefilled
-  // vilket bara satts av loadExerciseData. Om vi kör det innan loading
-  // ar klar hittas inga sets att justera.
+  // Applicera pending deload/gap-justering EFTER att exercises har laddats klart.
   useEffect(() => {
     if (workout.loading || !pendingDeload) return
     workout.applyAdjustment(pendingDeload)
