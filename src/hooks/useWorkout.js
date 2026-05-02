@@ -204,6 +204,12 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
 
                 if (w > 0 && change.weightMultiplier) {
                   const newW = Math.round(w * change.weightMultiplier / 2.5) * 2.5
+                  // Om avrundningen gor att vikten inte andras (t.ex. 10*0.9=9→10)
+                  // sank reps istallet som fallback
+                  if (newW >= w && r > 0 && change.repsMultiplier) {
+                    const newR = Math.max(1, Math.round(r * change.repsMultiplier))
+                    return { ...s, reps: String(newR), prefilled: true }
+                  }
                   return { ...s, weight: String(newW), prefilled: true }
                 } else if (w <= 0 && r > 0 && change.repsMultiplier) {
                   const newR = Math.max(1, Math.round(r * change.repsMultiplier))
