@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { createWorkout, updateWorkout, getTwoPreviousSetsForExercise, getExerciseByName, getRestOverrides, getUserExerciseNote } from '../lib/db'
+import { createWorkout, updateWorkout, getTwoPreviousSetsForExercise, getExerciseByName, getRestOverrides, getUserExerciseNote, getWorkouts } from '../lib/db'
 import { computeProgression, deriveCategory } from '../lib/progression'
+import { detectGapAdjustment } from '../lib/ai'
 
 // uid + makeSet hjalp-funktioner
 
@@ -166,20 +167,65 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
   useEffect(() => {
     if (!userId || sessionExercises.length === 0 || resumed) { setLoading(false); return }
     let cancelled = false
-    getRestOverrides(userId).then(restOverrides => {
-      if (cancelled) return
-      // Ladda data for varje ovning parallellt. Uppdatera state per ovning
-      // sa svar syns direkt, men vanta pa ALLA innan loading sätts till false.
-      const promises = exercises.map(ex =>
-        loadExerciseData(ex, userId, restOverrides).then(updated => {
-          if (cancelled) return
-          setExercises(curr => curr.map(e => e.localId === ex.localId ? { ...updated, localId: e.localId } : e))
-        }).catch(() => {})
-      )
-      Promise.all(promises).then(() => {
-        if (!cancelled) setLoading(false)
-      })
-    }).catch(() => { setLoading(false) })
+
+    async function loadAll() {
+      try {
+        const [restOverrides, recentWorkouts] = await Promise.all([
+          getRestOverrides(userId),
+          getWorkouts(userId, 20).catch(() => []),
+        ])
+        if (cancelled) return
+
+        // Detektera traningsuppehall
+        const exNames = exercises.map(e => e.name)
+        const gapAdj = detectGapAdjustment(recentWorkouts, exNames)
+
+        // Ladda alla ovningar parallellt
+        const results = await Promise.all(
+          exercises.map(ex => loadExerciseData(ex, userId, restOverrides).catch(() => null))
+        )
+        if (cancelled) return
+
+        // Applicera ALLT i en enda setExercises-update:
+        // 1) loadExerciseData-resultat (progression, vikter, reps)
+        // 2) gap-justering (sank vikter/reps vid uppehall)
+        setExercises(prev => prev.map((ex, i) => {
+          // Steg 1: merge loadExerciseData-resultat
+          let updated = results[i] ? { ...results[i], localId: ex.localId } : ex
+
+          // Steg 2: applicera gap-justering pa RESULTATET fran steg 1
+          if (gapAdj) {
+            const change = gapAdj.changes.find(c => c.exerciseName === updated.name)
+            if (change) {
+              const sets = updated.sets.map(s => {
+                if (s.done) return s
+                const w = parseFloat(s.weight) || 0
+                const r = parseInt(s.reps) || 0
+
+                if (w > 0 && change.weightMultiplier) {
+                  const newW = Math.round(w * change.weightMultiplier / 2.5) * 2.5
+                  return { ...s, weight: String(newW), prefilled: true }
+                } else if (w <= 0 && r > 0 && change.repsMultiplier) {
+                  const newR = Math.max(1, Math.round(r * change.repsMultiplier))
+                  return { ...s, reps: String(newR), prefilled: true }
+                }
+                return s
+              })
+              updated = { ...updated, sets, progressionHint: `PT: ${gapAdj.summary}` }
+            }
+          }
+
+          return updated
+        }))
+
+        if (gapAdj) setIsAdjustedSession(true)
+        setLoading(false)
+      } catch {
+        setLoading(false)
+      }
+    }
+
+    loadAll()
     return () => { cancelled = true }
   }, [userId]) // eslint-disable-line react-hooks/exhaustive-deps
 

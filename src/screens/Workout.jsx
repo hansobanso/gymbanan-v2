@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { Reorder, AnimatePresence, motion } from 'framer-motion'
 import { useWorkout } from '../hooks/useWorkout'
 import { useTimer } from '../hooks/useTimer'
-import { buildWorkoutContext, buildMemoryContent, appendUserNote, chatWithAI, generateWorkoutIntro, detectGapAdjustment } from '../lib/ai'
+import { buildWorkoutContext, buildMemoryContent, appendUserNote, chatWithAI, generateWorkoutIntro } from '../lib/ai'
 import { updateWorkout, getWorkouts, getAiMemory, upsertAiMemory, getPreviousSetsForExercise, getEquipmentMap, updateProgram, saveProgram, getDeloadStatus, startDeloadWeek } from '../lib/db'
 import TimerBar from '../components/workout/TimerBar'
 import TimerExpanded from '../components/workout/TimerExpanded'
@@ -92,28 +92,14 @@ export default function Workout({ session }) {
   }, [workout.startedAt])
 
   // Hämta deload-status vid mount
-  const [pendingDeload, setPendingDeload] = useState(null)
-
   useEffect(() => {
     if (!session?.user?.id) return
     getDeloadStatus(session.user.id).then(status => {
       setDeloadStatus(status)
-      if (status.isActive) {
-        setPendingDeload({
-          summary: `Deload-vecka aktiv (${status.daysLeft} dagar kvar)`,
-          changes: sessionExercises.map(ex => ({
-            exerciseName: ex.name,
-            weightMultiplier: 0.85,
-            repsMultiplier: 0.8,
-            setMultiplier: 0.8,
-          })),
-        })
-      }
     }).catch(() => {})
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user?.id])
 
-  // Ladda AI-minne + generera pass-intro + detektera uppehåll
+  // Ladda AI-minne + generera pass-intro
   useEffect(() => {
     getAiMemory(session.user.id).then(async mem => {
       const memory = mem?.content || ''
@@ -123,14 +109,6 @@ export default function Workout({ session }) {
 
       const recentWorkouts = await getWorkouts(session.user.id, 50).catch(() => [])
 
-      // Detektera traningsuppehall DIREKT i koden — ingen AI behövs.
-      // Om 8+ dagar sedan senaste pass → sänk vikter/reps automatiskt.
-      const gapAdj = detectGapAdjustment(recentWorkouts, sessionExercises.map(e => e.name))
-      if (gapAdj && !pendingDeload) {
-        setPendingDeload(gapAdj)
-      }
-
-      // Bygg kontext inför passet med föregående data
       const prevSetsArray = await Promise.all(
         sessionExercises.map(ex => getPreviousSetsForExercise(session.user.id, ex.name))
       )
@@ -158,13 +136,6 @@ export default function Workout({ session }) {
         .catch(() => {})
     }).catch(() => {})
   }, [session.user.id]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Applicera pending deload/gap-justering EFTER att exercises har laddats klart.
-  useEffect(() => {
-    if (workout.loading || !pendingDeload) return
-    workout.applyAdjustment(pendingDeload)
-    setPendingDeload(null)
-  }, [workout.loading, pendingDeload]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Stäng header-meny vid klick utanför
   useEffect(() => {
