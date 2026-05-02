@@ -849,7 +849,7 @@ function ExercisesTab() {
       secondary_muscle: ex.secondary_muscle ?? '',
       equipment: ex.equipment ?? '',
       movement_pattern: ex.movement_pattern ?? '',
-      notes: ex.notes ?? '',
+      instructions: ex.instructions ?? '',
     }
     setForm(formData)
     setOriginal(formData)
@@ -859,7 +859,7 @@ function ExercisesTab() {
 
   function startNew() {
     setSelectedId('__new__')
-    const formData = { name: '', muscle_group: '', secondary_muscle: '', equipment: '', movement_pattern: '', notes: '' }
+    const formData = { name: '', muscle_group: '', secondary_muscle: '', equipment: '', movement_pattern: '', instructions: '' }
     setForm(formData)
     setOriginal(formData)
     setSaveError(null)
@@ -890,7 +890,7 @@ function ExercisesTab() {
         secondary_muscle: secondaryMuscle ?? '',
         equipment: form.equipment ?? '',
         movement_pattern: form.movement_pattern ?? '',
-        notes: form.notes ?? '',
+        instructions: form.instructions ?? '',
       }
       if (selectedId === '__new__') {
         const saved = await adminSaveExercise({
@@ -899,7 +899,7 @@ function ExercisesTab() {
           secondary_muscle: secondaryMuscle,
           equipment: form.equipment || null,
           movement_pattern: form.movement_pattern || null,
-          notes: form.notes || null,
+          instructions: form.instructions || null,
         })
         setExercises(prev => [...prev, saved].sort((a, b) => {
           const g = (a.muscle_group ?? '').localeCompare(b.muscle_group ?? '', 'sv')
@@ -914,7 +914,7 @@ function ExercisesTab() {
           secondary_muscle: secondaryMuscle,
           equipment: form.equipment || null,
           movement_pattern: form.movement_pattern || null,
-          notes: form.notes || null,
+          instructions: form.instructions || null,
         })
         setExercises(prev => prev.map(e => e.id === selectedId ? updated : e))
         setForm(savedFormData)
@@ -1145,11 +1145,11 @@ function ExercisesTab() {
               </div>
 
               <div className={styles.exDetailField}>
-                <label className={styles.exDetailLabel}>Instruktioner / anteckningar</label>
+                <label className={styles.exDetailLabel}>Instruktioner</label>
                 <textarea
                   className={styles.exDetailTextarea}
-                  value={form.notes}
-                  onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+                  value={form.instructions ?? ''}
+                  onChange={e => setForm(f => ({ ...f, instructions: e.target.value }))}
                   placeholder="Tekniknoteringar, coaching cues…"
                   rows={5}
                 />
