@@ -270,6 +270,32 @@ export async function getPreviousSetsForExercise(userId, exerciseName) {
   return null
 }
 
+// Returnerar de tva senaste passens sets for en ovning.
+// Anvands av progressionsmotorn for "under repMin 2 pass i rad"-flagga.
+export async function getTwoPreviousSetsForExercise(userId, exerciseName) {
+  const { data, error } = await supabase
+    .from('workouts')
+    .select('exercises, adjusted')
+    .eq('user_id', userId)
+    .not('finished_at', 'is', null)
+    .order('finished_at', { ascending: false })
+    .limit(20)
+  if (error || !data) return { prev: null, prevPrev: null }
+
+  const found = []
+  for (const workout of data) {
+    if (workout.adjusted) continue
+    const ex = (workout.exercises ?? []).find(e => e.name === exerciseName)
+    if (!ex) continue
+    const allSets = (ex.sets ?? []).filter(s => s.done && (s.weight !== undefined && s.weight !== null))
+    if (allSets.length > 0) {
+      found.push(allSets)
+      if (found.length >= 2) break
+    }
+  }
+  return { prev: found[0] ?? null, prevPrev: found[1] ?? null }
+}
+
 // Returns { exerciseName: equipment } for a list of names
 export async function getEquipmentMap(exerciseNames) {
   if (!exerciseNames?.length) return {}

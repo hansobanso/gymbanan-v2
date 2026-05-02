@@ -355,7 +355,12 @@ export default function ExerciseBlock({
             )}
           </div>
           {exercise.progressionHint && (
-            <div className={styles.progressionHint}>{exercise.progressionHint}</div>
+            <div className={`${styles.progressionHint} ${
+              exercise.progressionAction === 'increase_weight' ? styles.progressionUp :
+              exercise.progressionAction === 'too_heavy_flag' ? styles.progressionWarn :
+              exercise.progressionAction === 'repeat_weight' ? styles.progressionCaution :
+              ''
+            }`}>{exercise.progressionHint}</div>
           )}
           {/* Varning vid saknat rep-mal pa aktiv ovning - utan mal kan vi inte
               gora progression (vet inte nar vi ska oka vikt vs reps). Visas
