@@ -712,6 +712,17 @@
   animation: shimmer 1.4s ease-in-out infinite;
 }
 
+.skeletonSessionCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 16px 8px;
+  padding: 16px;
+  background: var(--card-bg);
+  border-radius: var(--card-radius);
+  border: 1px solid #1a1a1a;
+}
+
 /* ── Deload-banner ── */
 .deloadBanner {
   display: flex;

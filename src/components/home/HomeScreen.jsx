@@ -126,19 +126,37 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
   if (loading) {
     return (
       <div className={styles.screen}>
+        <header className={styles.pageHeader}>
+          <h1 className={styles.pageTitle}>
+            <span className={styles.pageTitleText}>Gymbanan</span>
+            <svg className={styles.pageTitleIcon} viewBox="0 0 24 24" fill="none" stroke="#F5D020" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M4 13c3.5-2 8-2 10 2a5.5 5.5 0 0 1 8 5"/>
+              <path d="M5.15 17.89c5.52-1.52 8.65-6.89 7-12C11.55 4 11.5 2 13 2c3.22 0 5 5.5 5 8 0 6.5-4.2 12-10.49 12C5.55 22 4 21.3 4 20c0-1.1.5-2.31 1.15-2.11Z"/>
+            </svg>
+          </h1>
+        </header>
         <div className={styles.container}>
-          {/* Skeleton: "Nästa pass"-kort */}
-          <div className={styles.skeletonCard} style={{ margin: '0 16px' }}>
-            <div className={styles.skeletonLine} style={{ width: '40%', height: 14 }} />
-            <div className={styles.skeletonLine} style={{ width: '65%', height: 20, marginTop: 10 }} />
-            <div className={styles.skeletonLine} style={{ width: '50%', height: 12, marginTop: 8 }} />
+          {/* Program-label */}
+          <div style={{ padding: '0 16px', marginBottom: 8 }}>
+            <div className={styles.skeletonLine} style={{ width: '45%', height: 13 }} />
           </div>
-          {/* Skeleton: "Senaste pass"-kort */}
-          <div className={styles.skeletonCard} style={{ margin: '12px 16px 0' }}>
-            <div className={styles.skeletonLine} style={{ width: '35%', height: 14 }} />
-            <div className={styles.skeletonLine} style={{ width: '80%', height: 16, marginTop: 10 }} />
+          {/* Pass-kort x3 */}
+          {[0, 1, 2].map(i => (
+            <div key={i} className={styles.skeletonSessionCard}>
+              <div>
+                <div className={styles.skeletonLine} style={{ width: '40%', height: 16 }} />
+                <div className={styles.skeletonLine} style={{ width: '30%', height: 11, marginTop: 6 }} />
+              </div>
+              <div className={styles.skeletonLine} style={{ width: 60, height: 14 }} />
+            </div>
+          ))}
+          {/* Senaste passet */}
+          <div style={{ padding: '16px 16px 0' }}>
+            <div className={styles.skeletonLine} style={{ width: '35%', height: 11, marginBottom: 8 }} />
+          </div>
+          <div className={styles.skeletonCard} style={{ margin: '0 16px' }}>
+            <div className={styles.skeletonLine} style={{ width: '30%', height: 16 }} />
             <div className={styles.skeletonLine} style={{ width: '55%', height: 12, marginTop: 8 }} />
-            <div className={styles.skeletonLine} style={{ width: '70%', height: 12, marginTop: 6 }} />
           </div>
         </div>
       </div>
