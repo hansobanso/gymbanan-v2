@@ -694,14 +694,22 @@
 
 /* ── Skeleton loading ── */
 @keyframes shimmer {
-  0%, 100% { opacity: 0.35 }
-  50% { opacity: 0.6 }
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
 }
 
 .skeletonCard {
-  background: var(--surface);
-  border-radius: 14px;
-  animation: shimmer 1.6s ease infinite;
+  background: var(--card-bg);
+  border-radius: var(--card-radius);
+  border: 1px solid #1a1a1a;
+  padding: 18px 16px;
+}
+
+.skeletonLine {
+  border-radius: 6px;
+  background: linear-gradient(90deg, #1a1a1a 25%, #252525 50%, #1a1a1a 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
 }
 
 /* ── Deload-banner ── */

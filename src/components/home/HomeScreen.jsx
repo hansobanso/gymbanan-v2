@@ -127,8 +127,19 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
     return (
       <div className={styles.screen}>
         <div className={styles.container}>
-          <div className={styles.skeletonCard} style={{ height: 88, margin: '0 16px' }} />
-          <div className={styles.skeletonCard} style={{ height: 160, margin: '12px 16px 0' }} />
+          {/* Skeleton: "Nästa pass"-kort */}
+          <div className={styles.skeletonCard} style={{ margin: '0 16px' }}>
+            <div className={styles.skeletonLine} style={{ width: '40%', height: 14 }} />
+            <div className={styles.skeletonLine} style={{ width: '65%', height: 20, marginTop: 10 }} />
+            <div className={styles.skeletonLine} style={{ width: '50%', height: 12, marginTop: 8 }} />
+          </div>
+          {/* Skeleton: "Senaste pass"-kort */}
+          <div className={styles.skeletonCard} style={{ margin: '12px 16px 0' }}>
+            <div className={styles.skeletonLine} style={{ width: '35%', height: 14 }} />
+            <div className={styles.skeletonLine} style={{ width: '80%', height: 16, marginTop: 10 }} />
+            <div className={styles.skeletonLine} style={{ width: '55%', height: 12, marginTop: 8 }} />
+            <div className={styles.skeletonLine} style={{ width: '70%', height: 12, marginTop: 6 }} />
+          </div>
         </div>
       </div>
     )
