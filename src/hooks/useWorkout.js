@@ -197,6 +197,9 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
           if (gapAdj) {
             const change = gapAdj.changes.find(c => c.exerciseName === updated.name)
             if (change) {
+              let adjustedWeight = false
+              let adjustedReps = false
+
               const sets = updated.sets.map(s => {
                 if (s.done) return s
                 const w = parseFloat(s.weight) || 0
@@ -208,16 +211,31 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
                   // sank reps istallet som fallback
                   if (newW >= w && r > 0 && change.repsMultiplier) {
                     const newR = Math.max(1, Math.round(r * change.repsMultiplier))
+                    adjustedReps = true
                     return { ...s, reps: String(newR), prefilled: true }
                   }
+                  adjustedWeight = true
                   return { ...s, weight: String(newW), prefilled: true }
                 } else if (w <= 0 && r > 0 && change.repsMultiplier) {
                   const newR = Math.max(1, Math.round(r * change.repsMultiplier))
+                  adjustedReps = true
                   return { ...s, reps: String(newR), prefilled: true }
                 }
                 return s
               })
-              updated = { ...updated, sets, progressionHint: `PT: ${gapAdj.summary}` }
+
+              // Kort per-ovning hint baserat pa vad som faktiskt justerades
+              const days = gapAdj.summary.match(/\d+/)?.[0] ?? '?'
+              let hint
+              if (adjustedWeight) {
+                hint = `PT: ${days} dagar sedan senaste pass. Sänkt vikt.`
+              } else if (adjustedReps) {
+                hint = `PT: ${days} dagar sedan senaste pass. Färre reps.`
+              } else {
+                hint = `PT: ${days} dagar sedan senaste pass.`
+              }
+
+              updated = { ...updated, sets, progressionHint: hint, progressionAction: 'gap_adjustment' }
             }
           }
 
@@ -578,7 +596,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
         return { ...s, weight: String(Math.round(w * 0.9 / 2.5) * 2.5) }
       })
       const newW = sets.find(s => s.type === 'work' && s.prefilled)?.weight
-      return { ...ex, sets, progressionHint: newW ? `PT: Ta det lugnt idag → ${newW}kg` : ex.progressionHint }
+      return { ...ex, sets, progressionHint: newW ? `PT: Ta det lugnt idag → ${newW}kg` : ex.progressionHint, progressionAction: 'gap_adjustment' }
     }))
   }, [])
 
@@ -653,6 +671,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
       if (typeof change.repsMin === 'number') next.repsMin = change.repsMin
       if (typeof change.repsMax === 'number') next.repsMax = change.repsMax
       next.progressionHint = `PT: ${adjustment.summary}`
+      next.progressionAction = 'gap_adjustment'
       return next
     }))
     return true

@@ -266,6 +266,12 @@
   font-weight: 600;
 }
 
+/* Uppehåll: gap-justering — lugn blå-grå */
+.progressionGap {
+  color: #93a3b8;
+  font-weight: 500;
+}
+
 .metaRow {
   display: flex;
   flex-wrap: wrap;

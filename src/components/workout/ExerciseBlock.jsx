@@ -359,6 +359,7 @@ export default function ExerciseBlock({
               exercise.progressionAction === 'increase_weight' ? styles.progressionUp :
               exercise.progressionAction === 'too_heavy_flag' ? styles.progressionWarn :
               exercise.progressionAction === 'repeat_weight' ? styles.progressionCaution :
+              exercise.progressionAction === 'gap_adjustment' ? styles.progressionGap :
               ''
             }`}>{exercise.progressionHint}</div>
           )}
