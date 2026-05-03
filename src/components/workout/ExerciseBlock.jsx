@@ -195,7 +195,7 @@ export default function ExerciseBlock({
     : encodeURIComponent('__builtin__' + exercise.name)
 
   const hasWarmups = exercise.sets.some(s => s.type === 'warmup')
-  const colLabels = ['SET', 'KG', 'REPS', '']
+  const colLabels = ['SET', 'KG', 'REPS', 'KLAR']
 
   // Collapsed summary
   const bestWeight = doneSets.length > 0
@@ -514,7 +514,11 @@ export default function ExerciseBlock({
           type="button"
           aria-label="Visa historik för övningen"
         >
-          <span className={styles.prevIcon}>📈</span>
+          <span className={styles.prevIcon}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+          </span>
           <span className={styles.prevText}>Förra passet: {prevStr}</span>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true" className={styles.prevChevron}>
             <path d="M9 6L15 12L9 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />

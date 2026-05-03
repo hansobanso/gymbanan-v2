@@ -1,14 +1,16 @@
 .blockWrapper {
   position: relative;
-  margin-bottom: 0;
-  border-bottom: 1px solid #1a1a1a;
-  padding-bottom: 18px;
+  margin: 0 8px 10px;
+  border-radius: var(--radius-md);
+  background: #111;
+  border: 1px solid #1a1a1a;
+  overflow: hidden;
 }
 
 .block {
   background: transparent;
   overflow: visible;
-  padding-top: 18px;
+  padding-top: 14px;
 }
 
 .progressBar {
@@ -442,18 +444,16 @@
 }
 
 .colLabel {
-  font-size: 11px;
-  font-weight: 500;
+  font-size: 10px;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.6px;
   color: var(--text-3);
-  text-align: left;
-  padding-left: 10px;
+  text-align: center;
 }
 
-.colLabel:first-child,
-.colLabel:last-child {
-  padding-left: 0;
+.colLabel:first-child {
+  text-align: left;
 }
 
 /* ── Sets + warmup ── */
@@ -561,8 +561,10 @@
 }
 
 .prevIcon {
-  font-size: 12px;
   flex-shrink: 0;
+  color: var(--text-3);
+  display: flex;
+  align-items: center;
 }
 
 .prevText {
