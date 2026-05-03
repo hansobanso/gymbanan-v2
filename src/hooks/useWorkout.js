@@ -224,7 +224,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
                 const r = parseInt(s.reps) || 0
 
                 if (w > 0 && change.weightMultiplier) {
-                  const newW = Math.round(w * change.weightMultiplier / inc) * inc
+                  const newW = Math.floor(w * change.weightMultiplier / inc) * inc
                   // Om avrundningen gor att vikten inte andras (t.ex. 10*0.9=9→10)
                   // sank reps istallet som fallback
                   if (newW >= w && r > 0 && change.repsMultiplier) {
@@ -636,7 +636,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
         const w = parseFloat(s.weight)
         if (!w) return s
         const inc = ex.weightIncrement ?? defaultWeightIncrement(ex.exEquipment)
-        return { ...s, weight: String(Math.round(w * 0.9 / inc) * inc) }
+        return { ...s, weight: String(Math.floor(w * 0.9 / inc) * inc) }
       })
       const newW = sets.find(s => s.type === 'work' && s.prefilled)?.weight
       return { ...ex, sets, progressionHint: newW ? `PT: Ta det lugnt idag → ${newW}kg` : ex.progressionHint, progressionAction: 'gap_adjustment' }
@@ -670,7 +670,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
           if (!s.weight) return s
           const w = parseFloat(s.weight)
           if (!w) return s
-          const newW = Math.round(w * change.weightMultiplier / inc) * inc
+          const newW = Math.floor(w * change.weightMultiplier / inc) * inc
           return { ...s, weight: String(newW), prefilled: true }
         })
       }
