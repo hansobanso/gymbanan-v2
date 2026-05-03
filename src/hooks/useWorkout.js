@@ -311,25 +311,43 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
       const sets = ex.sets.map(s => {
         if (s.id !== setId) return s
 
+        // Spara ursprunglig vikt/reps fran progressionsmotorn vid forsta andring.
+        // Dessa andras aldrig — anvands for Epley-omrakning vid alla viktandringar.
+        const originWeight = s._originWeight ?? (s.prefilled ? s.weight : null)
+        const originReps = s._originReps ?? (s.prefilled ? s.reps : null)
+
         const updated = {
           ...s,
           [field]: value,
+          _originWeight: originWeight,
+          _originReps: originReps,
           prefilled: (field === 'weight' || field === 'reps') ? false : s.prefilled,
         }
 
-        // Epley-omrakning: nar anvandaren andrar vikt och settet hade en
-        // prefilled reps-target, rakna om reps sa svarigheten ar likvärdig.
-        // Hoppa over om anvandaren redan andrat reps manuellt (prefilled = false pa reps).
-        if (field === 'weight' && s.prefilled) {
-          const plannedW = parseFloat(s.weight) || 0
-          const plannedR = parseInt(s.reps) || 0
+        // Epley-omrakning vid VARJE viktandring (inte bara forsta).
+        // Anvander ursprungsvikt/reps fran progressionsmotorn, inte nuvarande.
+        // Hoppa over om anvandaren andrat reps manuellt (field === 'reps').
+        if (field === 'weight' && originWeight && originReps) {
+          const plannedW = parseFloat(originWeight) || 0
+          const plannedR = parseInt(originReps) || 0
           const actualW = parseFloat(value) || 0
 
-          if (plannedW > 0 && plannedR > 0 && actualW > 0 && actualW !== plannedW) {
-            const adjustedR = epleyAdjustedReps(plannedW, plannedR, actualW)
-            updated.reps = String(adjustedR)
+          if (plannedW > 0 && plannedR > 0 && actualW > 0) {
+            if (actualW === plannedW) {
+              // Tillbaka till ursprungsvikt → aterga till ursprungsreps
+              updated.reps = String(plannedR)
+            } else {
+              const adjustedR = epleyAdjustedReps(plannedW, plannedR, actualW)
+              updated.reps = String(adjustedR)
+            }
             updated.epleyAdjusted = true
           }
+        }
+
+        // Om anvandaren andrar reps manuellt, sluta med Epley-omrakning
+        if (field === 'reps') {
+          updated._originWeight = null
+          updated._originReps = null
         }
 
         return updated
