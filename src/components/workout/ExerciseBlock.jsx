@@ -482,7 +482,8 @@ export default function ExerciseBlock({
       {/* ── Set-rader med uppvärmningsseparator ── */}
       <div className={styles.sets}>
         {(() => {
-          const nextSetId = exercise.sets.find(s => !s.done)?.id ?? null
+          // Gult "nasta set" bara pa den aktiva ovningen (den med gul linje)
+          const nextSetId = isActive ? (exercise.sets.find(s => !s.done)?.id ?? null) : null
           return exercise.sets.map((set, index) => {
             const isFirstWork = set.type === 'work' && hasWarmups && (index === 0 || exercise.sets[index - 1]?.type === 'warmup')
             return (
