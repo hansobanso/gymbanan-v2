@@ -1,27 +1,36 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { chatWithAI, parseAdjustment, parseDeload } from '../lib/ai'
 
 export function useAI({ getContext, getMemory, getDeloadStatus }) {
   const [messages, setMessages] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const loadingRef = useRef(false)
 
   const send = useCallback(async (userText) => {
     const text = userText.trim()
-    if (!text || loading) return
+    if (!text || loadingRef.current) return
 
-    const userMsg = { role: 'user', content: text }
-    const next = [...messages, userMsg]
-    setMessages(next)
+    loadingRef.current = true
     setLoading(true)
     setError(null)
+
+    // Las aktuella meddelanden via setMessages-callback for att undvika
+    // stale closure — useCallback fangar annars gamla messages-referensen.
+    let next
+    setMessages(prev => {
+      next = [...prev, { role: 'user', content: text }]
+      return next
+    })
+
+    // Vanta en tick sa state har uppdaterats
+    await new Promise(r => setTimeout(r, 0))
 
     try {
       const context = getContext?.()
       const memory = getMemory?.()
       const deloadStatus = getDeloadStatus?.()
       const reply = await chatWithAI({ messages: next, context, memory, deloadStatus })
-      // Parsar EN av två möjliga: adjustment eller deload (inte båda)
       const adj = parseAdjustment(reply)
       const dl = parseDeload(adj.displayText)
       setMessages(prev => [...prev, {
@@ -34,9 +43,10 @@ export function useAI({ getContext, getMemory, getDeloadStatus }) {
     } catch (err) {
       setError('Kunde inte nå PT – försök igen.')
     } finally {
+      loadingRef.current = false
       setLoading(false)
     }
-  }, [messages, loading, getContext, getMemory, getDeloadStatus])
+  }, [getContext, getMemory, getDeloadStatus])
 
   const reset = useCallback(() => {
     setMessages([])
