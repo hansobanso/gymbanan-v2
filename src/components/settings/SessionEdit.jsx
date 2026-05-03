@@ -62,7 +62,7 @@ function ExerciseRow({ ex, onTap, onRemove }) {
     dragTimerRef.current = setTimeout(() => {
       if (dragMovedRef.current) return
       isDraggingNow.current = true
-      try { navigator.vibrate?.(30) } catch {}
+      try { navigator.vibrate?.(30) } catch { /* ignored */ }
       setDragging(true)
       dragControls.start(e)
     }, 400)
@@ -108,7 +108,7 @@ function ExerciseRow({ ex, onTap, onRemove }) {
       const base = swipeXRef.current === -DELETE_WIDTH ? -DELETE_WIDTH : 0
       const newX = Math.min(0, Math.max(base + dx, -DELETE_WIDTH))
       updateSwipeX(newX)
-      try { e.preventDefault() } catch {}
+      try { e.preventDefault() } catch { /* ignored */ }
     }
   }
 
@@ -183,7 +183,7 @@ function ExerciseRow({ ex, onTap, onRemove }) {
               clearTimeout(dragTimerRef.current)
               isDraggingNow.current = true
               setDragging(true)
-              try { navigator.vibrate?.(20) } catch {}
+              try { navigator.vibrate?.(20) } catch { /* ignored */ }
               dragControls.start(e)
             }}
             aria-label="Flytta övning"

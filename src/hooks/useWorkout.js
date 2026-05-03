@@ -619,7 +619,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
           }
           localStorage.setItem(ACTIVE_WORKOUT_KEY, JSON.stringify(data))
           const saved = localStorage.getItem(ACTIVE_WORKOUT_KEY)
-        } catch {}
+        } catch { /* ignored */ }
       }
       return next
     })
