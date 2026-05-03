@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from './lib/supabase'
 import { getPrograms, getActiveProgram, setActiveProgram } from './lib/db'
@@ -9,7 +9,7 @@ import History from './screens/History'
 import Settings from './screens/Settings'
 import ExerciseLibrary from './screens/ExerciseLibrary'
 import ExerciseDetail from './screens/ExerciseDetail'
-import Admin from './screens/Admin'
+const Admin = lazy(() => import('./screens/Admin'))
 import BodyWeight from './screens/BodyWeight'
 import Programs from './screens/Programs'
 import BottomNav from './components/shared/BottomNav'
@@ -113,7 +113,7 @@ function AppRoutes({ session }) {
           <Route path="/exercises" element={<ExerciseLibrary />} />
           <Route path="/exercises/:id" element={<ExerciseDetail />} />
           <Route path="/body-weight" element={<BodyWeight session={session} />} />
-          <Route path="/admin" element={<Admin />} />
+          <Route path="/admin" element={<Suspense fallback={<div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh'}}><div className="spinner"/></div>}><Admin /></Suspense>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       )}
