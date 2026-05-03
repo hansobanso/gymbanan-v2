@@ -6,10 +6,13 @@ const AI_MODEL = 'claude-haiku-4-5-20251001'
  * Returnerar AI:ns svarstext.
  */
 export async function chatWithAI({ messages, context, memory, deloadStatus }) {
+  // Filtrera till bara role+content — API:t accepterar inte extra falt
+  // som displayContent, adjustment, deload etc.
+  const cleanMessages = messages.map(m => ({ role: m.role, content: m.content }))
   const body = {
     model: AI_MODEL,
     max_tokens: 1024,
-    messages,
+    messages: cleanMessages,
   }
   const parts = [
 `Du är en personlig tränare i en träningsapp. Hjälp användaren med frågor om träning, belastning, progression, vila, programmering och struktur.
