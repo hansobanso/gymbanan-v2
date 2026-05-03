@@ -850,6 +850,7 @@ function ExercisesTab() {
       equipment: ex.equipment ?? '',
       movement_pattern: ex.movement_pattern ?? '',
       instructions: ex.instructions ?? '',
+      weight_increment: ex.weight_increment ?? '',
     }
     setForm(formData)
     setOriginal(formData)
@@ -859,7 +860,7 @@ function ExercisesTab() {
 
   function startNew() {
     setSelectedId('__new__')
-    const formData = { name: '', muscle_group: '', secondary_muscle: '', equipment: '', movement_pattern: '', instructions: '' }
+    const formData = { name: '', muscle_group: '', secondary_muscle: '', equipment: '', movement_pattern: '', instructions: '', weight_increment: '' }
     setForm(formData)
     setOriginal(formData)
     setSaveError(null)
@@ -891,6 +892,7 @@ function ExercisesTab() {
         equipment: form.equipment ?? '',
         movement_pattern: form.movement_pattern ?? '',
         instructions: form.instructions ?? '',
+        weight_increment: form.weight_increment ?? '',
       }
       if (selectedId === '__new__') {
         const saved = await adminSaveExercise({
@@ -900,6 +902,7 @@ function ExercisesTab() {
           equipment: form.equipment || null,
           movement_pattern: form.movement_pattern || null,
           instructions: form.instructions || null,
+          weight_increment: form.weight_increment ? Number(form.weight_increment) : null,
         })
         setExercises(prev => [...prev, saved].sort((a, b) => {
           const g = (a.muscle_group ?? '').localeCompare(b.muscle_group ?? '', 'sv')
@@ -915,6 +918,7 @@ function ExercisesTab() {
           equipment: form.equipment || null,
           movement_pattern: form.movement_pattern || null,
           instructions: form.instructions || null,
+          weight_increment: form.weight_increment ? Number(form.weight_increment) : null,
         })
         setExercises(prev => prev.map(e => e.id === selectedId ? updated : e))
         setForm(savedFormData)
@@ -957,7 +961,8 @@ function ExercisesTab() {
     form.secondary_muscle !== original.secondary_muscle ||
     form.equipment !== original.equipment ||
     form.movement_pattern !== original.movement_pattern ||
-    form.instructions !== original.instructions
+    form.instructions !== original.instructions ||
+    form.weight_increment !== original.weight_increment
   )
 
   if (loading) return <div className={styles.loading}><div className="spinner" /></div>
@@ -1141,6 +1146,30 @@ function ExercisesTab() {
                     <option value="">—</option>
                     {MOVEMENT_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
                   </select>
+                </div>
+
+                <div className={styles.exDetailField}>
+                  <label className={styles.exDetailLabel}>
+                    Viktsteg (kg)
+                    <span style={{ fontSize: 10, color: '#666', fontWeight: 400, marginLeft: 6 }}>
+                      {form.weight_increment ? '' : `auto: ${
+                        form.equipment === 'Hantel' ? '2' :
+                        form.equipment === 'Maskin' ? '5' :
+                        form.equipment === 'Kabel' ? '2.5' :
+                        '2.5'
+                      } kg`}
+                    </span>
+                  </label>
+                  <input
+                    className={styles.cellInput}
+                    type="number"
+                    step="0.5"
+                    min="0.5"
+                    value={form.weight_increment}
+                    onChange={e => setForm(f => ({ ...f, weight_increment: e.target.value }))}
+                    placeholder="Auto"
+                    style={{ width: '100%' }}
+                  />
                 </div>
               </div>
 

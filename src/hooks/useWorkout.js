@@ -1,7 +1,18 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { createWorkout, updateWorkout, getTwoPreviousSetsForExercise, getExerciseByName, getRestOverrides, getUserExerciseNote, getWorkouts } from '../lib/db'
-import { computeProgression, deriveCategory } from '../lib/progression'
+import { computeProgression, deriveCategory, epleyAdjustedReps } from '../lib/progression'
 import { detectGapAdjustment } from '../lib/ai'
+
+// Smart default viktsteg baserat pa equipment. Anvands nar exercises.weight_increment ar null.
+function defaultWeightIncrement(equipment) {
+  const eq = (equipment ?? '').toLowerCase()
+  if (eq === 'hantel') return 2
+  if (eq === 'skivstång') return 2.5
+  if (eq === 'maskin') return 5
+  if (eq === 'kabel') return 2.5
+  if (eq === 'kroppsvikt') return 2.5
+  return 2.5
+}
 
 // uid + makeSet hjalp-funktioner
 
@@ -76,6 +87,10 @@ async function loadExerciseData(ex, userId, restOverrides) {
   const movementPattern = exData?.movement_pattern ?? null
   const category = deriveCategory(equipment, movementPattern)
 
+  // Viktsteg: explicit fran DB, annars smart default baserat pa equipment
+  const weightIncrement = exData?.weight_increment
+    ?? defaultWeightIncrement(equipment)
+
   const repsMin = ex.defaultRepsMin ?? null
   const repsMax = ex.defaultRepsMax ?? null
 
@@ -89,7 +104,7 @@ async function loadExerciseData(ex, userId, restOverrides) {
     repsMin,
     repsMax,
     category,
-    weightIncrement: 2.5, // default, etapp C gor detta konfigurerbart
+    weightIncrement,
     numWorkSets,
   })
 
@@ -99,7 +114,7 @@ async function loadExerciseData(ex, userId, restOverrides) {
   const prevWork = prevSets.filter(s => s.type === 'work' && s.subtype !== 'backoff')
   const prevBackoffSets = prevSets.filter(s => s.subtype === 'backoff' && s.done && parseInt(s.reps) > 0)
   const bestPrevW = prevWork.length > 0 ? Math.max(...prevWork.map(s => parseFloat(s.weight) || 0)) : 0
-  const backoffWeight = bestPrevW > 0 ? Math.round(bestPrevW * 0.85 / 2.5) * 2.5 : 0
+  const backoffWeight = bestPrevW > 0 ? Math.round(bestPrevW * 0.85 / weightIncrement) * weightIncrement : 0
 
   const sets = ex.sets.map(set => {
     if (set.subtype === 'backoff') {
@@ -107,7 +122,7 @@ async function loadExerciseData(ex, userId, restOverrides) {
       const boReps = prevBo ? parseInt(prevBo.reps) : 0
       // Backoff vikten baseras pa nya work-vikten om den hojts
       const effectiveW = progression.action === 'increase_weight' ? progression.nextWeight : bestPrevW
-      const boWeight = effectiveW > 0 ? Math.round(effectiveW * 0.85 / 2.5) * 2.5 : backoffWeight
+      const boWeight = effectiveW > 0 ? Math.round(effectiveW * 0.85 / weightIncrement) * weightIncrement : backoffWeight
       return {
         ...set,
         weight: boWeight > 0 ? String(boWeight) : '',
@@ -149,6 +164,8 @@ async function loadExerciseData(ex, userId, restOverrides) {
     exInstructions,
     exNotes,
     exEquipment,
+    weightIncrement,
+    movementPattern,
     dataLoaded: true,
   }
 }
@@ -199,6 +216,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
             if (change) {
               let adjustedWeight = false
               let adjustedReps = false
+              const inc = updated.weightIncrement ?? defaultWeightIncrement(updated.exEquipment)
 
               const sets = updated.sets.map(s => {
                 if (s.done) return s
@@ -206,7 +224,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
                 const r = parseInt(s.reps) || 0
 
                 if (w > 0 && change.weightMultiplier) {
-                  const newW = Math.round(w * change.weightMultiplier / 2.5) * 2.5
+                  const newW = Math.round(w * change.weightMultiplier / inc) * inc
                   // Om avrundningen gor att vikten inte andras (t.ex. 10*0.9=9→10)
                   // sank reps istallet som fallback
                   if (newW >= w && r > 0 && change.repsMultiplier) {
@@ -287,16 +305,38 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
   }
 
   const updateSet = useCallback((exId, setId, field, value) => {
-    setExercises(prev => prev.map(ex =>
-      ex.localId !== exId ? ex : {
-        ...ex,
-        sets: ex.sets.map(s => s.id !== setId ? s : {
+    setExercises(prev => prev.map(ex => {
+      if (ex.localId !== exId) return ex
+
+      const sets = ex.sets.map(s => {
+        if (s.id !== setId) return s
+
+        const updated = {
           ...s,
           [field]: value,
           prefilled: (field === 'weight' || field === 'reps') ? false : s.prefilled,
-        }),
-      }
-    ))
+        }
+
+        // Epley-omrakning: nar anvandaren andrar vikt och settet hade en
+        // prefilled reps-target, rakna om reps sa svarigheten ar likvärdig.
+        // Hoppa over om anvandaren redan andrat reps manuellt (prefilled = false pa reps).
+        if (field === 'weight' && s.prefilled) {
+          const plannedW = parseFloat(s.weight) || 0
+          const plannedR = parseInt(s.reps) || 0
+          const actualW = parseFloat(value) || 0
+
+          if (plannedW > 0 && plannedR > 0 && actualW > 0 && actualW !== plannedW) {
+            const adjustedR = epleyAdjustedReps(plannedW, plannedR, actualW)
+            updated.reps = String(adjustedR)
+            updated.epleyAdjusted = true
+          }
+        }
+
+        return updated
+      })
+
+      return { ...ex, sets }
+    }))
   }, [])
 
   const addBackoffSet = useCallback((exId) => {
@@ -310,7 +350,8 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
       let weight = '', reps = ''
       if (lastWork) {
         const raw = parseFloat(lastWork.weight) || 0
-        if (raw > 0) weight = String(Math.round(raw * 0.85 / 2.5) * 2.5)
+        const inc = ex.weightIncrement ?? defaultWeightIncrement(ex.exEquipment)
+        if (raw > 0) weight = String(Math.round(raw * 0.85 / inc) * inc)
         const r = parseInt(lastWork.reps) || 0
         if (r > 0) reps = String(r + 2)
       }
@@ -460,7 +501,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
         repsMin: min,
         repsMax: max,
         category: deriveCategory(ex.exEquipment, ex.movementPattern),
-        weightIncrement: 2.5,
+        weightIncrement: ex.weightIncrement ?? defaultWeightIncrement(ex.exEquipment),
         numWorkSets,
       })
 
@@ -527,10 +568,11 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
             s.type === 'work' && s.subtype !== 'backoff' && !s.done
           )
           if (remainingWorkSets.length === 0) {
+            const backoffInc = ex.weightIncrement ?? defaultWeightIncrement(ex.exEquipment)
             const workW = parseFloat(completingSet.weight) || 0
             const workR = parseInt(completingSet.reps) || 0
             if (workW > 0 && workR > 0) {
-              const backoffW = Math.round(workW * 0.85 / 2.5) * 2.5
+              const backoffW = Math.round(workW * 0.85 / backoffInc) * backoffInc
               const backoffR = workR + 3
               sets = sets.map(s => {
                 if (s.subtype !== 'backoff' || s.done) return s
@@ -593,7 +635,8 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
         if (!s.prefilled || !s.weight) return s
         const w = parseFloat(s.weight)
         if (!w) return s
-        return { ...s, weight: String(Math.round(w * 0.9 / 2.5) * 2.5) }
+        const inc = ex.weightIncrement ?? defaultWeightIncrement(ex.exEquipment)
+        return { ...s, weight: String(Math.round(w * 0.9 / inc) * inc) }
       })
       const newW = sets.find(s => s.type === 'work' && s.prefilled)?.weight
       return { ...ex, sets, progressionHint: newW ? `PT: Ta det lugnt idag → ${newW}kg` : ex.progressionHint, progressionAction: 'gap_adjustment' }
@@ -621,12 +664,13 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
 
       // Justera vikter på alla icke-gjorda sets (warmup, work, backoff)
       if (typeof change.weightMultiplier === 'number' && change.weightMultiplier > 0) {
+        const inc = ex.weightIncrement ?? defaultWeightIncrement(ex.exEquipment)
         sets = sets.map(s => {
           if (s.done) return s
           if (!s.weight) return s
           const w = parseFloat(s.weight)
           if (!w) return s
-          const newW = Math.round(w * change.weightMultiplier / 2.5) * 2.5
+          const newW = Math.round(w * change.weightMultiplier / inc) * inc
           return { ...s, weight: String(newW), prefilled: true }
         })
       }
