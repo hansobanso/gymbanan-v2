@@ -29,7 +29,7 @@ export function useTimer() {
       if (left <= 0) {
         clearInterval(tickRef.current); tickRef.current = null
         setActive(false)
-        try { navigator.vibrate?.([200, 100, 200]) } catch {}
+        try { navigator.vibrate?.([200, 100, 200]) } catch { /* ignored */ }
       }
     }, 500)
   }, [])
@@ -57,7 +57,7 @@ export function useTimer() {
       if (left <= 0) {
         clearInterval(tickRef.current); tickRef.current = null
         setActive(false)
-        try { navigator.vibrate?.([200, 100, 200]) } catch {}
+        try { navigator.vibrate?.([200, 100, 200]) } catch { /* ignored */ }
       }
     }, 500)
   }, [])

@@ -120,7 +120,6 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
   const monday = getMonday()
   const weeklyCount = recentWorkouts.filter(w => new Date(w.finished_at) >= monday).length
 
-  const programSubtitle = activeProgram
     ? `${activeProgram.name} · ${(activeProgram.sessions ?? []).length} pass/vecka`
     : null
 

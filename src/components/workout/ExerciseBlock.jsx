@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, Fragment, useCallback } from 'react'
+import { useState, useRef, useEffect, Fragment } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import SetRow from './SetRow'
 import { getPreviousSetsForExercise, getExerciseByName } from '../../lib/db'
@@ -6,14 +6,6 @@ import { displayWeightStr } from '../../lib/weightUtils'
 import styles from './ExerciseBlock.module.css'
 
 const REST_PRESETS = [30, 60, 90, 120, 180]
-
-function fmtRest(s) {
-  const m = Math.floor(s / 60)
-  const rem = s % 60
-  if (s < 60) return `${s}s`
-  if (rem === 0) return `${m}m`
-  return `${m}m${rem}s`
-}
 
 function fmtTarget(min, max) {
   if (!min && !max) return null
@@ -106,7 +98,7 @@ export default function ExerciseBlock({
 
   function handlePointerDown() {
     longRef.current = setTimeout(() => {
-      try { navigator.vibrate?.(40) } catch {}
+      try { navigator.vibrate?.(40) } catch { /* ignored */ }
       onLongPressStart?.()
     }, 500)
   }
@@ -122,7 +114,7 @@ export default function ExerciseBlock({
       const hasWeight = set.weight !== '' && set.weight !== null && set.weight !== undefined
       const hasReps = set.reps !== '' && set.reps !== null && set.reps !== undefined
       if (!hasWeight || !hasReps) {
-        try { navigator.vibrate?.(20) } catch {}
+        try { navigator.vibrate?.(20) } catch { /* ignored */ }
         // Focus first empty input in this row
         const rowEl = document.querySelector(`[data-set-id="${setId}"]`)
         const inputs = rowEl?.querySelectorAll('input[type="number"]')
@@ -174,9 +166,7 @@ export default function ExerciseBlock({
     }
   }, [allWorkDone])
 
-  const restSecs = exercise.restSeconds ?? defaultRestSeconds ?? 120
   const rirPickerSet = exercise.sets.find(s => s.id === rirSetId)
-  const targetStr = fmtTarget(exercise.defaultRepsMin, exercise.defaultRepsMax)
 
   const prevStr = prevSets
     ? prevSets
@@ -492,7 +482,6 @@ export default function ExerciseBlock({
       {/* ── Set-rader med uppvärmningsseparator ── */}
       <div className={styles.sets}>
         {exercise.sets.map((set, index) => {
-          const isFirstWarmup = set.type === 'warmup' && index === 0
           const isFirstWork = set.type === 'work' && hasWarmups && (index === 0 || exercise.sets[index - 1]?.type === 'warmup')
           return (
             <Fragment key={set.id}>

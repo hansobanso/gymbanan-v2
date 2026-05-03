@@ -52,7 +52,7 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
       setAllExercises(prev => [...prev, ex])
       onSelect(ex)
       onClose()
-    } catch {}
+    } catch { /* ignored */ }
     setSaving(false)
   }
 

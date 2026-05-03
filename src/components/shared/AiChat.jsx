@@ -9,7 +9,7 @@ const SUGGESTIONS = [
   'Tips för nästa pass?',
 ]
 
-export default function AiChat({ open, onClose, getContext, getMemory, getDeloadStatus, onUpdateMemory, introMessage, workoutNotes, onUpdateNotes, onApplyAdjustment, onApplyDeload }) {
+export default function AiChat({ open, onClose, getContext, getMemory, getDeloadStatus, introMessage, workoutNotes, onUpdateNotes, onApplyAdjustment, onApplyDeload }) {
   const [input, setInput] = useState('')
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
