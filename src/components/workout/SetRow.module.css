@@ -78,6 +78,17 @@
   cursor: default;
 }
 
+/* Nasta set att gora — gula siffror sa anvandaren direkt ser
+   vikt/reps for det set som ar pa tur */
+.nextSet .stepInput,
+.nextSet .splitInput {
+  color: var(--accent);
+}
+.nextSet .label {
+  color: var(--accent);
+  font-weight: 700;
+}
+
 /* ── Label (S1, V1, etc) — plain text, no bg ── */
 .label {
   width: 28px;

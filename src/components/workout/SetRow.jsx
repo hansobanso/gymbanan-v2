@@ -31,6 +31,7 @@ export default function SetRow({
   set,
   displayLabel,
   isWarmup,
+  isNext,
   allSets,
   prev1RM,
   prefilled,
@@ -146,7 +147,7 @@ export default function SetRow({
 
       {/* Row: # | Kg | Reps(+RIR overlay) | ✓ */}
       <motion.div
-        className={`${styles.row} ${set.done ? styles.done : ''} ${isWarmup ? styles.warmup : ''}`}
+        className={`${styles.row} ${set.done ? styles.done : ''} ${isWarmup ? styles.warmup : ''} ${isNext ? styles.nextSet : ''}`}
         style={{ x, opacity: rowOpacity }}
         drag={set.done ? false : 'x'}
         dragConstraints={{ left: -80, right: 80 }}

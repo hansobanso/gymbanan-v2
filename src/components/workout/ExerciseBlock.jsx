@@ -481,29 +481,33 @@ export default function ExerciseBlock({
 
       {/* ── Set-rader med uppvärmningsseparator ── */}
       <div className={styles.sets}>
-        {exercise.sets.map((set, index) => {
-          const isFirstWork = set.type === 'work' && hasWarmups && (index === 0 || exercise.sets[index - 1]?.type === 'warmup')
-          return (
-            <Fragment key={set.id}>
-              {isFirstWork && (
-                <div className={styles.warmupDivider} />
-              )}
-              <SetRow
-                set={set}
-                displayLabel={getSetLabel(set, exercise.sets)}
-                isWarmup={set.type === 'warmup'}
-                allSets={exercise.sets}
-                prev1RM={prev1RM}
-                prefilled={!!set.prefilled}
-                onUpdate={(field, value) => onUpdateSet(exercise.localId, set.id, field, value)}
-                onRemove={() => onRemoveSet(exercise.localId, set.id)}
-                onDuplicate={() => onDuplicateSet?.(exercise.localId, set.id)}
-                onComplete={() => handleComplete(set.id)}
-                onOpenRIR={() => setRirSetId(set.id)}
-              />
-            </Fragment>
-          )
-        })}
+        {(() => {
+          const nextSetId = exercise.sets.find(s => !s.done)?.id ?? null
+          return exercise.sets.map((set, index) => {
+            const isFirstWork = set.type === 'work' && hasWarmups && (index === 0 || exercise.sets[index - 1]?.type === 'warmup')
+            return (
+              <Fragment key={set.id}>
+                {isFirstWork && (
+                  <div className={styles.warmupDivider} />
+                )}
+                <SetRow
+                  set={set}
+                  displayLabel={getSetLabel(set, exercise.sets)}
+                  isWarmup={set.type === 'warmup'}
+                  isNext={set.id === nextSetId}
+                  allSets={exercise.sets}
+                  prev1RM={prev1RM}
+                  prefilled={!!set.prefilled}
+                  onUpdate={(field, value) => onUpdateSet(exercise.localId, set.id, field, value)}
+                  onRemove={() => onRemoveSet(exercise.localId, set.id)}
+                  onDuplicate={() => onDuplicateSet?.(exercise.localId, set.id)}
+                  onComplete={() => handleComplete(set.id)}
+                  onOpenRIR={() => setRirSetId(set.id)}
+                />
+              </Fragment>
+            )
+          })
+        })()}
       </div>
 
       {/* ── Tidigare vikter ── */}
