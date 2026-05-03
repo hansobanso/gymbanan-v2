@@ -4,9 +4,8 @@
  * Beraknar nasta vikt + repmaal baserat pa tidigare prestation.
  * Ren logik — ingen React, inga DB-anrop, inga sidoeffekter.
  *
- * Etapp A: karnlogik + output-objekt.
- * Etapp B (framtida): koppla till useWorkout + UI + Epley.
- * Etapp C (framtida): harleda kategori automatiskt + weight_increment per ovning.
+ * Inkopplad i useWorkout.js via loadExerciseData().
+ * weight_increment per ovning (default via equipment), Epley-omrakning aktiv.
  */
 
 // ─── Kategori-harleding ────────────────────────────────────────
