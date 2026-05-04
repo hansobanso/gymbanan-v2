@@ -156,6 +156,24 @@ async function adminDeleteProgram(id) {
   if (error) throw error
 }
 
+// Uppskattar passtid: (varm+set+backoff) × ~45s per set + vila mellan set.
+// Default vila = 120s om inget annat anges. Returnerar minuter.
+function estimateSessionMinutes(exercises) {
+  if (!exercises?.length) return 0
+  let totalSeconds = 0
+  for (const ex of exercises) {
+    const warmups = ex.warmupSets ?? 2
+    const work = ex.workSets ?? 3
+    const backoff = ex.backoffSets ?? 0
+    const totalSets = warmups + work + backoff
+    const restSec = ex.restSeconds ?? 120
+    const timePerSet = 40 // uppskattat utforande per set
+    totalSeconds += totalSets * timePerSet + (totalSets - 1) * restSec
+    totalSeconds += 30 // byte mellan ovningar
+  }
+  return Math.round(totalSeconds / 60)
+}
+
 async function adminGetWorkouts() {
   const { data, error } = await supabase
     .from('workouts')
@@ -248,7 +266,7 @@ const REST_OPTS = [
 
 // ── SortableExerciseRow ──────────────────────────────────────────
 
-function SortableExerciseRow({ exercise, sessionId, allExercises, onUpdate, onRemove }) {
+function SortableExerciseRow({ exercise, sessionId, allExercises, isSelected, onSelect, onUpdate, onRemove }) {
   const [expanded, setExpanded] = useState(false)
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: exercise._id,
@@ -278,7 +296,9 @@ function SortableExerciseRow({ exercise, sessionId, allExercises, onUpdate, onRe
     <div
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.25 : 1 }}
-      className={styles.exCard}
+      className={`${styles.exCard} ${isSelected ? styles.exCardSelected : ''}`}
+      onClick={() => onSelect?.()}
+      style={{ cursor: 'pointer' }}
     >
       <div className={styles.exCardTop}>
         <div className={styles.exCardHandle} {...attributes} {...listeners}>
@@ -375,7 +395,7 @@ function Stepper({ label, value, min = 0, onChange }) {
 
 // ── SessionColumn ────────────────────────────────────────────────
 
-function SessionColumn({ session, allExercises, isOver, autoFocusName, onUpdateName, onAddExercise, onRemoveExercise, onUpdateExercise, onRemoveSession, onDuplicateSession }) {
+function SessionColumn({ session, allExercises, isOver, autoFocusName, selectedExId, onSelectExercise, onUpdateName, onAddExercise, onRemoveExercise, onUpdateExercise, onRemoveSession, onDuplicateSession }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: session._id,
     data: { type: 'session' },
@@ -427,12 +447,17 @@ function SessionColumn({ session, allExercises, isOver, autoFocusName, onUpdateN
         <div className={styles.sessionColHandle} {...attributes} {...listeners}>
           <GripIcon />
         </div>
-        <input
-          ref={nameInputRef}
-          className={styles.sessionColName}
-          value={session.name}
-          onChange={e => onUpdateName(e.target.value)}
-        />
+        <div className={styles.sessionColNameWrap}>
+          <input
+            ref={nameInputRef}
+            className={styles.sessionColName}
+            value={session.name}
+            onChange={e => onUpdateName(e.target.value)}
+          />
+          <span className={styles.sessionColMeta}>
+            {(session.exercises ?? []).length} övn · ca {estimateSessionMinutes(session.exercises)} min
+          </span>
+        </div>
         <button
           className={styles.sessionColDuplicate}
           onClick={onDuplicateSession}
@@ -462,6 +487,8 @@ function SessionColumn({ session, allExercises, isOver, autoFocusName, onUpdateN
               exercise={ex}
               sessionId={session._id}
               allExercises={allExercises}
+              isSelected={selectedExId === ex._id}
+              onSelect={() => onSelectExercise?.(session._id, ex._id, ex)}
               onUpdate={patch => onUpdateExercise(ex._id, patch)}
               onRemove={() => onRemoveExercise(ex._id)}
             />
@@ -523,8 +550,9 @@ function ProgramEditor({ program, allExercises, onSave, onBack, saveError }) {
     (program.sessions ?? []).map(hydrateSession)
   )
   const [saving, setSaving] = useState(false)
-  // Hojer sig nar en ny session skapats via duplicering - SessionColumn fokuserar input.
   const [autoFocusSessionId, setAutoFocusSessionId] = useState(null)
+  // Vald ovning for detaljpanelen till vanster
+  const [selectedEx, setSelectedEx] = useState(null) // { sessionId, exerciseId, exercise }
 
   // DnD state
   const [activeId, setActiveId]     = useState(null)
@@ -719,8 +747,115 @@ function ProgramEditor({ program, allExercises, onSave, onBack, saveError }) {
 
       {saveError && <div className={styles.saveErrorBanner}>Fel: {saveError}</div>}
 
-      {/* Board */}
-      <DndContext
+      {/* Main layout: optional detail panel + board */}
+      <div className={styles.progEditorMain}>
+        {/* Detail panel — visas till vanster nar en ovning ar vald */}
+        {selectedEx && (() => {
+          const ex = selectedEx.exercise
+          const exData = allExercises.find(e => e.name === ex.name)
+          const similar = exData?.muscle_group
+            ? allExercises
+                .filter(e => e.muscle_group === exData.muscle_group && e.name !== ex.name)
+                .sort((a, b) => {
+                  // Prioritera samma movement_pattern
+                  const aMatch = a.movement_pattern === exData.movement_pattern ? 0 : 1
+                  const bMatch = b.movement_pattern === exData.movement_pattern ? 0 : 1
+                  return aMatch - bMatch || a.name.localeCompare(b.name, 'sv')
+                })
+                .slice(0, 6)
+            : []
+
+          return (
+            <div className={styles.exDetailPanel}>
+              <div className={styles.exDetailPanelHeader}>
+                <h3 className={styles.exDetailPanelTitle}>{ex.name}</h3>
+                <button className={styles.exDetailPanelClose} onClick={() => setSelectedEx(null)} type="button" aria-label="Stäng">×</button>
+              </div>
+
+              {exData?.muscle_group && (
+                <div className={styles.exDetailPanelChip} style={{ background: chipColors(exData.muscle_group).bg, color: chipColors(exData.muscle_group).fg }}>
+                  {exData.muscle_group}
+                </div>
+              )}
+
+              {/* Set-inställningar */}
+              <div className={styles.exDetailPanelSection}>
+                <span className={styles.exDetailPanelLabel}>Uppvärmning</span>
+                <div className={styles.exDetailPanelStepper}>
+                  <button type="button" onClick={() => updateExercise(selectedEx.sessionId, ex._id, { warmupSets: Math.max(0, (ex.warmupSets ?? 2) - 1) })}>−</button>
+                  <span>{ex.warmupSets ?? 2}</span>
+                  <button type="button" onClick={() => updateExercise(selectedEx.sessionId, ex._id, { warmupSets: (ex.warmupSets ?? 2) + 1 })}>+</button>
+                </div>
+              </div>
+              <div className={styles.exDetailPanelSection}>
+                <span className={styles.exDetailPanelLabel}>Arbetsset</span>
+                <div className={styles.exDetailPanelStepper}>
+                  <button type="button" onClick={() => updateExercise(selectedEx.sessionId, ex._id, { workSets: Math.max(1, (ex.workSets ?? 3) - 1) })}>−</button>
+                  <span>{ex.workSets ?? 3}</span>
+                  <button type="button" onClick={() => updateExercise(selectedEx.sessionId, ex._id, { workSets: (ex.workSets ?? 3) + 1 })}>+</button>
+                </div>
+              </div>
+              <div className={styles.exDetailPanelSection}>
+                <span className={styles.exDetailPanelLabel}>Back-off</span>
+                <div className={styles.exDetailPanelStepper}>
+                  <button type="button" onClick={() => updateExercise(selectedEx.sessionId, ex._id, { backoffSets: Math.max(0, (ex.backoffSets ?? 0) - 1) })}>−</button>
+                  <span>{ex.backoffSets ?? 0}</span>
+                  <button type="button" onClick={() => updateExercise(selectedEx.sessionId, ex._id, { backoffSets: (ex.backoffSets ?? 0) + 1 })}>+</button>
+                </div>
+              </div>
+              <div className={styles.exDetailPanelSection}>
+                <span className={styles.exDetailPanelLabel}>Reps</span>
+                <div className={styles.exDetailPanelReps}>
+                  <input
+                    type="number" min="1" max="50"
+                    value={ex.repsMin ?? ''}
+                    onChange={e => updateExercise(selectedEx.sessionId, ex._id, { repsMin: e.target.value ? parseInt(e.target.value) : null })}
+                    placeholder="Min"
+                  />
+                  <span>–</span>
+                  <input
+                    type="number" min="1" max="50"
+                    value={ex.repsMax ?? ''}
+                    onChange={e => updateExercise(selectedEx.sessionId, ex._id, { repsMax: e.target.value ? parseInt(e.target.value) : null })}
+                    placeholder="Max"
+                  />
+                </div>
+              </div>
+
+              {/* Instruktioner */}
+              {exData?.instructions && (
+                <div className={styles.exDetailPanelInstr}>
+                  <span className={styles.exDetailPanelLabel}>Instruktioner</span>
+                  <p>{exData.instructions}</p>
+                </div>
+              )}
+
+              {/* Liknande övningar */}
+              {similar.length > 0 && (
+                <div className={styles.exDetailPanelSimilar}>
+                  <span className={styles.exDetailPanelLabel}>Liknande övningar</span>
+                  {similar.map(s => (
+                    <button
+                      key={s.id}
+                      className={styles.exDetailPanelSwapBtn}
+                      onClick={() => {
+                        updateExercise(selectedEx.sessionId, ex._id, { name: s.name })
+                        setSelectedEx(prev => ({ ...prev, exercise: { ...prev.exercise, name: s.name } }))
+                      }}
+                      type="button"
+                    >
+                      {s.name}
+                      <span className={styles.exDetailPanelSwapArrow}>↔</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )
+        })()}
+
+        {/* Board */}
+        <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
         onDragStart={handleDragStart}
@@ -738,6 +873,8 @@ function ProgramEditor({ program, allExercises, onSave, onBack, saveError }) {
                   allExercises={allExercises}
                   isOver={overColId === session._id && activeType === 'exercise'}
                   autoFocusName={autoFocusSessionId === session._id}
+                  selectedExId={selectedEx?.exerciseId}
+                  onSelectExercise={(sId, exId, ex) => setSelectedEx({ sessionId: sId, exerciseId: exId, exercise: ex })}
                   onUpdateName={val => updateSessionName(session._id, val)}
                   onAddExercise={name => addExercise(session._id, name)}
                   onRemoveExercise={exId => removeExercise(session._id, exId)}
@@ -772,6 +909,7 @@ function ProgramEditor({ program, allExercises, onSave, onBack, saveError }) {
           )}
         </DragOverlay>
       </DndContext>
+      </div> {/* end progEditorMain */}
 
       {sessions.length > 0 && (
         <div className={styles.progSummaryWrap}>

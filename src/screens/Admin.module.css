@@ -2309,3 +2309,177 @@
 .authBannerOk {
   display: none;
 }
+
+/* ── Session column meta (ovn count + time) ── */
+.sessionColNameWrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.sessionColMeta {
+  font-size: 10px;
+  color: #555;
+  padding-left: 2px;
+  letter-spacing: 0.2px;
+}
+
+/* ── Selected exercise card ── */
+.exCardSelected {
+  border-color: var(--accent) !important;
+  background: rgba(245, 208, 32, 0.04);
+}
+
+/* ── Program editor main layout ── */
+.progEditorMain {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ── Exercise detail panel (left sidebar) ── */
+.exDetailPanel {
+  width: 260px;
+  flex-shrink: 0;
+  background: #111;
+  border-right: 1px solid #1e1e1e;
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.exDetailPanelHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+.exDetailPanelTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+  line-height: 1.3;
+}
+.exDetailPanelClose {
+  background: none;
+  border: none;
+  color: #555;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.exDetailPanelClose:hover { color: #aaa; }
+.exDetailPanelChip {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  padding: 2px 8px;
+  border-radius: 8px;
+  align-self: flex-start;
+}
+.exDetailPanelSection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.exDetailPanelLabel {
+  font-size: 12px;
+  color: #888;
+  font-weight: 500;
+}
+.exDetailPanelStepper {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: #1a1a1a;
+  border-radius: 6px;
+  border: 1px solid #252525;
+}
+.exDetailPanelStepper button {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 16px;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.exDetailPanelStepper button:hover { color: #fff; }
+.exDetailPanelStepper span {
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  min-width: 20px;
+  text-align: center;
+}
+.exDetailPanelReps {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.exDetailPanelReps input {
+  width: 42px;
+  background: #1a1a1a;
+  border: 1px solid #252525;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  padding: 4px;
+  outline: none;
+  font-family: var(--font);
+}
+.exDetailPanelReps input:focus { border-color: var(--accent); }
+.exDetailPanelReps span { color: #555; font-size: 13px; }
+.exDetailPanelInstr {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.exDetailPanelInstr p {
+  font-size: 12px;
+  color: #aaa;
+  line-height: 1.4;
+  margin: 0;
+}
+.exDetailPanelSimilar {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.exDetailPanelSwapBtn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: #1a1a1a;
+  border: 1px solid #222;
+  border-radius: 6px;
+  color: #ccc;
+  font-size: 12px;
+  font-family: var(--font);
+  padding: 6px 8px;
+  cursor: pointer;
+  transition: border-color 0.1s, background 0.1s;
+}
+.exDetailPanelSwapBtn:hover {
+  border-color: var(--accent);
+  background: rgba(245, 208, 32, 0.04);
+}
+.exDetailPanelSwapArrow {
+  color: #555;
+  font-size: 11px;
+}
