@@ -293,11 +293,10 @@ function SortableExerciseRow({ exercise, sessionId, allExercises, isSelected, on
   return (
     <div
       ref={setNodeRef}
-      style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.25 : 1, cursor: 'pointer' }}
+      style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.25 : 1 }}
       className={`${styles.exCard} ${isSelected ? styles.exCardSelected : ''}`}
-      onClick={() => onSelect?.()}
     >
-      <div className={styles.exCardHandle} {...attributes} {...listeners} onClick={e => e.stopPropagation()}>
+      <div className={styles.exCardHandle} {...attributes} {...listeners}>
         <GripIcon />
       </div>
       <div className={styles.exCardMain}>
@@ -313,12 +312,12 @@ function SortableExerciseRow({ exercise, sessionId, allExercises, isSelected, on
       </div>
       <button
         className={styles.exCardSwapBtn}
-        onClick={e => { e.stopPropagation(); onSelect?.() }}
+        onClick={() => onSelect?.()}
         type="button"
       >
-        Byt
+        Ändra
       </button>
-      <button className={styles.exCardRemove} onClick={e => { e.stopPropagation(); onRemove() }} type="button" aria-label="Ta bort övning">
+      <button className={styles.exCardRemove} onClick={onRemove} type="button" aria-label="Ta bort övning">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M18 6 6 18"/>
           <path d="m6 6 12 12"/>
