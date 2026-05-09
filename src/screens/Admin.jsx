@@ -299,7 +299,11 @@ function SortableExerciseRow({ exercise, sessionId, allExercises, isSelected, on
       <div className={styles.exCardHandle} {...attributes} {...listeners}>
         <GripIcon />
       </div>
-      <div className={styles.exCardMain}>
+      <button
+        type="button"
+        className={styles.exCardMain}
+        onClick={() => onSelect?.()}
+      >
         {muscleGroup && (
           <div className={styles.exCardMuscle}>{muscleGroup}</div>
         )}
@@ -309,13 +313,6 @@ function SortableExerciseRow({ exercise, sessionId, allExercises, isSelected, on
           {(exercise.backoffSets ?? 0) > 0 && <span>+{exercise.backoffSets} BO</span>}
           {restLabel && <span>{restLabel} vila</span>}
         </div>
-      </div>
-      <button
-        className={styles.exCardSwapBtn}
-        onClick={() => onSelect?.()}
-        type="button"
-      >
-        Ändra
       </button>
       <button className={styles.exCardRemove} onClick={onRemove} type="button" aria-label="Ta bort övning">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

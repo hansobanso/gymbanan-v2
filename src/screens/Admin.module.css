@@ -562,6 +562,17 @@
   flex-direction: column;
   gap: 1px;
   min-width: 0;
+  background: none;
+  border: none;
+  color: inherit;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.exCardMain:active {
+  opacity: 0.7;
 }
 
 /* Muskelgrupp i gult, samma stil som ovningsnamnet */
