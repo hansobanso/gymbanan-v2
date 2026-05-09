@@ -99,6 +99,12 @@
   position: sticky;
   top: 0;
   height: 100dvh;
+  transition: width 0.2s ease;
+}
+
+/* Bredare sidebar nar detaljpanelen ar aktiv */
+.sidebarWithDetail {
+  width: 280px;
 }
 
 .sidebarBrand {

@@ -1670,7 +1670,7 @@ export default function Admin() {
 
   return (
     <div className={styles.adminLayout}>
-      <aside className={styles.sidebar}>
+      <aside className={`${styles.sidebar} ${sidebarDetail ? styles.sidebarWithDetail : ''}`}>
         <div className={styles.sidebarBrand}>
           <svg className={styles.brandIcon} viewBox="0 0 24 24" fill="none" stroke="#F5D020" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M4 13c3.5-2 8-2 10 2a5.5 5.5 0 0 1 8 5"/>
