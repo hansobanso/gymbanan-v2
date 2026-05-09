@@ -1741,9 +1741,27 @@ export default function Admin() {
               <div className={styles.sidebarDetailSection}>
                 <span>Reps</span>
                 <div className={styles.sidebarDetailReps}>
-                  <input type="number" min="1" max="50" value={ex.repsMin ?? ''} onChange={e => onUpdate({ repsMin: e.target.value ? parseInt(e.target.value) : null })} placeholder="Min" />
+                  <select
+                    className={styles.sidebarDetailSelect}
+                    value={ex.repsMin ?? ''}
+                    onChange={e => onUpdate({ repsMin: e.target.value ? parseInt(e.target.value) : null })}
+                  >
+                    <option value="">–</option>
+                    {Array.from({ length: 30 }, (_, i) => i + 1).map(n => (
+                      <option key={n} value={n}>{n}</option>
+                    ))}
+                  </select>
                   <span>–</span>
-                  <input type="number" min="1" max="50" value={ex.repsMax ?? ''} onChange={e => onUpdate({ repsMax: e.target.value ? parseInt(e.target.value) : null })} placeholder="Max" />
+                  <select
+                    className={styles.sidebarDetailSelect}
+                    value={ex.repsMax ?? ''}
+                    onChange={e => onUpdate({ repsMax: e.target.value ? parseInt(e.target.value) : null })}
+                  >
+                    <option value="">–</option>
+                    {Array.from({ length: 30 }, (_, i) => i + 1).map(n => (
+                      <option key={n} value={n}>{n}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
               <div className={styles.sidebarDetailPresets}>
@@ -1752,6 +1770,26 @@ export default function Admin() {
                     onClick={() => onUpdate({ repsMin: min, repsMax: max })}
                   >{min}–{max}</button>
                 ))}
+              </div>
+              <div className={styles.sidebarDetailSection}>
+                <span>Vila</span>
+                <select
+                  className={styles.sidebarDetailSelect}
+                  style={{ minWidth: 78 }}
+                  value={ex.restSeconds ?? ''}
+                  onChange={e => onUpdate({ restSeconds: e.target.value ? parseInt(e.target.value) : null })}
+                >
+                  <option value="">Auto</option>
+                  <option value="30">30s</option>
+                  <option value="45">45s</option>
+                  <option value="60">1m</option>
+                  <option value="90">1m30s</option>
+                  <option value="120">2m</option>
+                  <option value="150">2m30s</option>
+                  <option value="180">3m</option>
+                  <option value="240">4m</option>
+                  <option value="300">5m</option>
+                </select>
               </div>
               {exData?.instructions && (
                 <div className={styles.sidebarDetailInstr}>

@@ -90,7 +90,7 @@
 
 /* ── Sidebar ── */
 .sidebar {
-  width: 180px;
+  width: 220px;
   flex-shrink: 0;
   background: #111111;
   border-right: 1px solid #1e1e1e;
@@ -99,12 +99,6 @@
   position: sticky;
   top: 0;
   height: 100dvh;
-  transition: width 0.2s ease;
-}
-
-/* Bredare sidebar nar detaljpanelen ar aktiv */
-.sidebarWithDetail {
-  width: 280px;
 }
 
 .sidebarBrand {
@@ -408,12 +402,11 @@
 
 .board {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 280px));
+  gap: 14px;
   padding: 16px 20px 24px;
   align-items: flex-start;
-  max-width: 1400px;
-  margin: 0 auto;
+  justify-content: start;
 }
 
 /* Pa mindre skarmar — farre kolumner via auto-fit handlas det */
@@ -2604,21 +2597,29 @@
   gap: 4px;
   flex-shrink: 0;
 }
-.sidebarDetailReps input {
-  width: 38px;
+.sidebarDetailReps > span { color: #555; }
+
+.sidebarDetailSelect {
   background: #1a1a1a;
   border: 1px solid #252525;
   border-radius: 6px;
   color: #fff;
   font-size: 13px;
   font-weight: 600;
-  text-align: center;
-  padding: 4px;
+  padding: 5px 24px 5px 8px;
   outline: none;
   font-family: var(--font);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23888' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  min-width: 56px;
+  text-align: center;
 }
-.sidebarDetailReps input:focus { border-color: var(--accent); }
-.sidebarDetailReps > span { color: #555; }
+.sidebarDetailSelect:focus { border-color: var(--accent); }
+.sidebarDetailSelect:hover { border-color: #333; }
 .sidebarDetailPresets {
   display: flex;
   gap: 4px;
