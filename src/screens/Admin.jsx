@@ -722,15 +722,19 @@ function ProgramEditor({ program, allExercises, onSave, onBack, saveError, onSel
                   autoFocusName={autoFocusSessionId === session._id}
                   selectedExId={selectedEx?.exerciseId}
                   onSelectExercise={(sId, exId, ex) => {
+                    console.log('[Admin] SessionColumn onSelectExercise', sId, exId, ex.name)
                     setSelectedEx({ sessionId: sId, exerciseId: exId, exercise: ex })
-                    onSelectExercise?.({
+                    if (!onSelectExercise) {
+                      console.warn('[Admin] onSelectExercise prop saknas i ProgramEditor!')
+                      return
+                    }
+                    onSelectExercise({
                       exercise: ex,
                       sessionId: sId,
                       onUpdate: (patch) => updateExercise(sId, exId, patch),
                       onSwap: (newName) => {
                         updateExercise(sId, exId, { name: newName })
-                        // Uppdatera sidebar med nya namnet
-                        onSelectExercise?.({
+                        onSelectExercise({
                           exercise: { ...ex, name: newName },
                           sessionId: sId,
                           onUpdate: (p) => updateExercise(sId, exId, p),
@@ -1269,7 +1273,10 @@ function ProgramsTab({ allExercises }) {
         onSave={handleSaveProg}
         onBack={() => { setEditing(null); setSaveError(null); setSidebarDetail(null) }}
         saveError={saveError}
-        onSelectExercise={(detail) => setSidebarDetail(detail)}
+        onSelectExercise={(detail) => {
+          console.log('[Admin] setSidebarDetail kallat med', detail?.exercise?.name)
+          setSidebarDetail(detail)
+        }}
       />
     )
   }
@@ -1718,6 +1725,7 @@ export default function Admin() {
 
       {/* Detaljpanel — overlay/sheet utanfor sidebaren sa den fungerar bade
           pa desktop (fixed left, vid sidan av sidebar) och mobil (bottom-sheet). */}
+      {(() => { console.log('[Admin] render, sidebarDetail =', sidebarDetail?.exercise?.name ?? 'null'); return null })()}
       {sidebarDetail && (() => {
         const { exercise: ex, onUpdate, onSwap } = sidebarDetail
         const exData = allExercises.find(e => e.name === ex.name)
