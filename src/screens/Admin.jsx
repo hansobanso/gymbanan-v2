@@ -1569,6 +1569,7 @@ export default function Admin() {
   const [authStatus, setAuthStatus] = useState({ loading: true, user: null, isAdmin: false })
   // Detaljpanel for vald ovning — skickas ner till ProgramsTab och renderas i sidebar
   const [sidebarDetail, setSidebarDetail] = useState(null)
+  const [panelCollapsed, setPanelCollapsed] = useState(false)
 
   // Kolla om användaren är inloggad i Supabase OCH har admin-rollen.
   // Admin-sidans password-gate är separat - utan Supabase-auth fungerar
@@ -1704,11 +1705,21 @@ export default function Admin() {
                 .slice(0, 6)
             : []
           return (
-            <div className={styles.sidebarDetailPanel}>
+            <div className={`${styles.sidebarDetailPanel} ${panelCollapsed ? styles.sidebarDetailCollapsed : ''}`}>
               <div className={styles.sidebarDetailHeader}>
                 <h3 className={styles.sidebarDetailTitle}>{ex.name}</h3>
-                <button className={styles.sidebarDetailClose} onClick={() => setSidebarDetail(null)} type="button">×</button>
+                <button
+                  className={styles.sidebarDetailToggle}
+                  onClick={() => setPanelCollapsed(c => !c)}
+                  type="button"
+                  aria-label={panelCollapsed ? 'Expandera' : 'Kollapsa'}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" style={{ transform: panelCollapsed ? 'rotate(0deg)' : 'rotate(180deg)', transition: 'transform 0.15s' }} aria-hidden="true">
+                    <polyline points="6 9 12 15 18 9"/>
+                  </svg>
+                </button>
               </div>
+              <div className={styles.sidebarDetailBody}>
               {exData?.muscle_group && (
                 <span className={styles.sidebarDetailChip} style={{ background: chipColors(exData.muscle_group).bg, color: chipColors(exData.muscle_group).fg }}>
                   {exData.muscle_group}
@@ -1808,6 +1819,7 @@ export default function Admin() {
                   ))}
                 </div>
               )}
+              </div> {/* sidebarDetailBody */}
             </div>
           )
         })()}
