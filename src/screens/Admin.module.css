@@ -2658,3 +2658,37 @@
 }
 .sidebarDetailSwapBtn:hover { border-color: var(--accent); }
 .sidebarDetailSwapBtn span { color: #555; font-size: 11px; }
+
+/* ── Mobil: detaljpanel som bottom-sheet ── */
+@media (max-width: 880px) {
+  .sidebarWithDetail {
+    width: 100%;
+  }
+
+  .sidebarDetailPanel {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 200;
+    background: #111;
+    border-top: 1px solid #1e1e1e;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.5);
+    padding: 18px 16px 24px;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0));
+    max-height: 70vh;
+    overflow-y: auto;
+    flex: none;
+  }
+
+  /* Backdrop */
+  .sidebarDetailPanel::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: -1;
+    pointer-events: none;
+  }
+}
