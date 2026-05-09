@@ -2483,3 +2483,25 @@
   color: #555;
   font-size: 11px;
 }
+
+/* ── Status indicator in topbar ── */
+.progEditorStatus {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+.progEditorDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px rgba(245, 208, 32, 0.12);
+  flex-shrink: 0;
+}
+.progEditorStatusText {
+  font-size: 12px;
+  color: #666;
+  white-space: nowrap;
+}

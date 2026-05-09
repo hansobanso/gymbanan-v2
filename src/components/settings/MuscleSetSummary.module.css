@@ -81,3 +81,40 @@
   color: var(--text-3);
   flex-shrink: 0;
 }
+
+/* ── Volume grid med progress-fält ── */
+.volumeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.volumeItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.volumeLabel {
+  font-size: 11px;
+  color: var(--text-2);
+  font-weight: 500;
+}
+
+.volumeTrack {
+  height: 6px;
+  background: #1a1a1a;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.volumeFill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.volumeFill_ok { background: #4ade80; }
+.volumeFill_mid { background: var(--accent); }
+.volumeFill_low { background: #f87171; }

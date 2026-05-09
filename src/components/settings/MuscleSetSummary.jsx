@@ -82,6 +82,21 @@ export default function MuscleSetSummary({ exercises, allExercises, label = 'Set
 }
 
 // ── UI: ProgramMuscleSetSummary (used in ProgramEdit) ─────────
+// Max sets/vecka per muskelgrupp (for att berakna %-fyllnad i progress-falt).
+// Baserat pa RP:s riktlinjer for erfarna lyffare.
+const MAX_SETS_PER_WEEK = {
+  'Rygg': 14, 'Bröst': 14, 'Axlar': 14, 'Quads': 12, 'Hamstrings': 12,
+  'Biceps': 12, 'Triceps': 12, 'Core': 10, 'Vader': 10, 'Rumpa': 12,
+  'Underarmar': 8, 'Övrigt': 10,
+}
+
+function volumeLevel(sets, max) {
+  const pct = sets / max
+  if (pct >= 0.7) return 'ok'
+  if (pct >= 0.4) return 'mid'
+  return 'low'
+}
+
 export function ProgramMuscleSetSummary({ sessions, allExercises, defaultOpen = false }) {
   const [open, setOpen] = useState(defaultOpen)
   const breakdown = useMemo(() => computeProgramMuscleSets(sessions, allExercises), [sessions, allExercises])
@@ -100,7 +115,7 @@ export function ProgramMuscleSetSummary({ sessions, allExercises, defaultOpen = 
         aria-expanded={open}
       >
         <span className={styles.label}>Set per muskel · per vecka</span>
-        <span className={styles.total}>{totalSets} totalt</span>
+        <span className={styles.total}>{totalSets} set totalt</span>
         <svg
           width="14" height="14" viewBox="0 0 24 24"
           fill="none" stroke="currentColor" strokeWidth="2.4"
@@ -112,13 +127,23 @@ export function ProgramMuscleSetSummary({ sessions, allExercises, defaultOpen = 
         </svg>
       </button>
       {open && (
-        <div className={styles.list}>
-          {breakdown.map(({ muscle, sets }) => (
-            <div key={muscle} className={styles.row}>
-              <span className={styles.name}>{muscle}</span>
-              <span className={styles.count}>{fmt(sets)}</span>
-            </div>
-          ))}
+        <div className={styles.volumeGrid}>
+          {breakdown.map(({ muscle, sets }) => {
+            const max = MAX_SETS_PER_WEEK[muscle] ?? 12
+            const pct = Math.min(100, Math.round((sets / max) * 100))
+            const level = volumeLevel(sets, max)
+            return (
+              <div key={muscle} className={styles.volumeItem}>
+                <span className={styles.volumeLabel}>{muscle} – {fmt(sets)} set</span>
+                <div className={styles.volumeTrack}>
+                  <div
+                    className={`${styles.volumeFill} ${styles[`volumeFill_${level}`]}`}
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+              </div>
+            )
+          })}
         </div>
       )}
     </div>

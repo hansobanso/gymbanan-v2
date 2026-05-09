@@ -551,8 +551,11 @@ function ProgramEditor({ program, allExercises, onSave, onBack, saveError }) {
   )
   const [saving, setSaving] = useState(false)
   const [autoFocusSessionId, setAutoFocusSessionId] = useState(null)
-  // Vald ovning for detaljpanelen till vanster
   const [selectedEx, setSelectedEx] = useState(null) // { sessionId, exerciseId, exercise }
+  const [isDirtyProg, setIsDirtyProg] = useState(false)
+
+  // Markera dirty vid alla session-andringar
+  function markDirty() { setIsDirtyProg(true) }
 
   // DnD state
   const [activeId, setActiveId]     = useState(null)
@@ -660,7 +663,7 @@ function ProgramEditor({ program, allExercises, onSave, onBack, saveError }) {
   }
 
   // Session helpers
-  function addSession() {
+  function addSession() { markDirty();
     setSessions(prev => [...prev, newSession()])
   }
 
@@ -677,27 +680,27 @@ function ProgramEditor({ program, allExercises, onSave, onBack, saveError }) {
     })
   }
 
-  function removeSession(id) {
+  function removeSession(id) { markDirty();
     setSessions(prev => prev.filter(s => s._id !== id))
   }
 
-  function updateSessionName(id, val) {
+  function updateSessionName(id, val) { markDirty();
     setSessions(prev => prev.map(s => s._id === id ? { ...s, name: val } : s))
   }
 
-  function addExercise(sessionId, exName) {
+  function addExercise(sessionId, exName) { markDirty();
     setSessions(prev => prev.map(s =>
       s._id === sessionId ? { ...s, exercises: [...s.exercises, newExercise(exName)] } : s
     ))
   }
 
-  function removeExercise(sessionId, exId) {
+  function removeExercise(sessionId, exId) { markDirty();
     setSessions(prev => prev.map(s =>
       s._id === sessionId ? { ...s, exercises: s.exercises.filter(e => e._id !== exId) } : s
     ))
   }
 
-  function updateExercise(sessionId, exId, patch) {
+  function updateExercise(sessionId, exId, patch) { markDirty();
     setSessions(prev => prev.map(s =>
       s._id === sessionId
         ? { ...s, exercises: s.exercises.map(e => e._id === exId ? { ...e, ...patch } : e) }
@@ -717,7 +720,7 @@ function ProgramEditor({ program, allExercises, onSave, onBack, saveError }) {
           exercises: (s.exercises ?? []).map(({ _id: _eid, ...e }) => e),
         })),
       })
-    } finally { setSaving(false) }
+    } finally { setSaving(false); setIsDirtyProg(false) }
   }
 
   // Find dragged items for overlay
@@ -739,7 +742,12 @@ function ProgramEditor({ program, allExercises, onSave, onBack, saveError }) {
           onChange={e => setName(e.target.value)}
           placeholder="Programnamn"
         />
-        <div className={styles.progEditorSpacer} />
+        <div className={styles.progEditorStatus}>
+          {isDirtyProg && <span className={styles.progEditorDot} />}
+          <span className={styles.progEditorStatusText}>
+            {isDirtyProg ? 'Osparade ändringar' : 'Allt sparat'}
+          </span>
+        </div>
         <button className={styles.saveProgBtn} onClick={handleSave} disabled={!name.trim() || saving} type="button">
           {saving ? 'Sparar…' : 'Spara program'}
         </button>
