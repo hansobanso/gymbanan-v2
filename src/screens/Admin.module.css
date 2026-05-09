@@ -395,30 +395,38 @@
 
 .boardScroll {
   flex: 1;
-  overflow-x: auto;
   overflow-y: auto;
   min-height: 0;
+  width: 100%;
 }
 
 .board {
-  display: flex;
-  gap: 10px;
-  padding: 12px 20px 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+  padding: 16px 20px 24px;
   align-items: flex-start;
-  min-height: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Pa mindre skarmar — farre kolumner via auto-fit handlas det */
+@media (max-width: 720px) {
+  .board {
+    grid-template-columns: 1fr;
+    padding: 12px;
+  }
 }
 
 /* ── Session column ── */
 .sessionCol {
-  width: 230px;
-  flex-shrink: 0;
   background: #141414;
   border: 1px solid #222;
   border-radius: 10px;
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - 180px);
   transition: border-color 0.15s;
+  min-width: 0;
 }
 
 .sessionColOver {
@@ -520,16 +528,13 @@
   border: 1px solid #252525;
   border-radius: 8px;
   display: flex;
-  flex-direction: column;
-  cursor: default;
-  overflow: hidden;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 8px 8px 4px;
+  transition: border-color 0.1s, background 0.1s;
 }
-
-.exCardTop {
-  display: flex;
-  align-items: flex-start;
-  gap: 4px;
-  padding: 6px 6px 6px 4px;
+.exCard:hover {
+  border-color: #333;
 }
 
 .exCardHandle {
@@ -551,7 +556,16 @@
   flex-direction: column;
   gap: 1px;
   min-width: 0;
-  padding: 1px 0;
+}
+
+/* Muskelgrupp i gult, samma stil som ovningsnamnet */
+.exCardMuscle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  line-height: 1.25;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .exCardName {
@@ -559,7 +573,6 @@
   font-weight: 600;
   color: #e0e0e0;
   line-height: 1.25;
-  /* Hela namnet syns - bryter pa 2 rader om det inte ryms */
   word-break: break-word;
 }
 
@@ -570,48 +583,29 @@
   font-size: 10px;
   color: #666;
   line-height: 1.2;
+  margin-top: 1px;
 }
 
 .exCardMeta span {
   white-space: nowrap;
 }
 
-.exCardChip {
-  font-size: 9px;
+.exCardSwapBtn {
+  background: #1f1f1f;
+  border: 1px solid #2a2a2a;
+  border-radius: 6px;
+  color: #ccc;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.2px;
-  padding: 2px 6px;
-  border-radius: 8px;
-  text-transform: uppercase;
-  line-height: 1.3;
-}
-
-.exCardExpandBtn {
-  background: none;
-  border: none;
-  color: #444;
-  font-size: 12px;
+  font-family: inherit;
+  padding: 4px 10px;
   cursor: pointer;
-  padding: 2px 4px;
   flex-shrink: 0;
-  transition: color 0.1s;
-  line-height: 1;
+  transition: border-color 0.1s, color 0.1s;
 }
-.exCardExpandBtn:hover { color: #888; }
-
-.exCardBody {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.22s ease;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 0 8px 0 28px;
-}
-
-.exCardBodyExpanded {
-  max-height: 800px;
-  padding: 8px 8px 8px 28px;
+.exCardSwapBtn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .exCardSteppers {

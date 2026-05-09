@@ -267,7 +267,6 @@ const REST_OPTS = [
 // ── SortableExerciseRow ──────────────────────────────────────────
 
 function SortableExerciseRow({ exercise, sessionId, allExercises, isSelected, onSelect, onUpdate, onRemove }) {
-  const [expanded, setExpanded] = useState(false)
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: exercise._id,
     data: { type: 'exercise', exercise, sessionId },
@@ -277,7 +276,6 @@ function SortableExerciseRow({ exercise, sessionId, allExercises, isSelected, on
   const muscleGroup = exercise.muscle_group
     ?? allExercises.find(e => e.name === exercise.name)?.muscle_group
     ?? null
-  const chip = muscleGroup ? chipColors(muscleGroup) : null
 
   // Formatera vila kort (t.ex. "1m30s" -> "1:30", "60" -> "1m")
   const restLabel = (() => {
@@ -295,87 +293,37 @@ function SortableExerciseRow({ exercise, sessionId, allExercises, isSelected, on
   return (
     <div
       ref={setNodeRef}
-      style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.25 : 1 }}
+      style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.25 : 1, cursor: 'pointer' }}
       className={`${styles.exCard} ${isSelected ? styles.exCardSelected : ''}`}
       onClick={() => onSelect?.()}
-      style={{ cursor: 'pointer' }}
     >
-      <div className={styles.exCardTop}>
-        <div className={styles.exCardHandle} {...attributes} {...listeners}>
-          <GripIcon />
-        </div>
-        <div className={styles.exCardMain}>
-          <div className={styles.exCardName}>{exercise.name}</div>
-          <div className={styles.exCardMeta}>
-            {chip && (
-              <span
-                className={styles.exCardChip}
-                style={{ background: chip.bg, color: chip.fg }}
-              >
-                {muscleGroup}
-              </span>
-            )}
-            <span>{exercise.workSets ?? 3}×{repsLabel ?? '—'}</span>
-            {(exercise.backoffSets ?? 0) > 0 && <span>+{exercise.backoffSets} BO</span>}
-            {restLabel && <span>{restLabel} vila</span>}
-          </div>
-        </div>
-        <button
-          className={styles.exCardExpandBtn}
-          onClick={() => setExpanded(v => !v)}
-          type="button"
-          aria-label={expanded ? 'Kollapsa' : 'Expandera'}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ transform: expanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}>
-            <path d="m6 9 6 6 6-6"/>
-          </svg>
-        </button>
-        <button className={styles.exCardRemove} onClick={onRemove} type="button" aria-label="Ta bort övning">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M18 6 6 18"/>
-            <path d="m6 6 12 12"/>
-          </svg>
-        </button>
+      <div className={styles.exCardHandle} {...attributes} {...listeners} onClick={e => e.stopPropagation()}>
+        <GripIcon />
       </div>
-      <div className={`${styles.exCardBody} ${expanded ? styles.exCardBodyExpanded : ''}`}>
-        <div className={styles.exCardSteppers}>
-          <Stepper label="WU"       value={exercise.warmupSets  ?? 1} min={0} onChange={v => onUpdate({ warmupSets:  v })} />
-          <Stepper label="Set"      value={exercise.workSets    ?? 3} min={1} onChange={v => onUpdate({ workSets:    v })} />
-          <Stepper label="Back-off" value={exercise.backoffSets ?? 0} min={0} onChange={v => onUpdate({ backoffSets: v })} />
-        </div>
-
-        <div className={styles.exCardRow}>
-          <span className={styles.exCardRowLabel}>Reps</span>
-          <input
-            type="text" inputMode="numeric" className={styles.repsInput}
-            value={exercise.repsMin ?? ''}
-            placeholder="–"
-            onFocus={e => e.target.select()}
-            onChange={e => onUpdate({ repsMin: e.target.value.replace(/\D/g, '') === '' ? null : parseInt(e.target.value.replace(/\D/g, '')) })}
-            onBlur={e => { if (!e.target.value.trim()) onUpdate({ repsMin: null }) }}
-          />
-          <span className={styles.repsDash}>–</span>
-          <input
-            type="text" inputMode="numeric" className={styles.repsInput}
-            value={exercise.repsMax ?? ''}
-            placeholder="–"
-            onFocus={e => e.target.select()}
-            onChange={e => onUpdate({ repsMax: e.target.value.replace(/\D/g, '') === '' ? null : parseInt(e.target.value.replace(/\D/g, '')) })}
-            onBlur={e => { if (!e.target.value.trim()) onUpdate({ repsMax: null }) }}
-          />
-        </div>
-
-        <div className={styles.exCardRow}>
-          <span className={styles.exCardRowLabel}>Vila</span>
-          <select
-            className={styles.vilaSelect}
-            value={exercise.restSeconds != null ? String(exercise.restSeconds) : ''}
-            onChange={e => onUpdate({ restSeconds: e.target.value ? +e.target.value : null })}
-          >
-            {REST_OPTS.map(o => <option key={o.label} value={o.value}>{o.label}</option>)}
-          </select>
+      <div className={styles.exCardMain}>
+        {muscleGroup && (
+          <div className={styles.exCardMuscle}>{muscleGroup}</div>
+        )}
+        <div className={styles.exCardName}>{exercise.name}</div>
+        <div className={styles.exCardMeta}>
+          <span>{exercise.workSets ?? 3}×{repsLabel ?? '—'}</span>
+          {(exercise.backoffSets ?? 0) > 0 && <span>+{exercise.backoffSets} BO</span>}
+          {restLabel && <span>{restLabel} vila</span>}
         </div>
       </div>
+      <button
+        className={styles.exCardSwapBtn}
+        onClick={e => { e.stopPropagation(); onSelect?.() }}
+        type="button"
+      >
+        Byt
+      </button>
+      <button className={styles.exCardRemove} onClick={e => { e.stopPropagation(); onRemove() }} type="button" aria-label="Ta bort övning">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M18 6 6 18"/>
+          <path d="m6 6 12 12"/>
+        </svg>
+      </button>
     </div>
   )
 }
