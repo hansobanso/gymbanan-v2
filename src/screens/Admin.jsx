@@ -544,7 +544,7 @@ function SessionColumn({ session, allExercises, isOver, autoFocusName, selectedE
 
 // ── ProgramEditor ────────────────────────────────────────────────
 
-function ProgramEditor({ program, allExercises, onSave, onBack, saveError }) {
+function ProgramEditor({ program, allExercises, onSave, onBack, saveError, onSelectExercise }) {
   const [name, setName] = useState(program.name ?? '')
   const [sessions, setSessions] = useState(() =>
     (program.sessions ?? []).map(hydrateSession)
@@ -755,113 +755,8 @@ function ProgramEditor({ program, allExercises, onSave, onBack, saveError }) {
 
       {saveError && <div className={styles.saveErrorBanner}>Fel: {saveError}</div>}
 
-      {/* Main layout: optional detail panel + board */}
+      {/* Main layout: board */}
       <div className={styles.progEditorMain}>
-        {/* Detail panel — visas till vanster nar en ovning ar vald */}
-        {selectedEx && (() => {
-          const ex = selectedEx.exercise
-          const exData = allExercises.find(e => e.name === ex.name)
-          const similar = exData?.muscle_group
-            ? allExercises
-                .filter(e => e.muscle_group === exData.muscle_group && e.name !== ex.name)
-                .sort((a, b) => {
-                  // Prioritera samma movement_pattern
-                  const aMatch = a.movement_pattern === exData.movement_pattern ? 0 : 1
-                  const bMatch = b.movement_pattern === exData.movement_pattern ? 0 : 1
-                  return aMatch - bMatch || a.name.localeCompare(b.name, 'sv')
-                })
-                .slice(0, 6)
-            : []
-
-          return (
-            <div className={styles.exDetailPanel}>
-              <div className={styles.exDetailPanelHeader}>
-                <h3 className={styles.exDetailPanelTitle}>{ex.name}</h3>
-                <button className={styles.exDetailPanelClose} onClick={() => setSelectedEx(null)} type="button" aria-label="Stäng">×</button>
-              </div>
-
-              {exData?.muscle_group && (
-                <div className={styles.exDetailPanelChip} style={{ background: chipColors(exData.muscle_group).bg, color: chipColors(exData.muscle_group).fg }}>
-                  {exData.muscle_group}
-                </div>
-              )}
-
-              {/* Set-inställningar */}
-              <div className={styles.exDetailPanelSection}>
-                <span className={styles.exDetailPanelLabel}>Uppvärmning</span>
-                <div className={styles.exDetailPanelStepper}>
-                  <button type="button" onClick={() => updateExercise(selectedEx.sessionId, ex._id, { warmupSets: Math.max(0, (ex.warmupSets ?? 2) - 1) })}>−</button>
-                  <span>{ex.warmupSets ?? 2}</span>
-                  <button type="button" onClick={() => updateExercise(selectedEx.sessionId, ex._id, { warmupSets: (ex.warmupSets ?? 2) + 1 })}>+</button>
-                </div>
-              </div>
-              <div className={styles.exDetailPanelSection}>
-                <span className={styles.exDetailPanelLabel}>Arbetsset</span>
-                <div className={styles.exDetailPanelStepper}>
-                  <button type="button" onClick={() => updateExercise(selectedEx.sessionId, ex._id, { workSets: Math.max(1, (ex.workSets ?? 3) - 1) })}>−</button>
-                  <span>{ex.workSets ?? 3}</span>
-                  <button type="button" onClick={() => updateExercise(selectedEx.sessionId, ex._id, { workSets: (ex.workSets ?? 3) + 1 })}>+</button>
-                </div>
-              </div>
-              <div className={styles.exDetailPanelSection}>
-                <span className={styles.exDetailPanelLabel}>Back-off</span>
-                <div className={styles.exDetailPanelStepper}>
-                  <button type="button" onClick={() => updateExercise(selectedEx.sessionId, ex._id, { backoffSets: Math.max(0, (ex.backoffSets ?? 0) - 1) })}>−</button>
-                  <span>{ex.backoffSets ?? 0}</span>
-                  <button type="button" onClick={() => updateExercise(selectedEx.sessionId, ex._id, { backoffSets: (ex.backoffSets ?? 0) + 1 })}>+</button>
-                </div>
-              </div>
-              <div className={styles.exDetailPanelSection}>
-                <span className={styles.exDetailPanelLabel}>Reps</span>
-                <div className={styles.exDetailPanelReps}>
-                  <input
-                    type="number" min="1" max="50"
-                    value={ex.repsMin ?? ''}
-                    onChange={e => updateExercise(selectedEx.sessionId, ex._id, { repsMin: e.target.value ? parseInt(e.target.value) : null })}
-                    placeholder="Min"
-                  />
-                  <span>–</span>
-                  <input
-                    type="number" min="1" max="50"
-                    value={ex.repsMax ?? ''}
-                    onChange={e => updateExercise(selectedEx.sessionId, ex._id, { repsMax: e.target.value ? parseInt(e.target.value) : null })}
-                    placeholder="Max"
-                  />
-                </div>
-              </div>
-
-              {/* Instruktioner */}
-              {exData?.instructions && (
-                <div className={styles.exDetailPanelInstr}>
-                  <span className={styles.exDetailPanelLabel}>Instruktioner</span>
-                  <p>{exData.instructions}</p>
-                </div>
-              )}
-
-              {/* Liknande övningar */}
-              {similar.length > 0 && (
-                <div className={styles.exDetailPanelSimilar}>
-                  <span className={styles.exDetailPanelLabel}>Liknande övningar</span>
-                  {similar.map(s => (
-                    <button
-                      key={s.id}
-                      className={styles.exDetailPanelSwapBtn}
-                      onClick={() => {
-                        updateExercise(selectedEx.sessionId, ex._id, { name: s.name })
-                        setSelectedEx(prev => ({ ...prev, exercise: { ...prev.exercise, name: s.name } }))
-                      }}
-                      type="button"
-                    >
-                      {s.name}
-                      <span className={styles.exDetailPanelSwapArrow}>↔</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )
-        })()}
-
         {/* Board */}
         <DndContext
         sensors={sensors}
@@ -882,7 +777,24 @@ function ProgramEditor({ program, allExercises, onSave, onBack, saveError }) {
                   isOver={overColId === session._id && activeType === 'exercise'}
                   autoFocusName={autoFocusSessionId === session._id}
                   selectedExId={selectedEx?.exerciseId}
-                  onSelectExercise={(sId, exId, ex) => setSelectedEx({ sessionId: sId, exerciseId: exId, exercise: ex })}
+                  onSelectExercise={(sId, exId, ex) => {
+                    setSelectedEx({ sessionId: sId, exerciseId: exId, exercise: ex })
+                    onSelectExercise?.({
+                      exercise: ex,
+                      sessionId: sId,
+                      onUpdate: (patch) => updateExercise(sId, exId, patch),
+                      onSwap: (newName) => {
+                        updateExercise(sId, exId, { name: newName })
+                        // Uppdatera sidebar med nya namnet
+                        onSelectExercise?.({
+                          exercise: { ...ex, name: newName },
+                          sessionId: sId,
+                          onUpdate: (p) => updateExercise(sId, exId, p),
+                          onSwap: (n) => updateExercise(sId, exId, { name: n }),
+                        })
+                      },
+                    })
+                  }}
                   onUpdateName={val => updateSessionName(session._id, val)}
                   onAddExercise={name => addExercise(session._id, name)}
                   onRemoveExercise={exId => removeExercise(session._id, exId)}
@@ -1411,8 +1323,9 @@ function ProgramsTab({ allExercises }) {
         program={editing}
         allExercises={allExercises}
         onSave={handleSaveProg}
-        onBack={() => { setEditing(null); setSaveError(null) }}
+        onBack={() => { setEditing(null); setSaveError(null); setSidebarDetail(null) }}
         saveError={saveError}
+        onSelectExercise={(detail) => setSidebarDetail(detail)}
       />
     )
   }
@@ -1711,6 +1624,8 @@ export default function Admin() {
   const [tab, setTab] = useState('exercises')
   const [allExercises, setAllExercises] = useState([])
   const [authStatus, setAuthStatus] = useState({ loading: true, user: null, isAdmin: false })
+  // Detaljpanel i sidebar — satts av ProgramEditor vid klick pa ovning
+  const [sidebarDetail, setSidebarDetail] = useState(null)
 
   // Kolla om användaren är inloggad i Supabase OCH har admin-rollen.
   // Admin-sidans password-gate är separat - utan Supabase-auth fungerar
@@ -1830,6 +1745,92 @@ export default function Admin() {
             </button>
           ))}
         </nav>
+
+        {/* Detaljpanel — visas nar en ovning ar vald i ProgramEditor */}
+        {sidebarDetail && (() => {
+          const { exercise: ex, sessionId, onUpdate, onSwap } = sidebarDetail
+          const exData = allExercises.find(e => e.name === ex.name)
+          const similar = exData?.muscle_group
+            ? allExercises
+                .filter(e => e.muscle_group === exData.muscle_group && e.name !== ex.name)
+                .sort((a, b) => {
+                  const aMatch = a.movement_pattern === exData?.movement_pattern ? 0 : 1
+                  const bMatch = b.movement_pattern === exData?.movement_pattern ? 0 : 1
+                  return aMatch - bMatch || a.name.localeCompare(b.name, 'sv')
+                })
+                .slice(0, 6)
+            : []
+          return (
+            <div className={styles.sidebarDetailPanel}>
+              <div className={styles.sidebarDetailHeader}>
+                <h3 className={styles.sidebarDetailTitle}>{ex.name}</h3>
+                <button className={styles.sidebarDetailClose} onClick={() => setSidebarDetail(null)} type="button">×</button>
+              </div>
+              {exData?.muscle_group && (
+                <span className={styles.sidebarDetailChip} style={{ background: chipColors(exData.muscle_group).bg, color: chipColors(exData.muscle_group).fg }}>
+                  {exData.muscle_group}
+                </span>
+              )}
+              <div className={styles.sidebarDetailSection}>
+                <span>Uppvärmning</span>
+                <div className={styles.sidebarDetailStepper}>
+                  <button type="button" onClick={() => onUpdate({ warmupSets: Math.max(0, (ex.warmupSets ?? 2) - 1) })}>−</button>
+                  <span>{ex.warmupSets ?? 2}</span>
+                  <button type="button" onClick={() => onUpdate({ warmupSets: (ex.warmupSets ?? 2) + 1 })}>+</button>
+                </div>
+              </div>
+              <div className={styles.sidebarDetailSection}>
+                <span>Arbetsset</span>
+                <div className={styles.sidebarDetailStepper}>
+                  <button type="button" onClick={() => onUpdate({ workSets: Math.max(1, (ex.workSets ?? 3) - 1) })}>−</button>
+                  <span>{ex.workSets ?? 3}</span>
+                  <button type="button" onClick={() => onUpdate({ workSets: (ex.workSets ?? 3) + 1 })}>+</button>
+                </div>
+              </div>
+              <div className={styles.sidebarDetailSection}>
+                <span>Back-off</span>
+                <div className={styles.sidebarDetailStepper}>
+                  <button type="button" onClick={() => onUpdate({ backoffSets: Math.max(0, (ex.backoffSets ?? 0) - 1) })}>−</button>
+                  <span>{ex.backoffSets ?? 0}</span>
+                  <button type="button" onClick={() => onUpdate({ backoffSets: (ex.backoffSets ?? 0) + 1 })}>+</button>
+                </div>
+              </div>
+              <div className={styles.sidebarDetailSection}>
+                <span>Reps</span>
+                <div className={styles.sidebarDetailReps}>
+                  <input type="number" min="1" max="50" value={ex.repsMin ?? ''} onChange={e => onUpdate({ repsMin: e.target.value ? parseInt(e.target.value) : null })} placeholder="Min" />
+                  <span>–</span>
+                  <input type="number" min="1" max="50" value={ex.repsMax ?? ''} onChange={e => onUpdate({ repsMax: e.target.value ? parseInt(e.target.value) : null })} placeholder="Max" />
+                </div>
+              </div>
+              <div className={styles.sidebarDetailPresets}>
+                {[[5,8],[8,10],[10,12],[12,15]].map(([min,max]) => (
+                  <button key={`${min}-${max}`} type="button" className={styles.sidebarDetailPreset}
+                    onClick={() => onUpdate({ repsMin: min, repsMax: max })}
+                  >{min}–{max}</button>
+                ))}
+              </div>
+              {exData?.instructions && (
+                <div className={styles.sidebarDetailInstr}>
+                  <span className={styles.sidebarDetailLabel}>Instruktioner</span>
+                  <p>{exData.instructions}</p>
+                </div>
+              )}
+              {similar.length > 0 && (
+                <div className={styles.sidebarDetailSimilar}>
+                  <span className={styles.sidebarDetailLabel}>Liknande övningar</span>
+                  {similar.map(s => (
+                    <button key={s.id} className={styles.sidebarDetailSwapBtn} onClick={() => onSwap(s.name)} type="button">
+                      {s.name}
+                      <span>Byt</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )
+        })()}
+
         <div className={styles.sidebarFooter}>
           <button
             className={styles.backToAppBtn}
