@@ -1670,7 +1670,7 @@ export default function Admin() {
 
   return (
     <div className={styles.adminLayout}>
-      <aside className={`${styles.sidebar} ${sidebarDetail ? styles.sidebarWithDetail : ''}`}>
+      <aside className={styles.sidebar}>
         <div className={styles.sidebarBrand}>
           <svg className={styles.brandIcon} viewBox="0 0 24 24" fill="none" stroke="#F5D020" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M4 13c3.5-2 8-2 10 2a5.5 5.5 0 0 1 8 5"/>
@@ -1694,21 +1694,50 @@ export default function Admin() {
           ))}
         </nav>
 
-        {/* Detaljpanel — visas nar en ovning ar vald i ProgramEditor */}
-        {sidebarDetail && (() => {
-          const { exercise: ex, sessionId, onUpdate, onSwap } = sidebarDetail
-          const exData = allExercises.find(e => e.name === ex.name)
-          const similar = exData?.muscle_group
-            ? allExercises
-                .filter(e => e.muscle_group === exData.muscle_group && e.name !== ex.name)
-                .sort((a, b) => {
-                  const aMatch = a.movement_pattern === exData?.movement_pattern ? 0 : 1
-                  const bMatch = b.movement_pattern === exData?.movement_pattern ? 0 : 1
-                  return aMatch - bMatch || a.name.localeCompare(b.name, 'sv')
-                })
-                .slice(0, 6)
-            : []
-          return (
+        <div className={styles.sidebarFooter}>
+          <button
+            className={styles.backToAppBtn}
+            onClick={() => navigate('/')}
+            type="button"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="m15 18-6-6 6-6"/>
+            </svg>
+            <span className={styles.backToAppText}>Tillbaka till app</span>
+          </button>
+          <button
+            className={styles.logoutBtn}
+            onClick={() => { sessionStorage.removeItem('admin_auth'); setUnlocked(false) }}
+            type="button"
+          >
+            <span className={styles.logoutText}>Logga ut</span>
+            <svg className={styles.logoutIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+          </button>
+        </div>
+      </aside>
+
+      {/* Detaljpanel — overlay/sheet utanfor sidebaren sa den fungerar bade
+          pa desktop (fixed left, vid sidan av sidebar) och mobil (bottom-sheet). */}
+      {sidebarDetail && (() => {
+        const { exercise: ex, onUpdate, onSwap } = sidebarDetail
+        const exData = allExercises.find(e => e.name === ex.name)
+        const similar = exData?.muscle_group
+          ? allExercises
+              .filter(e => e.muscle_group === exData.muscle_group && e.name !== ex.name)
+              .sort((a, b) => {
+                const aMatch = a.movement_pattern === exData?.movement_pattern ? 0 : 1
+                const bMatch = b.movement_pattern === exData?.movement_pattern ? 0 : 1
+                return aMatch - bMatch || a.name.localeCompare(b.name, 'sv')
+              })
+              .slice(0, 6)
+          : []
+        return (
+          <>
+            <div className={styles.sidebarDetailBackdrop} onClick={() => setSidebarDetail(null)} />
             <div className={styles.sidebarDetailPanel}>
               <div className={styles.sidebarDetailHeader}>
                 <h3 className={styles.sidebarDetailTitle}>{ex.name}</h3>
@@ -1776,34 +1805,9 @@ export default function Admin() {
                 </div>
               )}
             </div>
-          )
-        })()}
-
-        <div className={styles.sidebarFooter}>
-          <button
-            className={styles.backToAppBtn}
-            onClick={() => navigate('/')}
-            type="button"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="m15 18-6-6 6-6"/>
-            </svg>
-            <span className={styles.backToAppText}>Tillbaka till app</span>
-          </button>
-          <button
-            className={styles.logoutBtn}
-            onClick={() => { sessionStorage.removeItem('admin_auth'); setUnlocked(false) }}
-            type="button"
-          >
-            <span className={styles.logoutText}>Logga ut</span>
-            <svg className={styles.logoutIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-              <polyline points="16 17 21 12 16 7"/>
-              <line x1="21" y1="12" x2="9" y2="12"/>
-            </svg>
-          </button>
-        </div>
-      </aside>
+          </>
+        )
+      })()}
 
       <main className={styles.content}>
         <div className={styles.contentHeader}>

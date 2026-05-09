@@ -2506,15 +2506,37 @@
   white-space: nowrap;
 }
 
-/* ── Sidebar detail panel (under nav, ovanfor footer) ── */
+/* ── Sidebar detail panel (overlay/sheet utanfor sidebar) ── */
+
+.sidebarDetailBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 90;
+  animation: fadeIn 0.15s ease;
+}
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+
 .sidebarDetailPanel {
-  flex: 1;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 180px; /* matchar sidebar-bredd pa desktop */
+  width: 300px;
+  z-index: 100;
+  background: #111;
+  border-right: 1px solid #1e1e1e;
+  padding: 18px 14px;
   overflow-y: auto;
-  padding: 14px 12px;
-  border-top: 1px solid #1e1e1e;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  box-shadow: 8px 0 24px rgba(0, 0, 0, 0.4);
+  animation: slideInLeft 0.2s ease;
+}
+@keyframes slideInLeft {
+  from { transform: translateX(-20px); opacity: 0 }
+  to { transform: translateX(0); opacity: 1 }
 }
 .sidebarDetailHeader {
   display: flex;
@@ -2523,7 +2545,7 @@
   gap: 6px;
 }
 .sidebarDetailTitle {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
   color: #fff;
   margin: 0;
@@ -2532,13 +2554,14 @@
 .sidebarDetailClose {
   background: none;
   border: none;
-  color: #555;
-  font-size: 18px;
+  color: #888;
+  font-size: 22px;
   cursor: pointer;
-  padding: 0 2px;
+  padding: 0 4px;
   line-height: 1;
+  flex-shrink: 0;
 }
-.sidebarDetailClose:hover { color: #aaa; }
+.sidebarDetailClose:hover { color: #fff; }
 .sidebarDetailChip {
   display: inline-block;
   font-size: 9px;
@@ -2553,8 +2576,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 12px;
-  color: #888;
+  font-size: 13px;
+  color: #aaa;
 }
 .sidebarDetailStepper {
   display: flex;
@@ -2567,9 +2590,9 @@
   background: none;
   border: none;
   color: #888;
-  font-size: 15px;
-  width: 26px;
-  height: 26px;
+  font-size: 16px;
+  width: 30px;
+  height: 30px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -2577,10 +2600,10 @@
 }
 .sidebarDetailStepper button:hover { color: #fff; }
 .sidebarDetailStepper > span {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: #fff;
-  min-width: 18px;
+  min-width: 22px;
   text-align: center;
 }
 .sidebarDetailReps {
@@ -2589,15 +2612,15 @@
   gap: 4px;
 }
 .sidebarDetailReps input {
-  width: 40px;
+  width: 50px;
   background: #1a1a1a;
   border: 1px solid #252525;
   border-radius: 6px;
   color: #fff;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   text-align: center;
-  padding: 4px;
+  padding: 6px;
   outline: none;
   font-family: var(--font);
 }
@@ -2613,9 +2636,9 @@
   border: 1px solid #252525;
   border-radius: 6px;
   color: #888;
-  font-size: 11px;
+  font-size: 12px;
   font-family: var(--font);
-  padding: 4px 8px;
+  padding: 5px 10px;
   cursor: pointer;
 }
 .sidebarDetailPreset:hover { border-color: var(--accent); color: #fff; }
@@ -2630,6 +2653,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  margin-top: 4px;
 }
 .sidebarDetailInstr p {
   font-size: 12px;
@@ -2641,6 +2665,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  margin-top: 4px;
 }
 .sidebarDetailSwapBtn {
   display: flex;
@@ -2653,11 +2678,34 @@
   color: #ccc;
   font-size: 12px;
   font-family: var(--font);
-  padding: 6px 8px;
+  padding: 7px 10px;
   cursor: pointer;
 }
 .sidebarDetailSwapBtn:hover { border-color: var(--accent); }
-.sidebarDetailSwapBtn span { color: #555; font-size: 11px; }
+.sidebarDetailSwapBtn span { color: #888; font-size: 11px; }
+
+/* Mobil — bottom-sheet istallet for sidopanel */
+@media (max-width: 880px) {
+  .sidebarDetailPanel {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    border-right: none;
+    border-top: 1px solid #1e1e1e;
+    border-radius: 16px 16px 0 0;
+    padding: 18px 16px 24px;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0));
+    max-height: 75vh;
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.5);
+    animation: slideUp 0.2s ease;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+}
 
 /* ── Mobil: detaljpanel som bottom-sheet ── */
 @media (max-width: 880px) {
