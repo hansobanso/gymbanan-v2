@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { EXERCISES } from '../../data/exercises'
+import MuscleFigure from '../MuscleFigure'
 import styles from './MuscleSetSummary.module.css'
 
 // ── Volume calculation ─────────────────────────────────────────
@@ -87,9 +88,15 @@ export default function MuscleSetSummary({ exercises, allExercises, label = 'Set
 // Max sets/vecka per muskelgrupp (for att berakna %-fyllnad i progress-falt).
 // Baserat pa RP:s riktlinjer for erfarna lyffare.
 const MAX_SETS_PER_WEEK = {
-  'Rygg': 14, 'Bröst': 14, 'Axlar': 14, 'Quads': 12, 'Hamstrings': 12,
-  'Biceps': 12, 'Triceps': 12, 'Core': 10, 'Vader': 10, 'Rumpa': 12,
-  'Underarmar': 8, 'Övrigt': 10,
+  'Bröst': 14,
+  'Främre axel': 8, 'Mellersta axel': 12, 'Bakre axel': 10,
+  'Lats': 12, 'Övre rygg': 12, 'Ländrygg': 8, 'Trapezius': 8,
+  'Biceps': 12, 'Triceps': 12, 'Underarmar': 8,
+  'Quads': 14, 'Hamstrings': 12, 'Rumpa': 14,
+  'Adduktorer': 6, 'Abduktorer': 6, 'Höftböjare': 6, 'Rotatorkuff': 6,
+  'Core': 12, 'Vader': 10,
+  // Bakåtkompabilitet
+  'Rygg': 14, 'Axlar': 14, 'Övrigt': 10,
 }
 
 function volumeLevel(sets, max) {
@@ -129,25 +136,63 @@ export function ProgramMuscleSetSummary({ sessions, allExercises, defaultOpen = 
         </svg>
       </button>
       {open && (
-        <div className={styles.volumeGrid}>
-          {breakdown.map(({ muscle, sets }) => {
-            const max = MAX_SETS_PER_WEEK[muscle] ?? 12
-            const pct = Math.min(100, Math.round((sets / max) * 100))
-            const level = volumeLevel(sets, max)
-            return (
-              <div key={muscle} className={styles.volumeItem}>
-                <span className={styles.volumeLabel}>{muscle} – {fmt(sets)} set</span>
-                <div className={styles.volumeTrack}>
-                  <div
-                    className={`${styles.volumeFill} ${styles[`volumeFill_${level}`]}`}
-                    style={{ width: `${pct}%` }}
-                  />
+        <>
+          <MuscleHeatmap breakdown={breakdown} />
+          <div className={styles.volumeGrid}>
+            {breakdown.map(({ muscle, sets }) => {
+              const max = MAX_SETS_PER_WEEK[muscle] ?? 12
+              const pct = Math.min(100, Math.round((sets / max) * 100))
+              const level = volumeLevel(sets, max)
+              return (
+                <div key={muscle} className={styles.volumeItem}>
+                  <span className={styles.volumeLabel}>{muscle} – {fmt(sets)} set</span>
+                  <div className={styles.volumeTrack}>
+                    <div
+                      className={`${styles.volumeFill} ${styles[`volumeFill_${level}`]}`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
                 </div>
-              </div>
-            )
-          })}
-        </div>
+              )
+            })}
+          </div>
+        </>
       )}
+    </div>
+  )
+}
+
+// ── Muskelgubbe-heatmap: farglagger varje muskel efter volymniva ─────────
+function MuscleHeatmap({ breakdown }) {
+  const colors = useMemo(() => {
+    const out = {}
+    for (const { muscle, sets } of breakdown) {
+      const max = MAX_SETS_PER_WEEK[muscle] ?? 12
+      const pct = Math.min(1, sets / max)
+      // Farglagg: gra (lag) → orange (mid) → gul (ok)
+      // Anvand accent-farg (#F5D020) for hog volym
+      if (pct < 0.4) {
+        // Lag — diskret gra-orange
+        const alpha = 0.15 + pct * 0.5  // 0.15 → 0.35
+        out[muscle] = `rgba(245, 180, 100, ${alpha.toFixed(2)})`
+      } else if (pct < 0.7) {
+        // Mellan — orange till gul
+        const t = (pct - 0.4) / 0.3
+        const r = 245
+        const g = Math.round(180 + t * 28)  // 180 → 208
+        const b = Math.round(100 + t * (-68))  // 100 → 32
+        out[muscle] = `rgb(${r}, ${g}, ${b})`
+      } else {
+        // Ok+ — full accent
+        out[muscle] = '#F5D020'
+      }
+    }
+    return out
+  }, [breakdown])
+
+  return (
+    <div className={styles.heatmapWrap}>
+      <MuscleFigure colors={colors} className={styles.heatmapSvg} />
     </div>
   )
 }

@@ -118,3 +118,16 @@
 .volumeFill_ok { background: #4ade80; }
 .volumeFill_mid { background: var(--accent); }
 .volumeFill_low { background: #f87171; }
+
+/* Muskelgubbe-heatmap */
+.heatmapWrap {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0 16px;
+}
+.heatmapSvg {
+  width: 100%;
+  max-width: 480px;
+  height: auto;
+  display: block;
+}
