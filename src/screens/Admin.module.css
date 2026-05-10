@@ -2793,3 +2793,237 @@
 }
 .secMuscleAdd:hover { border-color: var(--accent); color: var(--accent); }
 .secMuscleAdd:focus { border-color: var(--accent); }
+
+/* ─── Övningar: ny layout med filter-sidebar + tabell ─────────────── */
+
+.exNewLayout {
+  display: grid;
+  grid-template-columns: 220px 1fr 380px;
+  gap: 0;
+  height: 100%;
+  min-height: 0;
+}
+
+/* Filter sidebar (vänster i exercises-tabben) */
+.exFilterSidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 20px 16px;
+  background: #0d0d0d;
+  border-right: 1px solid #1e1e1e;
+  overflow-y: auto;
+}
+.exFilterGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.exFilterTitle {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #555;
+  letter-spacing: 0.5px;
+  padding: 0 2px;
+}
+.exFilterChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.exFilterChip {
+  background: #1a1a1a;
+  border: 1px solid #252525;
+  color: #aaa;
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: var(--font);
+  transition: all 0.1s;
+}
+.exFilterChip:hover { border-color: #333; color: #fff; }
+.exFilterChipActive {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #000;
+  font-weight: 600;
+}
+.exFilterStatusList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.exFilterStatusBtn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #1a1a1a;
+  border: 1px solid #252525;
+  color: #aaa;
+  font-size: 12px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: var(--font);
+  text-align: left;
+}
+.exFilterStatusBtn:hover { border-color: #333; color: #fff; }
+.exFilterStatusBtn strong {
+  background: rgba(245, 200, 100, 0.15);
+  color: var(--accent);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  min-width: 22px;
+  text-align: center;
+}
+.exFilterStatusActive {
+  background: rgba(245, 208, 32, 0.08);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* Main content (mitten): topbar + table */
+.exMain {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: #0a0a0a;
+}
+.exMainTopbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #1e1e1e;
+  flex-wrap: wrap;
+}
+.exMainSearch {
+  flex: 1;
+  min-width: 240px;
+  background: #111;
+  border: 1px solid #252525;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
+  padding: 9px 12px;
+  outline: none;
+  font-family: var(--font);
+}
+.exMainSearch:focus { border-color: var(--accent); }
+.exMainStat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #888;
+  margin-left: auto;
+}
+.exMainStatDot { color: #444; }
+.exMainStatIssue {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--accent);
+  font-weight: 500;
+}
+.exMainStatIssue::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+}
+
+/* Table */
+.exTableWrap {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+.exTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font);
+}
+.exTableHead {
+  background: #0a0a0a;
+  color: #555;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 10px 16px;
+  text-align: left;
+  border-bottom: 1px solid #1e1e1e;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.exTableRow {
+  cursor: pointer;
+  transition: background 0.08s;
+  border-bottom: 1px solid #161616;
+}
+.exTableRow:hover { background: #111; }
+.exTableRowActive { background: rgba(245, 208, 32, 0.07); }
+.exTableRowActive:hover { background: rgba(245, 208, 32, 0.10); }
+.exTableCell {
+  padding: 12px 16px;
+  font-size: 13px;
+  color: #bbb;
+}
+.exTableCellName {
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #fff;
+  font-weight: 500;
+}
+
+/* Status badges */
+.exStatusBadge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+.exStatus_ok {
+  background: rgba(120, 200, 140, 0.10);
+  color: rgba(160, 220, 170, 0.85);
+}
+.exStatus_kolla {
+  background: rgba(245, 200, 100, 0.12);
+  color: rgba(245, 200, 100, 0.95);
+}
+.exStatus_dubblett {
+  background: rgba(245, 200, 100, 0.15);
+  color: var(--accent);
+}
+.exStatus_saknas {
+  background: rgba(220, 100, 100, 0.12);
+  color: rgba(245, 140, 140, 0.95);
+}
+
+/* Mobile: stacka layouten */
+@media (max-width: 880px) {
+  .exNewLayout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+  }
+  .exFilterSidebar {
+    border-right: none;
+    border-bottom: 1px solid #1e1e1e;
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 16px;
+    padding: 12px;
+  }
+  .exFilterGroup { flex-shrink: 0; }
+  .exTableHead, .exTableCell, .exTableCellName { padding: 10px 12px; font-size: 12px; }
+}

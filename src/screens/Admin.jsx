@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   DndContext,
@@ -811,9 +811,12 @@ function ExercisesTab() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [filterGroup, setFilterGroup] = useState(null)
+  const [filterEquipment, setFilterEquipment] = useState(null)
+  const [filterMovement, setFilterMovement] = useState(null)
+  const [filterQuality, setFilterQuality] = useState(null)  // 'missing-equipment' | 'duplicates'
   const [selectedId, setSelectedId] = useState(null)
-  const [form, setForm] = useState(null)        // draft for detail panel
-  const [original, setOriginal] = useState(null) // last-saved snapshot for dirty-check
+  const [form, setForm] = useState(null)
+  const [original, setOriginal] = useState(null)
   const [saving, setSaving] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
   const [saveError, setSaveError] = useState(null)
@@ -846,21 +849,54 @@ function ExercisesTab() {
     }).catch(() => setLoading(false))
   }, [])
 
+  // Dubblettdetektion: samma muskel + samma utrustning + samma rörelse
+  // → flagga som möjlig dubblett (utom om en av dem är en variant t.ex. 'med kabel')
+  const duplicateIds = useMemo(() => {
+    const buckets = {}
+    for (const ex of exercises) {
+      const key = `${ex.muscle_group ?? ''}|${ex.equipment ?? ''}|${ex.movement_pattern ?? ''}`
+      if (!ex.muscle_group || !ex.equipment) continue
+      buckets[key] = buckets[key] ?? []
+      buckets[key].push(ex.id)
+    }
+    const dupes = new Set()
+    for (const ids of Object.values(buckets)) {
+      if (ids.length >= 3) for (const id of ids) dupes.add(id)
+    }
+    return dupes
+  }, [exercises])
+
+  function statusOf(ex) {
+    if (!ex.equipment) return 'saknas'
+    if (duplicateIds.has(ex.id)) return 'dubblett'
+    return 'ok'
+  }
+
+  const counters = useMemo(() => {
+    let missingEquipment = 0
+    let duplicates = 0
+    for (const ex of exercises) {
+      const s = statusOf(ex)
+      if (s === 'saknas') missingEquipment++
+      else if (s === 'dubblett') duplicates++
+    }
+    return { missingEquipment, duplicates }
+  }, [exercises, duplicateIds])
+
+  const totalIssues = counters.missingEquipment + counters.duplicates
+
   const filtered = exercises.filter(ex => {
     const matchSearch = !search.trim() || ex.name.toLowerCase().includes(search.toLowerCase())
     const matchGroup = !filterGroup || ex.muscle_group === filterGroup
-    return matchSearch && matchGroup
+    const matchEquipment = !filterEquipment || ex.equipment === filterEquipment
+    const matchMovement = !filterMovement || ex.movement_pattern === filterMovement
+    let matchQuality = true
+    if (filterQuality === 'missing-equipment') matchQuality = !ex.equipment
+    else if (filterQuality === 'duplicates') matchQuality = duplicateIds.has(ex.id)
+    return matchSearch && matchGroup && matchEquipment && matchMovement && matchQuality
   })
 
-  // Group filtered exercises by muscle group for display
-  const groups = filtered.reduce((acc, ex) => {
-    const g = ex.muscle_group || 'Övrigt'
-    if (!acc[g]) acc[g] = []
-    acc[g].push(ex)
-    return acc
-  }, {})
-  const sortedGroups = Object.entries(groups)
-    .sort(([a], [b]) => a.localeCompare(b, 'sv'))
+  const sortedExercises = [...filtered].sort((a, b) => a.name.localeCompare(b.name, 'sv'))
 
   function selectExercise(ex) {
     setSelectedId(ex.id)
@@ -996,58 +1032,154 @@ function ExercisesTab() {
 
   if (loading) return <div className={styles.loading}><div className="spinner" /></div>
 
+  // Distinkta värden för filter
+  const distinctEquipment = [...new Set(exercises.map(e => e.equipment).filter(Boolean))].sort()
+  const distinctMovement = [...new Set(exercises.map(e => e.movement_pattern).filter(Boolean))].sort()
+  const presentMuscles = MUSCLE_GROUPS.filter(g => exercises.some(e => e.muscle_group === g))
+
   return (
-    <div className={styles.exMasterDetail}>
-      {/* ── Exercise list panel ── */}
-      <div className={styles.exListPanel}>
-        <div className={styles.exListTop}>
+    <div className={styles.exNewLayout}>
+      {/* ── Filter sidebar ── */}
+      <div className={styles.exFilterSidebar}>
+        <div className={styles.exFilterGroup}>
+          <div className={styles.exFilterTitle}>Muskel</div>
+          <div className={styles.exFilterChips}>
+            <button
+              className={`${styles.exFilterChip} ${!filterGroup ? styles.exFilterChipActive : ''}`}
+              onClick={() => setFilterGroup(null)}
+              type="button"
+            >Alla</button>
+            {presentMuscles.map(g => (
+              <button
+                key={g}
+                className={`${styles.exFilterChip} ${filterGroup === g ? styles.exFilterChipActive : ''}`}
+                onClick={() => setFilterGroup(fg => fg === g ? null : g)}
+                type="button"
+              >{g}</button>
+            ))}
+          </div>
+        </div>
+
+        <div className={styles.exFilterGroup}>
+          <div className={styles.exFilterTitle}>Utrustning</div>
+          <div className={styles.exFilterChips}>
+            {distinctEquipment.map(eq => (
+              <button
+                key={eq}
+                className={`${styles.exFilterChip} ${filterEquipment === eq ? styles.exFilterChipActive : ''}`}
+                onClick={() => setFilterEquipment(fe => fe === eq ? null : eq)}
+                type="button"
+              >{eq}</button>
+            ))}
+          </div>
+        </div>
+
+        <div className={styles.exFilterGroup}>
+          <div className={styles.exFilterTitle}>Rörelse</div>
+          <div className={styles.exFilterChips}>
+            {distinctMovement.map(m => (
+              <button
+                key={m}
+                className={`${styles.exFilterChip} ${filterMovement === m ? styles.exFilterChipActive : ''}`}
+                onClick={() => setFilterMovement(fm => fm === m ? null : m)}
+                type="button"
+              >{m}</button>
+            ))}
+          </div>
+        </div>
+
+        {(counters.missingEquipment > 0 || counters.duplicates > 0) && (
+          <div className={styles.exFilterGroup}>
+            <div className={styles.exFilterTitle}>Kvalitet</div>
+            <div className={styles.exFilterStatusList}>
+              {counters.missingEquipment > 0 && (
+                <button
+                  className={`${styles.exFilterStatusBtn} ${filterQuality === 'missing-equipment' ? styles.exFilterStatusActive : ''}`}
+                  onClick={() => setFilterQuality(fq => fq === 'missing-equipment' ? null : 'missing-equipment')}
+                  type="button"
+                >
+                  <span>Saknar utrustning</span>
+                  <strong>{counters.missingEquipment}</strong>
+                </button>
+              )}
+              {counters.duplicates > 0 && (
+                <button
+                  className={`${styles.exFilterStatusBtn} ${filterQuality === 'duplicates' ? styles.exFilterStatusActive : ''}`}
+                  onClick={() => setFilterQuality(fq => fq === 'duplicates' ? null : 'duplicates')}
+                  type="button"
+                >
+                  <span>Möjliga dubbletter</span>
+                  <strong>{counters.duplicates}</strong>
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Main content: topbar + table ── */}
+      <div className={styles.exMain}>
+        <div className={styles.exMainTopbar}>
           <input
-            className={styles.exListSearch}
+            className={styles.exMainSearch}
             value={search}
             onChange={e => setSearch(e.target.value)}
             onKeyDown={e => { if (e.key === 'Escape') setSearch('') }}
             placeholder="Sök övning…"
           />
-          <button className={styles.addBtn} onClick={startNew} type="button">+ Ny</button>
+          <button className={styles.addBtn} onClick={startNew} type="button">+ Ny övning</button>
+          <div className={styles.exMainStat}>
+            <span>{exercises.length} övningar</span>
+            {totalIssues > 0 && (
+              <>
+                <span className={styles.exMainStatDot}>·</span>
+                <span className={styles.exMainStatIssue}>{totalIssues} möjliga förbättringar</span>
+              </>
+            )}
+          </div>
         </div>
 
-        {/* Muscle group chips */}
-        <div className={styles.exListChips}>
-          <button
-            className={`${styles.exListChip} ${!filterGroup ? styles.exListChipActive : ''}`}
-            onClick={() => setFilterGroup(null)}
-            type="button"
-          >Alla</button>
-          {MUSCLE_GROUPS.map(g => (
-            <button
-              key={g}
-              className={`${styles.exListChip} ${filterGroup === g ? styles.exListChipActive : ''}`}
-              onClick={() => setFilterGroup(fg => fg === g ? null : g)}
-              type="button"
-            >{g}</button>
-          ))}
-        </div>
-
-        <div className={styles.exListItems}>
-          {filtered.length === 0 && (
-            <p className={styles.empty} style={{ padding: '16px' }}>Inga övningar.</p>
+        <div className={styles.exTableWrap}>
+          {sortedExercises.length === 0 ? (
+            <p className={styles.empty} style={{ padding: '24px' }}>Inga övningar.</p>
+          ) : (
+            <table className={styles.exTable}>
+              <thead>
+                <tr>
+                  <th className={styles.exTableHead}>Övning</th>
+                  <th className={styles.exTableHead}>Muskel</th>
+                  <th className={styles.exTableHead}>Utrustning</th>
+                  <th className={styles.exTableHead}>Rörelse</th>
+                  <th className={styles.exTableHead}>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedExercises.map(ex => {
+                  const status = statusOf(ex)
+                  return (
+                    <tr
+                      key={ex.id}
+                      className={`${styles.exTableRow} ${selectedId === ex.id ? styles.exTableRowActive : ''}`}
+                      onClick={() => selectExercise(ex)}
+                    >
+                      <td className={styles.exTableCellName}>{ex.name}</td>
+                      <td className={styles.exTableCell}>{ex.muscle_group ?? '—'}</td>
+                      <td className={styles.exTableCell}>{ex.equipment ?? '—'}</td>
+                      <td className={styles.exTableCell}>{ex.movement_pattern ?? '—'}</td>
+                      <td className={styles.exTableCell}>
+                        <span className={`${styles.exStatusBadge} ${styles[`exStatus_${status}`]}`}>
+                          {status === 'ok' && 'OK'}
+                          {status === 'saknas' && 'Saknas'}
+                          {status === 'dubblett' && 'Dubblett'}
+                          {status === 'kolla' && 'Kolla'}
+                        </span>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
           )}
-          {sortedGroups.map(([group, exs]) => (
-            <div key={group}>
-              <div className={styles.exListGroup}>{group}</div>
-              {exs.map(ex => (
-                <button
-                  key={ex.id}
-                  className={`${styles.exListItem} ${selectedId === ex.id ? styles.exListItemActive : ''}`}
-                  onClick={() => selectExercise(ex)}
-                  type="button"
-                >
-                  <span className={styles.exListItemName}>{ex.name}</span>
-                  {ex.equipment && <span className={styles.exListItemMeta}>{ex.equipment}</span>}
-                </button>
-              ))}
-            </div>
-          ))}
         </div>
       </div>
 
