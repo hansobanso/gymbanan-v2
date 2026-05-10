@@ -3093,3 +3093,36 @@
 .exInlineSelect option[value=""] {
   color: #555;
 }
+
+/* Slå ihop-UI i detaljpanelen */
+.mergeBar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: rgba(245, 208, 32, 0.06);
+  border: 1px solid rgba(245, 208, 32, 0.25);
+  border-radius: 8px;
+  padding: 12px;
+  margin: 0 0 14px;
+}
+.mergeRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.mergeLabel {
+  font-size: 12px;
+  color: #aaa;
+  flex-shrink: 0;
+}
+.mergeHint {
+  font-size: 11px;
+  color: #888;
+  line-height: 1.5;
+}
+.mergeActions {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}

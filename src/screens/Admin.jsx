@@ -156,6 +156,18 @@ async function adminDeleteExercise(id) {
   if (count === 0) throw new Error('Kunde inte ta bort övningen - inga rader påverkades. Är du inloggad som admin?')
 }
 
+// Slar ihop tva ovningar via SECURITY DEFINER-funktion. Uppdaterar alla
+// referenser i programs.sessions och workouts.exercises JSON, tar bort
+// merge_from-raden och uppdaterar merge_into-raden med nya namnet.
+async function adminMergeExercises(mergeFromId, mergeIntoId, newName) {
+  const { error } = await supabase.rpc('admin_merge_exercises', {
+    merge_from_id: mergeFromId,
+    merge_into_id: mergeIntoId,
+    new_name: newName,
+  })
+  if (error) throw error
+}
+
 async function adminGetGlobalPrograms() {
   const { data, error } = await supabase.from('programs').select('*').eq('is_global', true).order('name')
   if (error) throw error
@@ -823,6 +835,10 @@ function ExercisesTab() {
   const [saving, setSaving] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
   const [saveError, setSaveError] = useState(null)
+  const [mergeMode, setMergeMode] = useState(false)        // visar dropdown for vilken ovning som ska slas ihop
+  const [mergeTargetId, setMergeTargetId] = useState(null) // ID av ovning som mergas IN
+  const [mergeNewName, setMergeNewName] = useState('')     // det nya namnet
+  const [merging, setMerging] = useState(false)
 
   useEffect(() => {
     Promise.all([
@@ -1278,13 +1294,104 @@ function ExercisesTab() {
                 {selectedId === '__new__' ? 'Ny övning' : (selectedEx?.name ?? 'Redigera')}
               </h2>
               {selectedId !== '__new__' && selectedEx && !selectedEx.is_builtin && (
-                <button
-                  className={styles.deleteRowBtn}
-                  onClick={() => setDeleteConfirm(true)}
-                  type="button"
-                >Ta bort</button>
+                <div style={{ display: 'flex', gap: 6, marginLeft: 'auto' }}>
+                  <button
+                    className={styles.cancelRowBtn}
+                    onClick={() => {
+                      setMergeMode(true)
+                      setMergeTargetId(null)
+                      setMergeNewName(selectedEx.name)
+                    }}
+                    type="button"
+                    title="Slå ihop denna övning med en annan"
+                  >Slå ihop</button>
+                  <button
+                    className={styles.deleteRowBtn}
+                    onClick={() => setDeleteConfirm(true)}
+                    type="button"
+                  >Ta bort</button>
+                </div>
               )}
             </div>
+
+            {/* Slå ihop-bar */}
+            {mergeMode && selectedEx && (
+              <div className={styles.mergeBar}>
+                <div className={styles.mergeRow}>
+                  <span className={styles.mergeLabel}>Slå ihop &quot;{selectedEx.name}&quot; med:</span>
+                  <select
+                    className={styles.cellSelect}
+                    value={mergeTargetId ?? ''}
+                    onChange={e => {
+                      const id = e.target.value || null
+                      setMergeTargetId(id)
+                      // Förslag på nytt namn: behåll målets namn som default
+                      if (id) {
+                        const target = exercises.find(x => x.id === id)
+                        if (target) setMergeNewName(target.name)
+                      }
+                    }}
+                  >
+                    <option value="">Välj övning…</option>
+                    {exercises
+                      .filter(x => x.id !== selectedEx.id)
+                      .sort((a, b) => a.name.localeCompare(b.name, 'sv'))
+                      .map(x => <option key={x.id} value={x.id}>{x.name}</option>)}
+                  </select>
+                </div>
+                {mergeTargetId && (
+                  <>
+                    <div className={styles.mergeRow}>
+                      <label className={styles.mergeLabel}>Nytt namn:</label>
+                      <input
+                        className={styles.cellInput}
+                        value={mergeNewName}
+                        onChange={e => setMergeNewName(e.target.value)}
+                        placeholder="Det här namnet behålls"
+                        style={{ flex: 1 }}
+                      />
+                    </div>
+                    <div className={styles.mergeHint}>
+                      Alla program och loggade pass som refererar till någon av övningarna
+                      uppdateras till det nya namnet. &quot;{selectedEx.name}&quot; tas bort efter sammanslagning.
+                    </div>
+                    <div className={styles.mergeActions}>
+                      <button
+                        className={styles.confirmDeleteBtn}
+                        disabled={merging || !mergeNewName.trim() || !mergeTargetId}
+                        onClick={async () => {
+                          setMerging(true)
+                          setSaveError(null)
+                          try {
+                            await adminMergeExercises(selectedEx.id, mergeTargetId, mergeNewName.trim())
+                            // Refetch listan
+                            const fresh = await adminGetExercises()
+                            setExercises(fresh)
+                            // Välj den nya (sammanslagna) övningen
+                            const merged = fresh.find(x => x.id === mergeTargetId)
+                            if (merged) selectExercise(merged)
+                            else { setSelectedId(null); setForm(null); setOriginal(null) }
+                            setMergeMode(false)
+                            setMergeTargetId(null)
+                            setMergeNewName('')
+                          } catch (err) {
+                            setSaveError(err.message || String(err))
+                          } finally {
+                            setMerging(false)
+                          }
+                        }}
+                        type="button"
+                      >{merging ? 'Slår ihop…' : 'Slå ihop'}</button>
+                      <button
+                        className={styles.cancelRowBtn}
+                        onClick={() => { setMergeMode(false); setMergeTargetId(null); setMergeNewName('') }}
+                        type="button"
+                      >Avbryt</button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
 
             {/* Usage info for existing exercises */}
             {selectedId !== '__new__' && selectedEx && (
