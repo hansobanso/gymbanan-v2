@@ -3027,3 +3027,37 @@
   .exFilterGroup { flex-shrink: 0; }
   .exTableHead, .exTableCell, .exTableCellName { padding: 10px 12px; font-size: 12px; }
 }
+
+/* Inline-redigerbar select i tabellen — diskret stil */
+.exInlineSelect {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #bbb;
+  font-size: 13px;
+  font-family: var(--font);
+  padding: 4px 22px 4px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6' fill='none'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23555' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 6px center;
+  max-width: 100%;
+  text-overflow: ellipsis;
+}
+.exInlineSelect:hover {
+  background-color: #1a1a1a;
+  border-color: #2a2a2a;
+  color: #fff;
+}
+.exInlineSelect:focus {
+  background-color: #1a1a1a;
+  border-color: var(--accent);
+  color: #fff;
+}
+.exInlineSelect:empty,
+.exInlineSelect option[value=""] {
+  color: #555;
+}

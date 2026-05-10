@@ -1167,6 +1167,7 @@ function ExercisesTab() {
               <tbody>
                 {sortedExercises.map(ex => {
                   const status = statusOf(ex)
+                  const stopProp = e => e.stopPropagation()
                   return (
                     <tr
                       key={ex.id}
@@ -1174,9 +1175,54 @@ function ExercisesTab() {
                       onClick={() => selectExercise(ex)}
                     >
                       <td className={styles.exTableCellName}>{ex.name}</td>
-                      <td className={styles.exTableCell}>{ex.muscle_group ?? '—'}</td>
-                      <td className={styles.exTableCell}>{ex.equipment ?? '—'}</td>
-                      <td className={styles.exTableCell}>{ex.movement_pattern ?? '—'}</td>
+                      <td className={styles.exTableCell}>
+                        <select
+                          className={styles.exInlineSelect}
+                          value={ex.muscle_group ?? ''}
+                          onClick={stopProp}
+                          onChange={async e => {
+                            e.stopPropagation()
+                            const v = e.target.value || null
+                            const updated = await adminUpdateExercise(ex.id, { muscle_group: v })
+                            setExercises(prev => prev.map(x => x.id === ex.id ? updated : x))
+                          }}
+                        >
+                          <option value="">—</option>
+                          {MUSCLE_GROUPS.map(g => <option key={g} value={g}>{g}</option>)}
+                        </select>
+                      </td>
+                      <td className={styles.exTableCell}>
+                        <select
+                          className={styles.exInlineSelect}
+                          value={ex.equipment ?? ''}
+                          onClick={stopProp}
+                          onChange={async e => {
+                            e.stopPropagation()
+                            const v = e.target.value || null
+                            const updated = await adminUpdateExercise(ex.id, { equipment: v })
+                            setExercises(prev => prev.map(x => x.id === ex.id ? updated : x))
+                          }}
+                        >
+                          <option value="">—</option>
+                          {EQUIPMENT_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+                        </select>
+                      </td>
+                      <td className={styles.exTableCell}>
+                        <select
+                          className={styles.exInlineSelect}
+                          value={ex.movement_pattern ?? ''}
+                          onClick={stopProp}
+                          onChange={async e => {
+                            e.stopPropagation()
+                            const v = e.target.value || null
+                            const updated = await adminUpdateExercise(ex.id, { movement_pattern: v })
+                            setExercises(prev => prev.map(x => x.id === ex.id ? updated : x))
+                          }}
+                        >
+                          <option value="">—</option>
+                          {MOVEMENT_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+                        </select>
+                      </td>
                       <td className={styles.exTableCell}>
                         <span className={`${styles.exStatusBadge} ${styles[`exStatus_${status}`]}`}>
                           {status === 'ok' && 'OK'}
