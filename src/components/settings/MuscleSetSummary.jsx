@@ -17,10 +17,12 @@ export function computeMuscleSets(exercises, allExercises) {
     if (sets <= 0) continue
     const data = lookupBy[ex.name] ?? EXERCISES[ex.name] ?? {}
     const primary = data.muscle_group
-    const secondary = data.secondary_muscle
+    const secondaryArr = (data.secondary_muscles && data.secondary_muscles.length ? data.secondary_muscles : (data.secondary_muscle ? [data.secondary_muscle] : []))
     if (primary) totals[primary] = (totals[primary] ?? 0) + sets
-    if (secondary && secondary !== primary) {
-      totals[secondary] = (totals[secondary] ?? 0) + sets * 0.5
+    for (const secondary of secondaryArr) {
+      if (secondary && secondary !== primary) {
+        totals[secondary] = (totals[secondary] ?? 0) + sets * 0.5
+      }
     }
   }
   return Object.entries(totals)

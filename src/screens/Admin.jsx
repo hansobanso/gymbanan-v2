@@ -24,25 +24,45 @@ import styles from './Admin.module.css'
 const ADMIN_PASSWORD = 'banana2024'
 
 const MUSCLE_GROUPS = [
-  'Bröst', 'Rygg', 'Axlar', 'Biceps', 'Triceps',
-  'Quads', 'Hamstrings', 'Rumpa', 'Core', 'Vader', 'Underarmar', 'Övrigt',
+  'Bröst',
+  'Främre axel', 'Mellersta axel', 'Bakre axel',
+  'Lats', 'Övre rygg', 'Ländrygg', 'Trapezius',
+  'Biceps', 'Triceps', 'Underarmar',
+  'Quads', 'Hamstrings', 'Rumpa', 'Adduktorer', 'Abduktorer',
+  'Höftböjare', 'Rotatorkuff',
+  'Core', 'Vader', 'Övrigt',
 ]
 
 // Dampade fargchips per muskelgrupp - matchar appens morka estetik.
-// Bakgrund med ~12% alpha + textfarg pa ~75% alpha for att kannas integrerat.
 const MUSCLE_CHIP_COLORS = {
-  'Bröst':      { bg: 'rgba(245, 142, 142, 0.13)', fg: 'rgba(245, 142, 142, 0.85)' },
-  'Rygg':       { bg: 'rgba(142, 188, 245, 0.13)', fg: 'rgba(142, 188, 245, 0.85)' },
-  'Axlar':      { bg: 'rgba(245, 200, 100, 0.13)', fg: 'rgba(245, 200, 100, 0.85)' },
-  'Biceps':     { bg: 'rgba(180, 142, 245, 0.13)', fg: 'rgba(180, 142, 245, 0.85)' },
-  'Triceps':    { bg: 'rgba(142, 220, 245, 0.13)', fg: 'rgba(142, 220, 245, 0.85)' },
-  'Quads':      { bg: 'rgba(142, 245, 175, 0.13)', fg: 'rgba(142, 245, 175, 0.85)' },
-  'Hamstrings': { bg: 'rgba(220, 245, 142, 0.13)', fg: 'rgba(220, 245, 142, 0.85)' },
-  'Rumpa':      { bg: 'rgba(245, 142, 200, 0.13)', fg: 'rgba(245, 142, 200, 0.85)' },
-  'Core':       { bg: 'rgba(245, 220, 142, 0.13)', fg: 'rgba(245, 220, 142, 0.85)' },
-  'Vader':      { bg: 'rgba(160, 220, 200, 0.13)', fg: 'rgba(160, 220, 200, 0.85)' },
-  'Underarmar': { bg: 'rgba(200, 200, 200, 0.13)', fg: 'rgba(200, 200, 200, 0.85)' },
-  'Övrigt':     { bg: 'rgba(140, 140, 140, 0.10)', fg: 'rgba(170, 170, 170, 0.85)' },
+  'Bröst':           { bg: 'rgba(245, 142, 142, 0.13)', fg: 'rgba(245, 142, 142, 0.85)' },
+  // Axlar (subdivision)
+  'Främre axel':     { bg: 'rgba(245, 200, 100, 0.13)', fg: 'rgba(245, 200, 100, 0.85)' },
+  'Mellersta axel':  { bg: 'rgba(245, 180, 80, 0.13)',  fg: 'rgba(245, 180, 80, 0.85)' },
+  'Bakre axel':      { bg: 'rgba(220, 160, 70, 0.13)',  fg: 'rgba(220, 160, 70, 0.85)' },
+  'Axlar':           { bg: 'rgba(245, 200, 100, 0.13)', fg: 'rgba(245, 200, 100, 0.85)' },
+  // Rygg (subdivision)
+  'Lats':            { bg: 'rgba(142, 188, 245, 0.13)', fg: 'rgba(142, 188, 245, 0.85)' },
+  'Övre rygg':       { bg: 'rgba(120, 170, 230, 0.13)', fg: 'rgba(120, 170, 230, 0.85)' },
+  'Ländrygg':        { bg: 'rgba(100, 150, 210, 0.13)', fg: 'rgba(100, 150, 210, 0.85)' },
+  'Trapezius':       { bg: 'rgba(160, 200, 250, 0.13)', fg: 'rgba(160, 200, 250, 0.85)' },
+  'Rygg':            { bg: 'rgba(142, 188, 245, 0.13)', fg: 'rgba(142, 188, 245, 0.85)' },
+  // Armar
+  'Biceps':          { bg: 'rgba(180, 142, 245, 0.13)', fg: 'rgba(180, 142, 245, 0.85)' },
+  'Triceps':         { bg: 'rgba(142, 220, 245, 0.13)', fg: 'rgba(142, 220, 245, 0.85)' },
+  'Underarmar':      { bg: 'rgba(200, 200, 200, 0.13)', fg: 'rgba(200, 200, 200, 0.85)' },
+  // Ben & höft
+  'Quads':           { bg: 'rgba(142, 245, 175, 0.13)', fg: 'rgba(142, 245, 175, 0.85)' },
+  'Hamstrings':      { bg: 'rgba(220, 245, 142, 0.13)', fg: 'rgba(220, 245, 142, 0.85)' },
+  'Rumpa':           { bg: 'rgba(245, 142, 200, 0.13)', fg: 'rgba(245, 142, 200, 0.85)' },
+  'Adduktorer':      { bg: 'rgba(200, 180, 200, 0.13)', fg: 'rgba(200, 180, 200, 0.85)' },
+  'Abduktorer':      { bg: 'rgba(180, 200, 220, 0.13)', fg: 'rgba(180, 200, 220, 0.85)' },
+  'Höftböjare':      { bg: 'rgba(220, 180, 160, 0.13)', fg: 'rgba(220, 180, 160, 0.85)' },
+  // Övrigt
+  'Rotatorkuff':     { bg: 'rgba(160, 220, 220, 0.13)', fg: 'rgba(160, 220, 220, 0.85)' },
+  'Core':            { bg: 'rgba(245, 220, 142, 0.13)', fg: 'rgba(245, 220, 142, 0.85)' },
+  'Vader':           { bg: 'rgba(160, 220, 200, 0.13)', fg: 'rgba(160, 220, 200, 0.85)' },
+  'Övrigt':          { bg: 'rgba(140, 140, 140, 0.10)', fg: 'rgba(170, 170, 170, 0.85)' },
 }
 
 function chipColors(group) {
@@ -848,6 +868,7 @@ function ExercisesTab() {
       name: ex.name ?? '',
       muscle_group: ex.muscle_group ?? '',
       secondary_muscle: ex.secondary_muscle ?? '',
+      secondary_muscles: ex.secondary_muscles ?? [],
       equipment: ex.equipment ?? '',
       movement_pattern: ex.movement_pattern ?? '',
       instructions: ex.instructions ?? '',
@@ -861,7 +882,7 @@ function ExercisesTab() {
 
   function startNew() {
     setSelectedId('__new__')
-    const formData = { name: '', muscle_group: '', secondary_muscle: '', equipment: '', movement_pattern: '', instructions: '', weight_increment: '' }
+    const formData = { name: '', muscle_group: '', secondary_muscle: '', secondary_muscles: [], equipment: '', movement_pattern: '', instructions: '', weight_increment: '' }
     setForm(formData)
     setOriginal(formData)
     setSaveError(null)
@@ -880,16 +901,20 @@ function ExercisesTab() {
     if (!form?.name?.trim()) return
     setSaving(true)
     setSaveError(null)
-    // Guard: secondary muscle must be different from primary (else null)
     const primaryMuscle = form.muscle_group || null
     const secondaryMuscle = form.secondary_muscle && form.secondary_muscle !== form.muscle_group
       ? form.secondary_muscle
       : null
+    // secondary_muscles array — filtrera bort primar och dubbletter
+    const secondaryMuscles = (form.secondary_muscles ?? [])
+      .filter(m => m && m !== primaryMuscle)
+      .filter((m, i, arr) => arr.indexOf(m) === i)
     try {
       const savedFormData = {
         name: form.name.trim(),
         muscle_group: form.muscle_group ?? '',
         secondary_muscle: secondaryMuscle ?? '',
+        secondary_muscles: secondaryMuscles,
         equipment: form.equipment ?? '',
         movement_pattern: form.movement_pattern ?? '',
         instructions: form.instructions ?? '',
@@ -900,6 +925,7 @@ function ExercisesTab() {
           name: form.name.trim(),
           muscle_group: primaryMuscle,
           secondary_muscle: secondaryMuscle,
+          secondary_muscles: secondaryMuscles,
           equipment: form.equipment || null,
           movement_pattern: form.movement_pattern || null,
           instructions: form.instructions || null,
@@ -916,6 +942,7 @@ function ExercisesTab() {
           name: form.name.trim(),
           muscle_group: primaryMuscle,
           secondary_muscle: secondaryMuscle,
+          secondary_muscles: secondaryMuscles,
           equipment: form.equipment || null,
           movement_pattern: form.movement_pattern || null,
           instructions: form.instructions || null,
@@ -960,6 +987,7 @@ function ExercisesTab() {
     form.name !== original.name ||
     form.muscle_group !== original.muscle_group ||
     form.secondary_muscle !== original.secondary_muscle ||
+    JSON.stringify(form.secondary_muscles ?? []) !== JSON.stringify(original.secondary_muscles ?? []) ||
     form.equipment !== original.equipment ||
     form.movement_pattern !== original.movement_pattern ||
     form.instructions !== original.instructions ||
@@ -1111,16 +1139,37 @@ function ExercisesTab() {
                 </div>
 
                 <div className={styles.exDetailField}>
-                  <label className={styles.exDetailLabel}>Sekundär muskel</label>
-                  <select
-                    className={styles.cellSelect}
-                    value={form.secondary_muscle}
-                    onChange={e => setForm(f => ({ ...f, secondary_muscle: e.target.value }))}
-                    style={{ width: '100%' }}
-                  >
-                    <option value="">Ingen</option>
-                    {MUSCLE_GROUPS.filter(g => g !== form.muscle_group).map(g => <option key={g} value={g}>{g}</option>)}
-                  </select>
+                  <label className={styles.exDetailLabel}>Sekundära muskler</label>
+                  <div className={styles.secMuscleChips}>
+                    {(form.secondary_muscles ?? []).map(m => (
+                      <span key={m} className={styles.secMuscleChip} style={{ background: chipColors(m).bg, color: chipColors(m).fg }}>
+                        {m}
+                        <button
+                          type="button"
+                          className={styles.secMuscleChipRemove}
+                          onClick={() => setForm(f => ({ ...f, secondary_muscles: (f.secondary_muscles ?? []).filter(x => x !== m) }))}
+                          aria-label={`Ta bort ${m}`}
+                        >×</button>
+                      </span>
+                    ))}
+                    <select
+                      className={styles.secMuscleAdd}
+                      value=""
+                      onChange={e => {
+                        if (!e.target.value) return
+                        const v = e.target.value
+                        setForm(f => ({
+                          ...f,
+                          secondary_muscles: [...(f.secondary_muscles ?? []).filter(x => x !== v), v]
+                        }))
+                      }}
+                    >
+                      <option value="">+ Lägg till</option>
+                      {MUSCLE_GROUPS
+                        .filter(g => g !== form.muscle_group && !(form.secondary_muscles ?? []).includes(g))
+                        .map(g => <option key={g} value={g}>{g}</option>)}
+                    </select>
+                  </div>
                 </div>
 
                 <div className={styles.exDetailField}>

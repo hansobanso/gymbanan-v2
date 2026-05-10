@@ -2745,3 +2745,51 @@
     pointer-events: none;
   }
 }
+
+/* ── Sekundara muskler som chips med x ─────────────────────── */
+.secMuscleChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  padding: 8px 10px;
+  background: #1a1a1a;
+  border: 1px solid #252525;
+  border-radius: 8px;
+  min-height: 36px;
+}
+.secMuscleChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--font);
+}
+.secMuscleChipRemove {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0 0 0 2px;
+  opacity: 0.6;
+  font-family: var(--font);
+}
+.secMuscleChipRemove:hover { opacity: 1; }
+.secMuscleAdd {
+  background: transparent;
+  border: 1px dashed #333;
+  border-radius: 12px;
+  color: #888;
+  font-size: 12px;
+  padding: 3px 8px;
+  cursor: pointer;
+  font-family: var(--font);
+  outline: none;
+}
+.secMuscleAdd:hover { border-color: var(--accent); color: var(--accent); }
+.secMuscleAdd:focus { border-color: var(--accent); }
