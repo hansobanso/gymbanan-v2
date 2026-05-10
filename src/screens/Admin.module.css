@@ -2798,10 +2798,42 @@
 
 .exNewLayout {
   display: grid;
-  grid-template-columns: 220px 1fr 380px;
+  grid-template-columns: 220px 1fr;
   gap: 0;
   height: 100%;
   min-height: 0;
+}
+
+/* Portal-slot: container i admin-sidebaren dar ExercisesTab renderar sin
+ * detaljpanel via createPortal. Ger panelen samma yta som programs-detail. */
+.sidebarDetailPortalSlot {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.sidebarDetailPortalSlot .exDetailPanel {
+  flex: 1 1 auto;
+  border-radius: 0;
+  border: none;
+  background: transparent;
+  padding: 16px;
+  min-height: 0;
+}
+.sidebarDetailPortalSlot .exDetailEmpty {
+  padding: 16px 0;
+  font-size: 12px;
+}
+.sidebarDetailPortalSlot .exEmptyNumber { font-size: 28px; }
+.sidebarDetailPortalSlot .exEmptyLabel { font-size: 11px; }
+.sidebarDetailPortalSlot .exDetailGrid {
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+.sidebarDetailPortalSlot .exDetailField label,
+.sidebarDetailPortalSlot .exDetailLabel {
+  font-size: 10px;
 }
 
 /* Filter sidebar (vänster i exercises-tabben) */

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import {
   DndContext,
@@ -1041,6 +1042,12 @@ function ExercisesTab() {
     form.weight_increment !== original.weight_increment
   )
 
+  // Portal-target: hittar #exercise-detail-sidebar-portal nar admin-sidebaren har monterat
+  const [portalEl, setPortalEl] = useState(null)
+  useEffect(() => {
+    setPortalEl(document.getElementById('exercise-detail-sidebar-portal'))
+  }, [])
+
   if (loading) return <div className={styles.loading}><div className="spinner" /></div>
 
   // Distinkta värden för filter
@@ -1240,8 +1247,9 @@ function ExercisesTab() {
         </div>
       </div>
 
-      {/* ── Detail panel ── */}
-      <div className={styles.exDetailPanel}>
+      {/* ── Detail panel: rendras via portal i admin-sidebaren ── */}
+      {portalEl && createPortal(
+        <div className={styles.exDetailPanel}>
         {!form ? (
           <div className={styles.exDetailEmpty}>
             <div className={styles.exEmptyStat}>
@@ -1441,7 +1449,9 @@ function ExercisesTab() {
             </div>
           </div>
         )}
-      </div>
+      </div>,
+        portalEl
+      )}
     </div>
   )
 }
@@ -1927,6 +1937,9 @@ export default function Admin() {
             </button>
           ))}
         </nav>
+
+        {/* Portal-target for ExercisesTab detaljpanel */}
+        {tab === 'exercises' && <div id="exercise-detail-sidebar-portal" className={styles.sidebarDetailPortalSlot} />}
 
         {/* Detaljpanel — visas i sidebar nar en ovning ar vald i ProgramsTab */}
         {sidebarDetail && tab === 'programs' && (() => {
