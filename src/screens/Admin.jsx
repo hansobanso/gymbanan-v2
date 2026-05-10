@@ -20,19 +20,10 @@ import { CSS } from '@dnd-kit/utilities'
 import { supabase } from '../lib/supabase'
 import { ProgramMuscleSetSummary, computeProgramMuscleSets } from '../components/settings/MuscleSetSummary'
 import MuscleMap from '../components/shared/MuscleMap'
+import { MUSCLE_GROUPS, BROAD_MUSCLE_GROUPS, broadOf } from '../data/muscleGroups'
 import styles from './Admin.module.css'
 
 const ADMIN_PASSWORD = 'banana2024'
-
-const MUSCLE_GROUPS = [
-  'Bröst',
-  'Främre axel', 'Mellersta axel', 'Bakre axel',
-  'Lats', 'Övre rygg', 'Ländrygg', 'Trapezius',
-  'Biceps', 'Triceps', 'Underarmar',
-  'Quads', 'Hamstrings', 'Rumpa', 'Adduktorer', 'Abduktorer',
-  'Höftböjare', 'Rotatorkuff',
-  'Core', 'Vader', 'Övrigt',
-]
 
 // Dampade fargchips per muskelgrupp - matchar appens morka estetik.
 const MUSCLE_CHIP_COLORS = {
@@ -915,7 +906,7 @@ function ExercisesTab() {
 
   const filtered = exercises.filter(ex => {
     const matchSearch = !search.trim() || ex.name.toLowerCase().includes(search.toLowerCase())
-    const matchGroup = !filterGroup || ex.muscle_group === filterGroup
+    const matchGroup = !filterGroup || broadOf(ex.muscle_group) === filterGroup
     const matchEquipment = !filterEquipment || ex.equipment === filterEquipment
     const matchMovement = !filterMovement || ex.movement_pattern === filterMovement
     let matchQuality = true
@@ -1069,7 +1060,7 @@ function ExercisesTab() {
   // Distinkta värden för filter
   const distinctEquipment = [...new Set(exercises.map(e => e.equipment).filter(Boolean))].sort()
   const distinctMovement = [...new Set(exercises.map(e => e.movement_pattern).filter(Boolean))].sort()
-  const presentMuscles = MUSCLE_GROUPS.filter(g => exercises.some(e => e.muscle_group === g))
+  const presentBroadGroups = BROAD_MUSCLE_GROUPS.filter(b => exercises.some(e => broadOf(e.muscle_group) === b))
 
   return (
     <div className={styles.exNewLayout}>
@@ -1083,7 +1074,7 @@ function ExercisesTab() {
               onClick={() => setFilterGroup(null)}
               type="button"
             >Alla</button>
-            {presentMuscles.map(g => (
+            {presentBroadGroups.map(g => (
               <button
                 key={g}
                 className={`${styles.exFilterChip} ${filterGroup === g ? styles.exFilterChipActive : ''}`}

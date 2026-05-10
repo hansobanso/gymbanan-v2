@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { getExercises, saveExercise } from '../../lib/db'
-import { MUSCLE_GROUPS } from '../../data/exercises'
+import { MUSCLE_GROUPS, BROAD_MUSCLE_GROUPS, broadOf } from '../../data/muscleGroups'
 import styles from './ExercisePicker.module.css'
 
 export default function ExercisePicker({ open, onSelect, onClose, replacingExercise = null }) {
@@ -59,7 +59,7 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
   // Filtrera pa fritext + muskelgrupp-chip.
   const filtered = allExercises.filter(e => {
     const matchQuery = !query.trim() || e.name.toLowerCase().includes(query.toLowerCase())
-    const matchGroup = !selectedGroup || e.muscle_group === selectedGroup
+    const matchGroup = !selectedGroup || broadOf(e.muscle_group) === selectedGroup
     return matchQuery && matchGroup
   })
 
@@ -148,7 +148,7 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
               >
                 Alla
               </button>
-              {MUSCLE_GROUPS.map(mg => (
+              {BROAD_MUSCLE_GROUPS.map(mg => (
                 <button
                   key={mg}
                   className={`${styles.chip} ${selectedGroup === mg ? styles.chipActive : ''}`}

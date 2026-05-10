@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getExercises } from '../lib/db'
-import { MUSCLE_GROUPS } from '../data/exercises'
+import { BROAD_MUSCLE_GROUPS, broadOf } from '../data/muscleGroups'
 import styles from './ExerciseLibrary.module.css'
 
 export default function ExerciseLibrary() {
@@ -15,7 +15,7 @@ export default function ExerciseLibrary() {
   }, [])
 
   const filtered = allExercises.filter(e =>
-    (!muscleFilter || e.muscle_group === muscleFilter) &&
+    (!muscleFilter || broadOf(e.muscle_group) === muscleFilter) &&
     (!search || e.name.toLowerCase().includes(search.toLowerCase()))
   )
 
@@ -51,7 +51,7 @@ export default function ExerciseLibrary() {
           onClick={() => setMuscleFilter(null)}
           type="button"
         >Alla</button>
-        {MUSCLE_GROUPS.map(mg => (
+        {BROAD_MUSCLE_GROUPS.map(mg => (
           <button
             key={mg}
             className={`${styles.chip} ${muscleFilter === mg ? styles.chipActive : ''}`}
