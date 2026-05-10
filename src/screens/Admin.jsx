@@ -84,6 +84,8 @@ async function adminGetExercises() {
   const { data, error } = await supabase
     .from('exercises')
     .select('*')
+    .eq('is_global', true)
+    .is('user_id', null)
     .order('muscle_group', { ascending: true })
     .order('name', { ascending: true })
   if (error) throw error
@@ -849,19 +851,28 @@ function ExercisesTab() {
     }).catch(() => setLoading(false))
   }, [])
 
-  // Dubblettdetektion: samma muskel + samma utrustning + samma rörelse
-  // → flagga som möjlig dubblett (utom om en av dem är en variant t.ex. 'med kabel')
+  // Dubblett-detektion: ovningar med mycket likt namn OCH samma muskel+utrustning+rorelse.
+  // Normaliserar bort icke-bokstaver och accent for jamforelse.
   const duplicateIds = useMemo(() => {
+    function normalize(s) {
+      return (s ?? '')
+        .toLowerCase()
+        .normalize('NFKD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '')
+    }
     const buckets = {}
     for (const ex of exercises) {
-      const key = `${ex.muscle_group ?? ''}|${ex.equipment ?? ''}|${ex.movement_pattern ?? ''}`
       if (!ex.muscle_group || !ex.equipment) continue
+      // Bucket pa normaliserat namn (sa "Hantelflyes" och "Hantelflyes" matchar)
+      // OCH muskel+utrustning+rorelse (sa olika varianter inte fastnar i samma bucket)
+      const key = `${normalize(ex.name)}|${ex.muscle_group}|${ex.equipment}|${ex.movement_pattern ?? ''}`
       buckets[key] = buckets[key] ?? []
       buckets[key].push(ex.id)
     }
     const dupes = new Set()
     for (const ids of Object.values(buckets)) {
-      if (ids.length >= 3) for (const id of ids) dupes.add(id)
+      if (ids.length >= 2) for (const id of ids) dupes.add(id)
     }
     return dupes
   }, [exercises])
