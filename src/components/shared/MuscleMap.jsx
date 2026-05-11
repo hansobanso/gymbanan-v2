@@ -77,7 +77,7 @@ function resolveIntensities({ breakdown, workouts, intensities }) {
 // Muskelfargning delegeras till lib/muscleColor.js (skogsgron palett).
 const colorFor = colorForIntensity
 
-export default function MuscleMap({ breakdown, workouts, intensities: customIntensities, size = 60 }) {
+export default function MuscleMap({ breakdown, workouts, intensities: customIntensities, size = 60, silhouetteColor }) {
   const intensities = resolveIntensities({
     breakdown,
     workouts,
@@ -96,6 +96,7 @@ export default function MuscleMap({ breakdown, workouts, intensities: customInte
   return (
     <MuscleFigure
       colors={colors}
+      silhouetteColor={silhouetteColor}
       style={{ width: totalWidth, height: 'auto', display: 'block' }}
     />
   )
