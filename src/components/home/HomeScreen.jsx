@@ -330,7 +330,7 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
             {recentWorkouts.length > 0 ? 'Muskelåterhämtning' : 'Muskelgrupper'}
           </span>
           <div className={styles.muscleBox}>
-            <MuscleMap workouts={recentWorkouts} size={160} silhouetteColor="#1F2A1F" />
+            <MuscleMap workouts={recentWorkouts} size={160} />
           </div>
           {recentWorkouts.length === 0 && (
             <p className={styles.muscleMapHint}>
