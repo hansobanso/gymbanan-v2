@@ -39,8 +39,8 @@ export default function MuscleFigure({ colors = {}, className, style }) {
     return out
   }, [colors])
 
-  // Silhuett-farg: nastan svart med subtil gron ton (matchar muskel-paletten).
-  const silhouetteColor = '#0A0F0A'
+  // Silhuett-farg: helsvart.
+  const silhouetteColor = '#000000'
 
   return (
     <svg
