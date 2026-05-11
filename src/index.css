@@ -36,6 +36,11 @@
   --timer-warn: #FF9500;
   --timer-danger: #FF3B30;
 
+  /* ── Muskelgubbe (skogsgron palette) ── */
+  --muscle-untrained: #12200A;  /* outranad/extra mork - intensity 0 */
+  --muscle-rested:    #2D5016;  /* baseline vilad - intensity 0.15+ */
+  --muscle-trained:   #F5D020;  /* fulltranad - intensity 1.0 (samma som accent) */
+
   /* ── Typografi – iOS font-stack ── */
   --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display',
     'Helvetica Neue', Arial, sans-serif;

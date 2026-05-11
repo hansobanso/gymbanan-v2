@@ -73,13 +73,37 @@ function resolveIntensities({ breakdown, workouts, intensities }) {
   return {}
 }
 
+// Muskelpalett (skogsgron). Synca med --muscle-* i src/index.css om du andrar.
+const MUSCLE_UNTRAINED = [18, 32, 10]   // #12200A - extra mork, outranad
+const MUSCLE_RESTED    = [45, 80, 22]   // #2D5016 - baseline vilad gron
+const MUSCLE_TRAINED   = [245, 208, 32] // #F5D020 - full accent gul
+
+function lerp(a, b, t) {
+  return [
+    Math.round(a[0] + (b[0] - a[0]) * t),
+    Math.round(a[1] + (b[1] - a[1]) * t),
+    Math.round(a[2] + (b[2] - a[2]) * t),
+  ]
+}
+
 // Mappa intensity (0-1) till en farg.
-// 0 → #1f1f1f (mork bakgrund), 1 → full accent gul (#F5D020)
-// Mellan: gradient via alpha pa accent-faerg (visuellt mjukt)
+// 0          → extra mork gron (outranad)
+// 0 → 0.15   → snabb overgang till baseline-gron (visar att muskeln har "lyfts")
+// 0.15 → 1.0 → gradient fran baseline-gron till full accent-gul
 function colorFor(intensity) {
-  if (!intensity || intensity === 0) return '#1f1f1f'
-  const alpha = 0.28 + intensity * 0.72  // 0.28 → 1.0
-  return `rgba(245, 208, 32, ${alpha.toFixed(3)})`
+  if (!intensity || intensity <= 0) {
+    const c = MUSCLE_UNTRAINED
+    return `rgb(${c[0]}, ${c[1]}, ${c[2]})`
+  }
+  let c
+  if (intensity < 0.15) {
+    // Snabb overgang fran extra mork till baseline over de forsta 15%
+    c = lerp(MUSCLE_UNTRAINED, MUSCLE_RESTED, intensity / 0.15)
+  } else {
+    // Resterande 85%: baseline-gron mot full gul
+    c = lerp(MUSCLE_RESTED, MUSCLE_TRAINED, (intensity - 0.15) / 0.85)
+  }
+  return `rgb(${c[0]}, ${c[1]}, ${c[2]})`
 }
 
 export default function MuscleMap({ breakdown, workouts, intensities: customIntensities, size = 60 }) {
