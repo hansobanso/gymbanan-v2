@@ -820,6 +820,8 @@ function ExercisesTab() {
   const [filterEquipment, setFilterEquipment] = useState(null)
   const [filterMovement, setFilterMovement] = useState(null)
   const [filterQuality, setFilterQuality] = useState(null)  // 'missing-equipment' | 'duplicates'
+  const [sortKey, setSortKey] = useState('name')             // 'name' | 'muscle_group' | 'equipment' | 'movement_pattern' | 'status'
+  const [sortDir, setSortDir] = useState('asc')              // 'asc' | 'desc'
   const [selectedId, setSelectedId] = useState(null)
   const [form, setForm] = useState(null)
   const [original, setOriginal] = useState(null)
@@ -915,7 +917,35 @@ function ExercisesTab() {
     return matchSearch && matchGroup && matchEquipment && matchMovement && matchQuality
   })
 
-  const sortedExercises = [...filtered].sort((a, b) => a.name.localeCompare(b.name, 'sv'))
+  const sortedExercises = [...filtered].sort((a, b) => {
+    let av, bv
+    if (sortKey === 'status') {
+      // Sortera pa statusvarde (numerisk svarighetsgrad)
+      const order = { ok: 0, warn: 1, error: 2 }
+      av = order[statusOf(a)] ?? 0
+      bv = order[statusOf(b)] ?? 0
+      if (av === bv) return a.name.localeCompare(b.name, 'sv')
+      return sortDir === 'asc' ? av - bv : bv - av
+    }
+    av = (a[sortKey] ?? '').toString()
+    bv = (b[sortKey] ?? '').toString()
+    // Tomma varden hamnar alltid sist oavsett sortriktning
+    if (!av && !bv) return 0
+    if (!av) return 1
+    if (!bv) return -1
+    const cmp = av.localeCompare(bv, 'sv')
+    if (cmp === 0 && sortKey !== 'name') return a.name.localeCompare(b.name, 'sv')
+    return sortDir === 'asc' ? cmp : -cmp
+  })
+
+  function toggleSort(key) {
+    if (sortKey === key) {
+      setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortKey(key)
+      setSortDir('asc')
+    }
+  }
 
   function selectExercise(ex) {
     setSelectedId(ex.id)
@@ -1171,11 +1201,24 @@ function ExercisesTab() {
             <table className={styles.exTable}>
               <thead>
                 <tr>
-                  <th className={styles.exTableHead}>Övning</th>
-                  <th className={styles.exTableHead}>Muskel</th>
-                  <th className={styles.exTableHead}>Utrustning</th>
-                  <th className={styles.exTableHead}>Rörelse</th>
-                  <th className={styles.exTableHead}>Status</th>
+                  {[
+                    { key: 'name', label: 'Övning' },
+                    { key: 'muscle_group', label: 'Muskel' },
+                    { key: 'equipment', label: 'Utrustning' },
+                    { key: 'movement_pattern', label: 'Rörelse' },
+                    { key: 'status', label: 'Status' },
+                  ].map(col => (
+                    <th
+                      key={col.key}
+                      className={`${styles.exTableHead} ${styles.exTableHeadSortable} ${sortKey === col.key ? styles.exTableHeadActive : ''}`}
+                      onClick={() => toggleSort(col.key)}
+                    >
+                      {col.label}
+                      <span className={styles.exTableHeadArrow}>
+                        {sortKey === col.key ? (sortDir === 'asc' ? '▲' : '▼') : ''}
+                      </span>
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>

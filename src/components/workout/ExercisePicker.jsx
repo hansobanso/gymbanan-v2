@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { getExercises, saveExercise } from '../../lib/db'
-import { MUSCLE_GROUPS, BROAD_MUSCLE_GROUPS, broadOf } from '../../data/muscleGroups'
+import { MUSCLE_GROUPS, BROAD_MUSCLE_GROUPS, broadOf, subGroupsOf, matchesSubGroup } from '../../data/muscleGroups'
 import styles from './ExercisePicker.module.css'
 
 export default function ExercisePicker({ open, onSelect, onClose, replacingExercise = null }) {
   const [allExercises, setAllExercises] = useState([])
   const [query, setQuery] = useState('')
   const [selectedGroup, setSelectedGroup] = useState(null)
+  const [selectedSub, setSelectedSub] = useState(null)
   const [createMode, setCreateMode] = useState(false)
   const [createMuscle, setCreateMuscle] = useState('')
   const [saving, setSaving] = useState(false)
@@ -36,6 +37,7 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
     if (!open) {
       setQuery('')
       setSelectedGroup(null)
+      setSelectedSub(null)
       setCreateMode(false)
       setCreateMuscle('')
       return
@@ -56,10 +58,14 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
     setSaving(false)
   }
 
-  // Filtrera pa fritext + muskelgrupp-chip.
+  // Filtrera pa fritext + muskelgrupp-chip + ev. sub-chip.
   const filtered = allExercises.filter(e => {
     const matchQuery = !query.trim() || e.name.toLowerCase().includes(query.toLowerCase())
-    const matchGroup = !selectedGroup || broadOf(e.muscle_group) === selectedGroup
+    let matchGroup = !selectedGroup || broadOf(e.muscle_group) === selectedGroup
+    // Om sub-chip ar vald, kraver vi att muscle_group matchar precis den sub
+    if (matchGroup && selectedSub && selectedGroup) {
+      matchGroup = matchesSubGroup(e.muscle_group, selectedGroup, selectedSub)
+    }
     return matchQuery && matchGroup
   })
 
@@ -143,7 +149,7 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
             <div className={styles.chips}>
               <button
                 className={`${styles.chip} ${!selectedGroup ? styles.chipActive : ''}`}
-                onClick={() => setSelectedGroup(null)}
+                onClick={() => { setSelectedGroup(null); setSelectedSub(null) }}
                 type="button"
               >
                 Alla
@@ -152,13 +158,37 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
                 <button
                   key={mg}
                   className={`${styles.chip} ${selectedGroup === mg ? styles.chipActive : ''}`}
-                  onClick={() => setSelectedGroup(g => g === mg ? null : mg)}
+                  onClick={() => {
+                    setSelectedGroup(g => g === mg ? null : mg)
+                    setSelectedSub(null)
+                  }}
                   type="button"
                 >
                   {mg}
                 </button>
               ))}
             </div>
+            {selectedGroup && subGroupsOf(selectedGroup).length > 0 && (
+              <div className={`${styles.chips} ${styles.subChips}`}>
+                <button
+                  className={`${styles.chip} ${styles.subChip} ${!selectedSub ? styles.chipActive : ''}`}
+                  onClick={() => setSelectedSub(null)}
+                  type="button"
+                >
+                  Alla
+                </button>
+                {subGroupsOf(selectedGroup).map(sub => (
+                  <button
+                    key={sub}
+                    className={`${styles.chip} ${styles.subChip} ${selectedSub === sub ? styles.chipActive : ''}`}
+                    onClick={() => setSelectedSub(s => s === sub ? null : sub)}
+                    type="button"
+                  >
+                    {sub}
+                  </button>
+                ))}
+              </div>
+            )}
             <div className={styles.list}>
               {createMode ? (
                 <div className={styles.createWrap}>

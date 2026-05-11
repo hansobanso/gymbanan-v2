@@ -2995,6 +2995,23 @@
   top: 0;
   z-index: 1;
 }
+.exTableHeadSortable {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.1s;
+}
+.exTableHeadSortable:hover {
+  color: #888;
+}
+.exTableHeadActive {
+  color: var(--accent);
+}
+.exTableHeadArrow {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 10px;
+  opacity: 0.85;
+}
 .exTableRow {
   cursor: pointer;
   transition: background 0.08s;

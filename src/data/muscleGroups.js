@@ -30,3 +30,41 @@ export const SUBDIVISION_TO_BROAD = {
 export function broadOf(muscleGroup) {
   return SUBDIVISION_TO_BROAD[muscleGroup] ?? 'Övrigt'
 }
+
+// Underkategorier per broad-grupp. Visas som andra rad av filter-chips i pickern
+// nar en broad-grupp ar vald. Bara broad-grupper som har sub-grupper finns med
+// (Brost, Core, Ovrigt har inga sub).
+export const SUB_GROUPS = {
+  'Rygg': {
+    'Övre': ['Lats', 'Övre rygg', 'Trapezius'],
+    'Undre': ['Ländrygg'],
+  },
+  'Axlar': {
+    'Främre': ['Främre axel'],
+    'Mellersta': ['Mellersta axel'],
+    'Bakre': ['Bakre axel'],
+    'Rotatorkuff': ['Rotatorkuff'],
+  },
+  'Armar': {
+    'Biceps': ['Biceps'],
+    'Triceps': ['Triceps'],
+    'Underarmar': ['Underarmar'],
+  },
+  'Ben': {
+    'Främre': ['Quads'],
+    'Bakre': ['Hamstrings', 'Rumpa', 'Vader'],
+    'Höft': ['Adduktorer', 'Abduktorer', 'Höftböjare'],
+  },
+}
+
+// Returnera listan av underkategori-namn for en broad-grupp, eller tom array.
+export function subGroupsOf(broad) {
+  return SUB_GROUPS[broad] ? Object.keys(SUB_GROUPS[broad]) : []
+}
+
+// Kolla om en muscle_group hor till en specifik sub-grupp under broad.
+export function matchesSubGroup(muscleGroup, broad, subName) {
+  const subs = SUB_GROUPS[broad]
+  if (!subs || !subs[subName]) return false
+  return subs[subName].includes(muscleGroup)
+}

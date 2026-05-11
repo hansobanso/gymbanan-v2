@@ -123,6 +123,26 @@
   font-weight: 700;
 }
 
+/* ── Sub-chips (visas under broad-chip nar t.ex. Ben ar vald) ── */
+.subChips {
+  padding-top: 2px;
+  padding-bottom: 12px;
+}
+
+.subChip {
+  font-size: 12px;
+  padding: 4px 10px;
+  background: transparent;
+  border-color: var(--border-1);
+  color: var(--text-3, var(--text-2));
+}
+
+.subChip.chipActive {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #000;
+}
+
 .list {
   flex: 1;
   overflow-y: auto;
