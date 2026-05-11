@@ -31,11 +31,11 @@ const MUSCLE_GROUPS = [
 ]
 
 export default function MuscleFigure({ colors = {}, className, style }) {
-  // Default-farg for muskler utan explicit farg = extra mork skogsgron (outranad).
-  // Synca med MUSCLE_UNTRAINED i MuscleMap.jsx och --muscle-untrained i index.css.
+  // Default-farg for muskler utan explicit farg = mork skogsgron (outranad).
+  // Synca med MUSCLE_UNTRAINED i src/lib/muscleColor.js och --muscle-untrained i index.css.
   const c = useMemo(() => {
     const out = {}
-    for (const m of MUSCLE_GROUPS) out[m] = colors[m] ?? '#12200A'
+    for (const m of MUSCLE_GROUPS) out[m] = colors[m] ?? '#1F3A1F'
     return out
   }, [colors])
 

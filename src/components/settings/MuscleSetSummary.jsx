@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { EXERCISES } from '../../data/exercises'
 import MuscleFigure from '../MuscleFigure'
+import { colorForIntensity } from '../../lib/muscleColor'
 import styles from './MuscleSetSummary.module.css'
 
 // ── Volume calculation ─────────────────────────────────────────
@@ -168,24 +169,9 @@ function MuscleHeatmap({ breakdown }) {
     const out = {}
     for (const { muscle, sets } of breakdown) {
       const max = MAX_SETS_PER_WEEK[muscle] ?? 12
-      const pct = Math.min(1, sets / max)
-      // Farglagg: gra (lag) → orange (mid) → gul (ok)
-      // Anvand accent-farg (#F5D020) for hog volym
-      if (pct < 0.4) {
-        // Lag — diskret gra-orange
-        const alpha = 0.15 + pct * 0.5  // 0.15 → 0.35
-        out[muscle] = `rgba(245, 180, 100, ${alpha.toFixed(2)})`
-      } else if (pct < 0.7) {
-        // Mellan — orange till gul
-        const t = (pct - 0.4) / 0.3
-        const r = 245
-        const g = Math.round(180 + t * 28)  // 180 → 208
-        const b = Math.round(100 + t * (-68))  // 100 → 32
-        out[muscle] = `rgb(${r}, ${g}, ${b})`
-      } else {
-        // Ok+ — full accent
-        out[muscle] = '#F5D020'
-      }
+      // Mappa pct (0-1+) till intensity (0-1). Anvand skogsgron-paletten.
+      const intensity = Math.min(1, sets / max)
+      out[muscle] = colorForIntensity(intensity)
     }
     return out
   }, [breakdown])
