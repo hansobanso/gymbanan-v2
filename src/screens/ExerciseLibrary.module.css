@@ -94,6 +94,29 @@
   font-weight: 700;
 }
 
+/* ── Sub-chips ── */
+.subChips {
+  padding-top: 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.chips:has(+ .subChips) {
+  border-bottom: none;
+  padding-bottom: 6px;
+}
+.subChip {
+  font-size: 12px;
+  padding: 4px 10px;
+  background: transparent;
+  border-color: var(--border-2);
+  color: var(--text-3, var(--text-2));
+}
+.subChip.chipActive {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #000;
+}
+
 /* ── Scroll-body ── */
 .body {
   flex: 1;
