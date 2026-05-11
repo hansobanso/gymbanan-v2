@@ -9,7 +9,7 @@
 /* ── Page header (consistent across tab screens) ── */
 .pageHeader {
   padding: calc(var(--safe-top, 44px) + 8px) 16px 12px;
-  background: #0a0a0a;
+  background: #000000;
   flex-shrink: 0;
 }
 
@@ -41,7 +41,7 @@
   align-items: center;
   justify-content: space-between;
   padding: calc(var(--safe-top, 44px) + 8px) 20px 14px;
-  background: #0a0a0a;
+  background: #000000;
   flex-shrink: 0;
   gap: 12px;
 }

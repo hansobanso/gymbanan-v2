@@ -1,7 +1,7 @@
 .wrapper {
   height: 10px;
   flex-shrink: 0;
-  background: #0a0a0a;
+  background: #000000;
 }
 
 .track {

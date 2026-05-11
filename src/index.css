@@ -1,8 +1,8 @@
 :root {
   /* ── Backgrounds ── */
-  --bg: #0a0a0a;
-  --bg-2: #111111;
-  --bg-3: #161616;
+  --bg: #000000;
+  --bg-2: #0a0a0a;
+  --bg-3: #141414;
 
   /* ── Surfaces (cards, inputs, sheets) ── */
   --surface: #1a1a1a;
@@ -94,7 +94,7 @@ html {
   overscroll-behavior: none;
   color-scheme: dark;
   overflow-x: hidden;
-  background: #0a0a0a;
+  background: var(--bg);
 }
 
 body {
@@ -104,7 +104,7 @@ body {
   font-size: 16px;
   line-height: 1.5;
   color: var(--text);
-  background: #0a0a0a;
+  background: var(--bg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overscroll-behavior: none;
