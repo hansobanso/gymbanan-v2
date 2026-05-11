@@ -1,13 +1,13 @@
 // Muskelpalett (skogsgron) - delad logik for MuscleMap och MuscleHeatmap.
 // Synca med --muscle-* i src/index.css om du andrar nyanserna.
 
-export const MUSCLE_UNTRAINED = [18, 32, 10]   // #12200A - extra mork gron, helt outranad
-export const MUSCLE_RESTED    = [45, 80, 22]   // #2D5016 - baseline vilad gron
+export const MUSCLE_UNTRAINED = [26, 46, 16]   // #1A2E10 - mork dov gron, outranad
+export const MUSCLE_RESTED    = [61, 107, 31]  // #3D6B1F - baseline vilad gron, lite ljusare
 export const MUSCLE_TRAINED   = [245, 208, 32] // #F5D020 - full accent gul
 
 // Hex-strangar for CSS-fallbacks och inline-anvandning
-export const MUSCLE_UNTRAINED_HEX = '#12200A'
-export const MUSCLE_RESTED_HEX    = '#2D5016'
+export const MUSCLE_UNTRAINED_HEX = '#1A2E10'
+export const MUSCLE_RESTED_HEX    = '#3D6B1F'
 export const MUSCLE_TRAINED_HEX   = '#F5D020'
 
 function lerp(a, b, t) {

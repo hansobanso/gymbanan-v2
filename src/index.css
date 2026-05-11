@@ -37,8 +37,8 @@
   --timer-danger: #FF3B30;
 
   /* ── Muskelgubbe (skogsgron palette) ── */
-  --muscle-untrained: #12200A;  /* outranad - extra mork gron */
-  --muscle-rested:    #2D5016;  /* baseline vilad - intensity 0.15+ */
+  --muscle-untrained: #1A2E10;  /* outranad - mork dov gron */
+  --muscle-rested:    #3D6B1F;  /* baseline vilad - intensity 0.15+ */
   --muscle-trained:   #F5D020;  /* fulltranad - samma som accent */
 
   /* ── Typografi – iOS font-stack ── */
