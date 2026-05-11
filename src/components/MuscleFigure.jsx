@@ -35,7 +35,7 @@ export default function MuscleFigure({ colors = {}, className, style }) {
   // Synca med MUSCLE_UNTRAINED i src/lib/muscleColor.js och --muscle-untrained i index.css.
   const c = useMemo(() => {
     const out = {}
-    for (const m of MUSCLE_GROUPS) out[m] = colors[m] ?? '#1F3A1F'
+    for (const m of MUSCLE_GROUPS) out[m] = colors[m] ?? '#2D5016'
     return out
   }, [colors])
 
