@@ -85,8 +85,9 @@
 }
 
 .emptyIcon {
-  font-size: 40px;
-  margin: 0 0 4px;
+  width: 44px;
+  height: 44px;
+  margin: 0 0 10px;
 }
 
 .emptyTitle {

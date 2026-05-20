@@ -813,6 +813,9 @@
   border: 1px solid #1f1f1f;
 }
 .welcomeTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 20px;
   font-weight: 800;
   color: #fff;
@@ -831,11 +834,23 @@
   border-top: 1px solid #1f1f1f;
 }
 .welcomeFeatureTitle {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 14px;
   font-weight: 700;
   color: var(--text);
   margin-bottom: 4px;
+}
+.welcomeFeatureIcon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.welcomeTitleIcon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
 }
 .welcomeFeatureBody {
   font-size: 13px;

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getWorkouts, getDeloadStatus, endDeloadWeek } from '../../lib/db'
 import MuscleMap from '../shared/MuscleMap'
+import { BananaIcon, TrendIcon, ChatIcon } from '../shared/Icons'
 import SessionPreview from './SessionPreview'
 import styles from './HomeScreen.module.css'
 
@@ -274,13 +275,19 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
         {isNewUser && (
           <section className={styles.section}>
             <div className={styles.welcomeCard}>
-              <h2 className={styles.welcomeTitle}>Välkommen till Gymbanan! 🍌</h2>
+              <h2 className={styles.welcomeTitle}>
+                Välkommen till Gymbanan!
+                <BananaIcon className={styles.welcomeTitleIcon} />
+              </h2>
               <p className={styles.welcomeBody}>
                 Kom igång genom att välja ett färdigt program nedan, eller skapa ett eget.
               </p>
 
               <div className={styles.welcomeFeature}>
-                <span className={styles.welcomeFeatureTitle}>📈 Smart progression</span>
+                <span className={styles.welcomeFeatureTitle}>
+                  <TrendIcon className={styles.welcomeFeatureIcon} />
+                  Smart progression
+                </span>
                 <p className={styles.welcomeFeatureBody}>
                   Varje övning har ett rep-intervall, t.ex. 8–12. Klarar du toppen av
                   intervallet föreslår appen automatiskt att du höjer vikten nästa pass –
@@ -289,7 +296,10 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
               </div>
 
               <div className={styles.welcomeFeature}>
-                <span className={styles.welcomeFeatureTitle}>💬 Prata med din PT</span>
+                <span className={styles.welcomeFeatureTitle}>
+                  <ChatIcon className={styles.welcomeFeatureIcon} />
+                  Prata med din PT
+                </span>
                 <p className={styles.welcomeFeatureBody}>
                   Under ett pass kan du chatta med en inbyggd PT. Fråga om teknik, be om
                   ett alternativ till en övning, eller få hjälp att lägga upp passet.
@@ -297,7 +307,10 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
               </div>
 
               <div className={styles.welcomeFeature}>
-                <span className={styles.welcomeFeatureTitle}>🍌 Muskelkartan</span>
+                <span className={styles.welcomeFeatureTitle}>
+                  <BananaIcon className={styles.welcomeFeatureIcon} />
+                  Muskelkartan
+                </span>
                 <p className={styles.welcomeFeatureBody}>
                   Muskelgubben fylls från grönt till gult ju mer du tränat varje muskelgrupp.
                   Grön = vilad, gul = nyligen tränad.
@@ -388,7 +401,10 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
               {helpExpanded && (
                 <div className={styles.helpBody}>
                   <div className={styles.welcomeFeature} style={{ borderTop: 'none', marginTop: 0, paddingTop: 0 }}>
-                    <span className={styles.welcomeFeatureTitle}>📈 Smart progression</span>
+                    <span className={styles.welcomeFeatureTitle}>
+                      <TrendIcon className={styles.welcomeFeatureIcon} />
+                      Smart progression
+                    </span>
                     <p className={styles.welcomeFeatureBody}>
                       Varje övning har ett rep-intervall, t.ex. 8–12. Klarar du toppen av
                       intervallet föreslår appen att du höjer vikten nästa pass – och sänker
@@ -396,14 +412,20 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
                     </p>
                   </div>
                   <div className={styles.welcomeFeature}>
-                    <span className={styles.welcomeFeatureTitle}>💬 Prata med din PT</span>
+                    <span className={styles.welcomeFeatureTitle}>
+                      <ChatIcon className={styles.welcomeFeatureIcon} />
+                      Prata med din PT
+                    </span>
                     <p className={styles.welcomeFeatureBody}>
                       Under ett pass kan du chatta med en inbyggd PT. Fråga om teknik, be om
                       ett alternativ till en övning, eller få hjälp att lägga upp passet.
                     </p>
                   </div>
                   <div className={styles.welcomeFeature}>
-                    <span className={styles.welcomeFeatureTitle}>🍌 Muskelkartan</span>
+                    <span className={styles.welcomeFeatureTitle}>
+                      <BananaIcon className={styles.welcomeFeatureIcon} />
+                      Muskelkartan
+                    </span>
                     <p className={styles.welcomeFeatureBody}>
                       Muskelgubben fylls från grönt till gult ju mer du tränat varje muskelgrupp.
                       Grön = vilad, gul = nyligen tränad.

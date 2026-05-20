@@ -3,6 +3,7 @@ import { getWorkouts, getEquipmentMap, deleteWorkout } from '../lib/db'
 import WorkoutCard from '../components/history/WorkoutCard'
 import StrengthView from '../components/history/StrengthView'
 import ExerciseChartSheet from '../components/history/ExerciseChartSheet'
+import { DumbbellIcon } from '../components/shared/Icons'
 import styles from './History.module.css'
 
 export default function History({ session }) {
@@ -64,7 +65,7 @@ export default function History({ session }) {
 
         {!loading && workouts.length === 0 && (
           <div className={styles.empty}>
-            <p className={styles.emptyIcon}>🏋️</p>
+            <DumbbellIcon className={styles.emptyIcon} />
             <p className={styles.emptyTitle}>Inga pass ännu</p>
             <p className={styles.emptyText}>Dina genomförda pass dyker upp här.</p>
           </div>
