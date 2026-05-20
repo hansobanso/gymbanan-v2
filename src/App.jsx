@@ -101,7 +101,7 @@ function AppRoutes({ session }) {
       )}
 
       {/* Always-mounted tab screens — shown/hidden via CSS */}
-      <div style={tabStyle('/')}><Home session={session} programs={programs} programsLoaded={programsLoaded} activeProgramId={activeProgramId} /></div>
+      <div style={tabStyle('/')}><Home session={session} programs={programs} programsLoaded={programsLoaded} activeProgramId={activeProgramId} onSetActive={id => { setActiveProgramId(id); setActiveProgram(session.user.id, id).catch(() => {}) }} /></div>
       <div style={tabStyle('/programs')}><Programs session={session} programs={programs} setPrograms={setPrograms} activeProgramId={activeProgramId} onSetActive={id => { setActiveProgramId(id); setActiveProgram(session.user.id, id).catch(() => {}) }} /></div>
       <div style={tabStyle('/history')}><History session={session} /></div>
       <div style={tabStyle('/settings')}><Settings session={session} /></div>

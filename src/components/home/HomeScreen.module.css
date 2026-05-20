@@ -803,3 +803,101 @@
   padding: 20px 12px;
   border: 1px solid #1f1f1f;
 }
+
+/* ── Valkomst-onboarding (ny anvandare) ── */
+.welcomeCard {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 22px 20px;
+  margin-bottom: 16px;
+  border: 1px solid #1f1f1f;
+}
+.welcomeTitle {
+  font-size: 20px;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 8px;
+  letter-spacing: -0.3px;
+}
+.welcomeBody {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-2);
+  margin: 0;
+}
+.welcomeLabel {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--text-3);
+  margin: 0 0 8px 4px;
+}
+.welcomeProgramRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid #1f1f1f;
+  border-radius: 14px;
+  padding: 16px;
+  cursor: pointer;
+  transition: background 0.1s;
+  font-family: var(--font);
+  text-align: left;
+}
+.welcomeProgramRow:active { background: var(--surface-2); }
+.welcomeProgramInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.welcomeProgramName {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+}
+.welcomeProgramMeta {
+  font-size: 13px;
+  color: var(--text-3);
+}
+.welcomeProgramAction {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.welcomeCreateBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 12px;
+  background: #141414;
+  border: 1px solid #1f1f1f;
+  border-radius: 14px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: var(--font);
+  padding: 16px;
+  cursor: pointer;
+  transition: opacity 0.1s;
+}
+.welcomeCreateBtn:active { opacity: 0.7; }
+.welcomeFreeLink {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  background: none;
+  border: none;
+  color: var(--text-3);
+  font-size: 13px;
+  font-family: var(--font);
+  cursor: pointer;
+  padding: 4px;
+  text-align: center;
+}
+.welcomeFreeLink:active { color: var(--text-2); }

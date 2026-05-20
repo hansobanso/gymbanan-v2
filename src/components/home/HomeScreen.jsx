@@ -56,7 +56,7 @@ function getNextSession(program, lastWorkout) {
   return sessions[(idx + 1) % sessions.length]
 }
 
-export default function HomeScreen({ session, programs = [], programsLoaded = false, activeProgramId = null }) {
+export default function HomeScreen({ session, programs = [], programsLoaded = false, activeProgramId = null, onSetActive }) {
   const [lastWorkout, setLastWorkout] = useState(null)
   const [recentWorkouts, setRecentWorkouts] = useState([])
   const [workoutsLoaded, setWorkoutsLoaded] = useState(false)
@@ -115,11 +115,25 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
     navigate('/workout', { state: { sessionName: 'Fritt pass', sessionExercises: [], programId: null } })
   }
 
-  const activeProgram = programs.find(p => p.id === activeProgramId) ?? programs[0] ?? null
+  // Skilj anvandarens egna program fran globala (mall-)program.
+  const ownPrograms = programs.filter(p => !p.is_global)
+  const globalPrograms = programs.filter(p => p.is_global)
+
+  // Aktivt program: bara om anvandaren uttryckligen valt ett (activeProgramId),
+  // annars forsta egna programmet. Vi auto-valjer ALDRIG ett globalt program -
+  // en ny anvandare ska sjalv valja mall eller skapa eget.
+  const activeProgram =
+    programs.find(p => p.id === activeProgramId) ??
+    ownPrograms[0] ??
+    null
+
+  // Ny anvandare: inga egna program och inget aktivt valt.
+  const isNewUser = ownPrograms.length === 0 && !activeProgramId
 
   const monday = getMonday()
   const weeklyCount = recentWorkouts.filter(w => new Date(w.finished_at) >= monday).length
 
+  const programSummary = activeProgram
     ? `${activeProgram.name} · ${(activeProgram.sessions ?? []).length} pass/vecka`
     : null
 
@@ -258,11 +272,61 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
           </section>
         )}
 
-        {/* ── Inget program ── */}
-        {!activeProgram && (
+        {/* ── Valkomst for ny anvandare: valj mallprogram eller skapa eget ── */}
+        {isNewUser && (
+          <section className={styles.section}>
+            <div className={styles.welcomeCard}>
+              <h2 className={styles.welcomeTitle}>Välkommen till Gymbanan! 🍌</h2>
+              <p className={styles.welcomeBody}>
+                Kom igång genom att välja ett färdigt program nedan, eller skapa ett eget.
+                Muskelgubben fylls i grönt och gult ju mer du tränar varje muskelgrupp.
+              </p>
+            </div>
+
+            {globalPrograms.length > 0 && (
+              <>
+                <span className={styles.welcomeLabel}>FÄRDIGA PROGRAM</span>
+                <div className={styles.sessionList}>
+                  {globalPrograms.map(p => (
+                    <button
+                      key={p.id}
+                      className={styles.welcomeProgramRow}
+                      onClick={() => onSetActive?.(p.id)}
+                      type="button"
+                    >
+                      <div className={styles.welcomeProgramInfo}>
+                        <span className={styles.welcomeProgramName}>{p.name}</span>
+                        <span className={styles.welcomeProgramMeta}>
+                          {(p.sessions ?? []).length} pass/vecka
+                        </span>
+                      </div>
+                      <span className={styles.welcomeProgramAction}>Välj</span>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+
+            <button
+              className={styles.welcomeCreateBtn}
+              onClick={() => navigate('/programs')}
+              type="button"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/></svg>
+              Skapa eget program
+            </button>
+
+            <button className={styles.welcomeFreeLink} onClick={handleStartFreeWorkout} type="button">
+              eller starta ett fritt pass direkt
+            </button>
+          </section>
+        )}
+
+        {/* ── Inget aktivt program men har egna ── */}
+        {!isNewUser && !activeProgram && (
           <div className={styles.emptyCard}>
-            <p className={styles.emptyText}>Inga program ännu</p>
-            <p className={styles.emptySubtext}>Skapa ett program under Inställningar</p>
+            <p className={styles.emptyText}>Inget aktivt program</p>
+            <p className={styles.emptySubtext}>Välj ett program under Program-fliken</p>
             <button className={styles.freeWorkoutBtn} onClick={handleStartFreeWorkout} type="button">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/></svg>
               Starta fritt pass
