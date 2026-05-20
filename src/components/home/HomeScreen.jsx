@@ -61,6 +61,7 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
   const [recentWorkouts, setRecentWorkouts] = useState([])
   const [workoutsLoaded, setWorkoutsLoaded] = useState(false)
   const [lastExpanded, setLastExpanded] = useState(false)
+  const [helpExpanded, setHelpExpanded] = useState(false)
   const [previewSession, setPreviewSession] = useState(null) // { session, program }
   const [deloadStatus, setDeloadStatus] = useState({ isActive: false, daysLeft: 0 })
   const navigate = useNavigate()
@@ -115,20 +116,17 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
     navigate('/workout', { state: { sessionName: 'Fritt pass', sessionExercises: [], programId: null } })
   }
 
-  // Skilj anvandarens egna program fran globala (mall-)program.
-  const ownPrograms = programs.filter(p => !p.is_global)
+  // Globala (mall-)program att erbjuda nya anvandare.
   const globalPrograms = programs.filter(p => p.is_global)
 
-  // Aktivt program: bara om anvandaren uttryckligen valt ett (activeProgramId),
-  // annars forsta egna programmet. Vi auto-valjer ALDRIG ett globalt program -
-  // en ny anvandare ska sjalv valja mall eller skapa eget.
+  // Aktivt program: BARA om anvandaren uttryckligen valt ett (activeProgramId).
+  // Vi auto-valjer aldrig nagot program - varken globalt eller eget. En anvandare
+  // maste sjalv valja en mall eller skapa eget forsta gangen.
   const activeProgram =
-    programs.find(p => p.id === activeProgramId) ??
-    ownPrograms[0] ??
-    null
+    programs.find(p => p.id === activeProgramId) ?? null
 
-  // Ny anvandare: inga egna program och inget aktivt valt.
-  const isNewUser = ownPrograms.length === 0 && !activeProgramId
+  // Ny anvandare / inget val gjort: inget aktivt program valt.
+  const isNewUser = !activeProgram
 
   const monday = getMonday()
   const weeklyCount = recentWorkouts.filter(w => new Date(w.finished_at) >= monday).length
@@ -279,8 +277,32 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
               <h2 className={styles.welcomeTitle}>Välkommen till Gymbanan! 🍌</h2>
               <p className={styles.welcomeBody}>
                 Kom igång genom att välja ett färdigt program nedan, eller skapa ett eget.
-                Muskelgubben fylls i grönt och gult ju mer du tränar varje muskelgrupp.
               </p>
+
+              <div className={styles.welcomeFeature}>
+                <span className={styles.welcomeFeatureTitle}>📈 Smart progression</span>
+                <p className={styles.welcomeFeatureBody}>
+                  Varje övning har ett rep-intervall, t.ex. 8–12. Klarar du toppen av
+                  intervallet föreslår appen automatiskt att du höjer vikten nästa pass –
+                  och sänker repsen till botten av intervallet igen. Så blir du starkare steg för steg.
+                </p>
+              </div>
+
+              <div className={styles.welcomeFeature}>
+                <span className={styles.welcomeFeatureTitle}>💬 Prata med din PT</span>
+                <p className={styles.welcomeFeatureBody}>
+                  Under ett pass kan du chatta med en inbyggd PT. Fråga om teknik, be om
+                  ett alternativ till en övning, eller få hjälp att lägga upp passet.
+                </p>
+              </div>
+
+              <div className={styles.welcomeFeature}>
+                <span className={styles.welcomeFeatureTitle}>🍌 Muskelkartan</span>
+                <p className={styles.welcomeFeatureBody}>
+                  Muskelgubben fylls från grönt till gult ju mer du tränat varje muskelgrupp.
+                  Grön = vilad, gul = nyligen tränad.
+                </p>
+              </div>
             </div>
 
             {globalPrograms.length > 0 && (
@@ -342,6 +364,55 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
               + Starta fritt pass
             </button>
           </div>
+        )}
+
+        {/* ── Hopfallbart "Sa funkar appen" (bara nar man har valt program) ── */}
+        {activeProgram && (
+          <section className={styles.section}>
+            <div className={styles.lastCard}>
+              <button
+                className={styles.lastCardHeader}
+                onClick={() => setHelpExpanded(v => !v)}
+                type="button"
+              >
+                <div className={styles.lastHeaderLeft}>
+                  <span className={styles.lastName}>Så funkar appen</span>
+                </div>
+                <svg
+                  className={`${styles.lastChevron} ${helpExpanded ? styles.lastChevronOpen : ''}`}
+                  width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
+                >
+                  <path d="m9 18 6-6-6-6"/>
+                </svg>
+              </button>
+              {helpExpanded && (
+                <div className={styles.helpBody}>
+                  <div className={styles.welcomeFeature} style={{ borderTop: 'none', marginTop: 0, paddingTop: 0 }}>
+                    <span className={styles.welcomeFeatureTitle}>📈 Smart progression</span>
+                    <p className={styles.welcomeFeatureBody}>
+                      Varje övning har ett rep-intervall, t.ex. 8–12. Klarar du toppen av
+                      intervallet föreslår appen att du höjer vikten nästa pass – och sänker
+                      repsen till botten igen. Så blir du starkare steg för steg.
+                    </p>
+                  </div>
+                  <div className={styles.welcomeFeature}>
+                    <span className={styles.welcomeFeatureTitle}>💬 Prata med din PT</span>
+                    <p className={styles.welcomeFeatureBody}>
+                      Under ett pass kan du chatta med en inbyggd PT. Fråga om teknik, be om
+                      ett alternativ till en övning, eller få hjälp att lägga upp passet.
+                    </p>
+                  </div>
+                  <div className={styles.welcomeFeature}>
+                    <span className={styles.welcomeFeatureTitle}>🍌 Muskelkartan</span>
+                    <p className={styles.welcomeFeatureBody}>
+                      Muskelgubben fylls från grönt till gult ju mer du tränat varje muskelgrupp.
+                      Grön = vilad, gul = nyligen tränad.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
         )}
 
         {/* ── Senaste passet (kollapsbart) ── */}

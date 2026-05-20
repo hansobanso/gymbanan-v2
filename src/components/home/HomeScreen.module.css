@@ -825,6 +825,27 @@
   color: var(--text-2);
   margin: 0;
 }
+.welcomeFeature {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #1f1f1f;
+}
+.welcomeFeatureTitle {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.welcomeFeatureBody {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-2);
+  margin: 0;
+}
+.helpBody {
+  padding: 0 16px 16px;
+}
 .welcomeLabel {
   display: block;
   font-size: 11px;

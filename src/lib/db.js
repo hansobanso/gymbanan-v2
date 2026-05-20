@@ -316,9 +316,11 @@ export async function getActiveProgram(userId, programs) {
     .from('profiles')
     .select('active_program_id')
     .eq('id', userId)
-    .single()
-  const match = programs.find(p => p.id === data?.active_program_id)
-  return match ?? programs[0] ?? null
+    .maybeSingle()
+  if (!data?.active_program_id) return null
+  // Returnera bara om det faktiskt matchar ett program. Auto-valj ALDRIG
+  // ett godtyckligt program - anvandaren ska sjalv valja.
+  return programs.find(p => p.id === data.active_program_id) ?? null
 }
 
 export async function setActiveProgram(userId, programId) {
