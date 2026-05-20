@@ -46,15 +46,16 @@ export function ChatIcon(props) {
   )
 }
 
-// Tomt tillstand historik - hantel
+// Tomt tillstand historik - hantel (horisontell, ren geometri)
 export function DumbbellIcon(props) {
   return (
     <svg {...base(props)}>
-      <path d="M6.5 6.5 17.5 17.5" />
-      <path d="M4 7l-1 1a1.5 1.5 0 0 0 0 2l10 10a1.5 1.5 0 0 0 2 0l1-1" />
-      <path d="M20 17l1-1a1.5 1.5 0 0 0 0-2L11 4a1.5 1.5 0 0 0-2 0L8 5" />
-      <path d="m2 12 2 2" />
-      <path d="m20 10 2 2" />
+      {/* vanster vikt */}
+      <rect x="2" y="8" width="3.5" height="8" rx="1" />
+      {/* hoger vikt */}
+      <rect x="18.5" y="8" width="3.5" height="8" rx="1" />
+      {/* stang */}
+      <path d="M5.5 12h13" />
     </svg>
   )
 }
