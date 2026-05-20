@@ -43,7 +43,7 @@ export async function saveProgram(program) {
     .insert(program)
     .select()
     .single()
-  if (error) return []
+  if (error) throw error
   return data
 }
 
@@ -55,7 +55,7 @@ export async function updateProgram(id, updates) {
     .eq('id', id)
     .select()
     .single()
-  if (error) return []
+  if (error) throw error
   return data
 }
 

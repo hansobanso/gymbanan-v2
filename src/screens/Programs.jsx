@@ -38,19 +38,37 @@ export default function Programs({ session, programs, setPrograms, activeProgram
   async function handleProgramSave(program) {
     setSaveError(null)
     try {
+      // Bara admin far skapa globala program. is_global kommer fran en toggle
+      // i ProgramEdit som bara visas for admin.
+      const wantsGlobal = isAdmin && program.is_global === true
       if (program._isNew || !program.id) {
         const { _id, _isNew, ...rest } = program
-        const saved = await saveProgram({
-          name: rest.name,
-          sessions: rest.sessions ?? [],
-          is_global: false,
-          user_id: session.user.id,
-          created_by: session.user.id,
-        })
+        const saved = await saveProgram(
+          wantsGlobal
+            ? {
+                name: rest.name,
+                sessions: rest.sessions ?? [],
+                is_global: true,
+                user_id: null,          // kravs av RLS: is_global=true AND user_id IS NULL AND is_admin()
+                created_by: session.user.id,
+              }
+            : {
+                name: rest.name,
+                sessions: rest.sessions ?? [],
+                is_global: false,
+                user_id: session.user.id,
+                created_by: session.user.id,
+              }
+        )
         setPrograms(prev => [...prev, saved])
       } else {
         const { _id, _isNew, ...rest } = program
-        const updated = await updateProgram(program.id, { name: rest.name, sessions: rest.sessions ?? [] })
+        const updated = await updateProgram(program.id, {
+          name: rest.name,
+          sessions: rest.sessions ?? [],
+          // Tillat admin att andra global-status pa befintligt program
+          ...(isAdmin ? { is_global: program.is_global === true } : {}),
+        })
         setPrograms(prev => prev.map(p => p.id === updated.id ? updated : p))
       }
       setEditingProgram(null)
@@ -183,6 +201,7 @@ export default function Programs({ session, programs, setPrograms, activeProgram
               saveError={saveError}
               activeProgramId={activeProgramId}
               onSetActive={onSetActive}
+              isAdmin={isAdmin}
             />
           </motion.div>
         )}

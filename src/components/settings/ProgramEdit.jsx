@@ -87,11 +87,12 @@ function SessionItem({ session, deleteConfirmId, setDeleteConfirmId, handleDelet
   )
 }
 
-export default function ProgramEdit({ program, allExercises, onSave, onDelete, onBack, onEditSession, saveError, activeProgramId, onSetActive }) {
+export default function ProgramEdit({ program, allExercises, onSave, onDelete, onBack, onEditSession, saveError, activeProgramId, onSetActive, isAdmin = false }) {
   const [name, setName] = useState(program.name ?? '')
   const [sessions, setSessions] = useState(
     (program.sessions ?? []).map(s => ({ _id: Math.random().toString(36).slice(2), ...s }))
   )
+  const [isGlobal, setIsGlobal] = useState(program.is_global === true)
   const [saving, setSaving] = useState(false)
   const [deleteConfirmId, setDeleteConfirmId] = useState(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -104,6 +105,7 @@ export default function ProgramEdit({ program, allExercises, onSave, onDelete, o
         ...program,
         name: name.trim(),
         sessions: sessions.map(({ _id, ...rest }) => rest),
+        is_global: isAdmin ? isGlobal : (program.is_global === true),
       })
     } finally {
       setSaving(false)
@@ -144,6 +146,28 @@ export default function ProgramEdit({ program, allExercises, onSave, onDelete, o
             placeholder="T.ex. Push/Pull/Ben"
           />
         </div>
+
+        {/* Admin: gor programmet globalt (syns for alla anvandare) */}
+        {isAdmin && (
+          <div className={styles.section}>
+            <button
+              type="button"
+              className={styles.globalToggle}
+              onClick={() => setIsGlobal(v => !v)}
+              aria-pressed={isGlobal}
+            >
+              <div className={styles.globalToggleText}>
+                <span className={styles.globalToggleLabel}>Globalt program</span>
+                <span className={styles.globalToggleHint}>
+                  Syns för alla användare som en färdig mall
+                </span>
+              </div>
+              <span className={`${styles.switch} ${isGlobal ? styles.switchOn : ''}`}>
+                <span className={styles.switchKnob} />
+              </span>
+            </button>
+          </div>
+        )}
 
         {/* Pass */}
         <div className={styles.section}>
