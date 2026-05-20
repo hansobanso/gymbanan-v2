@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getWorkouts, getDeloadStatus, endDeloadWeek } from '../../lib/db'
+import { supabase } from '../../lib/supabase'
 import MuscleMap from '../shared/MuscleMap'
 import { BananaIcon, TrendIcon, ChatIcon } from '../shared/Icons'
 import SessionPreview from './SessionPreview'
@@ -65,6 +66,7 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
   const [helpExpanded, setHelpExpanded] = useState(false)
   const [previewSession, setPreviewSession] = useState(null) // { session, program }
   const [deloadStatus, setDeloadStatus] = useState({ isActive: false, daysLeft: 0 })
+  const [displayName, setDisplayName] = useState('')
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -78,6 +80,8 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
     getDeloadStatus(session.user.id).then(s => {
       if (!cancelled) setDeloadStatus(s)
     }).catch(() => {})
+    supabase.from('profiles').select('display_name').eq('id', session.user.id).maybeSingle()
+      .then(({ data }) => { if (!cancelled && data?.display_name) setDisplayName(data.display_name) }, () => {})
     return () => { cancelled = true }
   }, [session.user.id])
 
@@ -276,7 +280,7 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
           <section className={styles.section}>
             <div className={styles.welcomeCard}>
               <h2 className={styles.welcomeTitle}>
-                Välkommen till Gymbanan!
+                {displayName ? `Välkommen, ${displayName}!` : 'Välkommen till Gymbanan!'}
                 <BananaIcon className={styles.welcomeTitleIcon} />
               </h2>
               <p className={styles.welcomeBody}>

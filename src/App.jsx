@@ -46,6 +46,22 @@ function AppRoutes({ session }) {
     }).catch(() => setProgramsLoaded(true))
   }, [session.user.id])
 
+  // Sakerstall att profiles.display_name finns. Om namnet angavs vid signup
+  // men profilen inte hann skrivas (t.ex. p.g.a. e-postbekraftelse), kopiera
+  // det fran auth-metadata vid forsta inloggning.
+  useEffect(() => {
+    const metaName = session.user.user_metadata?.display_name
+    if (!metaName) return
+    supabase.from('profiles').select('display_name').eq('id', session.user.id).maybeSingle()
+      .then(({ data }) => {
+        if (!data?.display_name) {
+          supabase.from('profiles')
+            .upsert({ id: session.user.id, display_name: metaName, updated_at: new Date().toISOString() })
+            .then(() => {}, () => {})
+        }
+      }, () => {})
+  }, [session.user.id])
+
   const [resumedWorkout, setResumedWorkout] = useState(() => {
     const raw = localStorage.getItem(ACTIVE_WORKOUT_KEY)
     if (!raw) return null

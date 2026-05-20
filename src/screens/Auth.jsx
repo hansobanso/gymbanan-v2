@@ -18,6 +18,7 @@ export default function Auth() {
   const [mode, setMode] = useState('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [name, setName] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [message, setMessage] = useState(null)
@@ -32,9 +33,25 @@ export default function Auth() {
       const { error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) setError(getErrorMessage(error))
     } else {
-      const { error } = await supabase.auth.signUp({ email, password })
-      if (error) setError(getErrorMessage(error))
-      else setMessage('Kontrollera din e-post för att bekräfta kontot.')
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { display_name: name.trim() || null } },
+      })
+      if (error) {
+        setError(getErrorMessage(error))
+      } else {
+        // Om sessionen ar aktiv direkt (ingen e-postbekraftelse kravs),
+        // skriv namnet till profiles med en gang.
+        const userId = data?.user?.id
+        if (userId && data?.session && name.trim()) {
+          await supabase
+            .from('profiles')
+            .upsert({ id: userId, display_name: name.trim(), updated_at: new Date().toISOString() })
+            .then(() => {}, () => {})
+        }
+        setMessage('Kontrollera din e-post för att bekräfta kontot.')
+      }
     }
 
     setLoading(false)
@@ -70,6 +87,21 @@ export default function Auth() {
 
         {error && <p className={styles.error}>{error}</p>}
         {message && <p className={styles.message}>{message}</p>}
+
+        {mode === 'signup' && (
+          <div className={styles.field}>
+            <label className={styles.label}>Namn</label>
+            <input
+              className={styles.input}
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Ditt namn"
+              autoComplete="name"
+              autoCapitalize="words"
+            />
+          </div>
+        )}
 
         <div className={styles.field}>
           <label className={styles.label}>E-post</label>
