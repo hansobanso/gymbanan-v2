@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { EXERCISES } from '../../data/exercises'
 import MuscleFigure from '../MuscleFigure'
 import { colorForIntensity } from '../../lib/muscleColor'
+import { broadOf, BROAD_MUSCLE_GROUPS } from '../../data/muscleGroups'
 import styles from './MuscleSetSummary.module.css'
 
 // ── Volume calculation ─────────────────────────────────────────
@@ -107,6 +108,27 @@ function volumeLevel(sets, max) {
   return 'low'
 }
 
+// Gruppera breakdown (per subdivision) under sin grova grupp.
+// Returnerar [{ broad, total, items: [{muscle, sets}] }] sorterat efter total.
+function groupByBroad(breakdown) {
+  const groups = {}
+  for (const { muscle, sets } of breakdown) {
+    const broad = broadOf(muscle)
+    if (!groups[broad]) groups[broad] = { broad, total: 0, items: [] }
+    groups[broad].total += sets
+    groups[broad].items.push({ muscle, sets })
+  }
+  // Avrunda totaler och sortera items inom varje grupp
+  for (const g of Object.values(groups)) {
+    g.total = Math.round(g.total * 10) / 10
+    g.items.sort((a, b) => b.sets - a.sets)
+  }
+  // Sortera grupper enligt BROAD_MUSCLE_GROUPS-ordning
+  return BROAD_MUSCLE_GROUPS
+    .map(b => groups[b])
+    .filter(Boolean)
+}
+
 export function ProgramMuscleSetSummary({ sessions, allExercises, defaultOpen = false }) {
   const [open, setOpen] = useState(defaultOpen)
   const breakdown = useMemo(() => computeProgramMuscleSets(sessions, allExercises), [sessions, allExercises])
@@ -140,22 +162,34 @@ export function ProgramMuscleSetSummary({ sessions, allExercises, defaultOpen = 
         <>
           <MuscleHeatmap breakdown={breakdown} />
           <div className={styles.volumeGrid}>
-            {breakdown.map(({ muscle, sets }) => {
-              const max = MAX_SETS_PER_WEEK[muscle] ?? 12
-              const pct = Math.min(100, Math.round((sets / max) * 100))
-              const level = volumeLevel(sets, max)
-              return (
-                <div key={muscle} className={styles.volumeItem}>
-                  <span className={styles.volumeLabel}>{muscle} – {fmt(sets)} set</span>
-                  <div className={styles.volumeTrack}>
-                    <div
-                      className={`${styles.volumeFill} ${styles[`volumeFill_${level}`]}`}
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
+            {groupByBroad(breakdown).map(group => (
+              <div key={group.broad} className={styles.volumeGroup}>
+                <div className={styles.volumeGroupHeader}>
+                  <span className={styles.volumeGroupName}>{group.broad}</span>
+                  <span className={styles.volumeGroupTotal}>{fmt(group.total)} set</span>
                 </div>
-              )
-            })}
+                {group.items.map(({ muscle, sets }) => {
+                  const max = MAX_SETS_PER_WEEK[muscle] ?? 12
+                  const pct = Math.min(100, Math.round((sets / max) * 100))
+                  const level = volumeLevel(sets, max)
+                  // Visa inte subdivisions-namnet om det ar samma som grov grupp
+                  const showSub = muscle !== group.broad
+                  return (
+                    <div key={muscle} className={styles.volumeItem}>
+                      <span className={styles.volumeLabel}>
+                        {showSub ? muscle : group.broad} – {fmt(sets)} set
+                      </span>
+                      <div className={styles.volumeTrack}>
+                        <div
+                          className={`${styles.volumeFill} ${styles[`volumeFill_${level}`]}`}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            ))}
           </div>
         </>
       )}

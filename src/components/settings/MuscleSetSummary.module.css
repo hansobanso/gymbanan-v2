@@ -84,16 +84,43 @@
 
 /* ── Volume grid med progress-fält ── */
 .volumeGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   margin-top: 12px;
+}
+
+.volumeGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.volumeGroupHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  border-bottom: 1px solid #1f1f1f;
+  padding-bottom: 4px;
+}
+
+.volumeGroupName {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.volumeGroupTotal {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
 }
 
 .volumeItem {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  padding-left: 4px;
 }
 
 .volumeLabel {
