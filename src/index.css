@@ -213,9 +213,6 @@ input, textarea, select {
   inset: 0;
   z-index: 10000;
   background: var(--bg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 /* ── Branded splash med banan + gul progressbar ── */

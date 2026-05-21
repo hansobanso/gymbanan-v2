@@ -23,10 +23,9 @@ const ACTIVE_WORKOUT_KEY = 'gymbanan_active_workout'
 
 // Branded laddningsskarm: banan-logga + gul progressbar.
 // progress: 0-100, styr barens bredd (akta laddningsprogress).
-// Anvander alltid samma fixed-overlay-container sa den aldrig hoppar till.
 function Splash({ progress = 0 }) {
   return (
-    <div className="splash-overlay">
+    <div className="loading-screen">
       <div className="splash">
         <div className="splashLogo">
           <span className="splashTitle">Gymbanan</span>
@@ -132,7 +131,11 @@ function AppRoutes({ session }) {
       {/* Splash ligger som overlay tills hemskarmen har laddat all sin data,
           sa anvandaren ser en clean loader istallet for skelett som blinkar.
           Progress speglar faktiska laddningssteg: session 33%, program 66%, klart 100%. */}
-      {!splashGone && <Splash progress={splashProgress} />}
+      {!splashGone && (
+        <div className="splash-overlay">
+          <Splash progress={splashProgress} />
+        </div>
+      )}
       {/* Resume active workout modal */}
       {resumedWorkout && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
