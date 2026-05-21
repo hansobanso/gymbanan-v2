@@ -108,17 +108,16 @@ export default function ExerciseBlock({
     const set = exercise.sets.find(s => s.id === setId)
     const wasCompleted = set?.done
 
-    // Prevent marking a set as done without weight and reps filled in.
-    // If user tries to check an empty work set, focus the first empty field instead.
+    // Prevent marking a set as done without reps filled in.
+    // Vikt ar valfritt - kroppsviktsovningar som chins/dips gors utan extra vikt.
     if (!wasCompleted && set?.type === 'work') {
-      const hasWeight = set.weight !== '' && set.weight !== null && set.weight !== undefined
       const hasReps = set.reps !== '' && set.reps !== null && set.reps !== undefined
-      if (!hasWeight || !hasReps) {
+      if (!hasReps) {
         try { navigator.vibrate?.(20) } catch { /* ignored */ }
-        // Focus first empty input in this row
+        // Focus reps-faltet (andra number-inputen i raden)
         const rowEl = document.querySelector(`[data-set-id="${setId}"]`)
         const inputs = rowEl?.querySelectorAll('input[type="number"]')
-        const target = !hasWeight ? inputs?.[0] : inputs?.[1]
+        const target = inputs?.[1] ?? inputs?.[0]
         target?.focus()
         target?.select?.()
         return

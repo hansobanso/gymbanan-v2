@@ -298,7 +298,7 @@
 }
 
 .checked {
-  background: var(--accent) !important;
-  border-color: var(--accent) !important;
+  background: var(--success) !important;
+  border-color: var(--success) !important;
   cursor: default;
 }

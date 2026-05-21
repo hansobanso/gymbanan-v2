@@ -257,7 +257,8 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
                     return { ...s, reps: String(newR), prefilled: true }
                   }
                   adjustedWeight = true
-                  return { ...s, weight: String(newW), prefilled: true }
+                  // Spara originalvikten sa senare PT-justeringar utgar fran den
+                  return { ...s, weight: String(newW), _baseWeight: w, prefilled: true }
                 } else if (w <= 0 && r > 0 && change.repsMultiplier) {
                   const newR = Math.max(1, Math.round(r * change.repsMultiplier))
                   adjustedReps = true
@@ -345,6 +346,9 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
           [field]: value,
           _originWeight: originWeight,
           _originReps: originReps,
+          // Nollstall _baseWeight vid manuell viktandring sa nasta PT-justering
+          // utgar fran det nya manuella vardet, inte den gamla originalvikten.
+          _baseWeight: field === 'weight' ? undefined : s._baseWeight,
           prefilled: (field === 'weight' || field === 'reps') ? false : s.prefilled,
         }
 
@@ -704,16 +708,19 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
 
       let sets = ex.sets
 
-      // Justera vikter på alla icke-gjorda sets (warmup, work, backoff)
+      // Justera vikter på alla icke-gjorda sets (warmup, work, backoff).
+      // VIKTIGT: applicera alltid multiplikatorn pa ORIGINALVIKTEN (_baseWeight),
+      // inte pa nuvarande vikt. Annars staplas justeringar pa varann - t.ex.
+      // 0.75 sen 0.70 skulle ge 0.75*0.70 istallet for bara 0.70.
       if (typeof change.weightMultiplier === 'number' && change.weightMultiplier > 0) {
         const inc = ex.weightIncrement ?? defaultWeightIncrement(ex.exEquipment)
         sets = sets.map(s => {
           if (s.done) return s
           if (!s.weight) return s
-          const w = parseFloat(s.weight)
-          if (!w) return s
-          const newW = Math.floor(w * change.weightMultiplier / inc) * inc
-          return { ...s, weight: String(newW), prefilled: true }
+          const base = s._baseWeight ?? parseFloat(s.weight)
+          if (!base) return s
+          const newW = Math.floor(base * change.weightMultiplier / inc) * inc
+          return { ...s, weight: String(newW), _baseWeight: base, prefilled: true }
         })
       }
 
