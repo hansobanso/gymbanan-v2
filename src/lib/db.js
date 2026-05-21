@@ -68,7 +68,16 @@ export async function deleteProgram(id) {
 // Returns user's own exercises + global exercises, deduplicated:
 // if the user has their own version of a global exercise, user's wins.
 // Falls back to EXERCISES from exercises.js if Supabase is unreachable.
+// Enkel in-memory-cache sa ovningslistan inte hamtas om vid varje besok.
+// Invalideras nar ovningar andras (se invalidateExercisesCache nedan).
+let _exercisesCache = null
+
+export function invalidateExercisesCache() {
+  _exercisesCache = null
+}
+
 export async function getExercises() {
+  if (_exercisesCache) return _exercisesCache
   const { data, error } = await supabase
     .from('exercises')
     .select('*')
@@ -81,7 +90,9 @@ export async function getExercises() {
   const ownedNames = new Set(owned.map(e => e.name))
   // User's own exercise shadows the global one with the same name
   const merged = [...owned, ...global.filter(e => !ownedNames.has(e.name))]
-  return merged.sort((a, b) => a.name.localeCompare(b.name, 'sv'))
+  const sorted = merged.sort((a, b) => a.name.localeCompare(b.name, 'sv'))
+  _exercisesCache = sorted
+  return sorted
 }
 
 // Copy a global exercise for the current user so they can customise it
@@ -93,6 +104,7 @@ export async function copyExerciseForUser(exercise, userId) {
     .select()
     .single()
   if (error) throw error
+  invalidateExercisesCache()
   return data
 }
 
@@ -103,6 +115,7 @@ export async function saveExercise(exercise) {
     .select()
     .single()
   if (error) return []
+  invalidateExercisesCache()
   return data
 }
 
@@ -114,6 +127,7 @@ export async function updateExercise(id, updates) {
     .select()
     .single()
   if (error) return []
+  invalidateExercisesCache()
   return data
 }
 
@@ -123,6 +137,7 @@ export async function deleteExercise(id) {
     .delete()
     .eq('id', id)
   if (error) return []
+  invalidateExercisesCache()
 }
 
 export async function getExerciseByName(name) {

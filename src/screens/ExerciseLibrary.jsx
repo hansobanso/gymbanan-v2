@@ -7,12 +7,15 @@ import styles from './ExerciseLibrary.module.css'
 export default function ExerciseLibrary() {
   const navigate = useNavigate()
   const [allExercises, setAllExercises] = useState([])
+  const [loading, setLoading] = useState(true)
   const [muscleFilter, setMuscleFilter] = useState(null)
   const [subFilter, setSubFilter] = useState(null)
   const [search, setSearch] = useState('')
 
   useEffect(() => {
-    getExercises().then(setAllExercises).catch(() => {})
+    getExercises()
+      .then(d => { setAllExercises(d); setLoading(false) })
+      .catch(() => setLoading(false))
   }, [])
 
   const filtered = allExercises.filter(e => {
@@ -90,7 +93,15 @@ export default function ExerciseLibrary() {
       {/* Lista – varje rad navigerar till detaljvy */}
       <div className={styles.body}>
         <div className={styles.card}>
-          {filtered.map((ex, i, arr) => (
+          {loading ? (
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '40px 0' }}>
+              <div className="spinner" />
+            </div>
+          ) : filtered.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '40px 16px', color: 'var(--text-3)', fontSize: 14 }}>
+              Inga övningar hittades
+            </div>
+          ) : filtered.map((ex, i, arr) => (
             <button
               key={ex.id}
               className={`${styles.exRow} ${i < arr.length - 1 ? styles.rowBorder : ''}`}
