@@ -59,7 +59,7 @@ function getNextSession(program, lastWorkout) {
   return sessions[(idx + 1) % sessions.length]
 }
 
-export default function HomeScreen({ session, programs = [], programsLoaded = false, activeProgramId = null, onSetActive }) {
+export default function HomeScreen({ session, programs = [], programsLoaded = false, activeProgramId = null, onSetActive, onReady }) {
   const [lastWorkout, setLastWorkout] = useState(null)
   const [recentWorkouts, setRecentWorkouts] = useState([])
   const [workoutsLoaded, setWorkoutsLoaded] = useState(false)
@@ -110,6 +110,11 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
   }, [session.user.id])
 
   const loading = !workoutsLoaded || !programsLoaded
+
+  // Signalera uppat nar allt ar laddat sa App kan ta bort splash-skarmen.
+  useEffect(() => {
+    if (workoutsLoaded && programsLoaded) onReady?.()
+  }, [workoutsLoaded, programsLoaded, onReady])
 
   function handleStartSession(sessionData, program) {
     navigate('/workout', {

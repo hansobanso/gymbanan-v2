@@ -21,6 +21,26 @@ const Programs = lazy(() => import('./screens/Programs'))
 const TAB_PATHS = ['/', '/programs', '/history', '/settings']
 const ACTIVE_WORKOUT_KEY = 'gymbanan_active_workout'
 
+// Branded laddningsskarm: banan-logga + gul progressbar.
+function Splash() {
+  return (
+    <div className="loading-screen">
+      <div className="splash">
+        <div className="splashLogo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#F5D020" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M4 13c3.5-2 8-2 10 2a5.5 5.5 0 0 1 8 5"/>
+            <path d="M5.15 17.89c5.52-1.52 8.65-6.89 7-12C11.55 4 11.5 2 13 2c3.22 0 5 5.5 5 8 0 6.5-4.2 12-10.49 12C5.55 22 4 21.3 4 20c0-1.1.5-2.31 1.15-2.11Z"/>
+          </svg>
+          <span className="splashTitle">Gymbanan</span>
+        </div>
+        <div className="splashBar">
+          <div className="splashBarFill" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function fmtElapsedSince(isoString) {
   const mins = Math.round((Date.now() - new Date(isoString)) / 60000)
   if (mins < 1) return 'nyss'
@@ -39,6 +59,7 @@ function AppRoutes({ session }) {
   const [programs, setPrograms] = useState([])
   const [programsLoaded, setProgramsLoaded] = useState(false)
   const [activeProgramId, setActiveProgramId] = useState(null)
+  const [homeReady, setHomeReady] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -95,6 +116,9 @@ function AppRoutes({ session }) {
 
   return (
     <div className="app">
+      {/* Splash ligger som overlay tills hemskarmen har laddat all sin data,
+          sa anvandaren ser en clean loader istallet for skelett som blinkar. */}
+      {!homeReady && <div className="splash-overlay"><Splash /></div>}
       {/* Resume active workout modal */}
       {resumedWorkout && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
@@ -129,7 +153,7 @@ function AppRoutes({ session }) {
 
       {/* Always-mounted tab screens — shown/hidden via CSS */}
       <Suspense fallback={<div style={{display:'flex',alignItems:'center',justifyContent:'center',flex:1}}><div className="spinner"/></div>}>
-        <div style={tabStyle('/')}><Home session={session} programs={programs} programsLoaded={programsLoaded} activeProgramId={activeProgramId} onSetActive={id => { setActiveProgramId(id); setActiveProgram(session.user.id, id).catch(() => {}) }} /></div>
+        <div style={tabStyle('/')}><Home session={session} programs={programs} programsLoaded={programsLoaded} activeProgramId={activeProgramId} onSetActive={id => { setActiveProgramId(id); setActiveProgram(session.user.id, id).catch(() => {}) }} onReady={() => setHomeReady(true)} /></div>
         <div style={tabStyle('/programs')}><Programs session={session} programs={programs} setPrograms={setPrograms} activeProgramId={activeProgramId} onSetActive={id => { setActiveProgramId(id); setActiveProgram(session.user.id, id).catch(() => {}) }} /></div>
         <div style={tabStyle('/history')}><History session={session} /></div>
         <div style={tabStyle('/settings')}><Settings session={session} /></div>
@@ -187,22 +211,7 @@ export default function App() {
   }, [])
 
   if (session === undefined) {
-    return (
-      <div className="loading-screen">
-        <div className="splash">
-          <div className="splashLogo">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#F5D020" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M4 13c3.5-2 8-2 10 2a5.5 5.5 0 0 1 8 5"/>
-              <path d="M5.15 17.89c5.52-1.52 8.65-6.89 7-12C11.55 4 11.5 2 13 2c3.22 0 5 5.5 5 8 0 6.5-4.2 12-10.49 12C5.55 22 4 21.3 4 20c0-1.1.5-2.31 1.15-2.11Z"/>
-            </svg>
-            <span className="splashTitle">Gymbanan</span>
-          </div>
-          <div className="splashBar">
-            <div className="splashBarFill" />
-          </div>
-        </div>
-      </div>
-    )
+    return <Splash />
   }
 
   if (!session) {

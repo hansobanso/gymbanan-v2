@@ -207,6 +207,14 @@ input, textarea, select {
   background: var(--bg);
 }
 
+/* Splash som overlay ovanpa appen tills allt laddat */
+.splash-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: var(--bg);
+}
+
 /* ── Branded splash med banan + gul progressbar ── */
 .splash {
   display: flex;
