@@ -36,7 +36,6 @@ export default function Settings({ session }) {
   })
   const [loading, setLoading] = useState(true)
   const [restExpanded, setRestExpanded] = useState(false)
-  const [infoExpanded, setInfoExpanded] = useState(false)
 
   const [displayName, setDisplayName] = useState('')
   const [editingName, setEditingName] = useState(false)
@@ -140,22 +139,6 @@ export default function Settings({ session }) {
           </div>
         </div>
 
-        {/* ── Sa funkar appen ── */}
-        <div className={styles.section}>
-          <div className={styles.sectionLabel}>Hjälp</div>
-          <div className={styles.rowCard}>
-            <button className={styles.row} onClick={() => setInfoExpanded(v => !v)} type="button">
-              <span className={styles.rowLabel}>Så funkar appen</span>
-              <Chevron rotated={infoExpanded} />
-            </button>
-            {infoExpanded && (
-              <div className={styles.infoPanel}>
-                <AppInfo />
-              </div>
-            )}
-          </div>
-        </div>
-
         {/* ── Konto ── */}
         <div className={styles.section}>
           <div className={styles.sectionLabel}>Konto</div>
@@ -196,6 +179,16 @@ export default function Settings({ session }) {
             <button className={`${styles.row} ${styles.rowDanger}`} onClick={handleSignOut} type="button">
               Logga ut
             </button>
+          </div>
+        </div>
+
+        {/* ── Sa funkar appen (info-avsnitt langst ner) ── */}
+        <div className={styles.section}>
+          <div className={styles.sectionLabel}>Så funkar appen</div>
+          <div className={styles.rowCard}>
+            <div className={styles.infoPanel}>
+              <AppInfo />
+            </div>
           </div>
         </div>
 

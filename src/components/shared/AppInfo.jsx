@@ -24,11 +24,13 @@ export default function AppInfo() {
           RIR – hur hårt du tar i
         </span>
         <p className={styles.body}>
-          RIR betyder "Reps In Reserve" – hur många reps du hade kvar innan du
-          inte orkat mer. RIR 2 betyder att du kunde ha gjort 2 reps till. Lågt
-          RIR (0–1) = nära utmattning, högt RIR (3–4) = mer i tanken. Logga RIR
-          på dina set så förstår appen hur tungt passet kändes och kan föreslå
-          rätt vikt nästa gång.
+          RIR betyder "Reps In Reserve" – hur många reps du hade kvar i tanken när
+          du la av setet. RIR 2 = du hade orkat 2 till, RIR 0 = totalt slut. Du
+          loggar RIR på varje set, och det är så appen vet om du är redo att
+          progrediera: ligger du på lågt RIR (0–1) på toppen av ditt rep-intervall
+          har du maxat vikten och appen föreslår en höjning nästa pass. Ligger du
+          på högt RIR (3+) finns det mer att ge innan vikten ökar. På så vis styr
+          RIR tillsammans med rep-intervallet exakt när och hur mycket du går upp.
         </p>
       </div>
 
