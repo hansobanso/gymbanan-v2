@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { getWorkouts, getDeloadStatus, endDeloadWeek } from '../../lib/db'
 import { supabase } from '../../lib/supabase'
 import MuscleMap from '../shared/MuscleMap'
-import { BananaIcon, TrendIcon, ChatIcon } from '../shared/Icons'
+import { BananaIcon } from '../shared/Icons'
+import AppInfo from '../shared/AppInfo'
 import SessionPreview from './SessionPreview'
 import styles from './HomeScreen.module.css'
 
@@ -63,7 +64,6 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
   const [recentWorkouts, setRecentWorkouts] = useState([])
   const [workoutsLoaded, setWorkoutsLoaded] = useState(false)
   const [lastExpanded, setLastExpanded] = useState(false)
-  const [helpExpanded, setHelpExpanded] = useState(false)
   const [previewSession, setPreviewSession] = useState(null) // { session, program }
   const [deloadStatus, setDeloadStatus] = useState({ isActive: false, daysLeft: 0 })
   const [displayName, setDisplayName] = useState('')
@@ -286,40 +286,7 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
               <p className={styles.welcomeBody}>
                 Kom igång genom att välja ett färdigt program nedan, eller skapa ett eget.
               </p>
-
-              <div className={styles.welcomeFeature}>
-                <span className={styles.welcomeFeatureTitle}>
-                  <TrendIcon className={styles.welcomeFeatureIcon} />
-                  Smart progression
-                </span>
-                <p className={styles.welcomeFeatureBody}>
-                  Varje övning har ett rep-intervall, t.ex. 8–12. Klarar du toppen av
-                  intervallet föreslår appen automatiskt att du höjer vikten nästa pass –
-                  och sänker repsen till botten av intervallet igen. Så blir du starkare steg för steg.
-                </p>
-              </div>
-
-              <div className={styles.welcomeFeature}>
-                <span className={styles.welcomeFeatureTitle}>
-                  <ChatIcon className={styles.welcomeFeatureIcon} />
-                  Prata med din PT
-                </span>
-                <p className={styles.welcomeFeatureBody}>
-                  Under ett pass kan du chatta med en inbyggd PT. Fråga om teknik, be om
-                  ett alternativ till en övning, eller få hjälp att lägga upp passet.
-                </p>
-              </div>
-
-              <div className={styles.welcomeFeature}>
-                <span className={styles.welcomeFeatureTitle}>
-                  <BananaIcon className={styles.welcomeFeatureIcon} />
-                  Muskelkartan
-                </span>
-                <p className={styles.welcomeFeatureBody}>
-                  Muskelgubben fylls från grönt till gult ju mer du tränat varje muskelgrupp.
-                  Grön = vilad, gul = nyligen tränad.
-                </p>
-              </div>
+              <AppInfo />
             </div>
 
             {globalPrograms.length > 0 && (
@@ -381,64 +348,6 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
               + Starta fritt pass
             </button>
           </div>
-        )}
-
-        {/* ── Hopfallbart "Sa funkar appen" (bara nar man har valt program) ── */}
-        {activeProgram && (
-          <section className={styles.section}>
-            <div className={styles.lastCard}>
-              <button
-                className={styles.lastCardHeader}
-                onClick={() => setHelpExpanded(v => !v)}
-                type="button"
-              >
-                <div className={styles.lastHeaderLeft}>
-                  <span className={styles.lastName}>Så funkar appen</span>
-                </div>
-                <svg
-                  className={`${styles.lastChevron} ${helpExpanded ? styles.lastChevronOpen : ''}`}
-                  width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
-                >
-                  <path d="m9 18 6-6-6-6"/>
-                </svg>
-              </button>
-              {helpExpanded && (
-                <div className={styles.helpBody}>
-                  <div className={styles.welcomeFeature} style={{ borderTop: 'none', marginTop: 0, paddingTop: 0 }}>
-                    <span className={styles.welcomeFeatureTitle}>
-                      <TrendIcon className={styles.welcomeFeatureIcon} />
-                      Smart progression
-                    </span>
-                    <p className={styles.welcomeFeatureBody}>
-                      Varje övning har ett rep-intervall, t.ex. 8–12. Klarar du toppen av
-                      intervallet föreslår appen att du höjer vikten nästa pass – och sänker
-                      repsen till botten igen. Så blir du starkare steg för steg.
-                    </p>
-                  </div>
-                  <div className={styles.welcomeFeature}>
-                    <span className={styles.welcomeFeatureTitle}>
-                      <ChatIcon className={styles.welcomeFeatureIcon} />
-                      Prata med din PT
-                    </span>
-                    <p className={styles.welcomeFeatureBody}>
-                      Under ett pass kan du chatta med en inbyggd PT. Fråga om teknik, be om
-                      ett alternativ till en övning, eller få hjälp att lägga upp passet.
-                    </p>
-                  </div>
-                  <div className={styles.welcomeFeature}>
-                    <span className={styles.welcomeFeatureTitle}>
-                      <BananaIcon className={styles.welcomeFeatureIcon} />
-                      Muskelkartan
-                    </span>
-                    <p className={styles.welcomeFeatureBody}>
-                      Muskelgubben fylls från grönt till gult ju mer du tränat varje muskelgrupp.
-                      Grön = vilad, gul = nyligen tränad.
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </section>
         )}
 
         {/* ── Senaste passet (kollapsbart) ── */}

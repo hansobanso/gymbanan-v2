@@ -166,6 +166,11 @@
   border-top: 0.5px solid #1a1a1a;
 }
 
+.infoPanel {
+  padding: 14px 16px 16px;
+  border-top: 0.5px solid #1a1a1a;
+}
+
 .nameInput {
   background: var(--surface-2);
   border: 1px solid var(--border-2);

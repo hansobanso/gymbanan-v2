@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { getExercises } from '../lib/db'
+import AppInfo from '../components/shared/AppInfo'
 import styles from './Settings.module.css'
 
 const REST_PRESETS = [30, 60, 90, 120, 180]
@@ -35,6 +36,7 @@ export default function Settings({ session }) {
   })
   const [loading, setLoading] = useState(true)
   const [restExpanded, setRestExpanded] = useState(false)
+  const [infoExpanded, setInfoExpanded] = useState(false)
 
   const [displayName, setDisplayName] = useState('')
   const [editingName, setEditingName] = useState(false)
@@ -133,6 +135,22 @@ export default function Settings({ session }) {
                     {fmtRest(s)}
                   </button>
                 ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ── Sa funkar appen ── */}
+        <div className={styles.section}>
+          <div className={styles.sectionLabel}>Hjälp</div>
+          <div className={styles.rowCard}>
+            <button className={styles.row} onClick={() => setInfoExpanded(v => !v)} type="button">
+              <span className={styles.rowLabel}>Så funkar appen</span>
+              <Chevron rotated={infoExpanded} />
+            </button>
+            {infoExpanded && (
+              <div className={styles.infoPanel}>
+                <AppInfo />
               </div>
             )}
           </div>

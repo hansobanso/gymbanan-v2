@@ -1,0 +1,38 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.feature {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #1f1f1f;
+}
+.feature:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.body {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-2);
+  margin: 0;
+}
