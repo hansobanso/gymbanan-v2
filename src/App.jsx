@@ -21,9 +21,8 @@ const Programs = lazy(() => import('./screens/Programs'))
 const TAB_PATHS = ['/', '/programs', '/history', '/settings']
 const ACTIVE_WORKOUT_KEY = 'gymbanan_active_workout'
 
-// Branded laddningsskarm: banan-logga + gul progressbar.
-// progress: 0-100, styr barens bredd (akta laddningsprogress).
-function Splash({ progress = 0 }) {
+// Branded laddningsskarm: banan-logga + svepande gul bar (obestamd).
+function Splash() {
   return (
     <div className="loading-screen">
       <div className="splash">
@@ -35,7 +34,7 @@ function Splash({ progress = 0 }) {
           </svg>
         </div>
         <div className="splashBar">
-          <div className="splashBarFill" style={{ width: `${progress}%` }} />
+          <div className="splashBarFill" />
         </div>
       </div>
     </div>
@@ -70,8 +69,6 @@ function AppRoutes({ session }) {
     const t = setTimeout(() => setSplashGone(true), 280)
     return () => clearTimeout(t)
   }, [homeReady])
-
-  const splashProgress = homeReady ? 100 : programsLoaded ? 66 : 33
 
   useEffect(() => {
     let cancelled = false
@@ -130,10 +127,10 @@ function AppRoutes({ session }) {
     <div className="app">
       {/* Splash ligger som overlay tills hemskarmen har laddat all sin data,
           sa anvandaren ser en clean loader istallet for skelett som blinkar.
-          Progress speglar faktiska laddningssteg: session 33%, program 66%, klart 100%. */}
+          sa anvandaren ser en clean loader istallet for skelett som blinkar. */}
       {!splashGone && (
         <div className="splash-overlay">
-          <Splash progress={splashProgress} />
+          <Splash />
         </div>
       )}
       {/* Resume active workout modal */}
@@ -228,7 +225,7 @@ export default function App() {
   }, [])
 
   if (session === undefined) {
-    return <Splash progress={33} />
+    return <Splash />
   }
 
   if (!session) {
