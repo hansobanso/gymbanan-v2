@@ -67,6 +67,7 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
   const [previewSession, setPreviewSession] = useState(null) // { session, program }
   const [deloadStatus, setDeloadStatus] = useState({ isActive: false, daysLeft: 0 })
   const [displayName, setDisplayName] = useState('')
+  const [introDismissed, setIntroDismissed] = useState(true) // antar dolt tills vi laddat (undvik flimmer)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -80,8 +81,12 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
     getDeloadStatus(session.user.id).then(s => {
       if (!cancelled) setDeloadStatus(s)
     }).catch(() => {})
-    supabase.from('profiles').select('display_name').eq('id', session.user.id).maybeSingle()
-      .then(({ data }) => { if (!cancelled && data?.display_name) setDisplayName(data.display_name) }, () => {})
+    supabase.from('profiles').select('display_name, intro_dismissed').eq('id', session.user.id).maybeSingle()
+      .then(({ data }) => {
+        if (cancelled || !data) return
+        if (data.display_name) setDisplayName(data.display_name)
+        setIntroDismissed(data.intro_dismissed === true)
+      }, () => {})
     return () => { cancelled = true }
   }, [session.user.id])
 
@@ -119,6 +124,16 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
 
   function handleStartFreeWorkout() {
     navigate('/workout', { state: { sessionName: 'Fritt pass', sessionExercises: [], programId: null } })
+  }
+
+  // Stang introt: persistera till profiles sa det inte dyker upp igen.
+  // Det finns kvar under Installningar -> "Sa funkar appen".
+  function dismissIntro() {
+    setIntroDismissed(true)
+    supabase.from('profiles')
+      .update({ intro_dismissed: true, updated_at: new Date().toISOString() })
+      .eq('id', session.user.id)
+      .then(() => {}, () => {})
   }
 
   // Globala (mall-)program att erbjuda nya anvandare.
@@ -286,7 +301,21 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
               <p className={styles.welcomeBody}>
                 Kom igång genom att välja ett färdigt program nedan, eller skapa ett eget.
               </p>
-              <AppInfo />
+              {!introDismissed && (
+                <>
+                  <AppInfo />
+                  <button
+                    className={styles.introDismissBtn}
+                    onClick={dismissIntro}
+                    type="button"
+                  >
+                    Förstått – dölj introt
+                  </button>
+                  <p className={styles.introDismissHint}>
+                    Du hittar det igen under Inställningar → Så funkar appen
+                  </p>
+                </>
+              )}
             </div>
 
             {globalPrograms.length > 0 && (

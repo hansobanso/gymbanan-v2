@@ -858,6 +858,26 @@
   color: var(--text-2);
   margin: 0;
 }
+.introDismissBtn {
+  width: 100%;
+  margin-top: 18px;
+  padding: 11px;
+  background: var(--surface, #1a1a1a);
+  border: 1px solid #2a2a2a;
+  border-radius: var(--radius-sm, 8px);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+}
+.introDismissBtn:active { opacity: 0.6; }
+.introDismissHint {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-3, #555);
+  margin: 8px 0 0;
+}
 .helpBody {
   padding: 0 16px 16px;
 }
