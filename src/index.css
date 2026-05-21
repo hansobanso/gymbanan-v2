@@ -249,13 +249,7 @@ input, textarea, select {
   width: 0;
   background: var(--accent);
   border-radius: 2px;
-  transform-origin: left;
-  animation: splashFill 2.2s cubic-bezier(0.25, 0.6, 0.3, 1) forwards;
-}
-@keyframes splashFill {
-  0%   { width: 0; }
-  60%  { width: 70%; }
-  100% { width: 95%; }
+  transition: width 0.4s cubic-bezier(0.25, 0.6, 0.3, 1);
 }
 
 @keyframes spin {

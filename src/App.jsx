@@ -22,7 +22,8 @@ const TAB_PATHS = ['/', '/programs', '/history', '/settings']
 const ACTIVE_WORKOUT_KEY = 'gymbanan_active_workout'
 
 // Branded laddningsskarm: banan-logga + gul progressbar.
-function Splash() {
+// progress: 0-100, styr barens bredd (akta laddningsprogress).
+function Splash({ progress = 0 }) {
   return (
     <div className="loading-screen">
       <div className="splash">
@@ -34,7 +35,7 @@ function Splash() {
           </svg>
         </div>
         <div className="splashBar">
-          <div className="splashBarFill" />
+          <div className="splashBarFill" style={{ width: `${progress}%` }} />
         </div>
       </div>
     </div>
@@ -60,6 +61,17 @@ function AppRoutes({ session }) {
   const [programsLoaded, setProgramsLoaded] = useState(false)
   const [activeProgramId, setActiveProgramId] = useState(null)
   const [homeReady, setHomeReady] = useState(false)
+  const [splashGone, setSplashGone] = useState(false)
+
+  // Nar allt laddat: las baren till 100%, vanta en kort stund sa den hinner
+  // synas fylld, ta sen bort splash-overlayn.
+  useEffect(() => {
+    if (!homeReady) return
+    const t = setTimeout(() => setSplashGone(true), 280)
+    return () => clearTimeout(t)
+  }, [homeReady])
+
+  const splashProgress = homeReady ? 100 : programsLoaded ? 66 : 33
 
   useEffect(() => {
     let cancelled = false
@@ -117,8 +129,13 @@ function AppRoutes({ session }) {
   return (
     <div className="app">
       {/* Splash ligger som overlay tills hemskarmen har laddat all sin data,
-          sa anvandaren ser en clean loader istallet for skelett som blinkar. */}
-      {!homeReady && <div className="splash-overlay"><Splash /></div>}
+          sa anvandaren ser en clean loader istallet for skelett som blinkar.
+          Progress speglar faktiska laddningssteg: session 33%, program 66%, klart 100%. */}
+      {!splashGone && (
+        <div className="splash-overlay">
+          <Splash progress={splashProgress} />
+        </div>
+      )}
       {/* Resume active workout modal */}
       {resumedWorkout && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
@@ -211,7 +228,7 @@ export default function App() {
   }, [])
 
   if (session === undefined) {
-    return <Splash />
+    return <Splash progress={33} />
   }
 
   if (!session) {
