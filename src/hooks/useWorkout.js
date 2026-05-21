@@ -152,6 +152,7 @@ async function loadExerciseData(ex, userId, restOverrides, recentWorkouts = null
         reps: boReps > 0 ? String(boReps) : '',
         rir: null,
         prefilled: boWeight > 0,
+        _baseWeight: boWeight > 0 ? boWeight : undefined,
       }
     }
     if (set.type === 'warmup') {
@@ -170,6 +171,7 @@ async function loadExerciseData(ex, userId, restOverrides, recentWorkouts = null
       reps: targetReps > 0 ? String(targetReps) : '',
       rir: null,
       prefilled: progression.nextWeight > 0,
+      _baseWeight: progression.nextWeight > 0 ? progression.nextWeight : undefined,
     }
   })
 

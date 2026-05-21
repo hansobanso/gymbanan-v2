@@ -298,7 +298,7 @@
 }
 
 .checked {
-  background: var(--success) !important;
-  border-color: var(--success) !important;
+  background: var(--muscle-rested) !important;
+  border-color: var(--muscle-rested) !important;
   cursor: default;
 }
