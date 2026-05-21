@@ -74,7 +74,7 @@
 }
 
 .exerciseDotDone {
-  background: #fff;
+  background: var(--muscle-rested);
 }
 
 .timerPill {
