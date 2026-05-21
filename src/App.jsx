@@ -1,19 +1,22 @@
 import { useEffect, useState, lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from './lib/supabase'
-import { getPrograms, getActiveProgram, setActiveProgram } from './lib/db'
+import { getPrograms, setActiveProgram } from './lib/db'
 import Auth from './screens/Auth'
 import Home from './screens/Home'
-import Workout from './screens/Workout'
-import History from './screens/History'
-import Settings from './screens/Settings'
-import ExerciseLibrary from './screens/ExerciseLibrary'
-import ExerciseDetail from './screens/ExerciseDetail'
-const Admin = lazy(() => import('./screens/Admin'))
-import BodyWeight from './screens/BodyWeight'
-import Programs from './screens/Programs'
 import BottomNav from './components/shared/BottomNav'
 import './App.css'
+
+// Lazy-ladda allt utom Home + Auth (forsta skarmarna man ser).
+// Drar ner main-bundlen rejalt sa appen startar snabbare.
+const Workout = lazy(() => import('./screens/Workout'))
+const History = lazy(() => import('./screens/History'))
+const Settings = lazy(() => import('./screens/Settings'))
+const ExerciseLibrary = lazy(() => import('./screens/ExerciseLibrary'))
+const ExerciseDetail = lazy(() => import('./screens/ExerciseDetail'))
+const Admin = lazy(() => import('./screens/Admin'))
+const BodyWeight = lazy(() => import('./screens/BodyWeight'))
+const Programs = lazy(() => import('./screens/Programs'))
 
 const TAB_PATHS = ['/', '/programs', '/history', '/settings']
 const ACTIVE_WORKOUT_KEY = 'gymbanan_active_workout'
@@ -38,12 +41,20 @@ function AppRoutes({ session }) {
   const [activeProgramId, setActiveProgramId] = useState(null)
 
   useEffect(() => {
-    getPrograms(session.user.id).then(async progs => {
+    let cancelled = false
+    Promise.all([
+      getPrograms(session.user.id),
+      supabase.from('profiles').select('active_program_id').eq('id', session.user.id).maybeSingle(),
+    ]).then(([progs, { data: profile }]) => {
+      if (cancelled) return
       setPrograms(progs)
-      const active = await getActiveProgram(session.user.id, progs)
-      if (active) setActiveProgramId(active.id)
+      const activeId = profile?.active_program_id
+      if (activeId && progs.some(p => p.id === activeId)) {
+        setActiveProgramId(activeId)
+      }
       setProgramsLoaded(true)
-    }).catch(() => setProgramsLoaded(true))
+    }).catch(() => { if (!cancelled) setProgramsLoaded(true) })
+    return () => { cancelled = true }
   }, [session.user.id])
 
   // Sakerstall att profiles.display_name finns. Om namnet angavs vid signup
@@ -117,22 +128,24 @@ function AppRoutes({ session }) {
       )}
 
       {/* Always-mounted tab screens — shown/hidden via CSS */}
-      <div style={tabStyle('/')}><Home session={session} programs={programs} programsLoaded={programsLoaded} activeProgramId={activeProgramId} onSetActive={id => { setActiveProgramId(id); setActiveProgram(session.user.id, id).catch(() => {}) }} /></div>
-      <div style={tabStyle('/programs')}><Programs session={session} programs={programs} setPrograms={setPrograms} activeProgramId={activeProgramId} onSetActive={id => { setActiveProgramId(id); setActiveProgram(session.user.id, id).catch(() => {}) }} /></div>
-      <div style={tabStyle('/history')}><History session={session} /></div>
-      <div style={tabStyle('/settings')}><Settings session={session} /></div>
+      <Suspense fallback={<div style={{display:'flex',alignItems:'center',justifyContent:'center',flex:1}}><div className="spinner"/></div>}>
+        <div style={tabStyle('/')}><Home session={session} programs={programs} programsLoaded={programsLoaded} activeProgramId={activeProgramId} onSetActive={id => { setActiveProgramId(id); setActiveProgram(session.user.id, id).catch(() => {}) }} /></div>
+        <div style={tabStyle('/programs')}><Programs session={session} programs={programs} setPrograms={setPrograms} activeProgramId={activeProgramId} onSetActive={id => { setActiveProgramId(id); setActiveProgram(session.user.id, id).catch(() => {}) }} /></div>
+        <div style={tabStyle('/history')}><History session={session} /></div>
+        <div style={tabStyle('/settings')}><Settings session={session} /></div>
 
-      {/* Deep screens — normal route mounting */}
-      {!isTab && (
-        <Routes>
-          <Route path="/workout" element={<Workout session={session} />} />
-          <Route path="/exercises" element={<ExerciseLibrary />} />
-          <Route path="/exercises/:id" element={<ExerciseDetail />} />
-          <Route path="/body-weight" element={<BodyWeight session={session} />} />
-          <Route path="/admin" element={<Suspense fallback={<div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100vh'}}><div className="spinner"/></div>}><Admin /></Suspense>} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      )}
+        {/* Deep screens — normal route mounting */}
+        {!isTab && (
+          <Routes>
+            <Route path="/workout" element={<Workout session={session} />} />
+            <Route path="/exercises" element={<ExerciseLibrary />} />
+            <Route path="/exercises/:id" element={<ExerciseDetail />} />
+            <Route path="/body-weight" element={<BodyWeight session={session} />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        )}
+      </Suspense>
 
       {isTab && <BottomNav />}
     </div>
@@ -176,7 +189,18 @@ export default function App() {
   if (session === undefined) {
     return (
       <div className="loading-screen">
-        <div className="spinner" />
+        <div className="splash">
+          <div className="splashLogo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#F5D020" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M4 13c3.5-2 8-2 10 2a5.5 5.5 0 0 1 8 5"/>
+              <path d="M5.15 17.89c5.52-1.52 8.65-6.89 7-12C11.55 4 11.5 2 13 2c3.22 0 5 5.5 5 8 0 6.5-4.2 12-10.49 12C5.55 22 4 21.3 4 20c0-1.1.5-2.31 1.15-2.11Z"/>
+            </svg>
+            <span className="splashTitle">Gymbanan</span>
+          </div>
+          <div className="splashBar">
+            <div className="splashBarFill" />
+          </div>
+        </div>
       </div>
     )
   }
