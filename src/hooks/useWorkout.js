@@ -64,12 +64,35 @@ function sessionExToEx(ex) {
 
 const ACTIVE_WORKOUT_KEY = 'gymbanan_active_workout'
 
+// Extraherar prev/prevPrev-set for en ovning fran redan hamtade workouts.
+// Undviker att traffa databasen en gang per ovning (stor prestandavinst).
+function extractPrevSets(recentWorkouts, exerciseName) {
+  const found = []
+  for (const workout of recentWorkouts ?? []) {
+    if (workout.adjusted) continue
+    if (!workout.finished_at) continue
+    const ex = (workout.exercises ?? []).find(e => e.name === exerciseName)
+    if (!ex) continue
+    const allSets = (ex.sets ?? []).filter(s => s.done && s.weight !== undefined && s.weight !== null)
+    if (allSets.length > 0) {
+      found.push(allSets)
+      if (found.length >= 2) break
+    }
+  }
+  return { prev: found[0] ?? null, prevPrev: found[1] ?? null }
+}
+
 // Hamtar prev-historik + ovningsmetadata for en ovning och returnerar
 // en uppdaterad version av ex med dataLoaded: true. Anvands bade vid
 // mount och vid byte av ovning mid-pass.
-async function loadExerciseData(ex, userId, restOverrides) {
+// recentWorkouts: redan hamtade workouts (undviker query per ovning).
+async function loadExerciseData(ex, userId, restOverrides, recentWorkouts = null) {
+  // Om vi redan har workouts i minnet, anvand dem. Annars hamta (mid-pass byte).
+  const prevPromise = recentWorkouts
+    ? Promise.resolve(extractPrevSets(recentWorkouts, ex.name ?? 'Övning'))
+    : getTwoPreviousSetsForExercise(userId, ex.name ?? 'Övning')
   const [{ prev: prevSets, prevPrev: prevPrevSets }, exData, userNote] = await Promise.all([
-    getTwoPreviousSetsForExercise(userId, ex.name ?? 'Övning'),
+    prevPromise,
     getExerciseByName(ex.name ?? 'Övning'),
     getUserExerciseNote(userId, ex.name ?? 'Övning'),
   ])
@@ -197,9 +220,10 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
         const exNames = exercises.map(e => e.name)
         const gapAdj = detectGapAdjustment(recentWorkouts, exNames)
 
-        // Ladda alla ovningar parallellt
+        // Ladda alla ovningar parallellt. Skicka recentWorkouts sa varje
+        // ovning slipper hamta samma 20 workouts igen (var orsak till lang laddtid).
         const results = await Promise.all(
-          exercises.map(ex => loadExerciseData(ex, userId, restOverrides).catch(() => null))
+          exercises.map(ex => loadExerciseData(ex, userId, restOverrides, recentWorkouts).catch(() => null))
         )
         if (cancelled) return
 
