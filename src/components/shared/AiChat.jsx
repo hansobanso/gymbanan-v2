@@ -9,7 +9,7 @@ const SUGGESTIONS = [
   'Tips för nästa pass?',
 ]
 
-export default function AiChat({ open, onClose, getContext, getMemory, getDeloadStatus, introMessage, workoutNotes, onUpdateNotes, onApplyAdjustment, onApplyDeload }) {
+export default function AiChat({ open, onClose, getContext, getMemory, getDeloadStatus, introMessage, introLoading, workoutNotes, onUpdateNotes, onApplyAdjustment, onApplyDeload }) {
   const [input, setInput] = useState('')
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
@@ -106,7 +106,16 @@ export default function AiChat({ open, onClose, getContext, getMemory, getDeload
                   <p className={styles.introText}>{introMessage}</p>
                 </div>
               )}
-              {messages.length === 0 && !introMessage && (
+              {!introMessage && introLoading && (
+                <div className={styles.introBubble}>
+                  <span className={styles.introLabel}>Inför passet</span>
+                  <div className={styles.introLoadingRow}>
+                    <span className={styles.introSpinner} />
+                    <span className={styles.introLoadingText}>PT förbereder din genomgång…</span>
+                  </div>
+                </div>
+              )}
+              {messages.length === 0 && !introMessage && !introLoading && (
                 <div className={styles.empty}>
                   <p className={styles.emptyTitle}>Vad kan jag hjälpa dig med?</p>
                   <p className={styles.emptyText}>

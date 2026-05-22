@@ -163,6 +163,28 @@
   white-space: pre-wrap;
 }
 
+.introLoadingRow {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.introSpinner {
+  width: 15px;
+  height: 15px;
+  border: 2px solid var(--border-2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: introSpin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+.introLoadingText {
+  font-size: 13px;
+  color: var(--text-3);
+}
+@keyframes introSpin {
+  to { transform: rotate(360deg); }
+}
+
 /* ── Tomt state ── */
 .empty {
   display: flex;

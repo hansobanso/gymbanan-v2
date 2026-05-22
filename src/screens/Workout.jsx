@@ -67,6 +67,7 @@ export default function Workout({ session }) {
   const [postWorkout, setPostWorkout] = useState(null)
   const [postEquipmentMap, setPostEquipmentMap] = useState({})
   const [introMessage, setIntroMessage] = useState(null)
+  const [introLoading, setIntroLoading] = useState(false)
   const [deloadStatus, setDeloadStatus] = useState({ isActive: false, daysLeft: 0 })
   const [showRepsToast, setShowRepsToast] = useState(false)
   const repsToastTimerRef = useRef(null)
@@ -104,6 +105,7 @@ export default function Workout({ session }) {
   useEffect(() => {
     let cancelled = false
     if (sessionExercises.length === 0) return
+    setIntroLoading(true)
 
     ;(async () => {
       const [mem, recentWorkouts] = await Promise.all([
@@ -140,6 +142,7 @@ export default function Workout({ session }) {
       })
         .then(intro => { if (!cancelled && intro) setIntroMessage(intro) })
         .catch(() => {})
+        .finally(() => { if (!cancelled) setIntroLoading(false) })
     })()
 
     return () => { cancelled = true }
@@ -695,6 +698,7 @@ export default function Workout({ session }) {
         getMemory={getMemory}
         getDeloadStatus={() => deloadStatus}
         introMessage={introMessage}
+        introLoading={introLoading}
         workoutNotes={workoutNotes}
         onUpdateNotes={setWorkoutNotes}
         onUpdateMemory={async (note) => {
