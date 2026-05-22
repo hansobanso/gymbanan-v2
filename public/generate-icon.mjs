@@ -18,7 +18,7 @@ const ty = (1000 - bh) / 2;
 // Gul ring: radie sa den omsluter bananen med lite luft.
 // Bananens diagonal-radie ~ halva hojden + marginal.
 const ringR = 360;          // radie i 1000-rutan
-const ringW = 38;           // ringtjocklek
+const ringW = 33;           // ringtjocklek
 
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000">
   <rect width="1000" height="1000" fill="#000000"/>
