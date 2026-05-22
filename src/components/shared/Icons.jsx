@@ -17,19 +17,9 @@ function base(props) {
   }
 }
 
-// Banan - samma path som logon (enkel outline, for sma platser)
-export function BananaIcon(props) {
-  return (
-    <svg {...base(props)}>
-      <path d="M4 13c3.5-2 8-2 10 2a5.5 5.5 0 0 1 8 5" />
-      <path d="M5.15 17.89c5.52-1.52 8.65-6.89 7-12C11.55 4 11.5 2 13 2c3.22 0 5 5.5 5 8 0 6.5-4.2 12-10.49 12C5.55 22 4 21.3 4 20c0-1.1.5-2.31 1.15-2.11Z" />
-    </svg>
-  )
-}
-
-// Detaljerad banan-logga (skalad banan) - for stora platser: splash + auth.
-// Tvafargad: gul frukt + vitt skal. Outline-stil som resten av appen.
-export function BananaLogo({ className, style }) {
+// Banan-logga (skalad banan) - anvands overallt, smatt och stort.
+// viewBox 368x448 (hogre an bred) - styr storlek via CSS width + height:auto.
+export function BananaIcon({ className, style }) {
   return (
     <svg
       viewBox="0 0 368 448"
@@ -47,6 +37,11 @@ export function BananaLogo({ className, style }) {
       </g>
     </svg>
   )
+}
+
+// BananaLogo = alias for samma logga
+export function BananaLogo(props) {
+  return <BananaIcon {...props} />
 }
 
 // Progression - stigande linje med pil

@@ -30,8 +30,8 @@
 }
 
 .pageTitleIcon {
-  width: 26px;
-  height: 26px;
+  width: 30px;
+  height: auto;
   flex-shrink: 0;
 }
 
@@ -848,8 +848,8 @@
   flex-shrink: 0;
 }
 .welcomeTitleIcon {
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: auto;
   flex-shrink: 0;
 }
 .welcomeFeatureBody {
