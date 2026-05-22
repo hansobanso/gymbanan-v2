@@ -1,5 +1,7 @@
 const AI_ENDPOINT = 'https://opta-proxy.gymbanan.workers.dev'
-const AI_MODEL = 'claude-haiku-4-5-20251001'
+// Sonnet ger markbart battre och mer idiomatisk svenska an Haiku
+// (mindre svengelska). Lite langsammare/dyrare men vart det for PT-kvalitet.
+const AI_MODEL = 'claude-sonnet-4-6'
 
 /**
  * Skickar meddelanden + kontext till PT-endpointen.
