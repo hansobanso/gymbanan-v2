@@ -214,6 +214,62 @@
   text-align: center;
 }
 
+/* ── Tomt fritt pass: val mellan PT och egen ── */
+.emptyChoice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 48px 24px 24px;
+  gap: 8px;
+}
+.emptyChoiceTitle {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text);
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+.emptyChoiceText {
+  font-size: 14px;
+  color: var(--text-2);
+  line-height: 1.5;
+  margin: 0 0 16px;
+  max-width: 280px;
+}
+.emptyPtBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  max-width: 320px;
+  padding: 15px;
+  background: var(--accent);
+  color: #000;
+  border: none;
+  border-radius: var(--radius-md, 12px);
+  font-size: 16px;
+  font-weight: 700;
+  font-family: var(--font);
+  cursor: pointer;
+}
+.emptyPtBtn:active { opacity: 0.8; }
+.emptyAddBtn {
+  width: 100%;
+  max-width: 320px;
+  padding: 14px;
+  background: transparent;
+  color: var(--text-2);
+  border: 1px solid var(--border-2, #2a2a2a);
+  border-radius: var(--radius-md, 12px);
+  font-size: 15px;
+  font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+}
+.emptyAddBtn:active { opacity: 0.6; }
+
 /* ── Avsluta pass-knapp (ej fast) ── */
 .finishWrap {
   padding: 14px 16px calc(var(--safe-bottom, 0px) + 14px);
