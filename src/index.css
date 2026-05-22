@@ -31,6 +31,10 @@
   --success: #30D158;
   --success-dim: rgba(48, 209, 88, 0.15);
 
+  /* Klar-gron for ifyllda set + ovningsprickar - ljusare an muskelgron sa
+     den syns tydligt mot svart, men hor till samma grona familj. */
+  --done-green: #4CAF3E;
+
   /* ── Vilotimer ── */
   --timer-safe: #F5D020;
   --timer-warn: #FF9500;
