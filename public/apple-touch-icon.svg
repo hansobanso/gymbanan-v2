@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000">
   <rect width="1000" height="1000" fill="#000000"/>
-  <circle cx="500" cy="500" r="305" fill="none" stroke="#F5D020" stroke-width="28"/>
+  <circle cx="500" cy="500" r="330" fill="none" stroke="#F5D020" stroke-width="38"/>
   <g transform="translate(150,107) scale(1.25)">
     <g transform="matrix(0.636301,0,0,0.636301,-179.27,-188.032)" fill="none" stroke-linecap="round" stroke-linejoin="round">
       <path d="M525.743,833.601C566.369,915.815 693.476,991.271 724.91,954.91C761.681,912.377 680.659,849.072 634.187,743.13C600.613,666.589 592.627,632.492 608.18,630.444C648.867,625.086 703.359,695.016 723.545,703.71C765.184,721.642 726.672,572.647 637.694,553.745" stroke="#F5D020" stroke-width="33.91"/>
