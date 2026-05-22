@@ -231,6 +231,10 @@ input, textarea, select {
   align-items: center;
   gap: 10px;
 }
+.splashBananaLogo {
+  width: 84px;
+  height: auto;
+}
 .splashLogo svg {
   width: 34px;
   height: 34px;
