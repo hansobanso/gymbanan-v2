@@ -496,6 +496,42 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
     }])
   }, [defaultRest])
 
+  // Lagger till flera ovningar fran ett PT-genererat pass pa en gang.
+  // plan: [{ name, sets, repsMin, repsMax }]. Slar upp varje namn i
+  // exerciseList for att fa riktig ovningsdata (sa progression/muskelkarta funkar).
+  const addGeneratedWorkout = useCallback((plan, exerciseList) => {
+    if (!Array.isArray(plan) || plan.length === 0) return
+    setProgramChanged(true)
+    setExercises(prev => {
+      const additions = plan.map(item => {
+        // Hitta riktig ovning i databasen (case-insensitivt)
+        const match = (exerciseList ?? []).find(
+          e => e.name.toLowerCase() === String(item.name ?? '').toLowerCase()
+        )
+        if (!match) return null
+        const numSets = Math.max(1, Math.min(8, parseInt(item.sets) || 3))
+        const workSets = Array.from({ length: numSets }, () => makeSet('work'))
+        return {
+          localId: uid(),
+          exerciseId: match.id ?? null,
+          name: match.name,
+          muscleGroup: match.muscle_group ?? null,
+          restSeconds: match.default_rest ?? defaultRest,
+          defaultRepsMin: item.repsMin ?? match.default_reps_min ?? null,
+          defaultRepsMax: item.repsMax ?? match.default_reps_max ?? null,
+          aiComment: '',
+          prevSets: null,
+          exInstructions: match.instructions ?? null,
+          exNotes: null,
+          exEquipment: match.equipment ?? null,
+          dataLoaded: false, // triggar laddning av prev-sets + progression
+          sets: workSets,
+        }
+      }).filter(Boolean)
+      return [...prev, ...additions]
+    })
+  }, [defaultRest])
+
   const removeExercise = useCallback((exId) => {
     setProgramChanged(true)
     setExercises(prev => prev.filter(ex => ex.localId !== exId))
@@ -809,6 +845,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
     removeSet,
     duplicateSet,
     addExercise,
+    addGeneratedWorkout,
     removeExercise,
     replaceExercise,
     updateExercise,

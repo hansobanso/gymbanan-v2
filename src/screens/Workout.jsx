@@ -4,7 +4,7 @@ import { Reorder, AnimatePresence, motion } from 'framer-motion'
 import { useWorkout } from '../hooks/useWorkout'
 import { useTimer } from '../hooks/useTimer'
 import { buildWorkoutContext, buildMemoryContent, appendUserNote, chatWithAI, generateWorkoutIntro } from '../lib/ai'
-import { updateWorkout, getWorkouts, getAiMemory, upsertAiMemory, getEquipmentMap, updateProgram, saveProgram, getDeloadStatus, startDeloadWeek } from '../lib/db'
+import { updateWorkout, getWorkouts, getAiMemory, upsertAiMemory, getEquipmentMap, updateProgram, saveProgram, getDeloadStatus, startDeloadWeek, getExercises } from '../lib/db'
 import TimerBar from '../components/workout/TimerBar'
 import TimerExpanded from '../components/workout/TimerExpanded'
 import ExerciseBlock from '../components/workout/ExerciseBlock'
@@ -68,6 +68,11 @@ export default function Workout({ session }) {
   const [postEquipmentMap, setPostEquipmentMap] = useState({})
   const [introMessage, setIntroMessage] = useState(null)
   const [introLoading, setIntroLoading] = useState(false)
+  const [exerciseList, setExerciseList] = useState([])
+
+  useEffect(() => {
+    getExercises().then(setExerciseList).catch(() => {})
+  }, [])
   const [deloadStatus, setDeloadStatus] = useState({ isActive: false, daysLeft: 0 })
   const [showRepsToast, setShowRepsToast] = useState(false)
   const repsToastTimerRef = useRef(null)
@@ -699,6 +704,11 @@ export default function Workout({ session }) {
         getDeloadStatus={() => deloadStatus}
         introMessage={introMessage}
         introLoading={introLoading}
+        getAvailableExercises={() => exerciseList}
+        onApplyWorkoutPlan={(plan) => {
+          workout.addGeneratedWorkout(plan.exercises, exerciseList)
+          return true
+        }}
         workoutNotes={workoutNotes}
         onUpdateNotes={setWorkoutNotes}
         onUpdateMemory={async (note) => {

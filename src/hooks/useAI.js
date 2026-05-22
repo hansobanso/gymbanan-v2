@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef } from 'react'
-import { chatWithAI, parseAdjustment, parseDeload } from '../lib/ai'
+import { chatWithAI, parseAdjustment, parseDeload, parseWorkoutPlan } from '../lib/ai'
 
-export function useAI({ getContext, getMemory, getDeloadStatus }) {
+export function useAI({ getContext, getMemory, getDeloadStatus, getAvailableExercises }) {
   const [messages, setMessages] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -30,15 +30,18 @@ export function useAI({ getContext, getMemory, getDeloadStatus }) {
       const context = getContext?.()
       const memory = getMemory?.()
       const deloadStatus = getDeloadStatus?.()
-      const reply = await chatWithAI({ messages: next, context, memory, deloadStatus })
+      const availableExercises = getAvailableExercises?.()
+      const reply = await chatWithAI({ messages: next, context, memory, deloadStatus, availableExercises })
       const adj = parseAdjustment(reply)
       const dl = parseDeload(adj.displayText)
+      const wp = parseWorkoutPlan(dl.displayText)
       setMessages(prev => [...prev, {
         role: 'assistant',
         content: reply,
-        displayContent: dl.displayText || adj.displayText || reply,
+        displayContent: wp.displayText || dl.displayText || adj.displayText || reply,
         adjustment: adj.adjustment,
         deload: dl.deload,
+        workoutPlan: wp.workoutPlan,
       }])
     } catch (err) {
       setError('Kunde inte nå PT – försök igen.')
@@ -46,7 +49,7 @@ export function useAI({ getContext, getMemory, getDeloadStatus }) {
       loadingRef.current = false
       setLoading(false)
     }
-  }, [getContext, getMemory, getDeloadStatus])
+  }, [getContext, getMemory, getDeloadStatus, getAvailableExercises])
 
   const reset = useCallback(() => {
     setMessages([])
@@ -65,5 +68,11 @@ export function useAI({ getContext, getMemory, getDeloadStatus }) {
     ))
   }, [])
 
-  return { messages, loading, error, send, reset, markAdjustmentApplied, markDeloadApplied }
+  const markWorkoutApplied = useCallback((messageIndex) => {
+    setMessages(prev => prev.map((m, i) =>
+      i === messageIndex ? { ...m, workoutApplied: true } : m
+    ))
+  }, [])
+
+  return { messages, loading, error, send, reset, markAdjustmentApplied, markDeloadApplied, markWorkoutApplied }
 }

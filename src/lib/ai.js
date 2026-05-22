@@ -7,7 +7,7 @@ const AI_MODEL = 'claude-sonnet-4-6'
  * Skickar meddelanden + kontext till PT-endpointen.
  * Returnerar AI:ns svarstext.
  */
-export async function chatWithAI({ messages, context, memory, deloadStatus }) {
+export async function chatWithAI({ messages, context, memory, deloadStatus, availableExercises }) {
   // Filtrera till bara role+content — API:t accepterar inte extra falt
   // som displayContent, adjustment, deload etc.
   const cleanMessages = messages.map(m => ({ role: m.role, content: m.content }))
@@ -119,6 +119,33 @@ VIKTIGT om deload kontra anpassning:
 
 Stil: direkt, konkret, på svenska. Inga generella fraser. Inga engelska låneord.`
   ]
+
+  // Om vi har en ovningslista: lar PT att kunna generera ett helt pass.
+  if (Array.isArray(availableExercises) && availableExercises.length > 0) {
+    const exNames = availableExercises.map(e => e.name).join(', ')
+    parts.push(`
+═══ GENERERA PASS ═══
+Om användaren ber dig sätta ihop ett pass (t.ex. "skapa ett benpass", "ge mig ett helkroppspass med bara kroppsvikt", "ett kort överkroppspass"), föreslå övningar och avsluta svaret med ett JSON-block:
+
+<workout>
+{
+  "summary": "Benpass, 5 övningar",
+  "exercises": [
+    { "name": "Knäböj", "sets": 4, "repsMin": 6, "repsMax": 10 },
+    { "name": "Rumänsk marklyft", "sets": 3, "repsMin": 8, "repsMax": 12 }
+  ]
+}
+</workout>
+
+Regler för <workout>-blocket:
+- Du FÅR BARA välja övningar från denna lista (exakt namn): ${exNames}
+- Välj ALDRIG en övning som inte finns i listan. Hittar du inget som passar, välj det närmaste.
+- 4-7 övningar för ett helkroppspass, 4-6 för en kroppsdel.
+- Ange "sets" (vanligtvis 3-4) och "repsMin"/"repsMax" per övning.
+- Skriv en kort, peppig motivering FÖRE blocket. Inget text efter blocket.
+- Använd <workout> BARA när användaren ber om ett helt pass, inte för enstaka övningsfrågor.`)
+  }
+
   if (deloadStatus?.isActive) {
     parts.push(`\n═══ AKTIV DELOAD-VECKA ═══\nAnvändaren kör just nu en deload-vecka (${deloadStatus.daysLeft} dagar kvar). Vikterna är redan automatiskt sänkta. Föreslå INTE en ny deload, och kommentera INTE stagnationer som problem - det är meningen att vikterna är låga nu.`)
   }
@@ -476,4 +503,40 @@ export function parseDeload(aiText) {
   }
   const displayText = aiText.replace(match[0], '').trim()
   return { displayText, deload }
+}
+
+/**
+ * Parsar ett AI-svar och hittar ett <workout>...</workout>-block med ett
+ * genererat pass. Returnerar { displayText, workoutPlan } dar workoutPlan ar
+ * { summary, exercises: [{ name, sets, repsMin, repsMax }] } eller null.
+ */
+export function parseWorkoutPlan(aiText) {
+  if (!aiText) return { displayText: aiText, workoutPlan: null }
+  const match = aiText.match(/<workout>\s*([\s\S]*?)\s*<\/workout>/i)
+  if (!match) return { displayText: aiText, workoutPlan: null }
+  const jsonStr = match[1].trim()
+  let workoutPlan = null
+  try {
+    const parsed = JSON.parse(jsonStr)
+    if (Array.isArray(parsed.exercises) && parsed.exercises.length > 0) {
+      const exercises = parsed.exercises
+        .filter(e => typeof e?.name === 'string')
+        .map(e => ({
+          name: e.name,
+          sets: Number.isFinite(e.sets) ? e.sets : 3,
+          repsMin: Number.isFinite(e.repsMin) ? e.repsMin : null,
+          repsMax: Number.isFinite(e.repsMax) ? e.repsMax : null,
+        }))
+      if (exercises.length > 0) {
+        workoutPlan = {
+          summary: typeof parsed.summary === 'string' ? parsed.summary : 'Lägg till passet',
+          exercises,
+        }
+      }
+    }
+  } catch {
+    // ogiltig JSON - ignorera
+  }
+  const displayText = aiText.replace(match[0], '').trim()
+  return { displayText, workoutPlan }
 }

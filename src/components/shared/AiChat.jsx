@@ -9,12 +9,12 @@ const SUGGESTIONS = [
   'Tips för nästa pass?',
 ]
 
-export default function AiChat({ open, onClose, getContext, getMemory, getDeloadStatus, introMessage, introLoading, workoutNotes, onUpdateNotes, onApplyAdjustment, onApplyDeload }) {
+export default function AiChat({ open, onClose, getContext, getMemory, getDeloadStatus, introMessage, introLoading, workoutNotes, onUpdateNotes, onApplyAdjustment, onApplyDeload, onApplyWorkoutPlan, getAvailableExercises }) {
   const [input, setInput] = useState('')
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
   const notesRef = useRef(null)
-  const { messages, loading, error, send, markAdjustmentApplied, markDeloadApplied } = useAI({ getContext, getMemory, getDeloadStatus })
+  const { messages, loading, error, send, markAdjustmentApplied, markDeloadApplied, markWorkoutApplied } = useAI({ getContext, getMemory, getDeloadStatus, getAvailableExercises })
 
   // Fokusera input när sheeten öppnar
   useEffect(() => {
@@ -191,6 +191,29 @@ export default function AiChat({ open, onClose, getContext, getMemory, getDeload
                         <path d="M20 6 9 17l-5-5"/>
                       </svg>
                       Deload-vecka aktiverad
+                    </div>
+                  )}
+                  {msg.role === 'assistant' && msg.workoutPlan && !msg.workoutApplied && onApplyWorkoutPlan && (
+                    <button
+                      className={styles.adjustmentBtn}
+                      onClick={() => {
+                        const ok = onApplyWorkoutPlan(msg.workoutPlan)
+                        if (ok !== false) markWorkoutApplied(i)
+                      }}
+                      type="button"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M12 5v14M5 12h14"/>
+                      </svg>
+                      <span className={styles.adjustmentBtnText}>{msg.workoutPlan.summary}</span>
+                    </button>
+                  )}
+                  {msg.role === 'assistant' && msg.workoutApplied && (
+                    <div className={styles.adjustmentApplied}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M20 6 9 17l-5-5"/>
+                      </svg>
+                      Tillagt i passet
                     </div>
                   )}
                 </motion.div>
