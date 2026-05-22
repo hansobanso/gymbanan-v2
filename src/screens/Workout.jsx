@@ -4,7 +4,7 @@ import { Reorder, AnimatePresence, motion } from 'framer-motion'
 import { useWorkout } from '../hooks/useWorkout'
 import { useTimer } from '../hooks/useTimer'
 import { buildWorkoutContext, buildMemoryContent, appendUserNote, chatWithAI, generateWorkoutIntro } from '../lib/ai'
-import { updateWorkout, getWorkouts, getAiMemory, upsertAiMemory, getPreviousSetsForExercise, getEquipmentMap, updateProgram, saveProgram, getDeloadStatus, startDeloadWeek } from '../lib/db'
+import { updateWorkout, getWorkouts, getAiMemory, upsertAiMemory, getEquipmentMap, updateProgram, saveProgram, getDeloadStatus, startDeloadWeek } from '../lib/db'
 import TimerBar from '../components/workout/TimerBar'
 import TimerExpanded from '../components/workout/TimerExpanded'
 import ExerciseBlock from '../components/workout/ExerciseBlock'
@@ -99,42 +99,50 @@ export default function Workout({ session }) {
     }).catch(() => {})
   }, [session?.user?.id])
 
-  // Ladda AI-minne + generera pass-intro
+  // Ladda AI-minne + generera pass-intro. Allt har kor i BAKGRUNDEN och
+  // blockerar aldrig att passet visas - introMessage fylls nar det ar klart.
   useEffect(() => {
-    getAiMemory(session.user.id).then(async mem => {
+    let cancelled = false
+    if (sessionExercises.length === 0) return
+
+    ;(async () => {
+      const [mem, recentWorkouts] = await Promise.all([
+        getAiMemory(session.user.id).catch(() => null),
+        getWorkouts(session.user.id, 20).catch(() => []),
+      ])
+      if (cancelled) return
       const memory = mem?.content || ''
       if (memory) setAiMemory(memory)
 
-      if (sessionExercises.length === 0) return
-
-      const recentWorkouts = await getWorkouts(session.user.id, 50).catch(() => [])
-
-      const prevSetsArray = await Promise.all(
-        sessionExercises.map(ex => getPreviousSetsForExercise(session.user.id, ex.name))
-      )
+      // Bygg prev-sets-kontext in-memory fran de redan hamtade passen,
+      // istallet for en query per ovning (var en dold flaskhals).
       const lines = [`Pass: ${sessionName}`, '']
-      sessionExercises.forEach((ex, i) => {
-        const prev = prevSetsArray[i]
-        lines.push(`${ex.name}${ex.muscle_group ? ` (${ex.muscle_group})` : ''}:`)
-        if (prev?.length) {
-          lines.push(`  Förra passet: ${prev.map(s => `${s.weight}kg×${s.reps}`).join(', ')}`)
-        } else {
-          lines.push('  Ingen tidigare data')
+      sessionExercises.forEach(ex => {
+        let prev = null
+        for (const w of recentWorkouts) {
+          if (w.adjusted || !w.finished_at) continue
+          const found = (w.exercises ?? []).find(e => e.name === ex.name)
+          if (!found) continue
+          const sets = (found.sets ?? []).filter(s => s.done && s.weight != null)
+          if (sets.length) { prev = sets; break }
         }
+        lines.push(`${ex.name}${ex.muscle_group ? ` (${ex.muscle_group})` : ''}:`)
+        lines.push(prev?.length
+          ? `  Förra passet: ${prev.map(s => `${s.weight}kg×${s.reps}`).join(', ')}`
+          : '  Ingen tidigare data')
       })
-      const preContext = lines.join('\n')
 
       generateWorkoutIntro({
-        context: preContext,
+        context: lines.join('\n'),
         memory: memory || null,
         recentWorkouts,
         currentExercises: sessionExercises,
       })
-        .then(intro => {
-          if (intro) setIntroMessage(intro)
-        })
+        .then(intro => { if (!cancelled && intro) setIntroMessage(intro) })
         .catch(() => {})
-    }).catch(() => {})
+    })()
+
+    return () => { cancelled = true }
   }, [session.user.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Stäng header-meny vid klick utanför

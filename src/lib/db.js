@@ -534,6 +534,21 @@ export async function getUserExerciseNote(userId, exerciseName) {
   return data?.note ?? null
 }
 
+// Hamtar ALLA en anvandares ovningsanteckningar i en enda query.
+// Returnerar en map { exercise_name: note }. Anvands vid passstart sa vi
+// slipper en query per ovning.
+export async function getAllUserExerciseNotes(userId) {
+  if (!userId) return {}
+  const { data, error } = await supabase
+    .from('user_exercise_notes')
+    .select('exercise_name, note')
+    .eq('user_id', userId)
+  if (error || !data) return {}
+  const map = {}
+  for (const row of data) map[row.exercise_name] = row.note
+  return map
+}
+
 export async function upsertUserExerciseNote(userId, exerciseName, note) {
   if (!userId || !exerciseName) return null
   const { data, error } = await supabase

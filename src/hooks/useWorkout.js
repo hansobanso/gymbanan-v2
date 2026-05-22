@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { createWorkout, updateWorkout, getTwoPreviousSetsForExercise, getExerciseByName, getRestOverrides, getUserExerciseNote, getWorkouts } from '../lib/db'
+import { createWorkout, updateWorkout, getTwoPreviousSetsForExercise, getExerciseByName, getRestOverrides, getUserExerciseNote, getWorkouts, getExercises, getAllUserExerciseNotes } from '../lib/db'
 import { computeProgression, deriveCategory, epleyAdjustedReps } from '../lib/progression'
 import { detectGapAdjustment } from '../lib/ai'
 
@@ -85,16 +85,27 @@ function extractPrevSets(recentWorkouts, exerciseName) {
 // Hamtar prev-historik + ovningsmetadata for en ovning och returnerar
 // en uppdaterad version av ex med dataLoaded: true. Anvands bade vid
 // mount och vid byte av ovning mid-pass.
-// recentWorkouts: redan hamtade workouts (undviker query per ovning).
-async function loadExerciseData(ex, userId, restOverrides, recentWorkouts = null) {
-  // Om vi redan har workouts i minnet, anvand dem. Annars hamta (mid-pass byte).
+// caches: { recentWorkouts, exerciseMap, notesMap } - forhamtad delad data
+// sa vi slipper en query per ovning. Saknas de gors queries (mid-pass byte).
+async function loadExerciseData(ex, userId, restOverrides, caches = {}) {
+  const { recentWorkouts = null, exerciseMap = null, notesMap = null } = caches
+  const name = ex.name ?? 'Övning'
+
+  // Prev-sets: anvand forhamtade workouts om de finns, annars query.
   const prevPromise = recentWorkouts
-    ? Promise.resolve(extractPrevSets(recentWorkouts, ex.name ?? 'Övning'))
-    : getTwoPreviousSetsForExercise(userId, ex.name ?? 'Övning')
+    ? Promise.resolve(extractPrevSets(recentWorkouts, name))
+    : getTwoPreviousSetsForExercise(userId, name)
+  // Ovningsmetadata: slas upp i forhamtad map om den finns, annars query.
+  const exDataPromise = exerciseMap
+    ? Promise.resolve(exerciseMap[name] ?? null)
+    : getExerciseByName(name)
+  // Anteckning: forhamtad map om den finns, annars query.
+  const notePromise = notesMap
+    ? Promise.resolve(notesMap[name] ?? null)
+    : getUserExerciseNote(userId, name)
+
   const [{ prev: prevSets, prevPrev: prevPrevSets }, exData, userNote] = await Promise.all([
-    prevPromise,
-    getExerciseByName(ex.name ?? 'Övning'),
-    getUserExerciseNote(userId, ex.name ?? 'Övning'),
+    prevPromise, exDataPromise, notePromise,
   ])
   const exInstructions = exData?.instructions || null
   const exNotes = userNote ?? null
@@ -212,20 +223,34 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
 
     async function loadAll() {
       try {
-        const [restOverrides, recentWorkouts] = await Promise.all([
+        // Hamta ALL delad data EN gang istallet for per-ovning-queries:
+        // - restOverrides: vilotider (1 query)
+        // - recentWorkouts: 20 senaste passen (1 query, anvands for prev-sets + gap)
+        // - allExercises: hela ovningslistan (cachad - ofta 0 nya queries)
+        // - notesMap: alla ovningsanteckningar (1 query)
+        const [restOverrides, recentWorkouts, allExercises, notesMap] = await Promise.all([
           getRestOverrides(userId),
           getWorkouts(userId, 20).catch(() => []),
+          getExercises().catch(() => []),
+          getAllUserExerciseNotes(userId).catch(() => ({})),
         ])
         if (cancelled) return
+
+        // Bygg namn->ovning-map for snabb uppslagning (ersatter getExerciseByName per ovning)
+        const exerciseMap = {}
+        for (const e of allExercises) {
+          if (!exerciseMap[e.name]) exerciseMap[e.name] = e
+        }
+        const caches = { recentWorkouts, exerciseMap, notesMap }
 
         // Detektera traningsuppehall
         const exNames = exercises.map(e => e.name)
         const gapAdj = detectGapAdjustment(recentWorkouts, exNames)
 
-        // Ladda alla ovningar parallellt. Skicka recentWorkouts sa varje
-        // ovning slipper hamta samma 20 workouts igen (var orsak till lang laddtid).
+        // Ladda alla ovningar parallellt - nu helt utan queries per ovning
+        // (all data finns redan i caches).
         const results = await Promise.all(
-          exercises.map(ex => loadExerciseData(ex, userId, restOverrides, recentWorkouts).catch(() => null))
+          exercises.map(ex => loadExerciseData(ex, userId, restOverrides, caches).catch(() => null))
         )
         if (cancelled) return
 
