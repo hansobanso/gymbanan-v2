@@ -110,10 +110,29 @@ async function loadExerciseData(ex, userId, restOverrides, caches = {}) {
   const exInstructions = exData?.instructions || null
   const exNotes = userNote ?? null
   const exEquipment = exData?.equipment || null
+  const isTimeBased = exData?.is_time_based === true
   const restSeconds = ex.restSeconds ?? (restOverrides?.[ex.name] ?? null)
 
   if (!prevSets?.length) {
-    return { ...ex, restSeconds, exInstructions, exNotes, exEquipment, prevSets: null, progressionHint: null, progressionAction: null, dataLoaded: true }
+    return { ...ex, restSeconds, exInstructions, exNotes, exEquipment, isTimeBased, prevSets: null, progressionHint: null, progressionAction: null, dataLoaded: true }
+  }
+
+  // Tidsbaserade ovningar (planka etc): ingen vikt/tid-progression.
+  // Prefyll bara forra passets varden (sekunder lagras i reps-faltet).
+  if (isTimeBased) {
+    const lastWork = prevSets.filter(s => s.type !== 'warmup')
+    const lastSet = lastWork[lastWork.length - 1] ?? prevSets[prevSets.length - 1]
+    const prefSets = ex.sets.map(s => {
+      if (s.type === 'warmup') return s
+      return {
+        ...s,
+        weight: lastSet?.weight ? String(lastSet.weight) : '',
+        reps: lastSet?.reps ? String(lastSet.reps) : '',
+        rir: null,
+        prefilled: !!(lastSet?.reps),
+      }
+    })
+    return { ...ex, sets: prefSets, restSeconds, exInstructions, exNotes, exEquipment, isTimeBased, prevSets, progressionHint: null, progressionAction: null, dataLoaded: true }
   }
 
   // Harleda ovningskategori fran equipment + movement_pattern
@@ -200,6 +219,7 @@ async function loadExerciseData(ex, userId, restOverrides, caches = {}) {
     exInstructions,
     exNotes,
     exEquipment,
+    isTimeBased,
     weightIncrement,
     movementPattern,
     dataLoaded: true,
@@ -491,6 +511,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
       exInstructions: ex.instructions ?? null,
       exNotes: null, // personlig anteckning - laddas via loadExerciseData
       exEquipment: ex.equipment ?? null,
+      isTimeBased: ex.is_time_based === true,
       dataLoaded: false,  // triggers fetch of previous sets
       sets: [makeSet('work')],
     }])
@@ -524,6 +545,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
           exInstructions: match.instructions ?? null,
           exNotes: null,
           exEquipment: match.equipment ?? null,
+          isTimeBased: match.is_time_based === true,
           dataLoaded: false, // triggar laddning av prev-sets + progression
           sets: workSets,
         }

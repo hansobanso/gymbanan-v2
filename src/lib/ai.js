@@ -123,6 +123,7 @@ Stil: direkt, konkret, på svenska. Inga generella fraser. Inga engelska låneor
   // Om vi har en ovningslista: lar PT att kunna generera ett helt pass.
   if (Array.isArray(availableExercises) && availableExercises.length > 0) {
     const exNames = availableExercises.map(e => e.name).join(', ')
+    const timeBased = availableExercises.filter(e => e.is_time_based).map(e => e.name)
     parts.push(`
 ═══ GENERERA PASS ═══
 Om användaren ber dig sätta ihop ett pass (t.ex. "skapa ett benpass", "ge mig ett helkroppspass med bara kroppsvikt", "ett kort överkroppspass"), föreslå övningar och avsluta svaret med ett JSON-block:
@@ -141,7 +142,8 @@ Regler för <workout>-blocket:
 - Du FÅR BARA välja övningar från denna lista (exakt namn): ${exNames}
 - Välj ALDRIG en övning som inte finns i listan. Hittar du inget som passar, välj det närmaste.
 - 4-7 övningar för ett helkroppspass, 4-6 för en kroppsdel.
-- Ange "sets" (vanligtvis 3-4) och "repsMin"/"repsMax" per övning.
+- Ange "sets" (vanligtvis 3-4) och "repsMin"/"repsMax" per övning.${timeBased.length ? `
+- DESSA övningar mäts i SEKUNDER, inte reps - sätt repsMin/repsMax som sekunder (t.ex. 30-60): ${timeBased.join(', ')}` : ''}
 - Skriv en kort, peppig motivering FÖRE blocket. Inget text efter blocket.
 - Använd <workout> BARA när användaren ber om ett helt pass, inte för enstaka övningsfrågor.`)
   }

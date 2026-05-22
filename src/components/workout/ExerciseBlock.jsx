@@ -7,10 +7,10 @@ import styles from './ExerciseBlock.module.css'
 
 const REST_PRESETS = [30, 60, 90, 120, 180]
 
-function fmtTarget(min, max) {
+function fmtTarget(min, max, unit = 'reps') {
   if (!min && !max) return null
-  if (min && max && min !== max) return `Mål: ${min}–${max} reps`
-  return `Mål: ${min || max} reps`
+  if (min && max && min !== max) return `Mål: ${min}–${max} ${unit}`
+  return `Mål: ${min || max} ${unit}`
 }
 
 function getSetLabel(set, allSets) {
@@ -172,6 +172,9 @@ export default function ExerciseBlock({
         .filter(s => s.type === 'work' && parseInt(s.reps) > 0)
         .map(s => {
           const w = parseFloat(s.weight) || 0
+          if (exercise.isTimeBased) {
+            return w > 0 ? `${displayWeightStr(s.weight, exEquipment)}kg×${s.reps}s` : `${s.reps}s`
+          }
           return w > 0 ? `${displayWeightStr(s.weight, exEquipment)}kg×${s.reps}` : `${s.reps} reps`
         })
         .join(' / ') || null
@@ -194,7 +197,8 @@ export default function ExerciseBlock({
     : encodeURIComponent('__builtin__' + exercise.name)
 
   const hasWarmups = exercise.sets.some(s => s.type === 'warmup')
-  const colLabels = ['SET', 'KG', 'REPS', 'KLAR']
+  const isTimeBased = exercise.isTimeBased === true
+  const colLabels = ['SET', 'KG', isTimeBased ? 'SEK' : 'REPS', 'KLAR']
 
   // Collapsed summary
   const bestWeight = doneSets.length > 0
@@ -326,7 +330,7 @@ export default function ExerciseBlock({
                     setEditingReps(true)
                   }}
                 >
-                  {`${exercise.defaultRepsMin ?? ''}–${exercise.defaultRepsMax ?? ''} reps`}
+                  {`${exercise.defaultRepsMin ?? ''}–${exercise.defaultRepsMax ?? ''} ${isTimeBased ? 'sek' : 'reps'}`}
                 </span>
               ) : (
                 <span
@@ -498,6 +502,7 @@ export default function ExerciseBlock({
                   allSets={exercise.sets}
                   prev1RM={prev1RM}
                   prefilled={!!set.prefilled}
+                  isTimeBased={isTimeBased}
                   onUpdate={(field, value) => onUpdateSet(exercise.localId, set.id, field, value)}
                   onRemove={() => onRemoveSet(exercise.localId, set.id)}
                   onDuplicate={() => onDuplicateSet?.(exercise.localId, set.id)}

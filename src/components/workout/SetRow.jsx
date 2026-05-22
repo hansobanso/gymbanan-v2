@@ -35,6 +35,7 @@ export default function SetRow({
   allSets,
   prev1RM,
   prefilled,
+  isTimeBased,
   onUpdate,
   onRemove,
   onDuplicate,
@@ -95,8 +96,8 @@ export default function SetRow({
   }
 
   const best1RM = !isWarmup ? (getBest1RM(allSets) || prev1RM) : null
-  const suggested = !isWarmup && set.subtype !== 'backoff' && set.weight ? suggestReps(set.weight, best1RM) : null
-  const repPlaceholder = suggested ? `~${suggested}` : 'Reps'
+  const suggested = !isTimeBased && !isWarmup && set.subtype !== 'backoff' && set.weight ? suggestReps(set.weight, best1RM) : null
+  const repPlaceholder = isTimeBased ? 'Sek' : (suggested ? `~${suggested}` : 'Reps')
 
   const rirValue = !isWarmup && set.rir !== null && set.rir !== undefined ? String(set.rir) : null
 
