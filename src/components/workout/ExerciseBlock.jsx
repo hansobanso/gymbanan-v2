@@ -7,11 +7,6 @@ import styles from './ExerciseBlock.module.css'
 
 const REST_PRESETS = [30, 60, 90, 120, 180]
 
-function fmtTarget(min, max, unit = 'reps') {
-  if (!min && !max) return null
-  if (min && max && min !== max) return `Mål: ${min}–${max} ${unit}`
-  return `Mål: ${min || max} ${unit}`
-}
 
 function getSetLabel(set, allSets) {
   if (set.subtype === 'backoff') {
