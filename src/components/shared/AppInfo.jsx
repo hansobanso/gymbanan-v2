@@ -40,8 +40,10 @@ export default function AppInfo() {
           Prata med din PT
         </span>
         <p className={styles.body}>
-          Under ett pass kan du chatta med en inbyggd PT. Fråga om teknik, be om
-          ett alternativ till en övning, eller få hjälp att lägga upp passet.
+          Starta ett fritt pass och be PT sätta ihop ett helt pass åt dig –
+          t.ex. "ett benpass" eller "helkropp med bara kroppsvikt". Under passet
+          kan du fråga om teknik, be om ett övningsalternativ, eller låta PT
+          justera vikterna om du t.ex. varit sjuk eller känner dig stark.
         </p>
       </div>
 
