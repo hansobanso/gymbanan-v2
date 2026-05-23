@@ -148,9 +148,10 @@ export default function Programs({ session, programs, setPrograms, activeProgram
           className={styles.headerAddBtn}
           onClick={() => setEditingProgram(newProgram())}
           type="button"
-          aria-label="Nytt program"
+          aria-label="Skapa nytt program"
         >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          Skapa
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M5 12h14"/>
             <path d="M12 5v14"/>
           </svg>
