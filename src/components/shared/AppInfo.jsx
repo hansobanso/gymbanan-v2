@@ -1,4 +1,4 @@
-import { BananaIcon, TrendIcon, ChatIcon } from './Icons'
+import { BananaIcon, TrendIcon, ChatIcon, GaugeIcon } from './Icons'
 import styles from './AppInfo.module.css'
 
 // Delad "Sa funkar appen"-info. Anvands i valkomstkortet (nya anvandare)
@@ -20,7 +20,7 @@ export default function AppInfo() {
 
       <div className={styles.feature}>
         <span className={styles.title}>
-          <TrendIcon className={styles.icon} />
+          <GaugeIcon className={styles.icon} />
           RIR – hur hårt du tar i
         </span>
         <p className={styles.body}>

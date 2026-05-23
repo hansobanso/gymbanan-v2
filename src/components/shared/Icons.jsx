@@ -76,3 +76,17 @@ export function DumbbellIcon(props) {
     </svg>
   )
 }
+
+// RIR - matare/gauge (hur hart du tar i, hur mycket kvar i tanken)
+export function GaugeIcon(props) {
+  return (
+    <svg {...base(props)}>
+      {/* halvcirkel-matare */}
+      <path d="M4 18a8 8 0 1 1 16 0" />
+      {/* nal */}
+      <path d="M12 18l4-4" />
+      {/* mittpunkt */}
+      <circle cx="12" cy="18" r="1.4" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
