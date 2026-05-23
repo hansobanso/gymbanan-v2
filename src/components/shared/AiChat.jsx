@@ -55,24 +55,21 @@ export default function AiChat({ open, onClose, getContext, getMemory, getDeload
   return (
     <AnimatePresence>
       {open && (
-        <>
-          <motion.div
-            className={styles.backdrop}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-          />
-          <motion.div
-            className={styles.sheet}
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', stiffness: 380, damping: 36 }}
-          >
+        <motion.div
+          className={styles.sheet}
+          initial={{ x: '100%', opacity: 0.6 }}
+          animate={{ x: 0, opacity: 1 }}
+          exit={{ x: '100%', opacity: 0.6 }}
+          transition={{ type: 'spring', stiffness: 420, damping: 40 }}
+        >
             {/* Header */}
             <div className={styles.header}>
               <div className={styles.headerLeft}>
+                <button className={styles.backBtn} onClick={onClose} aria-label="Tillbaka" type="button">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
                 <span className={styles.ptBadge}>PT</span>
                 <div>
                   <p className={styles.title}>Din personliga tränare</p>
@@ -275,7 +272,6 @@ export default function AiChat({ open, onClose, getContext, getMemory, getDeload
               </button>
             </div>
           </motion.div>
-        </>
       )}
     </AnimatePresence>
   )
