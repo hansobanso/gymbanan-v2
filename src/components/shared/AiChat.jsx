@@ -18,6 +18,7 @@ const FREE_WORKOUT_SUGGESTIONS = [
 
 export default function AiChat({ open, onClose, getContext, getMemory, getDeloadStatus, introMessage, introLoading, workoutNotes, onUpdateNotes, onApplyAdjustment, onApplyDeload, onApplyWorkoutPlan, getAvailableExercises, freeWorkoutMode }) {
   const [input, setInput] = useState('')
+  const [notesOpen, setNotesOpen] = useState(false)
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
   const notesRef = useRef(null)
@@ -65,11 +66,6 @@ export default function AiChat({ open, onClose, getContext, getMemory, getDeload
             {/* Header */}
             <div className={styles.header}>
               <div className={styles.headerLeft}>
-                <button className={styles.backBtn} onClick={onClose} aria-label="Tillbaka" type="button">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </button>
                 <span className={styles.ptBadge}>PT</span>
                 <div>
                   <p className={styles.title}>Din personliga tränare</p>
@@ -83,24 +79,66 @@ export default function AiChat({ open, onClose, getContext, getMemory, getDeload
               </button>
             </div>
 
-            {/* Passnoteringar */}
+            {/* Anteckningsknapp - oppnar panel i fokus */}
             {onUpdateNotes && (
-              <div className={styles.notesSection}>
-                <label className={styles.notesLabel}>Anteckningar till PT</label>
-                <textarea
-                  ref={notesRef}
-                  className={styles.notesInput}
-                  value={workoutNotes || ''}
-                  onChange={e => {
-                    onUpdateNotes(e.target.value)
-                    e.target.style.height = 'auto'
-                    e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`
-                  }}
-                  placeholder="T.ex. dålig sömn, ont i axeln, bytte övning..."
-                  rows={2}
-                />
-              </div>
+              <button
+                className={styles.notesToggle}
+                onClick={() => setNotesOpen(true)}
+                type="button"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+                </svg>
+                <span>{workoutNotes?.trim() ? 'Anteckning till PT' : 'Lägg till anteckning till PT'}</span>
+                {workoutNotes?.trim() && <span className={styles.notesDot} />}
+              </button>
             )}
+
+            {/* Passnoteringar */}
+            {/* Anteckningspanel - slide upp i fokus */}
+            <AnimatePresence>
+              {notesOpen && onUpdateNotes && (
+                <>
+                  <motion.div
+                    className={styles.notesBackdrop}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={() => setNotesOpen(false)}
+                  />
+                  <motion.div
+                    className={styles.notesPanel}
+                    initial={{ y: '100%' }}
+                    animate={{ y: 0 }}
+                    exit={{ y: '100%' }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 38 }}
+                  >
+                    <div className={styles.notesPanelHeader}>
+                      <span className={styles.notesPanelTitle}>Anteckning till PT</span>
+                      <button
+                        className={styles.notesDone}
+                        onClick={() => setNotesOpen(false)}
+                        type="button"
+                      >
+                        Klar
+                      </button>
+                    </div>
+                    <p className={styles.notesHint}>
+                      Något PT bör veta inför svaret – t.ex. dålig sömn, ont i axeln, eller att du bytt övning.
+                    </p>
+                    <textarea
+                      ref={notesRef}
+                      className={styles.notesPanelInput}
+                      value={workoutNotes || ''}
+                      onChange={e => onUpdateNotes(e.target.value)}
+                      placeholder="Skriv din anteckning…"
+                      rows={4}
+                      autoFocus
+                    />
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
 
             {/* Meddelanden */}
             <div className={styles.messages}>
