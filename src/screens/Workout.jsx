@@ -535,7 +535,9 @@ export default function Workout({ session }) {
               )
             })}
 
-            {/* Lägg till övning + Avsluta pass */}
+            {/* Lägg till övning + Avsluta pass - doljs nar passet ar tomt
+                (da visas empty-choice-knapparna istallet) */}
+            {workout.exercises.length > 0 && (
             <div className={styles.finishWrap}>
               <button
                 className={styles.addExerciseBtn}
@@ -552,6 +554,7 @@ export default function Workout({ session }) {
                 AVSLUTA
               </button>
             </div>
+            )}
           </>
         )}
       </div>
@@ -724,6 +727,7 @@ export default function Workout({ session }) {
         getDeloadStatus={() => deloadStatus}
         introMessage={introMessage}
         introLoading={introLoading}
+        freeWorkoutMode={!programId && workout.exercises.length === 0}
         getAvailableExercises={() => exerciseList}
         onApplyWorkoutPlan={(plan) => {
           workout.addGeneratedWorkout(plan.exercises, exerciseList)

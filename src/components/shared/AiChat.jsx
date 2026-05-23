@@ -9,7 +9,14 @@ const SUGGESTIONS = [
   'Tips för nästa pass?',
 ]
 
-export default function AiChat({ open, onClose, getContext, getMemory, getDeloadStatus, introMessage, introLoading, workoutNotes, onUpdateNotes, onApplyAdjustment, onApplyDeload, onApplyWorkoutPlan, getAvailableExercises }) {
+const FREE_WORKOUT_SUGGESTIONS = [
+  'Skapa ett helkroppspass',
+  'Ge mig ett benpass',
+  'Ett överkroppspass med bara kroppsvikt',
+  'Ett kort pass, 30 min',
+]
+
+export default function AiChat({ open, onClose, getContext, getMemory, getDeloadStatus, introMessage, introLoading, workoutNotes, onUpdateNotes, onApplyAdjustment, onApplyDeload, onApplyWorkoutPlan, getAvailableExercises, freeWorkoutMode }) {
   const [input, setInput] = useState('')
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
@@ -117,12 +124,16 @@ export default function AiChat({ open, onClose, getContext, getMemory, getDeload
               )}
               {messages.length === 0 && !introMessage && !introLoading && (
                 <div className={styles.empty}>
-                  <p className={styles.emptyTitle}>Vad kan jag hjälpa dig med?</p>
+                  <p className={styles.emptyTitle}>
+                    {freeWorkoutMode ? 'Vad vill du träna?' : 'Vad kan jag hjälpa dig med?'}
+                  </p>
                   <p className={styles.emptyText}>
-                    Ställ frågor om teknik, belastning, återhämtning eller progression.
+                    {freeWorkoutMode
+                      ? 'Be mig sätta ihop ett pass åt dig – säg vilken kroppsdel, hur lång tid, eller vilken utrustning du har.'
+                      : 'Ställ frågor om teknik, belastning, återhämtning eller progression.'}
                   </p>
                   <div className={styles.suggestions}>
-                    {SUGGESTIONS.map(s => (
+                    {(freeWorkoutMode ? FREE_WORKOUT_SUGGESTIONS : SUGGESTIONS).map(s => (
                       <button
                         key={s}
                         className={styles.suggestion}
