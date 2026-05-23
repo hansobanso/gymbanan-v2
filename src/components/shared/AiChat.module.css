@@ -307,8 +307,8 @@
 
 .input {
   flex: 1;
-  background: var(--surface);
-  border: 1px solid var(--border-2);
+  background: #222222;
+  border: 1.5px solid #3a3a3a;
   border-radius: 20px;
   color: #ffffff;
   -webkit-text-fill-color: #ffffff;
@@ -320,18 +320,19 @@
   min-height: 40px;
   max-height: 120px;
   font-family: var(--font);
-  transition: border-color 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s;
   -webkit-appearance: none;
   overflow-y: hidden;
 }
 
 .input:focus {
-  border-color: var(--accent-border);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(245, 208, 32, 0.15);
 }
 
 .input::placeholder {
-  color: #555;
-  -webkit-text-fill-color: #555;
+  color: #888;
+  -webkit-text-fill-color: #888;
 }
 
 .sendBtn {
