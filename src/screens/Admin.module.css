@@ -1562,6 +1562,8 @@
   font-weight: 700;
   color: #fff;
   margin: 0;
+  flex: 1;
+  min-width: 0;
 }
 
 .usageInfo {
