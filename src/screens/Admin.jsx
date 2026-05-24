@@ -2116,7 +2116,7 @@ export default function Admin() {
         {/* Portal-target for ExercisesTab detaljpanel */}
         {tab === 'exercises' && <div id="exercise-detail-sidebar-portal" className={styles.sidebarDetailPortalSlot} />}
 
-        {/* Detaljpanel — visas i sidebar nar en ovning ar vald i ProgramsTab */}
+        {/* Detaljpanel — glider in fran hoger nar en ovning ar vald i ProgramsTab */}
         {sidebarDetail && tab === 'programs' && (() => {
           const { exercise: ex, onUpdate, onSwap } = sidebarDetail
           const exData = allExercises.find(e => e.name === ex.name)
@@ -2130,18 +2130,19 @@ export default function Admin() {
                 })
                 .slice(0, 6)
             : []
-          return (
-            <div className={`${styles.sidebarDetailPanel} ${panelCollapsed ? styles.sidebarDetailCollapsed : ''}`}>
+          return (<>
+            <div className={styles.exDetailScrim} onClick={() => setSidebarDetail(null)} />
+            <div className={`${styles.sidebarDetailPanel} ${styles.sidebarDetailFloating}`}>
               <div className={styles.sidebarDetailHeader}>
                 <h3 className={styles.sidebarDetailTitle}>{ex.name}</h3>
                 <button
                   className={styles.sidebarDetailToggle}
-                  onClick={() => setPanelCollapsed(c => !c)}
+                  onClick={() => setSidebarDetail(null)}
                   type="button"
-                  aria-label={panelCollapsed ? 'Expandera' : 'Kollapsa'}
+                  aria-label="Stäng"
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" style={{ transform: panelCollapsed ? 'rotate(0deg)' : 'rotate(180deg)', transition: 'transform 0.15s' }} aria-hidden="true">
-                    <polyline points="6 9 12 15 18 9"/>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M18 6 6 18M6 6l12 12"/>
                   </svg>
                 </button>
               </div>
@@ -2247,7 +2248,7 @@ export default function Admin() {
               )}
               </div> {/* sidebarDetailBody */}
             </div>
-          )
+          </>)
         })()}
 
         <div className={styles.sidebarFooter}>
