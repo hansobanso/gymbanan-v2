@@ -676,6 +676,19 @@ function ProgramEditor({ program, allExercises, onSave, onBack, saveError, onSel
         ? { ...s, exercises: s.exercises.map(e => e._id === exId ? { ...e, ...patch } : e) }
         : s
     ))
+    // Synka aven den valda ovningen + sidebar-panelen sa stepparna visar
+    // det nya vardet direkt (annars hangde panelens siffra efter).
+    setSelectedEx(prev => {
+      if (!prev || prev.exerciseId !== exId) return prev
+      const updatedEx = { ...prev.exercise, ...patch }
+      onSelectExercise?.({
+        exercise: updatedEx,
+        sessionId,
+        onUpdate: (p) => updateExercise(sessionId, exId, p),
+        onSwap: (n) => updateExercise(sessionId, exId, { name: n }),
+      })
+      return { ...prev, exercise: updatedEx }
+    })
   }
 
   async function handleSave() {
