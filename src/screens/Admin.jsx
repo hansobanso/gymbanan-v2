@@ -1079,10 +1079,12 @@ function ExercisesTab() {
     form.weight_increment !== original.weight_increment
   )
 
-  // Portal-target: hittar #exercise-detail-sidebar-portal nar admin-sidebaren har monterat
+  // Portal-target: rendera direkt till body sa den glidande panelen
+  // garanterat ligger ovanpa allt (eget stacking-context i sidebaren
+  // gjorde tidigare att tabellen lyste igenom).
   const [portalEl, setPortalEl] = useState(null)
   useEffect(() => {
-    setPortalEl(document.getElementById('exercise-detail-sidebar-portal'))
+    setPortalEl(document.body)
   }, [])
 
   if (loading) return <div className={styles.loading}><div className="spinner" /></div>
@@ -1297,11 +1299,11 @@ function ExercisesTab() {
         </div>
       </div>
 
-      {/* ── Detail panel: rendras via portal i admin-sidebaren ── */}
-      {portalEl && createPortal(
+      {/* ── Detail panel: glider in fran hoger vid redigering ── */}
+      {portalEl && form && createPortal(
         <>
-        {form && <div className={styles.exDetailScrim} onClick={() => { setSelectedId(null); setForm(null); setOriginal(null) }} />}
-        <div className={`${styles.exDetailPanel} ${form ? styles.exDetailFloating : ''}`}>
+        <div className={styles.exDetailScrim} onClick={() => { setSelectedId(null); setForm(null); setOriginal(null) }} />
+        <div className={`${styles.exDetailPanel} ${styles.exDetailFloating}`}>
         {!form ? (
           <div className={styles.exDetailEmpty}>
             <div className={styles.exEmptyStat}>

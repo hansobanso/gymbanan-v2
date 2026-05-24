@@ -1460,15 +1460,19 @@
   top: 0;
   right: 0;
   bottom: 0;
-  width: 480px;
+  width: 540px;
   max-width: 92vw;
-  background: var(--bg-2, #161616);
+  background: var(--bg-2, #0a0a0a);
   border-left: 1px solid var(--border, #2a2a2a);
   box-shadow: -12px 0 40px rgba(0, 0, 0, 0.45);
   z-index: 301;
-  padding: 24px 28px calc(24px + env(safe-area-inset-bottom));
+  padding: 28px 32px calc(28px + env(safe-area-inset-bottom));
   overflow-y: auto;
   animation: exPanelIn 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.exDetailFloating .exDetailGrid {
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
 }
 @keyframes exPanelIn {
   from { transform: translateX(100%); }
