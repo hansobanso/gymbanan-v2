@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom'
 import {
   DndContext,
   DragOverlay,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   closestCorners,
@@ -535,7 +536,11 @@ function ProgramEditor({ program, allExercises, onSave, onBack, saveError, onSel
   const exSessionRef = useRef(null) // tracks current session of dragged exercise
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
+    // Mus: drag startar direkt efter liten rorelse (snabbt pa desktop)
+    useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
+    // Touch: hall stilla kort stund forst sa drag inte krockar med scroll.
+    // Detta gor det mycket lattare att flytta ovningar med fingret.
+    useSensor(TouchSensor, { activationConstraint: { delay: 220, tolerance: 8 } })
   )
 
   function handleDragStart({ active }) {
