@@ -831,6 +831,7 @@ function ExercisesTab() {
   const [mergeMode, setMergeMode] = useState(false)        // visar dropdown for vilken ovning som ska slas ihop
   const [mergeTargetId, setMergeTargetId] = useState(null) // ID av ovning som mergas IN
   const [mergeNewName, setMergeNewName] = useState('')     // det nya namnet
+  const [mergeSearch, setMergeSearch] = useState('')       // sokfalt for att hitta ovning att sla ihop med
   const [merging, setMerging] = useState(false)
 
   useEffect(() => {
@@ -1355,31 +1356,45 @@ function ExercisesTab() {
             {/* Slå ihop-bar */}
             {mergeMode && selectedEx && (
               <div className={styles.mergeBar}>
-                <div className={styles.mergeRow}>
-                  <span className={styles.mergeLabel}>Slå ihop &quot;{selectedEx.name}&quot; med:</span>
-                  <select
-                    className={styles.cellSelect}
-                    value={mergeTargetId ?? ''}
-                    onChange={e => {
-                      const id = e.target.value || null
-                      setMergeTargetId(id)
-                      // Förslag på nytt namn: behåll målets namn som default
-                      if (id) {
-                        const target = exercises.find(x => x.id === id)
-                        if (target) setMergeNewName(target.name)
-                      }
-                    }}
-                  >
-                    <option value="">Välj övning…</option>
-                    {exercises
-                      .filter(x => x.id !== selectedEx.id)
-                      .sort((a, b) => a.name.localeCompare(b.name, 'sv'))
-                      .map(x => <option key={x.id} value={x.id}>{x.name}</option>)}
-                  </select>
-                </div>
-                {mergeTargetId && (
+                <span className={styles.mergeLabel}>Slå ihop &quot;{selectedEx.name}&quot; med:</span>
+                {!mergeTargetId ? (
                   <>
-                    <div className={styles.mergeRow}>
+                    <input
+                      className={styles.cellInput}
+                      value={mergeSearch}
+                      onChange={e => setMergeSearch(e.target.value)}
+                      placeholder="Sök övning att slå ihop med…"
+                      style={{ width: '100%', marginTop: 8 }}
+                      autoFocus
+                    />
+                    <div className={styles.mergeResults}>
+                      {exercises
+                        .filter(x => x.id !== selectedEx.id)
+                        .filter(x => !mergeSearch.trim() || x.name.toLowerCase().includes(mergeSearch.toLowerCase()))
+                        .sort((a, b) => a.name.localeCompare(b.name, 'sv'))
+                        .slice(0, 30)
+                        .map(x => (
+                          <button
+                            key={x.id}
+                            className={styles.mergeResultRow}
+                            onClick={() => { setMergeTargetId(x.id); setMergeNewName(x.name) }}
+                            type="button"
+                          >
+                            <span>{x.name}</span>
+                            <span className={styles.mergeResultMuscle}>{x.muscle_group}</span>
+                          </button>
+                        ))}
+                    </div>
+                    <button
+                      className={styles.cancelRowBtn}
+                      onClick={() => { setMergeMode(false); setMergeTargetId(null); setMergeNewName(''); setMergeSearch('') }}
+                      type="button"
+                      style={{ marginTop: 8 }}
+                    >Avbryt sammanslagning</button>
+                  </>
+                ) : (
+                  <>
+                    <div className={styles.mergeRow} style={{ marginTop: 8 }}>
                       <label className={styles.mergeLabel}>Nytt namn:</label>
                       <input
                         className={styles.cellInput}
@@ -1412,6 +1427,7 @@ function ExercisesTab() {
                             setMergeMode(false)
                             setMergeTargetId(null)
                             setMergeNewName('')
+                            setMergeSearch('')
                           } catch (err) {
                             setSaveError(err.message || String(err))
                           } finally {
@@ -1422,9 +1438,9 @@ function ExercisesTab() {
                       >{merging ? 'Slår ihop…' : 'Slå ihop'}</button>
                       <button
                         className={styles.cancelRowBtn}
-                        onClick={() => { setMergeMode(false); setMergeTargetId(null); setMergeNewName('') }}
+                        onClick={() => { setMergeTargetId(null); setMergeNewName('') }}
                         type="button"
-                      >Avbryt</button>
+                      >Tillbaka</button>
                     </div>
                   </>
                 )}
