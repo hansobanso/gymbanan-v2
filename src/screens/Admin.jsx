@@ -1299,7 +1299,9 @@ function ExercisesTab() {
 
       {/* ── Detail panel: rendras via portal i admin-sidebaren ── */}
       {portalEl && createPortal(
-        <div className={styles.exDetailPanel}>
+        <>
+        {form && <div className={styles.exDetailScrim} onClick={() => { setSelectedId(null); setForm(null); setOriginal(null) }} />}
+        <div className={`${styles.exDetailPanel} ${form ? styles.exDetailFloating : ''}`}>
         {!form ? (
           <div className={styles.exDetailEmpty}>
             <div className={styles.exEmptyStat}>
@@ -1590,7 +1592,8 @@ function ExercisesTab() {
             </div>
           </div>
         )}
-      </div>,
+      </div>
+        </>,
         portalEl
       )}
     </div>

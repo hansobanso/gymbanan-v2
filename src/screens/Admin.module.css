@@ -1441,6 +1441,40 @@
   padding: 24px 28px;
 }
 
+/* Mork overlay bakom den glidande redigeringspanelen */
+.exDetailScrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 300;
+  animation: exScrimIn 0.18s ease;
+}
+@keyframes exScrimIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Redigeringspanel som glider in fran hoger */
+.exDetailFloating {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 480px;
+  max-width: 92vw;
+  background: var(--bg-2, #161616);
+  border-left: 1px solid var(--border, #2a2a2a);
+  box-shadow: -12px 0 40px rgba(0, 0, 0, 0.45);
+  z-index: 301;
+  padding: 24px 28px calc(24px + env(safe-area-inset-bottom));
+  overflow-y: auto;
+  animation: exPanelIn 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes exPanelIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
 .exDetailEmpty {
   display: flex;
   flex-direction: column;
@@ -2820,6 +2854,21 @@
   background: transparent;
   padding: 16px;
   min-height: 0;
+}
+/* Nar panelen flyter (redigering) ska sidebar-begransningarna inte galla */
+.sidebarDetailPortalSlot .exDetailFloating {
+  flex: none;
+  background: var(--bg-2, #161616);
+  border-left: 1px solid var(--border, #2a2a2a);
+  padding: 24px 28px calc(24px + env(safe-area-inset-bottom));
+}
+.sidebarDetailPortalSlot .exDetailFloating .exDetailGrid {
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.sidebarDetailPortalSlot .exDetailFloating .exDetailField label,
+.sidebarDetailPortalSlot .exDetailFloating .exDetailLabel {
+  font-size: 11px;
 }
 .sidebarDetailPortalSlot .exDetailEmpty {
   padding: 16px 0;
