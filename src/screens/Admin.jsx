@@ -272,7 +272,7 @@ function duplicateSession(s) {
 
 function GripIcon() {
   return (
-    <svg width="12" height="14" viewBox="0 0 12 14" fill="currentColor" aria-hidden="true">
+    <svg width="16" height="18" viewBox="0 0 12 14" fill="currentColor" aria-hidden="true">
       <circle cx="3" cy="2.5" r="1.2"/><circle cx="9" cy="2.5" r="1.2"/>
       <circle cx="3" cy="7"   r="1.2"/><circle cx="9" cy="7"   r="1.2"/>
       <circle cx="3" cy="11.5" r="1.2"/><circle cx="9" cy="11.5" r="1.2"/>
@@ -539,8 +539,8 @@ function ProgramEditor({ program, allExercises, onSave, onBack, saveError, onSel
     // Mus: drag startar direkt efter liten rorelse (snabbt pa desktop)
     useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
     // Touch: hall stilla kort stund forst sa drag inte krockar med scroll.
-    // Detta gor det mycket lattare att flytta ovningar med fingret.
-    useSensor(TouchSensor, { activationConstraint: { delay: 220, tolerance: 8 } })
+    // Kortare delay + storre tolerance gor det lattare pa iPad.
+    useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 10 } })
   )
 
   function handleDragStart({ active }) {
