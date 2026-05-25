@@ -2033,7 +2033,7 @@ export default function Admin() {
     }
     check()
     return () => { cancelled = true }
-  }, [unlocked])
+  }, [unlocked, hasSession])
 
   // Switch manifest + iOS meta-taggar till admin-specifika så att
   // 'Lägg till på hemskärmen' skapar en separat admin-shortcut som
@@ -2400,8 +2400,8 @@ export default function Admin() {
             <>
               {!authStatus.user && (
                 <div className={styles.authBanner + ' ' + styles.authBannerError}>
-                  <strong>Inte inloggad i appen!</strong> Database-ändringar funkar inte pga RLS.
-                  Öppna huvudappen och logga in först, kom sen tillbaka hit.
+                  <strong>Verifierar inloggning…</strong> Vänta ett ögonblick. Om detta inte
+                  försvinner, ladda om sidan.
                 </div>
               )}
               {authStatus.user && !authStatus.isAdmin && (
