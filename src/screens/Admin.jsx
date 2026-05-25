@@ -1351,7 +1351,7 @@ function ExercisesTab() {
                 {selectedId === '__new__' ? 'Ny övning' : (selectedEx?.name ?? 'Redigera')}
               </h2>
               {selectedId !== '__new__' && selectedEx && !selectedEx.is_builtin && (
-                <div style={{ display: 'flex', gap: 6, marginLeft: 'auto' }}>
+                <div className={styles.exDetailHeaderActions}>
                   <button
                     className={styles.cancelRowBtn}
                     onClick={() => {

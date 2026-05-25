@@ -1474,6 +1474,22 @@
   grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
+/* Lite mindre text i panelen sa den matchar menyns storlek battre */
+.exDetailFloating .cellInput,
+.exDetailFloating .cellSelect {
+  font-size: 13px;
+}
+.exDetailFloating .exDetailLabel,
+.exDetailFloating .exDetailField label {
+  font-size: 10px;
+}
+.exDetailFloating .usageInfo {
+  font-size: 12px;
+}
+.exDetailFloating .cancelRowBtn,
+.exDetailFloating .deleteRowBtn {
+  font-size: 12px;
+}
 @keyframes exPanelIn {
   from { transform: translateX(100%); }
   to { transform: translateX(0); }
@@ -1551,19 +1567,24 @@
 
 .exDetailHeader {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-  gap: 12px;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 14px;
+  gap: 10px;
+}
+
+.exDetailHeaderActions {
+  display: flex;
+  gap: 6px;
 }
 
 .exDetailTitle {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   color: #fff;
   margin: 0;
-  flex: 1;
-  min-width: 0;
+  width: 100%;
+  word-break: break-word;
 }
 
 .usageInfo {
