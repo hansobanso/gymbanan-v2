@@ -1997,6 +1997,7 @@ export default function Admin() {
   const [authStatus, setAuthStatus] = useState({ loading: true, user: null, isAdmin: false })
   // Detaljpanel for vald ovning — skickas ner till ProgramsTab och renderas i sidebar
   const [sidebarDetail, setSidebarDetail] = useState(null)
+  const [swapSearch, setSwapSearch] = useState('')
   const [panelCollapsed, setPanelCollapsed] = useState(false)
 
   // Kolla om användaren är inloggad i Supabase OCH har admin-rollen.
@@ -2136,13 +2137,13 @@ export default function Admin() {
                 .slice(0, 6)
             : []
           return (<>
-            <div className={styles.exDetailScrim} onClick={() => setSidebarDetail(null)} />
+            <div className={styles.exDetailScrim} onClick={() => { setSidebarDetail(null); setSwapSearch('') }} />
             <div className={`${styles.sidebarDetailPanel} ${styles.sidebarDetailFloating}`}>
               <div className={styles.sidebarDetailHeader}>
                 <h3 className={styles.sidebarDetailTitle}>{ex.name}</h3>
                 <button
                   className={styles.sidebarDetailToggle}
-                  onClick={() => setSidebarDetail(null)}
+                  onClick={() => { setSidebarDetail(null); setSwapSearch('') }}
                   type="button"
                   aria-label="Stäng"
                 >
@@ -2251,6 +2252,37 @@ export default function Admin() {
                   ))}
                 </div>
               )}
+              {/* Byt till vilken ovning som helst (sok) */}
+              <div className={styles.sidebarDetailSimilar}>
+                <span className={styles.sidebarDetailLabel}>Byt till annan övning</span>
+                <input
+                  className={styles.cellInput}
+                  value={swapSearch}
+                  onChange={e => setSwapSearch(e.target.value)}
+                  placeholder="Sök övning…"
+                  style={{ width: '100%', marginBottom: 8 }}
+                />
+                {swapSearch.trim() && (
+                  <div className={styles.mergeResults}>
+                    {allExercises
+                      .filter(e => e.name !== ex.name)
+                      .filter(e => e.name.toLowerCase().includes(swapSearch.toLowerCase()))
+                      .sort((a, b) => a.name.localeCompare(b.name, 'sv'))
+                      .slice(0, 20)
+                      .map(e => (
+                        <button
+                          key={e.id}
+                          className={styles.mergeResultRow}
+                          onClick={() => { onSwap(e.name); setSwapSearch('') }}
+                          type="button"
+                        >
+                          <span>{e.name}</span>
+                          <span className={styles.mergeResultMuscle}>{e.muscle_group}</span>
+                        </button>
+                      ))}
+                  </div>
+                )}
+              </div>
               </div> {/* sidebarDetailBody */}
             </div>
           </>)
