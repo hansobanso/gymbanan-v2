@@ -189,6 +189,10 @@ function AppRoutes({ session }) {
 export default function App() {
   const [session, setSession] = useState(undefined)
 
+  // Admin ar en helt fristaende sida - rendera den direkt, forbi
+  // appens session-gate och vanliga inloggning.
+  const isAdminPath = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')
+
   // Fix iOS Safari safe-area rendering bug on initial load
   useEffect(() => {
     // Force Safari to recalculate env() values after initial render
@@ -220,6 +224,10 @@ export default function App() {
     return () => subscription.unsubscribe()
   }, [])
 
+  if (isAdminPath) {
+    return <AdminStandalone />
+  }
+
   if (session === undefined) {
     return <Splash />
   }
@@ -231,6 +239,23 @@ export default function App() {
   return (
     <BrowserRouter>
       <AppRoutes session={session} />
+    </BrowserRouter>
+  )
+}
+
+// Admin renderas helt fristaende - utanfor appens session-gate och
+// vanliga inloggning. Admin-sidan har egen losenords-gate och egen
+// Supabase-inloggning, sa man slipper ga via vanliga appen forst.
+// Detta gor ocksa att iOS kan spara admin som en separat PWA.
+function AdminStandalone() {
+  return (
+    <BrowserRouter>
+      <Suspense fallback={<Splash />}>
+        <Routes>
+          <Route path="/admin" element={<Admin />} />
+          <Route path="*" element={<Navigate to="/admin" replace />} />
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   )
 }

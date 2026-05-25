@@ -1992,6 +1992,12 @@ export default function Admin() {
   const [unlocked, setUnlocked] = useState(() => sessionStorage.getItem('admin_auth') === '1')
   const [pw, setPw] = useState('')
   const [pwError, setPwError] = useState(false)
+  // Supabase-inloggning direkt pa admin (sa man slipper ga via vanliga appen)
+  const [hasSession, setHasSession] = useState(null) // null = vet ej an
+  const [loginEmail, setLoginEmail] = useState('')
+  const [loginPw, setLoginPw] = useState('')
+  const [loginError, setLoginError] = useState('')
+  const [loggingIn, setLoggingIn] = useState(false)
   const [tab, setTab] = useState('exercises')
   const [allExercises, setAllExercises] = useState([])
   const [authStatus, setAuthStatus] = useState({ loading: true, user: null, isAdmin: false })
@@ -2068,6 +2074,37 @@ export default function Admin() {
     }
   }
 
+  // Kolla om Supabase-session finns nar admin lasts upp.
+  useEffect(() => {
+    if (!unlocked) return
+    let cancelled = false
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!cancelled) setHasSession(!!session?.user)
+    })
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+      if (!cancelled) setHasSession(!!session?.user)
+    })
+    return () => { cancelled = true; subscription.unsubscribe() }
+  }, [unlocked])
+
+  async function handleAdminLogin(e) {
+    e.preventDefault()
+    setLoginError('')
+    setLoggingIn(true)
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: loginEmail.trim(),
+        password: loginPw,
+      })
+      if (error) { setLoginError('Fel e-post eller lösenord'); setLoggingIn(false); return }
+      setLoginPw('')
+    } catch {
+      setLoginError('Något gick fel, försök igen')
+      setLoggingIn(false)
+    }
+  }
+
+
   if (!unlocked) {
     return (
       <div className={styles.gate}>
@@ -2091,6 +2128,48 @@ export default function Admin() {
         </form>
       </div>
     )
+  }
+
+  // Upplast men ingen Supabase-session: logga in direkt har (sa man
+  // slipper ga via vanliga appen). Kravs for att kunna spara (RLS).
+  if (hasSession === false) {
+    return (
+      <div className={styles.gate}>
+        <svg className={styles.gateLogo} viewBox="0 0 24 24" fill="none" stroke="#F5D020" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M4 13c3.5-2 8-2 10 2a5.5 5.5 0 0 1 8 5"/>
+          <path d="M5.15 17.89c5.52-1.52 8.65-6.89 7-12C11.55 4 11.5 2 13 2c3.22 0 5 5.5 5 8 0 6.5-4.2 12-10.49 12C5.55 22 4 21.3 4 20c0-1.1.5-2.31 1.15-2.11Z"/>
+        </svg>
+        <h2 className={styles.gateTitle}>Logga in</h2>
+        <form className={styles.gateForm} onSubmit={handleAdminLogin}>
+          <input
+            className={styles.gateInput}
+            type="email"
+            value={loginEmail}
+            onChange={e => { setLoginEmail(e.target.value); setLoginError('') }}
+            placeholder="E-post"
+            autoComplete="username"
+            autoFocus
+          />
+          <input
+            className={`${styles.gateInput} ${loginError ? styles.inputError : ''}`}
+            type="password"
+            value={loginPw}
+            onChange={e => { setLoginPw(e.target.value); setLoginError('') }}
+            placeholder="Lösenord"
+            autoComplete="current-password"
+          />
+          {loginError && <p className={styles.gateError}>{loginError}</p>}
+          <button className={styles.gateBtn} type="submit" disabled={loggingIn || !loginEmail.trim() || !loginPw}>
+            {loggingIn ? 'Loggar in…' : 'Logga in'}
+          </button>
+        </form>
+      </div>
+    )
+  }
+
+  // Vantar pa att veta om session finns
+  if (hasSession === null) {
+    return <div className={styles.loading}><div className="spinner" /></div>
   }
 
   return (
