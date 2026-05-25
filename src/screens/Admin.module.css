@@ -202,7 +202,7 @@
   background: none;
   border: 1px solid #222;
   border-radius: 8px;
-  color: #555;
+  color: #888;
   font-size: 13px;
   font-family: inherit;
   padding: 9px 12px;
@@ -269,7 +269,7 @@
 
 .toolbarInfo {
   font-size: 13px;
-  color: #555;
+  color: #888;
   flex: 1;
 }
 
@@ -287,7 +287,7 @@
 }
 
 .searchInput:focus { border-color: #F5D020; }
-.searchInput::placeholder { color: #444; }
+.searchInput::placeholder { color: #777; }
 
 .filterSelect {
   background: #161616;
@@ -369,7 +369,7 @@
   transition: border-color 0.15s;
 }
 .progNameInput:focus { border-color: #F5D020; }
-.progNameInput::placeholder { color: #444; }
+.progNameInput::placeholder { color: #777; }
 
 .progEditorSpacer {
   flex: 1;
@@ -455,7 +455,7 @@
   touch-action: none;
   transition: color 0.1s;
 }
-.sessionColHandle:hover { color: #666; }
+.sessionColHandle:hover { color: #999; }
 .sessionColHandle:active { cursor: grabbing; }
 
 .sessionColName {
@@ -551,7 +551,7 @@
   touch-action: none;
   transition: color 0.1s;
 }
-.exCardHandle:hover { color: #666; }
+.exCardHandle:hover { color: #999; }
 .exCardHandle:active { cursor: grabbing; }
 
 .exCardMain {
@@ -596,7 +596,7 @@
   flex-wrap: wrap;
   gap: 6px;
   font-size: 10px;
-  color: #666;
+  color: #999;
   line-height: 1.2;
   margin-top: 1px;
 }
@@ -638,7 +638,7 @@
 
 .stepperLabel {
   font-size: 11px;
-  color: #555;
+  color: #888;
   min-width: 44px;
 }
 
@@ -685,7 +685,7 @@
 
 .exCardRowLabel {
   font-size: 11px;
-  color: #555;
+  color: #888;
   min-width: 44px;
 }
 
@@ -710,7 +710,7 @@
 
 .repsDash {
   font-size: 12px;
-  color: #444;
+  color: #777;
 }
 
 .vilaSelect {
@@ -754,7 +754,7 @@
   width: 100%;
   background: none;
   border: none;
-  color: #555;
+  color: #888;
   font-size: 13px;
   font-family: inherit;
   padding: 10px 14px;
@@ -793,12 +793,12 @@
   outline: none;
   min-width: 0;
 }
-.colPickerInput::placeholder { color: #444; }
+.colPickerInput::placeholder { color: #777; }
 
 .colPickerClose {
   background: none;
   border: none;
-  color: #444;
+  color: #777;
   font-size: 12px;
   font-family: inherit;
   padding: 9px 10px;
@@ -819,7 +819,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #444;
+  color: #777;
   padding: 8px 12px 4px;
   position: sticky;
   top: 0;
@@ -861,7 +861,7 @@
   background: none;
   border: 1px dashed #282828;
   border-radius: 12px;
-  color: #444;
+  color: #777;
   font-size: 13px;
   font-family: inherit;
   padding: 20px 16px;
@@ -899,7 +899,7 @@
 
 .dragOverlayExMeta {
   font-size: 11px;
-  color: #666;
+  color: #999;
   margin-top: 3px;
 }
 
@@ -916,7 +916,7 @@
 
 .dragOverlaySessionMeta {
   font-weight: 400;
-  color: #666;
+  color: #999;
 }
 
 /* ── Table ── */
@@ -935,7 +935,7 @@
 
 .th {
   background: #141414;
-  color: #666;
+  color: #999;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -969,7 +969,7 @@
 .emptyTd {
   padding: 24px;
   text-align: center;
-  color: #444;
+  color: #777;
   font-size: 13px;
 }
 
@@ -983,7 +983,7 @@
 .cellBuiltin {
   font-size: 14px;
   font-weight: 500;
-  color: #666;
+  color: #999;
 }
 
 .cellText {
@@ -994,13 +994,13 @@
 .monoText {
   font-family: 'SF Mono', 'Menlo', monospace;
   font-size: 12px;
-  color: #666;
+  color: #999;
 }
 
 .rankText {
   font-size: 13px;
   font-weight: 700;
-  color: #555;
+  color: #888;
 }
 
 /* ── Cell inputs ── */
@@ -1161,7 +1161,7 @@
 
 .statCardLabel {
   font-size: 12px;
-  color: #555;
+  color: #888;
   margin-top: 6px;
   font-weight: 500;
 }
@@ -1208,7 +1208,7 @@
 
 .progCardMeta {
   font-size: 11px;
-  color: #666;
+  color: #999;
 }
 
 .progCardMuscles {
@@ -1239,7 +1239,7 @@
   display: inline-block;
   font-size: 11px;
   font-weight: 600;
-  color: #666;
+  color: #999;
   background: #1e1e1e;
   border: 1px solid #2a2a2a;
   border-radius: 20px;
@@ -1262,7 +1262,7 @@
 /* ── Table note ── */
 .tableNote {
   font-size: 12px;
-  color: #444;
+  color: #777;
   margin: 0 0 10px;
 }
 
@@ -1283,7 +1283,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.6px;
-  color: #555;
+  color: #888;
 }
 
 .loading {
@@ -1293,7 +1293,7 @@
 }
 
 .empty {
-  color: #444;
+  color: #777;
   font-size: 14px;
   text-align: center;
   padding: 32px 0;
@@ -1323,7 +1323,7 @@
 .nameCellBtn:hover { background: #1e1e1e; }
 
 .nameCellEmpty {
-  color: #444;
+  color: #777;
   font-weight: 400;
 }
 
@@ -1366,7 +1366,7 @@
   transition: border-color 0.15s;
 }
 .exListSearch:focus { border-color: #F5D020; }
-.exListSearch::placeholder { color: #444; }
+.exListSearch::placeholder { color: #777; }
 
 .exListChips {
   display: flex;
@@ -1380,7 +1380,7 @@
   background: #1a1a1a;
   border: 1px solid #282828;
   border-radius: 20px;
-  color: #666;
+  color: #999;
   font-size: 11px;
   font-weight: 500;
   font-family: inherit;
@@ -1405,7 +1405,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #444;
+  color: #777;
   padding: 10px 16px 4px;
   position: sticky;
   top: 0;
@@ -1436,7 +1436,7 @@
 
 .exListItemMeta {
   font-size: 11px;
-  color: #555;
+  color: #888;
 }
 
 /* ── Detail panel ── */
@@ -1507,7 +1507,7 @@
   justify-content: center;
   height: 100%;
   gap: 16px;
-  color: #444;
+  color: #777;
   font-size: 14px;
   padding: 32px;
 }
@@ -1526,7 +1526,7 @@
 
 .exEmptyLabel {
   font-size: 12px;
-  color: #666;
+  color: #999;
   text-transform: uppercase;
   letter-spacing: 0.8px;
   margin-top: 4px;
@@ -1559,7 +1559,7 @@
 
 .exEmptyHint {
   font-size: 12px;
-  color: #444;
+  color: #777;
   margin: 0;
 }
 
@@ -1653,7 +1653,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #555;
+  color: #888;
 }
 
 .exDetailTextarea {
@@ -1671,7 +1671,7 @@
   transition: border-color 0.15s;
 }
 .exDetailTextarea:focus { border-color: #F5D020; }
-.exDetailTextarea::placeholder { color: #444; }
+.exDetailTextarea::placeholder { color: #777; }
 
 .exDetailActions {
   display: flex;
@@ -2405,7 +2405,7 @@
 }
 .sessionColMeta {
   font-size: 10px;
-  color: #555;
+  color: #888;
   padding-left: 2px;
   letter-spacing: 0.2px;
 }
@@ -2452,7 +2452,7 @@
 .exDetailPanelClose {
   background: none;
   border: none;
-  color: #555;
+  color: #888;
   font-size: 20px;
   cursor: pointer;
   padding: 0 4px;
@@ -2528,7 +2528,7 @@
   font-family: var(--font);
 }
 .exDetailPanelReps input:focus { border-color: var(--accent); }
-.exDetailPanelReps span { color: #555; font-size: 13px; }
+.exDetailPanelReps span { color: #888; font-size: 13px; }
 .exDetailPanelInstr {
   display: flex;
   flex-direction: column;
@@ -2565,7 +2565,7 @@
   background: rgba(245, 208, 32, 0.04);
 }
 .exDetailPanelSwapArrow {
-  color: #555;
+  color: #888;
   font-size: 11px;
 }
 
@@ -2587,7 +2587,7 @@
 }
 .progEditorStatusText {
   font-size: 12px;
-  color: #666;
+  color: #999;
   white-space: nowrap;
 }
 
@@ -2639,7 +2639,7 @@
 .sidebarDetailClose {
   background: none;
   border: none;
-  color: #666;
+  color: #999;
   font-size: 18px;
   cursor: pointer;
   padding: 0 4px;
@@ -2732,7 +2732,7 @@
   gap: 4px;
   flex-shrink: 0;
 }
-.sidebarDetailReps > span { color: #555; }
+.sidebarDetailReps > span { color: #888; }
 
 .sidebarDetailSelect {
   background: #1a1a1a;
@@ -2773,7 +2773,7 @@
 .sidebarDetailPreset:hover { border-color: var(--accent); color: #fff; }
 .sidebarDetailLabel {
   font-size: 10px;
-  color: #666;
+  color: #999;
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.3px;
@@ -2975,7 +2975,7 @@
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
-  color: #555;
+  color: #888;
   letter-spacing: 0.5px;
   padding: 0 2px;
 }
@@ -3076,7 +3076,7 @@
   color: #888;
   margin-left: auto;
 }
-.exMainStatDot { color: #444; }
+.exMainStatDot { color: #777; }
 .exMainStatIssue {
   display: inline-flex;
   align-items: center;
@@ -3105,7 +3105,7 @@
 }
 .exTableHead {
   background: #000000;
-  color: #555;
+  color: #888;
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
@@ -3230,7 +3230,7 @@
 }
 .exInlineSelect:empty,
 .exInlineSelect option[value=""] {
-  color: #555;
+  color: #888;
 }
 
 /* Slå ihop-UI i detaljpanelen */
