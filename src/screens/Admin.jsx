@@ -331,10 +331,10 @@ function SortableExerciseRow({ exercise, sessionId, allExercises, isSelected, on
         className={styles.exCardMain}
         onClick={() => onSelect?.()}
       >
+        <div className={styles.exCardName}>{exercise.name}</div>
         {muscleGroup && (
           <div className={styles.exCardMuscle}>{muscleGroup}</div>
         )}
-        <div className={styles.exCardName}>{exercise.name}</div>
         <div className={styles.exCardMeta}>
           <span>{exercise.workSets ?? 3}×{repsLabel ?? '—'}</span>
           {(exercise.backoffSets ?? 0) > 0 && <span>+{exercise.backoffSets} BO</span>}
@@ -1606,7 +1606,7 @@ function ExercisesTab() {
                   value={form.instructions ?? ''}
                   onChange={e => setForm(f => ({ ...f, instructions: e.target.value }))}
                   placeholder="Tekniknoteringar, coaching cues…"
-                  rows={5}
+                  rows={7}
                 />
               </div>
             </div>

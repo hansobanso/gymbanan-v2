@@ -570,18 +570,18 @@
 
 /* Muskelgrupp i gult, samma stil som ovningsnamnet */
 .exCardMuscle {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--accent);
+  font-size: 12px;
+  font-weight: 400;
+  color: #888;
   line-height: 1.25;
   letter-spacing: 0;
   text-transform: none;
 }
 
 .exCardName {
-  font-size: 13px;
-  font-weight: 600;
-  color: #e0e0e0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
   line-height: 1.25;
   word-break: break-word;
 }
@@ -1662,6 +1662,7 @@
   outline: none;
   resize: vertical;
   line-height: 1.5;
+  min-height: 140px;
   transition: border-color 0.15s;
 }
 .exDetailTextarea:focus { border-color: #F5D020; }
@@ -1671,6 +1672,20 @@
   display: flex;
   gap: 8px;
   align-items: center;
+}
+
+/* I den glidande panelen: stapla falt-raden sa sekundara muskler far
+   full bredd, och fast spara/avbryt langst ner. */
+.exDetailFloating .exDetailFieldRow {
+  flex-direction: column;
+}
+.exDetailFloating .exDetailActions {
+  position: sticky;
+  bottom: 0;
+  background: var(--bg-2, #0a0a0a);
+  padding: 14px 0 4px;
+  margin-top: 8px;
+  border-top: 1px solid var(--border, #2a2a2a);
 }
 
 /* ─────────────────────────────────────────────────────────────
