@@ -3,6 +3,8 @@
   "short_name": "Gymbanan",
   "description": "Din personliga gymtracker",
   "start_url": "/",
+  "id": "/",
+  "scope": "/",
   "display_override": ["standalone"],
   "display": "standalone",
   "background_color": "#000000",
