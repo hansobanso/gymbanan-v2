@@ -1,4 +1,4 @@
-const CACHE = 'gymbanan-v14'
+const CACHE = 'gymbanan-v15'
 const PRECACHE = ['/', '/index.html', '/manifest.json']
 
 self.addEventListener('install', (e) => {
@@ -19,6 +19,12 @@ self.addEventListener('fetch', (e) => {
   const url = e.request.url
   // Passera igenom API-anrop utan cache
   if (url.includes('supabase.co') || url.includes('workers.dev')) return
+  // Manifest-filer hamtas alltid farskt sa ratt PWA-manifest lases
+  // (admin vs huvudapp). Cacha dem aldrig.
+  if (url.includes('manifest')) {
+    e.respondWith(fetch(e.request).catch(() => caches.match(e.request)))
+    return
+  }
 
   e.respondWith(
     fetch(e.request)
