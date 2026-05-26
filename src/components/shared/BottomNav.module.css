@@ -4,11 +4,10 @@
   border-top: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  /* iOS Safari PWA: env(safe-area-inset-bottom) kan ge 0 vid forsta
-     laddning. max() ser till att vi alltid har minst lite padding sa
-     navknapparna inte hamnar bakom hemindikatorn, och navfaltets egen
-     #111-bakgrund fyller hela zonen sa ingen svart kant syns. */
-  padding-bottom: max(env(safe-area-inset-bottom, 0px), 8px);
+  /* iOS Safari PWA: utan viewport-fit=cover ger env(safe-area-inset-bottom)
+     oftast 0, sa menyn hamnar tatt mot kanten. max() ger en luftigare
+     miniminivaa sa menyn lyfter fran botten. */
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 20px);
 }
 
 .tabs {
