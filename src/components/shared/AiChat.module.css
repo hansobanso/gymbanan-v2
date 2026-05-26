@@ -132,14 +132,16 @@
   z-index: 10;
 }
 .notesPanel {
-  position: absolute;
+  position: fixed;
   top: 0;
-  bottom: 0;
   left: 0;
   right: 0;
+  /* Hojd foljer visuella viewporten (satt via JS) sa tangentbordet inte
+     gommer textrutan. Fallback till dvh om var saknas. */
+  height: var(--kbd-vh, 100dvh);
   background: var(--bg-2);
   z-index: 11;
-  padding: max(20px, env(safe-area-inset-top)) 16px calc(20px + env(safe-area-inset-bottom));
+  padding: max(20px, env(safe-area-inset-top)) 16px 16px;
   box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.4);
   display: flex;
   flex-direction: column;

@@ -37,6 +37,25 @@ export default function AiChat({ open, onClose, getContext, getMemory, getDeload
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, loading])
 
+  // Nar anteckningspanelen ar oppen: lat panelen folja visuella viewporten
+  // sa tangentbordet inte gommer textrutan (iOS).
+  useEffect(() => {
+    if (!notesOpen) return
+    const vv = window.visualViewport
+    if (!vv) return
+    const update = () => {
+      document.documentElement.style.setProperty('--kbd-vh', `${vv.height}px`)
+    }
+    update()
+    vv.addEventListener('resize', update)
+    vv.addEventListener('scroll', update)
+    return () => {
+      vv.removeEventListener('resize', update)
+      vv.removeEventListener('scroll', update)
+      document.documentElement.style.removeProperty('--kbd-vh')
+    }
+  }, [notesOpen])
+
   async function handleSend() {
     const text = input.trim()
     if (!text || loading) return
