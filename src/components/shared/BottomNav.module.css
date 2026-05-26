@@ -4,6 +4,7 @@
   border-top: 1px solid var(--border);
   display: flex;
   flex-direction: column;
+  padding-top: 8px;
   /* iOS Safari PWA: utan viewport-fit=cover ger env(safe-area-inset-bottom)
      oftast 0, sa menyn hamnar tatt mot kanten. max() ger en luftigare
      miniminivaa sa menyn lyfter fran botten. */
