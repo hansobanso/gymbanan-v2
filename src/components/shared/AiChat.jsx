@@ -20,6 +20,7 @@ export default function AiChat({ open, onClose, getContext, getMemory, getDeload
   const [input, setInput] = useState('')
   const [notesOpen, setNotesOpen] = useState(false)
   const messagesEndRef = useRef(null)
+  const messagesRef = useRef(null)
   const inputRef = useRef(null)
   const notesRef = useRef(null)
   const { messages, loading, error, send, markAdjustmentApplied, markDeloadApplied, markWorkoutApplied } = useAI({ getContext, getMemory, getDeloadStatus, getAvailableExercises })
@@ -32,9 +33,17 @@ export default function AiChat({ open, onClose, getContext, getMemory, getDeload
     }
   }, [open])
 
-  // Scrolla till botten vid nytt meddelande
+  // Scrolla meddelandelistan till botten sa senaste meddelandet syns.
+  // Scrollar containern direkt (inte scrollIntoView) sa hela sheeten
+  // inte flyttas, och kor en extra gang efter att layouten satt sig.
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const scrollToBottom = () => {
+      const el = messagesRef.current
+      if (el) el.scrollTop = el.scrollHeight
+    }
+    scrollToBottom()
+    const t = setTimeout(scrollToBottom, 100)
+    return () => clearTimeout(t)
   }, [messages, loading])
 
   // Nar PT-chatten eller anteckningspanelen ar oppen: folj visuella
@@ -166,7 +175,7 @@ export default function AiChat({ open, onClose, getContext, getMemory, getDeload
             </AnimatePresence>
 
             {/* Meddelanden */}
-            <div className={styles.messages}>
+            <div className={styles.messages} ref={messagesRef}>
               {introMessage && (
                 <div className={styles.introBubble}>
                   <span className={styles.introLabel}>Inför passet</span>
