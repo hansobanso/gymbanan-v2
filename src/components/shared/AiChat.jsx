@@ -38,21 +38,28 @@ export default function AiChat({ open, onClose, getContext, getMemory, getDeload
   }, [messages, loading])
 
   // Nar anteckningspanelen ar oppen: lat panelen folja visuella viewporten
-  // sa tangentbordet inte gommer textrutan (iOS).
+  // sa tangentbordet inte gommer textrutan (iOS). Vi satter bade hojd och
+  // topp-offset, och kor extra uppdateringar strax efter oppning eftersom
+  // iOS inte alltid fyrar resize direkt nar tangentbordet glider upp.
   useEffect(() => {
     if (!notesOpen) return
     const vv = window.visualViewport
     if (!vv) return
     const update = () => {
       document.documentElement.style.setProperty('--kbd-vh', `${vv.height}px`)
+      document.documentElement.style.setProperty('--kbd-top', `${vv.offsetTop}px`)
     }
     update()
+    // Fanga tangentbordets slutlage med nagra fordrojda matningar
+    const timers = [120, 300, 550, 800].map(ms => setTimeout(update, ms))
     vv.addEventListener('resize', update)
     vv.addEventListener('scroll', update)
     return () => {
+      timers.forEach(clearTimeout)
       vv.removeEventListener('resize', update)
       vv.removeEventListener('scroll', update)
       document.documentElement.style.removeProperty('--kbd-vh')
+      document.documentElement.style.removeProperty('--kbd-top')
     }
   }, [notesOpen])
 

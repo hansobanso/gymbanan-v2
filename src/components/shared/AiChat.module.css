@@ -133,7 +133,7 @@
 }
 .notesPanel {
   position: fixed;
-  top: 0;
+  top: var(--kbd-top, 0px);
   left: 0;
   right: 0;
   /* Hojd foljer visuella viewporten (satt via JS) sa tangentbordet inte
