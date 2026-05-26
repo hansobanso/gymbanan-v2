@@ -37,12 +37,12 @@ export default function AiChat({ open, onClose, getContext, getMemory, getDeload
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, loading])
 
-  // Nar anteckningspanelen ar oppen: lat panelen folja visuella viewporten
-  // sa tangentbordet inte gommer textrutan (iOS). Vi satter bade hojd och
-  // topp-offset, och kor extra uppdateringar strax efter oppning eftersom
-  // iOS inte alltid fyrar resize direkt nar tangentbordet glider upp.
+  // Nar PT-chatten eller anteckningspanelen ar oppen: folj visuella
+  // viewporten sa tangentbordet inte lamnar luft / gommer textrutan (iOS).
+  // Satter bade hojd och topp-offset, med extra fordrojda matningar
+  // eftersom iOS inte alltid fyrar resize direkt nar tangentbordet glider upp.
   useEffect(() => {
-    if (!notesOpen) return
+    if (!open && !notesOpen) return
     const vv = window.visualViewport
     if (!vv) return
     const update = () => {
@@ -50,7 +50,6 @@ export default function AiChat({ open, onClose, getContext, getMemory, getDeload
       document.documentElement.style.setProperty('--kbd-top', `${vv.offsetTop}px`)
     }
     update()
-    // Fanga tangentbordets slutlage med nagra fordrojda matningar
     const timers = [120, 300, 550, 800].map(ms => setTimeout(update, ms))
     vv.addEventListener('resize', update)
     vv.addEventListener('scroll', update)
@@ -61,7 +60,7 @@ export default function AiChat({ open, onClose, getContext, getMemory, getDeload
       document.documentElement.style.removeProperty('--kbd-vh')
       document.documentElement.style.removeProperty('--kbd-top')
     }
-  }, [notesOpen])
+  }, [open, notesOpen])
 
   async function handleSend() {
     const text = input.trim()

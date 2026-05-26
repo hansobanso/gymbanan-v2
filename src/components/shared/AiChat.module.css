@@ -7,9 +7,11 @@
 
 .sheet {
   position: fixed;
-  inset: 0;
+  top: var(--kbd-top, 0px);
+  left: 0;
+  right: 0;
   width: 100%;
-  height: 100dvh;
+  height: var(--kbd-vh, 100dvh);
   background: var(--bg);
   z-index: 201;
   display: flex;
