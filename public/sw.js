@@ -1,4 +1,4 @@
-const CACHE = 'gymbanan-v15'
+const CACHE = 'gymbanan-v16'
 const PRECACHE = ['/', '/index.html', '/manifest.json']
 
 self.addEventListener('install', (e) => {
