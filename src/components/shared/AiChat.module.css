@@ -375,6 +375,7 @@
   border-top: 1px solid var(--border);
   background: var(--bg-2);
   flex-shrink: 0;
+  touch-action: none;
 }
 
 .input {
@@ -395,6 +396,7 @@
   transition: border-color 0.15s, box-shadow 0.15s;
   -webkit-appearance: none;
   overflow-y: hidden;
+  touch-action: auto;
 }
 
 .input:focus {
