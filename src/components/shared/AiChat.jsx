@@ -115,6 +115,10 @@ export default function AiChat({ open, onClose, getContext, getMemory, getDeload
   return (
     <AnimatePresence>
       {open && (
+        <>
+        {/* Solid mork bakgrund som tacker hela skarmen bakom sheeten, sa
+            inget av passet skymtar i tangentbords-zonen nar man drar. */}
+        <div className={styles.sheetBackdrop} />
         <motion.div
           className={styles.sheet}
           initial={{ x: '100%', opacity: 0.6 }}
@@ -369,6 +373,7 @@ export default function AiChat({ open, onClose, getContext, getMemory, getDeload
               </button>
             </div>
           </motion.div>
+        </>
       )}
     </AnimatePresence>
   )

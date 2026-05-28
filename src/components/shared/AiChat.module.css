@@ -21,6 +21,15 @@
   padding-top: env(safe-area-inset-top, 0px);
 }
 
+/* Solid mork yta som tacker hela skarmen bakom sheeten, sa inget av
+   passet skymtar i tangentbords-zonen nar man drar. */
+.sheetBackdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-2);
+  z-index: 200;
+}
+
 /* ── Header ── */
 .header {
   display: flex;
