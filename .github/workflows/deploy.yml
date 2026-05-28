@@ -2,7 +2,7 @@ name: Deploy to Cloudflare Pages
 
 on:
   push:
-    branches: [main]
+    branches: [main, dev]
 
 jobs:
   deploy:
@@ -29,4 +29,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name gymbanan --branch production
+          command: pages deploy dist --project-name gymbanan --branch ${{ github.ref_name == 'main' && 'production' || 'dev' }}
