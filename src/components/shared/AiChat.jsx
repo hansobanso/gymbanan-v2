@@ -67,8 +67,10 @@ export default function AiChat({ open, onClose, getContext, getMemory, getDeload
       if (el) el.scrollTop = el.scrollHeight
     }
     scrollToBottom()
-    const t = setTimeout(scrollToBottom, 100)
-    return () => clearTimeout(t)
+    // Flera fordrojda forsok sa vi fangar svar som renderas i steg
+    // (t.ex. nar PT-svaret kommer in eller layouten satter sig).
+    const timers = [50, 150, 300, 500, 800].map(ms => setTimeout(scrollToBottom, ms))
+    return () => timers.forEach(clearTimeout)
   }, [messages, loading])
 
   // Nar PT-chatten eller anteckningspanelen ar oppen: folj visuella
@@ -82,6 +84,12 @@ export default function AiChat({ open, onClose, getContext, getMemory, getDeload
     const update = () => {
       document.documentElement.style.setProperty('--kbd-vh', `${vv.height}px`)
       document.documentElement.style.setProperty('--kbd-top', `${vv.offsetTop}px`)
+      // Nar tangentbordet andrar storlek (t.ex. akar upp nar man fokuserar
+      // textfaltet): hall meddelandelistan vid botten sa senaste svaret syns.
+      if (open) {
+        const el = messagesRef.current
+        if (el) el.scrollTop = el.scrollHeight
+      }
     }
     update()
     const timers = [120, 300, 550, 800].map(ms => setTimeout(update, ms))
