@@ -456,6 +456,13 @@
   text-align: left;
 }
 
+/* REPS-kolumnen i raderna innehaller reps-rutan + RIR-elementet (34px + 6px
+   margin = 40px) sida vid sida. Rubriken ska centreras over sjalva reps-rutan,
+   inte over hela kolumnen, sa vi skiftar den vanster med samma 40px. */
+.colLabelReps {
+  margin-right: 40px;
+}
+
 /* ── Sets + warmup ── */
 .sets {
   display: flex;

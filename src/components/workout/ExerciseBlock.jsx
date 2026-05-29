@@ -472,8 +472,11 @@ export default function ExerciseBlock({
 
       {/* ── Kolumnrubriker ── */}
       <div className={styles.colHeaders}>
-        {colLabels.map(l => (
-          <span key={l} className={styles.colLabel}>{l}</span>
+        {colLabels.map((l, i) => (
+          <span
+            key={l}
+            className={`${styles.colLabel} ${i === 2 ? styles.colLabelReps : ''}`}
+          >{l}</span>
         ))}
       </div>
 
