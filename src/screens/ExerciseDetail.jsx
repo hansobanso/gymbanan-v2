@@ -409,7 +409,7 @@ export default function ExerciseDetail() {
               rows={3}
             />
             <button
-              className={styles.saveRestBtn}
+              className={styles.saveNoteBtn}
               onClick={async () => {
                 if (noteSaving || !form?.name) return
                 setNoteSaving(true)
