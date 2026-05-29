@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { saveProgram, updateProgram, deleteProgram, getExercises } from '../lib/db'
 import ProgramEdit from '../components/settings/ProgramEdit'
 import SessionEdit from '../components/settings/SessionEdit'
+import { BananaIcon } from '../components/shared/Icons'
 import styles from './Programs.module.css'
 
 const ADMIN_EMAIL = 'hannes@hannesisaksson.com'
@@ -173,7 +174,11 @@ export default function Programs({ session, programs, setPrograms, activeProgram
                 </span>
                 <div className={styles.programCardMeta}>
                   <span>{(p.sessions ?? []).length} pass</span>
-                  {isGlobal && <span className={styles.globalBadge}>Global</span>}
+                  {isGlobal && (
+                    <span className={styles.globalBadge} title="Färdigt program" aria-label="Färdigt program">
+                      <BananaIcon className={styles.globalBadgeIcon} />
+                    </span>
+                  )}
                 </div>
               </div>
               <div className={styles.programCardRight}>

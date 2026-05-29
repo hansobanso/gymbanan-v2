@@ -129,19 +129,22 @@
 }
 
 .globalBadge {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--text-3);
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
+  display: inline-flex;
+  align-items: center;
   background: transparent;
-  border-radius: 0;
   padding: 0;
+}
+
+.globalBadgeIcon {
+  width: 15px;
+  height: 15px;
+  display: block;
 }
 
 .globalBadge::before {
   content: '·';
   margin-right: 8px;
+  color: var(--text-3);
 }
 
 .programCardRight {
