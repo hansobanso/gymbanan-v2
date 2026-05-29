@@ -90,6 +90,7 @@ export default function ExerciseDetail() {
 
   const navigate = useNavigate()
   const [userId, setUserId]   = useState(null)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [form, setForm]       = useState(null)
   const [dbId, setDbId]       = useState(null)
   const [isOwned, setIsOwned] = useState(false)
@@ -107,6 +108,7 @@ export default function ExerciseDetail() {
       const { data: { session } } = await supabase.auth.getSession()
       const uid = session?.user?.id ?? null
       setUserId(uid)
+      setIsAdmin(session?.user?.email === 'hannes@hannesisaksson.com')
 
       let exerciseName = null
 
@@ -156,7 +158,9 @@ export default function ExerciseDetail() {
   }, [decoded, isBuiltin, builtinName])
 
   const isGlobal = !isOwned && (isBuiltin || (form != null && form.user_id === null))
-  const canEdit = isOwned && editingMode
+  // Admin far redigera globala ovningar direkt (RLS tillater det).
+  const canEditGlobalAsAdmin = isAdmin && isGlobal && !isBuiltin && dbId != null
+  const canEdit = (isOwned || canEditGlobalAsAdmin) && editingMode
 
   // Build muscle intensities for MuscleMap from primary/secondary muscle
   const muscleIntensities = useMemo(() => {
@@ -178,7 +182,7 @@ export default function ExerciseDetail() {
     setSaving(true)
     setSaveErr(null)
     try {
-      if (isOwned && dbId) {
+      if ((isOwned || canEditGlobalAsAdmin) && dbId) {
         const payload = {
           name:             form.name,
           muscle_group:     form.muscle_group     || null,
@@ -251,7 +255,7 @@ export default function ExerciseDetail() {
           </svg>
         </button>
         <span className={styles.headerTitle} title={form.name}>{form.name}</span>
-        {isOwned ? (
+        {(isOwned || canEditGlobalAsAdmin) ? (
           editingMode ? (
             <button
               className={`${styles.saveBtn} ${saved ? styles.saveBtnDone : ''}`}
