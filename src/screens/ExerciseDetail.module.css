@@ -352,18 +352,18 @@
   margin: 0;
 }
 
-/* ── Spara anteckning — full bredd, matchar kortets textarea ── */
+/* ── Spara anteckning — full bredd, matchar Kopiera-knappens storlek ── */
 .saveNoteBtn {
   margin-top: 12px;
   width: 100%;
   background: var(--accent);
-  border: none;
+  border: 1px solid var(--accent);
   border-radius: var(--radius-md);
   color: #000;
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
   font-family: var(--font);
-  padding: 14px;
+  padding: 12px;
   cursor: pointer;
   transition: opacity 0.15s;
 }
