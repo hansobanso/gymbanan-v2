@@ -59,7 +59,7 @@ function getNextSession(program, lastWorkout) {
   return sessions[(idx + 1) % sessions.length]
 }
 
-export default function HomeScreen({ session, programs = [], programsLoaded = false, activeProgramId = null, onSetActive, onReady }) {
+export default function HomeScreen({ session, programs = [], programsLoaded = false, programsError = false, onRetryPrograms, activeProgramId = null, onSetActive, onReady }) {
   const [lastWorkout, setLastWorkout] = useState(null)
   const [recentWorkouts, setRecentWorkouts] = useState([])
   const [workoutsLoaded, setWorkoutsLoaded] = useState(false)
@@ -151,7 +151,9 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
     programs.find(p => p.id === activeProgramId) ?? null
 
   // Ny anvandare / inget val gjort: inget aktivt program valt.
-  const isNewUser = !activeProgram
+  // Men INTE om program-laddningen misslyckades (da visar vi felvyn istallet).
+  const hasLoadError = programsError && programs.length === 0
+  const isNewUser = !activeProgram && !hasLoadError
 
   const monday = getMonday()
   const weeklyCount = recentWorkouts.filter(w => new Date(w.finished_at) >= monday).length
@@ -212,7 +214,17 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
       </header>
       <div className={styles.container}>
 
-        {/* ── Deload-banner ── */}
+        {/* ── Laddningsfel: kunde inte hamta program (skiljs fran ny anvandare) ── */}
+        {programsError && programs.length === 0 && (
+          <div className={styles.errorCard}>
+            <p className={styles.errorTitle}>Kunde inte ladda dina program</p>
+            <p className={styles.errorSub}>Kontrollera din anslutning och försök igen.</p>
+            <button className={styles.errorRetryBtn} onClick={() => onRetryPrograms?.()} type="button">
+              Försök igen
+            </button>
+          </div>
+        )}
+
         {deloadStatus.isActive && (
           <div className={styles.deloadBanner}>
             <div className={styles.deloadBannerContent}>
@@ -295,7 +307,6 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
             <div className={styles.welcomeCard}>
               <h2 className={styles.welcomeTitle}>
                 {displayName ? `Välkommen, ${displayName}!` : 'Välkommen till Gymbanan!'}
-                <BananaIcon className={styles.welcomeTitleIcon} />
               </h2>
               <p className={styles.welcomeBody}>
                 Kom igång genom att välja ett färdigt program nedan, eller skapa ett eget.
@@ -357,7 +368,7 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
         )}
 
         {/* ── Inget aktivt program men har egna ── */}
-        {!isNewUser && !activeProgram && (
+        {!isNewUser && !activeProgram && !hasLoadError && (
           <div className={styles.emptyCard}>
             <p className={styles.emptyText}>Inget aktivt program</p>
             <p className={styles.emptySubtext}>Välj ett program under Program-fliken</p>

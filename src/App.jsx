@@ -1,4 +1,4 @@
-import { useEffect, useState, lazy, Suspense } from 'react'
+import { useEffect, useState, useCallback, lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from './lib/supabase'
 import { getPrograms, setActiveProgram } from './lib/db'
@@ -54,6 +54,7 @@ function AppRoutes({ session }) {
   // Shared programs state – fetched once, mutated optimistically by Programs screen
   const [programs, setPrograms] = useState([])
   const [programsLoaded, setProgramsLoaded] = useState(false)
+  const [programsError, setProgramsError] = useState(false)
   const [activeProgramId, setActiveProgramId] = useState(null)
   const [homeReady, setHomeReady] = useState(false)
   const [splashGone, setSplashGone] = useState(false)
@@ -66,22 +67,35 @@ function AppRoutes({ session }) {
     return () => clearTimeout(t)
   }, [homeReady])
 
-  useEffect(() => {
+  const loadPrograms = useCallback(() => {
     let cancelled = false
+    setProgramsError(false)
     Promise.all([
       getPrograms(session.user.id),
       supabase.from('profiles').select('active_program_id').eq('id', session.user.id).maybeSingle(),
     ]).then(([progs, { data: profile }]) => {
       if (cancelled) return
       setPrograms(progs)
+      setProgramsError(false)
       const activeId = profile?.active_program_id
       if (activeId && progs.some(p => p.id === activeId)) {
         setActiveProgramId(activeId)
       }
       setProgramsLoaded(true)
-    }).catch(() => { if (!cancelled) setProgramsLoaded(true) })
+    }).catch(() => {
+      if (cancelled) return
+      // Skilj pa "inga program finns" och "kunde inte hamta program".
+      // Vid fel: flagga sa HomeScreen kan visa laddningsfel istallet for
+      // att felaktigt visa ny-anvandar-vyn.
+      setProgramsError(true)
+      setProgramsLoaded(true)
+    })
     return () => { cancelled = true }
   }, [session.user.id])
+
+  useEffect(() => {
+    return loadPrograms()
+  }, [loadPrograms])
 
   // Sakerstall att profiles.display_name finns. Om namnet angavs vid signup
   // men profilen inte hann skrivas (t.ex. p.g.a. e-postbekraftelse), kopiera
@@ -163,7 +177,7 @@ function AppRoutes({ session }) {
 
       {/* Always-mounted tab screens — shown/hidden via CSS */}
       <Suspense fallback={<div style={{display:'flex',alignItems:'center',justifyContent:'center',flex:1}}><div className="spinner"/></div>}>
-        <div style={tabStyle('/')}><Home session={session} programs={programs} programsLoaded={programsLoaded} activeProgramId={activeProgramId} onSetActive={id => { setActiveProgramId(id); setActiveProgram(session.user.id, id).catch(() => {}) }} onReady={() => setHomeReady(true)} /></div>
+        <div style={tabStyle('/')}><Home session={session} programs={programs} programsLoaded={programsLoaded} programsError={programsError} onRetryPrograms={loadPrograms} activeProgramId={activeProgramId} onSetActive={id => { setActiveProgramId(id); setActiveProgram(session.user.id, id).catch(() => {}) }} onReady={() => setHomeReady(true)} /></div>
         <div style={tabStyle('/programs')}><Programs session={session} programs={programs} setPrograms={setPrograms} activeProgramId={activeProgramId} onSetActive={id => { setActiveProgramId(id); setActiveProgram(session.user.id, id).catch(() => {}) }} /></div>
         <div style={tabStyle('/history')}><History session={session} /></div>
         <div style={tabStyle('/settings')}><Settings session={session} /></div>

@@ -957,3 +957,39 @@
   text-align: center;
 }
 .welcomeFreeLink:active { color: var(--text-2); }
+
+/* ── Laddningsfel for program (skiljs fran ny-anvandar-vyn) ── */
+.errorCard {
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 28px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+.errorTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+.errorSub {
+  font-size: 14px;
+  color: var(--text-2);
+  margin: 0 0 8px;
+}
+.errorRetryBtn {
+  background: var(--accent);
+  border: none;
+  border-radius: 12px;
+  color: #000000;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: var(--font);
+  padding: 12px 28px;
+  cursor: pointer;
+  transition: opacity 0.1s;
+}
+.errorRetryBtn:active { opacity: 0.7; }
