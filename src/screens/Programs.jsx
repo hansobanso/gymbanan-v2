@@ -3,7 +3,6 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { saveProgram, updateProgram, deleteProgram, getExercises } from '../lib/db'
 import ProgramEdit from '../components/settings/ProgramEdit'
 import SessionEdit from '../components/settings/SessionEdit'
-import { BananaIcon } from '../components/shared/Icons'
 import styles from './Programs.module.css'
 
 const ADMIN_EMAIL = 'hannes@hannesisaksson.com'
@@ -26,8 +25,21 @@ export default function Programs({ session, programs, setPrograms, activeProgram
   const [editingProgram, setEditingProgram] = useState(null)
   const [editingSession, setEditingSession] = useState(null)
   const [previewGlobal, setPreviewGlobal]   = useState(null)
+  const [activeTab, setActiveTab] = useState(null) // 'egna' | 'mallar', satts nar program laddats
 
   const isAdmin = session?.user?.email === ADMIN_EMAIL
+
+  // Dela upp i egna program och appens mallar
+  const ownPrograms = (programs ?? []).filter(p => p.user_id !== null)
+  const templatePrograms = (programs ?? []).filter(p => p.user_id === null)
+
+  // Satt default-flik nar program laddats: Egna om man har nagra, annars Mallar.
+  // activeTab === null betyder "inte vald an".
+  useEffect(() => {
+    if (activeTab !== null) return
+    if (loading) return
+    setActiveTab(ownPrograms.length > 0 ? 'egna' : 'mallar')
+  }, [loading, ownPrograms.length, activeTab])
 
   useEffect(() => {
     getExercises()
@@ -158,36 +170,74 @@ export default function Programs({ session, programs, setPrograms, activeProgram
       <div className={styles.body}>
         {loading && [0, 1, 2].map(i => <div key={i} className={styles.skeleton} />)}
 
-        {!loading && programs.map(p => {
-          const isActive = p.id === activeProgramId
-          const isGlobal = p.user_id === null
-          return (
-            <button
-              key={p.id}
-              className={`${styles.programCard} ${isActive ? styles.programCardActive : ''}`}
-              onClick={() => openProgram(p)}
-              type="button"
-            >
-              <div className={styles.programCardInfo}>
-                <span className={`${styles.programCardName} ${isActive ? styles.programCardNameActive : ''}`}>
-                  {p.name}
-                </span>
-                <div className={styles.programCardMeta}>
-                  <span>{(p.sessions ?? []).length} pass</span>
-                  {isGlobal && (
-                    <span className={styles.globalBadge} title="Färdigt program" aria-label="Färdigt program">
-                      <BananaIcon className={styles.globalBadgeIcon} />
+        {!loading && (
+          <>
+            {/* Flikar: Egna / Mallar */}
+            <div className={styles.tabs}>
+              <button
+                className={`${styles.tab} ${activeTab === 'egna' ? styles.tabActive : ''}`}
+                onClick={() => setActiveTab('egna')}
+                type="button"
+              >
+                Egna
+              </button>
+              <button
+                className={`${styles.tab} ${activeTab === 'mallar' ? styles.tabActive : ''}`}
+                onClick={() => setActiveTab('mallar')}
+                type="button"
+              >
+                Mallar
+              </button>
+            </div>
+
+            {/* Tomt lage i Egna */}
+            {activeTab === 'egna' && ownPrograms.length === 0 && (
+              <div className={styles.emptyTab}>
+                <p className={styles.emptyTabText}>Du har inga egna program än</p>
+                <p className={styles.emptyTabSub}>Skapa ett eller kopiera en mall</p>
+                <button
+                  className={styles.emptyTabBtn}
+                  onClick={() => setEditingProgram(newProgram())}
+                  type="button"
+                >
+                  + Skapa program
+                </button>
+                <button
+                  className={styles.emptyTabLink}
+                  onClick={() => setActiveTab('mallar')}
+                  type="button"
+                >
+                  eller bläddra bland mallar
+                </button>
+              </div>
+            )}
+
+            {(activeTab === 'egna' ? ownPrograms : templatePrograms).map(p => {
+              const isActive = p.id === activeProgramId
+              return (
+                <button
+                  key={p.id}
+                  className={`${styles.programCard} ${isActive ? styles.programCardActive : ''}`}
+                  onClick={() => openProgram(p)}
+                  type="button"
+                >
+                  <div className={styles.programCardInfo}>
+                    <span className={`${styles.programCardName} ${isActive ? styles.programCardNameActive : ''}`}>
+                      {p.name}
                     </span>
-                  )}
-                </div>
-              </div>
-              <div className={styles.programCardRight}>
-                {isActive && <span className={styles.activeCheck}>✓</span>}
-                <span className={styles.chevron}>›</span>
-              </div>
-            </button>
-          )
-        })}
+                    <div className={styles.programCardMeta}>
+                      <span>{(p.sessions ?? []).length} pass</span>
+                    </div>
+                  </div>
+                  <div className={styles.programCardRight}>
+                    {isActive && <span className={styles.activeCheck}>✓</span>}
+                    <span className={styles.chevron}>›</span>
+                  </div>
+                </button>
+              )
+            })}
+          </>
+        )}
       </div>
 
       <AnimatePresence>
