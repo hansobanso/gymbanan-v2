@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from './lib/supabase'
-import { getPrograms, setActiveProgram } from './lib/db'
+import { getPrograms, setActiveProgram, getProfile } from './lib/db'
 import Auth from './screens/Auth'
 import Home from './screens/Home'
 import BottomNav from './components/shared/BottomNav'
@@ -72,8 +72,8 @@ function AppRoutes({ session }) {
     setProgramsError(false)
     Promise.all([
       getPrograms(session.user.id),
-      supabase.from('profiles').select('active_program_id').eq('id', session.user.id).maybeSingle(),
-    ]).then(([progs, { data: profile }]) => {
+      getProfile(session.user.id),
+    ]).then(([progs, profile]) => {
       if (cancelled) return
       setPrograms(progs)
       setProgramsError(false)

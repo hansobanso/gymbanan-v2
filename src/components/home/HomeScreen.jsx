@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getWorkouts, getDeloadStatus, endDeloadWeek } from '../../lib/db'
+import { getWorkouts, getDeloadStatus, endDeloadWeek, getProfile, cacheInvalidate } from '../../lib/db'
 import { supabase } from '../../lib/supabase'
 import MuscleMap from '../shared/MuscleMap'
 import { BananaIcon } from '../shared/Icons'
@@ -81,8 +81,8 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
     getDeloadStatus(session.user.id).then(s => {
       if (!cancelled) setDeloadStatus(s)
     }).catch(() => {})
-    supabase.from('profiles').select('display_name, intro_dismissed').eq('id', session.user.id).maybeSingle()
-      .then(({ data }) => {
+    getProfile(session.user.id)
+      .then(data => {
         if (cancelled || !data) return
         if (data.display_name) setDisplayName(data.display_name)
         setIntroDismissed(data.intro_dismissed === true)
@@ -138,7 +138,7 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
     supabase.from('profiles')
       .update({ intro_dismissed: true, updated_at: new Date().toISOString() })
       .eq('id', session.user.id)
-      .then(() => {}, () => {})
+      .then(() => { cacheInvalidate(`profile:${session.user.id}`) }, () => {})
   }
 
   // Globala (mall-)program att erbjuda nya anvandare.

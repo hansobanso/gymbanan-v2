@@ -37,6 +37,22 @@ export async function getPrograms(userId) {
   return data ?? []
 }
 
+// Hamtar alla profil-falt i ETT anrop (cachat) sa uppstarten inte gor
+// flera separata rundresor till profiles-tabellen for samma rad.
+export async function getProfile(userId) {
+  const key = `profile:${userId}`
+  const cached = cacheGet(key)
+  if (cached) return cached
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('active_program_id, display_name, intro_dismissed')
+    .eq('id', userId)
+    .maybeSingle()
+  if (error) return null
+  cacheSet(key, data ?? null)
+  return data ?? null
+}
+
 export async function saveProgram(program) {
   const { data, error } = await supabase
     .from('programs')
@@ -343,6 +359,7 @@ export async function setActiveProgram(userId, programId) {
     .from('profiles')
     .update({ active_program_id: programId })
     .eq('id', userId)
+  cacheInvalidate(`profile:${userId}`)
 }
 
 // ── Deload week ────────────────────────────────────────
