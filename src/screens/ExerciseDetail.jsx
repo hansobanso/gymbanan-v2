@@ -418,23 +418,25 @@ export default function ExerciseDetail() {
               placeholder="Personliga noteringar om övningen…"
               rows={3}
             />
-            <button
-              className={styles.saveNoteBtn}
-              onClick={async () => {
-                if (noteSaving || !form?.name) return
-                setNoteSaving(true)
-                try {
-                  await upsertUserExerciseNote(userId, form.name, personalNote)
-                  setNoteSaved(true)
-                } catch { /* ignore */ }
-                setNoteSaving(false)
-              }}
-              disabled={noteSaving}
-              type="button"
-            >
-              {noteSaving ? 'Sparar…' : noteSaved ? 'Sparat ✓' : 'Spara anteckning'}
-            </button>
           </div>
+        )}
+        {userId && (
+          <button
+            className={styles.saveNoteBtn}
+            onClick={async () => {
+              if (noteSaving || !form?.name) return
+              setNoteSaving(true)
+              try {
+                await upsertUserExerciseNote(userId, form.name, personalNote)
+                setNoteSaved(true)
+              } catch { /* ignore */ }
+              setNoteSaving(false)
+            }}
+            disabled={noteSaving}
+            type="button"
+          >
+            {noteSaving ? 'Sparar…' : noteSaved ? 'Sparat ✓' : 'Spara anteckning'}
+          </button>
         )}
 
         {/* ── Copy and customize for global exercises ── */}
