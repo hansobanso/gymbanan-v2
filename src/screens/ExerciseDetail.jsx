@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { updateExercise, copyExerciseForUser, upsertRestOverride, deleteRestOverride, getUserExerciseNote, upsertUserExerciseNote } from '../lib/db'
+import { updateExercise, copyExerciseForUser, upsertRestOverride, deleteRestOverride, getUserExerciseNote, upsertUserExerciseNote, getExerciseById } from '../lib/db'
 import { EXERCISES, MUSCLE_GROUPS } from '../data/exercises'
 import MuscleMap from '../components/shared/MuscleMap'
 import styles from './ExerciseDetail.module.css'
@@ -127,28 +127,34 @@ export default function ExerciseDetail() {
         setIsOwned(false)
         setForm(base)
       } else {
-        const { data, error } = await supabase
-          .from('exercises').select('*').eq('id', decoded).single()
-        if (!error && data) {
+        const data = await getExerciseById(decoded)
+        if (data) {
           exerciseName = data.name
           const owned = data.user_id === uid
           setDbId(data.id)
           setIsOwned(owned)
           if (!owned && uid) {
-            const { data: restRow } = await supabase
-              .from('user_rest_overrides')
-              .select('rest_seconds')
-              .eq('user_id', uid)
-              .eq('exercise_name', data.name)
-              .maybeSingle()
+            // Hamta vilotids-override och anteckning parallellt (oberoende)
+            const [restRes, note] = await Promise.all([
+              supabase
+                .from('user_rest_overrides')
+                .select('rest_seconds')
+                .eq('user_id', uid)
+                .eq('exercise_name', data.name)
+                .maybeSingle(),
+              getUserExerciseNote(uid, data.name),
+            ])
+            const restRow = restRes.data
             setForm({ ...data, default_rest: restRow ? restRow.rest_seconds : (data.default_rest ?? null) })
+            setPersonalNote(note ?? '')
+            return
           } else {
             setForm(data)
           }
         }
       }
 
-      // Hamta personlig anteckning
+      // Hamta personlig anteckning (for builtins och egna ovningar)
       if (uid && exerciseName) {
         const note = await getUserExerciseNote(uid, exerciseName)
         setPersonalNote(note ?? '')

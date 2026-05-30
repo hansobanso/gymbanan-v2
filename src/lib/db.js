@@ -39,6 +39,19 @@ export async function getPrograms(userId) {
 
 // Hamtar alla profil-falt i ETT anrop (cachat) sa uppstarten inte gor
 // flera separata rundresor till profiles-tabellen for samma rad.
+// Hamtar en enskild ovning per id (cachat) sa att oppna samma ovning
+// igen blir direkt utan ny rundresa.
+export async function getExerciseById(id) {
+  const key = `exercise:${id}`
+  const cached = cacheGet(key)
+  if (cached) return cached
+  const { data, error } = await supabase
+    .from('exercises').select('*').eq('id', id).single()
+  if (error) return null
+  cacheSet(key, data)
+  return data
+}
+
 export async function getProfile(userId) {
   const key = `profile:${userId}`
   const cached = cacheGet(key)
@@ -90,6 +103,7 @@ let _exercisesCache = null
 
 export function invalidateExercisesCache() {
   _exercisesCache = null
+  cacheInvalidate('exercise:')
 }
 
 export async function getExercises() {
