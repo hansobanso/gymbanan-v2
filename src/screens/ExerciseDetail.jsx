@@ -17,12 +17,24 @@ function fmtRest(s) {
   return rem ? `${m}m${rem}s` : `${m}m`
 }
 
+// Sakerstaller att secondary_muscles (array) ar ifylld. Om den saknas/ar tom
+// men gamla singular-faltet finns, skapa array fran den (bakatkompatibelt).
+function normalizeSecondary(data) {
+  if (!data) return data
+  const arr = Array.isArray(data.secondary_muscles) ? data.secondary_muscles : []
+  if (arr.length === 0 && data.secondary_muscle) {
+    return { ...data, secondary_muscles: [data.secondary_muscle] }
+  }
+  return { ...data, secondary_muscles: arr }
+}
+
 function builtinDefaults(name) {
   const data = EXERCISES[name] ?? {}
   return {
     name,
     muscle_group:     data.muscle_group ?? '',
     secondary_muscle: data.secondary_muscle ?? '',
+    secondary_muscles: data.secondary_muscle ? [data.secondary_muscle] : [],
     equipment:        data.equipment ?? '',
     movement_pattern: data.movement_pattern ?? '',
     default_rest:     null,
@@ -146,11 +158,11 @@ export default function ExerciseDetail() {
               getUserExerciseNote(uid, data.name),
             ])
             const restRow = restRes.data
-            setForm({ ...data, default_rest: restRow ? restRow.rest_seconds : (data.default_rest ?? null) })
+            setForm(normalizeSecondary({ ...data, default_rest: restRow ? restRow.rest_seconds : (data.default_rest ?? null) }))
             setPersonalNote(note ?? '')
             return
           } else {
-            setForm(data)
+            setForm(normalizeSecondary(data))
           }
         }
       }
@@ -169,12 +181,17 @@ export default function ExerciseDetail() {
   const canEditGlobalAsAdmin = isAdmin && isGlobal && !isBuiltin && dbId != null
   const canEdit = (isOwned || canEditGlobalAsAdmin) && editingMode
 
-  // Build muscle intensities for MuscleMap from primary/secondary muscle
+  // Build muscle intensities for MuscleMap from primary + secondary muscles
   const muscleIntensities = useMemo(() => {
     if (!form) return {}
     const out = {}
     if (form.muscle_group) out[form.muscle_group] = 1.0
-    if (form.secondary_muscle) out[form.secondary_muscle] = 0.5
+    const secondaries = Array.isArray(form.secondary_muscles) && form.secondary_muscles.length
+      ? form.secondary_muscles
+      : (form.secondary_muscle ? [form.secondary_muscle] : [])
+    for (const m of secondaries) {
+      if (m && m !== form.muscle_group) out[m] = 0.5
+    }
     return out
   }, [form])
 
@@ -190,14 +207,17 @@ export default function ExerciseDetail() {
     setSaveErr(null)
     try {
       if ((isOwned || canEditGlobalAsAdmin) && dbId) {
+        const secArr = (form.secondary_muscles ?? []).filter(m => m && m !== form.muscle_group)
         const payload = {
-          name:             form.name,
-          muscle_group:     form.muscle_group     || null,
-          secondary_muscle: form.secondary_muscle || null,
-          equipment:        form.equipment        || null,
-          movement_pattern: form.movement_pattern || null,
-          default_rest:     form.default_rest     ?? null,
-          instructions:     form.instructions     || null,
+          name:              form.name,
+          muscle_group:      form.muscle_group     || null,
+          secondary_muscles: secArr,
+          // Hall gamla singular-faltet i synk (forsta muskeln) tills det fasas ut
+          secondary_muscle:  secArr[0] || null,
+          equipment:         form.equipment        || null,
+          movement_pattern:  form.movement_pattern || null,
+          default_rest:      form.default_rest     ?? null,
+          instructions:      form.instructions     || null,
         }
         const result = await updateExercise(dbId, payload)
         if (result && result.id) {
@@ -327,17 +347,47 @@ export default function ExerciseDetail() {
 
           <div className={styles.divider} />
 
-          <div className={styles.infoRow}>
-            <span className={styles.infoLabel}>Sekundär</span>
-            {canEdit ? (
-              <select className={styles.infoSelect} value={form.secondary_muscle ?? ''} onChange={e => set('secondary_muscle', e.target.value)}>
-                <option value="">Ingen</option>
-                {MUSCLE_GROUPS.map(mg => <option key={mg} value={mg}>{mg}</option>)}
-              </select>
-            ) : (
-              <span className={styles.infoValue}>{form.secondary_muscle || '–'}</span>
-            )}
-          </div>
+          {canEdit ? (
+            <div className={styles.secMuscleSection}>
+              <span className={styles.infoLabel}>Sekundära muskler</span>
+              <div className={styles.secMuscleChips}>
+                {(form.secondary_muscles ?? []).map(m => (
+                  <span key={m} className={styles.secMuscleChip}>
+                    {m}
+                    <button
+                      type="button"
+                      className={styles.secMuscleChipRemove}
+                      onClick={() => set('secondary_muscles', (form.secondary_muscles ?? []).filter(x => x !== m))}
+                      aria-label={`Ta bort ${m}`}
+                    >×</button>
+                  </span>
+                ))}
+                {(form.secondary_muscles ?? []).length < 7 && (
+                  <select
+                    className={styles.secMuscleAdd}
+                    value=""
+                    onChange={e => {
+                      if (!e.target.value) return
+                      const v = e.target.value
+                      set('secondary_muscles', [...(form.secondary_muscles ?? []).filter(x => x !== v), v])
+                    }}
+                  >
+                    <option value="">+ Lägg till</option>
+                    {MUSCLE_GROUPS
+                      .filter(g => g !== form.muscle_group && !(form.secondary_muscles ?? []).includes(g))
+                      .map(g => <option key={g} value={g}>{g}</option>)}
+                  </select>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className={styles.infoRow}>
+              <span className={styles.infoLabel}>Sekundär</span>
+              <span className={styles.infoValue}>
+                {(form.secondary_muscles ?? []).length ? form.secondary_muscles.join(', ') : '–'}
+              </span>
+            </div>
+          )}
 
           <div className={styles.divider} />
 

@@ -369,3 +369,54 @@
 }
 .saveNoteBtn:disabled { opacity: 0.5; cursor: not-allowed; }
 .saveNoteBtn:active { opacity: 0.7; }
+
+/* ── Sekundära muskler: chips-UI (flera muskler) ── */
+.secMuscleSection {
+  padding: 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.secMuscleChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.secMuscleChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font);
+  background: var(--accent);
+  color: #000;
+}
+.secMuscleChipRemove {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  padding: 0 0 0 2px;
+  opacity: 0.6;
+  font-family: var(--font);
+}
+.secMuscleChipRemove:hover { opacity: 1; }
+.secMuscleAdd {
+  background: transparent;
+  border: 1px dashed #333;
+  border-radius: 12px;
+  color: var(--text-2);
+  font-size: 13px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-family: var(--font);
+  outline: none;
+}
+.secMuscleAdd:hover { border-color: var(--accent); color: var(--accent); }
+.secMuscleAdd:focus { border-color: var(--accent); }
