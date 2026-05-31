@@ -420,3 +420,16 @@
 }
 .secMuscleAdd:hover { border-color: var(--accent); color: var(--accent); }
 .secMuscleAdd:focus { border-color: var(--accent); }
+
+/* Visningsläge: sekundära muskler som dämpade chips (alla syns, radbryts) */
+.secMuscleChipView {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font);
+  background: var(--surface-3, #222);
+  color: var(--text-2);
+}

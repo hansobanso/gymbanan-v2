@@ -381,11 +381,17 @@ export default function ExerciseDetail() {
               </div>
             </div>
           ) : (
-            <div className={styles.infoRow}>
-              <span className={styles.infoLabel}>Sekundär</span>
-              <span className={styles.infoValue}>
-                {(form.secondary_muscles ?? []).length ? form.secondary_muscles.join(', ') : '–'}
-              </span>
+            <div className={styles.secMuscleSection}>
+              <span className={styles.infoLabel}>Sekundära muskler</span>
+              {(form.secondary_muscles ?? []).length ? (
+                <div className={styles.secMuscleChips}>
+                  {form.secondary_muscles.map(m => (
+                    <span key={m} className={styles.secMuscleChipView}>{m}</span>
+                  ))}
+                </div>
+              ) : (
+                <span className={styles.infoValue}>–</span>
+              )}
             </div>
           )}
 
