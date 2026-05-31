@@ -116,13 +116,5 @@ export const EXERCISES = {
   'Underarmscurl med kabel':    { muscle_group: 'Underarmar', secondary_muscle: 'Biceps',     equipment: 'Kabel',      movement_pattern: 'Isolation' },
 }
 
-// Muskelgrupper för filtreringar och formulär
-export const MUSCLE_GROUPS = [
-  'Bröst', 'Rygg', 'Axlar', 'Biceps', 'Triceps',
-  'Quads', 'Hamstrings', 'Rumpa', 'Core', 'Vader', 'Underarmar', 'Övrigt',
-]
-
-export const MUSCLE_ALIASES = {
-  'Ben':      ['Quads', 'Hamstrings', 'Vader'],
-  'Helkropp': ['Bröst', 'Rygg', 'Axlar', 'Biceps', 'Triceps', 'Quads', 'Hamstrings', 'Rumpa', 'Core', 'Vader'],
-}
+// OBS: MUSCLE_GROUPS och MUSCLE_ALIASES bor numera i data/muscleGroups.js
+// (finkorniga grupper). De gamla grova listorna har tagits bort harifran.
