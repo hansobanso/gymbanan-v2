@@ -334,6 +334,9 @@
   align-self: flex-end;
   border-bottom-right-radius: 5px;
   font-weight: 500;
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
 }
 
 .aiBubble {
@@ -341,6 +344,9 @@
   color: var(--text);
   align-self: flex-start;
   border-bottom-left-radius: 5px;
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
 }
 
 /* ── Skriver-indikator ── */
