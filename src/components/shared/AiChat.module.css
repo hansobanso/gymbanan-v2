@@ -609,3 +609,17 @@
   flex-direction: column;
   overflow: hidden;
 }
+
+/* ── Inline-läge: stor sidrubrik som matchar Program/Historik ── */
+.inlineHeader {
+  flex-shrink: 0;
+  padding: calc(var(--safe-top, 44px) + 8px) 16px 12px;
+  background: #000000;
+}
+.inlineTitle {
+  font-size: 28px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: -0.5px;
+}

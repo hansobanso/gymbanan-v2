@@ -135,22 +135,26 @@ export default function AiChat({ open, onClose, getContext, getMemory, getDeload
   const content = (
     <>
             {/* Header */}
+            {inline ? (
+              <div className={styles.inlineHeader}>
+                <h1 className={styles.inlineTitle}>Personlig tränare</h1>
+              </div>
+            ) : (
             <div className={styles.header}>
               <div className={styles.headerLeft}>
                 <span className={styles.ptBadge}>PT</span>
                 <div>
                   <p className={styles.title}>Din personliga tränare</p>
-                  {!inline && <p className={styles.subtitle}>Har tillgång till din passdata</p>}
+                  <p className={styles.subtitle}>Har tillgång till din passdata</p>
                 </div>
               </div>
-              {!inline && (
-                <button className={styles.closeBtn} onClick={onClose} aria-label="Stäng">
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                    <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-                  </svg>
-                </button>
-              )}
+              <button className={styles.closeBtn} onClick={onClose} aria-label="Stäng">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                  <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                </svg>
+              </button>
             </div>
+            )}
 
             {/* Anteckningsknapp - oppnar panel i fokus */}
             {onUpdateNotes && (
