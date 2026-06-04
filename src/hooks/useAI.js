@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef } from 'react'
-import { chatWithAI, parseAdjustment, parseDeload, parseWorkoutPlan } from '../lib/ai'
+import { chatWithAI, parseAdjustment, parseDeload, parseWorkoutPlan, parseProgramChange } from '../lib/ai'
 
-export function useAI({ getContext, getMemory, getDeloadStatus, getAvailableExercises }) {
+export function useAI({ getContext, getMemory, getDeloadStatus, getAvailableExercises, coachMode = false }) {
   const [messages, setMessages] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -31,17 +31,19 @@ export function useAI({ getContext, getMemory, getDeloadStatus, getAvailableExer
       const memory = getMemory?.()
       const deloadStatus = getDeloadStatus?.()
       const availableExercises = getAvailableExercises?.()
-      const reply = await chatWithAI({ messages: next, context, memory, deloadStatus, availableExercises })
+      const reply = await chatWithAI({ messages: next, context, memory, deloadStatus, availableExercises, coachMode })
       const adj = parseAdjustment(reply)
       const dl = parseDeload(adj.displayText)
       const wp = parseWorkoutPlan(dl.displayText)
+      const pc = parseProgramChange(wp.displayText, availableExercises?.map(e => e.name) || [])
       setMessages(prev => [...prev, {
         role: 'assistant',
         content: reply,
-        displayContent: wp.displayText || dl.displayText || adj.displayText || reply,
+        displayContent: pc.displayText || wp.displayText || dl.displayText || adj.displayText || reply,
         adjustment: adj.adjustment,
         deload: dl.deload,
         workoutPlan: wp.workoutPlan,
+        programChange: pc.programChange,
       }])
     } catch (err) {
       setError('Kunde inte nå PT – försök igen.')
@@ -49,7 +51,7 @@ export function useAI({ getContext, getMemory, getDeloadStatus, getAvailableExer
       loadingRef.current = false
       setLoading(false)
     }
-  }, [getContext, getMemory, getDeloadStatus, getAvailableExercises])
+  }, [getContext, getMemory, getDeloadStatus, getAvailableExercises, coachMode])
 
   const reset = useCallback(() => {
     setMessages([])
@@ -74,5 +76,11 @@ export function useAI({ getContext, getMemory, getDeloadStatus, getAvailableExer
     ))
   }, [])
 
-  return { messages, loading, error, send, reset, markAdjustmentApplied, markDeloadApplied, markWorkoutApplied }
+  const markProgramChangeApplied = useCallback((messageIndex) => {
+    setMessages(prev => prev.map((m, i) =>
+      i === messageIndex ? { ...m, programChangeApplied: true } : m
+    ))
+  }, [])
+
+  return { messages, loading, error, send, reset, markAdjustmentApplied, markDeloadApplied, markWorkoutApplied, markProgramChangeApplied }
 }

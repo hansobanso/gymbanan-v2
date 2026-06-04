@@ -16,14 +16,14 @@ const FREE_WORKOUT_SUGGESTIONS = [
   'Ett kort pass, 30 min',
 ]
 
-export default function AiChat({ open, onClose, getContext, getMemory, getDeloadStatus, introMessage, introLoading, workoutNotes, onUpdateNotes, onApplyAdjustment, onApplyDeload, onApplyWorkoutPlan, getAvailableExercises, freeWorkoutMode, inline = false }) {
+export default function AiChat({ open, onClose, getContext, getMemory, getDeloadStatus, introMessage, introLoading, workoutNotes, onUpdateNotes, onApplyAdjustment, onApplyDeload, onApplyWorkoutPlan, onApplyProgramChange, getAvailableExercises, freeWorkoutMode, inline = false }) {
   const [input, setInput] = useState('')
   const [notesOpen, setNotesOpen] = useState(false)
   const messagesEndRef = useRef(null)
   const messagesRef = useRef(null)
   const inputRef = useRef(null)
   const notesRef = useRef(null)
-  const { messages, loading, error, send, markAdjustmentApplied, markDeloadApplied, markWorkoutApplied } = useAI({ getContext, getMemory, getDeloadStatus, getAvailableExercises })
+  const { messages, loading, error, send, markAdjustmentApplied, markDeloadApplied, markWorkoutApplied, markProgramChangeApplied } = useAI({ getContext, getMemory, getDeloadStatus, getAvailableExercises, coachMode: inline })
 
   // Fokusera input när sheeten öppnar
   useEffect(() => {
@@ -326,6 +326,29 @@ export default function AiChat({ open, onClose, getContext, getMemory, getDeload
                         <path d="M20 6 9 17l-5-5"/>
                       </svg>
                       Tillagt i passet
+                    </div>
+                  )}
+                  {msg.role === 'assistant' && msg.programChange && !msg.programChangeApplied && onApplyProgramChange && (
+                    <button
+                      className={styles.adjustmentBtn}
+                      onClick={async () => {
+                        const ok = await onApplyProgramChange(msg.programChange)
+                        if (ok !== false) markProgramChangeApplied(i)
+                      }}
+                      type="button"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+                      </svg>
+                      <span className={styles.adjustmentBtnText}>{msg.programChange.summary}</span>
+                    </button>
+                  )}
+                  {msg.role === 'assistant' && msg.programChangeApplied && (
+                    <div className={styles.adjustmentApplied}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M20 6 9 17l-5-5"/>
+                      </svg>
+                      Sparat i programmet
                     </div>
                   )}
                 </motion.div>

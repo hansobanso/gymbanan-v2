@@ -1,17 +1,19 @@
 import { useState, useEffect, useCallback } from 'react'
 import AiChat from '../components/shared/AiChat'
-import { buildCoachContext } from '../lib/ai'
-import { getPrograms, getActiveProgram, getWorkouts, getAiMemory, getProfile, getExercises } from '../lib/db'
+import { buildCoachContext, applyProgramChange } from '../lib/ai'
+import { getPrograms, getActiveProgram, getWorkouts, getAiMemory, getProfile, getExercises, updateProgram } from '../lib/db'
 
 /**
  * Fristaende PT-chatt (egen flik). Inte knuten till ett pass - PT:n far
- * kontext om aktivt program, kommande pass och senaste traning, och kan
- * svara pa allmanna fragor. (Etapp 1: ren chatt, lasande kontext.)
+ * kontext om aktivt program, kommande pass och senaste traning.
+ * Etapp 2: PT:n kan foresla andringar i det aktiva programmet, som
+ * anvandaren maste bekrafta ("tillampa") innan de sparas.
  */
 export default function Coach({ session }) {
   const [context, setContext] = useState('')
   const [memory, setMemory] = useState(null)
   const [exerciseList, setExerciseList] = useState([])
+  const [activeProgram, setActiveProgram] = useState(null)
 
   useEffect(() => {
     let cancelled = false
@@ -24,12 +26,13 @@ export default function Coach({ session }) {
           getProfile(session.user.id).catch(() => null),
           getExercises().catch(() => []),
         ])
-        const activeProgram = await getActiveProgram(session.user.id, programs).catch(() => null)
+        const active = await getActiveProgram(session.user.id, programs).catch(() => null)
         if (cancelled) return
         setMemory(mem || null)
         setExerciseList(exercises || [])
+        setActiveProgram(active || null)
         setContext(buildCoachContext({
-          activeProgram,
+          activeProgram: active,
           recentWorkouts: recent || [],
           displayName: profile?.display_name || null,
         }))
@@ -44,12 +47,33 @@ export default function Coach({ session }) {
   const getContext = useCallback(() => context, [context])
   const getMemory = useCallback(() => memory, [memory])
 
+  // Tillampar en programandring pa det aktiva programmet och sparar.
+  // Returnerar false om det misslyckas (da markeras den inte som tillampad).
+  const onApplyProgramChange = useCallback(async (programChange) => {
+    if (!activeProgram?.id) return false
+    try {
+      const newSessions = applyProgramChange(activeProgram.sessions || [], programChange)
+      await updateProgram(activeProgram.id, { sessions: newSessions })
+      const updated = { ...activeProgram, sessions: newSessions }
+      setActiveProgram(updated)
+      setContext(buildCoachContext({
+        activeProgram: updated,
+        recentWorkouts: [],
+        displayName: null,
+      }))
+      return true
+    } catch {
+      return false
+    }
+  }, [activeProgram])
+
   return (
     <AiChat
       inline
       getContext={getContext}
       getMemory={getMemory}
       getAvailableExercises={() => exerciseList}
+      onApplyProgramChange={activeProgram ? onApplyProgramChange : undefined}
     />
   )
 }

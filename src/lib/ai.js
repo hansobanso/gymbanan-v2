@@ -7,7 +7,7 @@ const AI_MODEL = 'claude-sonnet-4-6'
  * Skickar meddelanden + kontext till PT-endpointen.
  * Returnerar AI:ns svarstext.
  */
-export async function chatWithAI({ messages, context, memory, deloadStatus, availableExercises }) {
+export async function chatWithAI({ messages, context, memory, deloadStatus, availableExercises, coachMode = false }) {
   // Filtrera till bara role+content — API:t accepterar inte extra falt
   // som displayContent, adjustment, deload etc.
   const cleanMessages = messages.map(m => ({ role: m.role, content: m.content }))
@@ -152,7 +152,40 @@ Regler för <workout>-blocket:
     parts.push(`\n═══ AKTIV DELOAD-VECKA ═══\nAnvändaren kör just nu en deload-vecka (${deloadStatus.daysLeft} dagar kvar). Vikterna är redan automatiskt sänkta. Föreslå INTE en ny deload, och kommentera INTE stagnationer som problem - det är meningen att vikterna är låga nu.`)
   }
   if (memory) parts.push(`\nHär är träningshistorik och kontext för den här användaren:\n${memory}`)
-  if (context) parts.push(`\nAktuellt pass:\n${context}`)
+  if (coachMode) {
+    parts.push(`
+═══ ÄNDRA I PROGRAMMET ═══
+Du pratar nu med användaren utanför ett pass (fristående PT-läge). Du ser
+användarens aktiva program nedan. Om användaren ber dig ändra i programmet
+- lägga till/ta bort/byta övning, eller justera set/reps/vila - ska du:
+
+1. Förklara kort vad du föreslår och varför.
+2. Avsluta MED ett JSON-block exakt så här:
+
+<programchange>
+{
+  "summary": "Kort beskrivning av andringen",
+  "sessionName": "Namnet pa passet som ska andras",
+  "operations": [
+    { "op": "adjust", "exerciseName": "Knäböj", "workSets": 3, "repsMin": 5, "repsMax": 8 },
+    { "op": "remove", "exerciseName": "Vadpress" },
+    { "op": "add", "exerciseName": "Benpress", "workSets": 3, "repsMin": 8, "repsMax": 12, "restSeconds": 120 },
+    { "op": "replace", "exerciseName": "Sittande bencurl", "newExerciseName": "Liggande bencurl" }
+  ]
+}
+</programchange>
+
+Regler:
+- "sessionName" MASTE exakt matcha ett av passen i programmet nedan.
+- "op" ar en av: "adjust", "remove", "add", "replace".
+- For "add" och "replace" MASTE ovningsnamnet (resp. "newExerciseName") exakt
+  matcha en ovning i listan over tillgangliga ovningar ovan. Hitta ALDRIG pa
+  ovningsnamn - valj bara bland de som finns.
+- For "adjust"/"remove" maste "exerciseName" matcha en ovning som redan finns i passet.
+- Anvand BARA detta block nar anvandaren faktiskt ber om en andring i programmet.
+  For vanliga fragor svarar du bara i text.`)
+  }
+  if (context) parts.push(`\n${coachMode ? 'Anvandarens aktiva program och senaste traning' : 'Aktuellt pass'}:\n${context}`)
   body.system = parts.join('\n')
 
   const res = await fetch(AI_ENDPOINT, {
