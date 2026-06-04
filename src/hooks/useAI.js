@@ -46,7 +46,18 @@ export function useAI({ getContext, getMemory, getDeloadStatus, getAvailableExer
         programChange: pc.programChange,
       }])
     } catch (err) {
-      setError(`Kunde inte nå PT – ${err?.message || 'okänt fel'}`)
+      const status = err?.status
+      let msg
+      if (status === 429) {
+        msg = 'PT:n är upptagen just nu – vänta en liten stund och försök igen.'
+      } else if (status === 529 || status === 503) {
+        msg = 'PT-tjänsten är tillfälligt överbelastad – försök igen om en stund.'
+      } else if (status >= 500) {
+        msg = 'Något gick fel hos PT-tjänsten – försök igen om en stund.'
+      } else {
+        msg = 'Kunde inte nå PT – försök igen.'
+      }
+      setError(msg)
     } finally {
       loadingRef.current = false
       setLoading(false)

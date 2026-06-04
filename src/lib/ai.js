@@ -193,7 +193,11 @@ Regler:
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
-  if (!res.ok) throw new Error(`AI-fel: ${res.status}`)
+  if (!res.ok) {
+    const e = new Error(`AI-fel: ${res.status}`)
+    e.status = res.status
+    throw e
+  }
   const data = await res.json()
   return data.content?.[0]?.text ?? ''
 }
