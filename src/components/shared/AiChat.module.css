@@ -593,3 +593,13 @@
   transform: scale(0.98);
   opacity: 0.85;
 }
+
+/* ── Inline-läge: PT-chatten som egen flik-sida (ej overlay) ── */
+.inlineContainer {
+  flex: 1;
+  min-height: 0;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}

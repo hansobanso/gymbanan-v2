@@ -49,9 +49,20 @@ function IconSettings({ active }) {
   )
 }
 
+function IconCoach({ active }) {
+  const c = active ? 'var(--accent)' : 'var(--text-3)'
+  // Lucide: message-circle
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>
+    </svg>
+  )
+}
+
 const TABS = [
   { path: '/', label: 'Hem', Icon: IconHome },
   { path: '/programs', label: 'Program', Icon: IconPrograms },
+  { path: '/coach', label: 'PT', Icon: IconCoach },
   { path: '/history', label: 'Historik', Icon: IconHistory },
   { path: '/settings', label: 'Inställningar', Icon: IconSettings },
 ]

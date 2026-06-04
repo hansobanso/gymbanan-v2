@@ -16,7 +16,7 @@ const FREE_WORKOUT_SUGGESTIONS = [
   'Ett kort pass, 30 min',
 ]
 
-export default function AiChat({ open, onClose, getContext, getMemory, getDeloadStatus, introMessage, introLoading, workoutNotes, onUpdateNotes, onApplyAdjustment, onApplyDeload, onApplyWorkoutPlan, getAvailableExercises, freeWorkoutMode }) {
+export default function AiChat({ open, onClose, getContext, getMemory, getDeloadStatus, introMessage, introLoading, workoutNotes, onUpdateNotes, onApplyAdjustment, onApplyDeload, onApplyWorkoutPlan, getAvailableExercises, freeWorkoutMode, inline = false }) {
   const [input, setInput] = useState('')
   const [notesOpen, setNotesOpen] = useState(false)
   const messagesEndRef = useRef(null)
@@ -35,7 +35,10 @@ export default function AiChat({ open, onClose, getContext, getMemory, getDeload
 
   // Las bakgrundsscrollen medan chatten ar oppen, sa passet bakom inte
   // kan dras med / studsa nar man drar pa den fasta PT-panelen (iOS).
+  // I inline-lage (egen flik) ar chatten sjalva sidan - da ska normal
+  // sidscroll galla, sa vi hoppar over lasningen.
   useEffect(() => {
+    if (inline) return
     if (!open) return
     const scrollY = window.scrollY
     const body = document.body
@@ -120,34 +123,53 @@ export default function AiChat({ open, onClose, getContext, getMemory, getDeload
     }
   }
 
+  // Wrapper: i inline-lage en vanlig container (chatten ar sidan),
+  // annars overlay-sheet med animering. Innehallet ar identiskt.
+  const Wrapper = ({ children }) => {
+    if (inline) {
+      return <div className={styles.inlineContainer}>{children}</div>
+    }
+    return (
+      <motion.div
+        className={styles.sheet}
+        initial={{ x: '100%', opacity: 0.6 }}
+        animate={{ x: 0, opacity: 1 }}
+        exit={{ x: '100%', opacity: 0.6 }}
+        transition={{ type: 'spring', stiffness: 420, damping: 40 }}
+      >
+        {children}
+      </motion.div>
+    )
+  }
+
+  // I inline-lage ar chatten alltid "oppen"; overlay-lage styrs av open.
+  if (!inline && !open) {
+    return <AnimatePresence />
+  }
+
   return (
     <AnimatePresence>
-      {open && (
+      {(inline || open) && (
         <>
-        {/* Solid mork bakgrund som tacker hela skarmen bakom sheeten, sa
-            inget av passet skymtar i tangentbords-zonen nar man drar. */}
-        <div className={styles.sheetBackdrop} />
-        <motion.div
-          className={styles.sheet}
-          initial={{ x: '100%', opacity: 0.6 }}
-          animate={{ x: 0, opacity: 1 }}
-          exit={{ x: '100%', opacity: 0.6 }}
-          transition={{ type: 'spring', stiffness: 420, damping: 40 }}
-        >
+        {/* Backdrop bara i overlay-lage */}
+        {!inline && <div className={styles.sheetBackdrop} />}
+        <Wrapper>
             {/* Header */}
             <div className={styles.header}>
               <div className={styles.headerLeft}>
                 <span className={styles.ptBadge}>PT</span>
                 <div>
                   <p className={styles.title}>Din personliga tränare</p>
-                  <p className={styles.subtitle}>Har tillgång till din passdata</p>
+                  <p className={styles.subtitle}>{inline ? 'Fråga om träning, program och kommande pass' : 'Har tillgång till din passdata'}</p>
                 </div>
               </div>
-              <button className={styles.closeBtn} onClick={onClose} aria-label="Stäng">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                  <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-                </svg>
-              </button>
+              {!inline && (
+                <button className={styles.closeBtn} onClick={onClose} aria-label="Stäng">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                    <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                  </svg>
+                </button>
+              )}
             </div>
 
             {/* Anteckningsknapp - oppnar panel i fokus */}
@@ -380,7 +402,7 @@ export default function AiChat({ open, onClose, getContext, getMemory, getDeload
                 </svg>
               </button>
             </div>
-          </motion.div>
+          </Wrapper>
         </>
       )}
     </AnimatePresence>

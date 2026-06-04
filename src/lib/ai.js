@@ -457,6 +457,51 @@ export function buildWorkoutContext(sessionName, exercises, workoutNotes) {
 }
 
 /**
+ * Bygger kontext for den fristaende PT-chatten (utan aktivt pass).
+ * Sammanfattar aktivt program, kommande pass och senaste traning sa att
+ * PT:n kan svara pa allmanna fragor och fragor om uppkommande pass.
+ *
+ * @param {object} opts
+ * @param {object|null} opts.activeProgram - aktivt program { name, sessions }
+ * @param {Array} opts.recentWorkouts - senaste passen (fran getWorkouts)
+ * @param {string|null} opts.displayName - anvandarens namn
+ */
+export function buildCoachContext({ activeProgram, recentWorkouts, displayName } = {}) {
+  const lines = []
+  if (displayName) lines.push(`Anvandare: ${displayName}`, '')
+
+  if (activeProgram?.name) {
+    lines.push(`Aktivt program: ${activeProgram.name}`)
+    const sessions = Array.isArray(activeProgram.sessions) ? activeProgram.sessions : []
+    if (sessions.length) {
+      lines.push('Pass i programmet:')
+      for (const sess of sessions) {
+        const exNames = Array.isArray(sess.exercises)
+          ? sess.exercises.map(e => e.name).filter(Boolean)
+          : []
+        lines.push(`  - ${sess.name || 'Namnlost pass'}: ${exNames.join(', ') || '(inga ovningar)'}`)
+      }
+    }
+    lines.push('')
+  } else {
+    lines.push('Anvandaren har inget aktivt program just nu.', '')
+  }
+
+  if (Array.isArray(recentWorkouts) && recentWorkouts.length) {
+    lines.push('Senaste traningen:')
+    for (const w of recentWorkouts.slice(0, 5)) {
+      const datum = w.completed_at ? String(w.completed_at).slice(0, 10) : '?'
+      const namn = w.session_name || w.name || 'Pass'
+      const antal = Array.isArray(w.exercises) ? w.exercises.length : 0
+      lines.push(`  - ${datum}: ${namn} (${antal} ovningar)`)
+    }
+    lines.push('')
+  }
+
+  return lines.join('\n').trim()
+}
+
+/**
  * Parsar ett AI-svar och hittar ett <adjustment>...</adjustment>-block.
  * Returnerar { displayText, adjustment } där displayText är svaret utan
  * JSON-blocket, och adjustment är det parsade förslaget eller null.
