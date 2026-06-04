@@ -9,7 +9,7 @@ import { getPrograms, getActiveProgram, getWorkouts, getAiMemory, getProfile, ge
  * Etapp 2: PT:n kan foresla andringar i det aktiva programmet, som
  * anvandaren maste bekrafta ("tillampa") innan de sparas.
  */
-export default function Coach({ session }) {
+export default function Coach({ session, onProgramUpdated }) {
   const [context, setContext] = useState('')
   const [memory, setMemory] = useState(null)
   const [exerciseList, setExerciseList] = useState([])
@@ -56,6 +56,7 @@ export default function Coach({ session }) {
       await updateProgram(activeProgram.id, { sessions: newSessions })
       const updated = { ...activeProgram, sessions: newSessions }
       setActiveProgram(updated)
+      onProgramUpdated?.(updated)
       setContext(buildCoachContext({
         activeProgram: updated,
         recentWorkouts: [],
@@ -65,7 +66,7 @@ export default function Coach({ session }) {
     } catch {
       return false
     }
-  }, [activeProgram])
+  }, [activeProgram, onProgramUpdated])
 
   return (
     <AiChat
