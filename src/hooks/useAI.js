@@ -46,7 +46,7 @@ export function useAI({ getContext, getMemory, getDeloadStatus, getAvailableExer
         programChange: pc.programChange,
       }])
     } catch (err) {
-      setError('Kunde inte nå PT – försök igen.')
+      setError(`Kunde inte nå PT – ${err?.message || 'okänt fel'}`)
     } finally {
       loadingRef.current = false
       setLoading(false)

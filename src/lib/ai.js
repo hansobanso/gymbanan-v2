@@ -13,7 +13,7 @@ export async function chatWithAI({ messages, context, memory, deloadStatus, avai
   const cleanMessages = messages.map(m => ({ role: m.role, content: m.content }))
   const body = {
     model: AI_MODEL,
-    max_tokens: 1024,
+    max_tokens: coachMode ? 2048 : 1024,
     messages: cleanMessages,
   }
   const parts = [
