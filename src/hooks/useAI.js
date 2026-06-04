@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react'
-import { chatWithAI, parseAdjustment, parseDeload, parseWorkoutPlan, parseProgramChange, parseProgramSwitch } from '../lib/ai'
+import { chatWithAI, parseAdjustment, parseDeload, parseWorkoutPlan, parseProgramChange, parseProgramSwitch, parseNewProgram } from '../lib/ai'
 
 export function useAI({ getContext, getMemory, getDeloadStatus, getAvailableExercises, getProgramsList, coachMode = false }) {
   const [messages, setMessages] = useState([])
@@ -37,15 +37,17 @@ export function useAI({ getContext, getMemory, getDeloadStatus, getAvailableExer
       const wp = parseWorkoutPlan(dl.displayText)
       const pc = parseProgramChange(wp.displayText, availableExercises?.map(e => e.name) || [])
       const ps = parseProgramSwitch(pc.displayText, getProgramsList?.() || [])
+      const np = parseNewProgram(ps.displayText, availableExercises?.map(e => e.name) || [])
       setMessages(prev => [...prev, {
         role: 'assistant',
         content: reply,
-        displayContent: ps.displayText || pc.displayText || wp.displayText || dl.displayText || adj.displayText || reply,
+        displayContent: np.displayText || ps.displayText || pc.displayText || wp.displayText || dl.displayText || adj.displayText || reply,
         adjustment: adj.adjustment,
         deload: dl.deload,
         workoutPlan: wp.workoutPlan,
         programChange: pc.programChange,
         programSwitch: ps.programSwitch,
+        newProgram: np.newProgram,
       }])
     } catch (err) {
       const status = err?.status
@@ -101,5 +103,11 @@ export function useAI({ getContext, getMemory, getDeloadStatus, getAvailableExer
     ))
   }, [])
 
-  return { messages, loading, error, send, reset, markAdjustmentApplied, markDeloadApplied, markWorkoutApplied, markProgramChangeApplied, markProgramSwitchApplied }
+  const markNewProgramApplied = useCallback((messageIndex) => {
+    setMessages(prev => prev.map((m, i) =>
+      i === messageIndex ? { ...m, newProgramApplied: true } : m
+    ))
+  }, [])
+
+  return { messages, loading, error, send, reset, markAdjustmentApplied, markDeloadApplied, markWorkoutApplied, markProgramChangeApplied, markProgramSwitchApplied, markNewProgramApplied }
 }

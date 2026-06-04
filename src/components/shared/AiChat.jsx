@@ -23,14 +23,14 @@ const COACH_SUGGESTIONS = [
   'Tips för att komma vidare?',
 ]
 
-export default function AiChat({ open, onClose, getContext, getMemory, getDeloadStatus, introMessage, introLoading, workoutNotes, onUpdateNotes, onApplyAdjustment, onApplyDeload, onApplyWorkoutPlan, onApplyProgramChange, onApplyProgramSwitch, getProgramsList, getAvailableExercises, freeWorkoutMode, inline = false }) {
+export default function AiChat({ open, onClose, getContext, getMemory, getDeloadStatus, introMessage, introLoading, workoutNotes, onUpdateNotes, onApplyAdjustment, onApplyDeload, onApplyWorkoutPlan, onApplyProgramChange, onApplyProgramSwitch, onApplyNewProgram, getProgramsList, getAvailableExercises, freeWorkoutMode, inline = false }) {
   const [input, setInput] = useState('')
   const [notesOpen, setNotesOpen] = useState(false)
   const messagesEndRef = useRef(null)
   const messagesRef = useRef(null)
   const inputRef = useRef(null)
   const notesRef = useRef(null)
-  const { messages, loading, error, send, markAdjustmentApplied, markDeloadApplied, markWorkoutApplied, markProgramChangeApplied, markProgramSwitchApplied } = useAI({ getContext, getMemory, getDeloadStatus, getAvailableExercises, getProgramsList, coachMode: inline })
+  const { messages, loading, error, send, markAdjustmentApplied, markDeloadApplied, markWorkoutApplied, markProgramChangeApplied, markProgramSwitchApplied, markNewProgramApplied } = useAI({ getContext, getMemory, getDeloadStatus, getAvailableExercises, getProgramsList, coachMode: inline })
 
   // Fokusera input när sheeten öppnar
   useEffect(() => {
@@ -386,6 +386,31 @@ export default function AiChat({ open, onClose, getContext, getMemory, getDeload
                         <path d="M20 6 9 17l-5-5"/>
                       </svg>
                       Program bytt
+                    </div>
+                  )}
+                  {msg.role === 'assistant' && msg.newProgram && !msg.newProgramApplied && onApplyNewProgram && (
+                    <button
+                      className={styles.adjustmentBtn}
+                      onClick={async () => {
+                        const ok = await onApplyNewProgram(msg.newProgram)
+                        if (ok !== false) markNewProgramApplied(i)
+                      }}
+                      type="button"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M5 12h14M12 5v14"/>
+                      </svg>
+                      <span className={styles.adjustmentBtnText}>
+                        Skapa program: {msg.newProgram.name} ({msg.newProgram.sessions.length} pass)
+                      </span>
+                    </button>
+                  )}
+                  {msg.role === 'assistant' && msg.newProgramApplied && (
+                    <div className={styles.adjustmentApplied}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M20 6 9 17l-5-5"/>
+                      </svg>
+                      Program sparat
                     </div>
                   )}
                 </motion.div>

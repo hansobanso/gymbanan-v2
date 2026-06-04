@@ -13,7 +13,7 @@ export async function chatWithAI({ messages, context, memory, deloadStatus, avai
   const cleanMessages = messages.map(m => ({ role: m.role, content: m.content }))
   const body = {
     model: AI_MODEL,
-    max_tokens: coachMode ? 2048 : 1024,
+    max_tokens: coachMode ? 3072 : 1024,
     messages: cleanMessages,
   }
   const parts = [
@@ -202,7 +202,37 @@ ovan, ska du forklara kort varfor och avsluta med:
 Regler:
 - "programName" MASTE exakt matcha ett av de tillgangliga programmen ovan.
 - Foresla ALDRIG att byta till ett program som inte finns i listan.
-- Byt bara nar anvandaren ber om det eller tydligt skulle ha nytta av det.`)
+- Byt bara nar anvandaren ber om det eller tydligt skulle ha nytta av det.
+
+═══ SKAPA ETT HELT NYTT PROGRAM ═══
+Om anvandaren ber dig skapa ett nytt traningsprogram (med flera pass), gor sa:
+
+1. Forklara kort upplagget (hur manga pass, fokus, upplagg).
+2. Avsluta med ett JSON-block:
+
+<newprogram>
+{
+  "name": "Helkropp 3x/vecka",
+  "sessions": [
+    { "name": "Pass A", "exercises": [
+      { "name": "Knäböj", "workSets": 3, "repsMin": 5, "repsMax": 8, "restSeconds": 180 },
+      { "name": "Bänkpress", "workSets": 3, "repsMin": 6, "repsMax": 10, "restSeconds": 150 }
+    ]},
+    { "name": "Pass B", "exercises": [
+      { "name": "Marklyft", "workSets": 3, "repsMin": 4, "repsMax": 6, "restSeconds": 180 }
+    ]}
+  ]
+}
+</newprogram>
+
+Regler:
+- ALLA ovningsnamn MASTE exakt matcha ovningar i listan over tillgangliga
+  ovningar ovan. Hitta ALDRIG pa ovningar - valj bara bland de som finns.
+- Ge varje ovning rimliga workSets (2-4), repsMin/repsMax och restSeconds.
+- Ge programmet ett tydligt namn och varje pass ett namn (t.ex. "Overkropp", "Ben").
+- Det nya programmet SPARAS men blir INTE automatiskt aktivt - anvandaren
+  valjer sjalv att aktivera det. Namn det i din text.
+- Anvand BARA detta block nar anvandaren faktiskt vill skapa ett nytt program.`)
   }
   if (context) parts.push(`\n${coachMode ? 'Anvandarens aktiva program och senaste traning' : 'Aktuellt pass'}:\n${context}`)
   body.system = parts.join('\n')
@@ -813,4 +843,71 @@ export function parseProgramSwitch(aiText, availablePrograms = []) {
   }
   const displayText = aiText.replace(match[0], '').trim()
   return { displayText, programSwitch }
+}
+
+/**
+ * Parsar ett <newprogram>...</newprogram>-block dar PT:n foreslar ett HELT
+ * nytt program med flera pass. Varje ovning valideras mot availableNames -
+ * ogiltiga ovningar slangs (inga orphans). Pass utan giltiga ovningar slangs.
+ * Om inget giltigt aterstar returneras null.
+ *
+ * Format:
+ * <newprogram>
+ * {
+ *   "name": "Helkropp 3x/vecka",
+ *   "sessions": [
+ *     { "name": "Pass A", "exercises": [
+ *        { "name": "Knäböj", "workSets": 3, "repsMin": 5, "repsMax": 8, "restSeconds": 180 },
+ *        { "name": "Bänkpress", "workSets": 3, "repsMin": 6, "repsMax": 10 }
+ *     ]},
+ *     { "name": "Pass B", "exercises": [ ... ] }
+ *   ]
+ * }
+ * </newprogram>
+ *
+ * @param {string} aiText
+ * @param {string[]} availableNames - giltiga ovningsnamn
+ * @returns {{ displayText: string, newProgram: object|null, rejected: string[] }}
+ */
+export function parseNewProgram(aiText, availableNames = []) {
+  if (!aiText) return { displayText: aiText, newProgram: null, rejected: [] }
+  const match = aiText.match(/<newprogram>\s*([\s\S]*?)\s*<\/newprogram>/i)
+  if (!match) return { displayText: aiText, newProgram: null, rejected: [] }
+
+  const nameSet = new Set(availableNames)
+  const rejected = []
+  let newProgram = null
+  try {
+    const parsed = JSON.parse(match[1].trim())
+    const rawSessions = Array.isArray(parsed.sessions) ? parsed.sessions : []
+    const sessions = []
+    for (const s of rawSessions) {
+      if (!s || typeof s.name !== 'string') continue
+      const rawEx = Array.isArray(s.exercises) ? s.exercises : []
+      const exercises = []
+      for (const e of rawEx) {
+        if (!e || typeof e.name !== 'string') continue
+        if (!nameSet.has(e.name)) { rejected.push(e.name); continue }
+        exercises.push({
+          name: e.name,
+          notes: typeof e.notes === 'string' ? e.notes : '',
+          repsMin: e.repsMin ?? 8,
+          repsMax: e.repsMax ?? 12,
+          workSets: e.workSets ?? 3,
+          warmupSets: e.warmupSets ?? 2,
+          backoffSets: e.backoffSets ?? 0,
+          restSeconds: e.restSeconds ?? 120,
+        })
+      }
+      // Hoppa over pass som inte fick nagra giltiga ovningar
+      if (exercises.length > 0) sessions.push({ name: s.name, exercises })
+    }
+    if (sessions.length > 0 && typeof parsed.name === 'string' && parsed.name.trim()) {
+      newProgram = { name: parsed.name.trim(), sessions }
+    }
+  } catch {
+    // ogiltig JSON - ignorera
+  }
+  const displayText = aiText.replace(match[0], '').trim()
+  return { displayText, newProgram, rejected }
 }

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import AiChat from '../components/shared/AiChat'
 import { buildCoachContext, applyProgramChange } from '../lib/ai'
-import { getPrograms, getActiveProgram, getWorkouts, getAiMemory, getProfile, getExercises, updateProgram } from '../lib/db'
+import { getPrograms, getActiveProgram, getWorkouts, getAiMemory, getProfile, getExercises, updateProgram, saveProgram } from '../lib/db'
 
 /**
  * Fristaende PT-chatt (egen flik). PT:n far kontext om aktivt program,
@@ -9,7 +9,7 @@ import { getPrograms, getActiveProgram, getWorkouts, getAiMemory, getProfile, ge
  * Etapp 2: foresla andringar i aktiva programmet (bekraftas med "tillampa").
  * Etapp 3: foresla byte av aktivt program (bekraftas med "tillampa").
  */
-export default function Coach({ session, onProgramUpdated, onSwitchProgram }) {
+export default function Coach({ session, onProgramUpdated, onSwitchProgram, onProgramCreated }) {
   const [context, setContext] = useState('')
   const [memory, setMemory] = useState(null)
   const [exerciseList, setExerciseList] = useState([])
@@ -96,6 +96,24 @@ export default function Coach({ session, onProgramUpdated, onSwitchProgram }) {
     }
   }, [allPrograms, onSwitchProgram, rebuildContext])
 
+  // Etapp 4: skapa ett helt nytt program (sparas, blir EJ aktivt).
+  const onApplyNewProgram = useCallback(async (np) => {
+    try {
+      const saved = await saveProgram({
+        name: np.name,
+        sessions: np.sessions,
+        is_global: false,
+        user_id: session.user.id,
+        created_by: session.user.id,
+      })
+      setAllPrograms(prev => [...prev, saved])
+      onProgramCreated?.(saved)
+      return true
+    } catch {
+      return false
+    }
+  }, [session.user.id, onProgramCreated])
+
   return (
     <AiChat
       inline
@@ -105,6 +123,7 @@ export default function Coach({ session, onProgramUpdated, onSwitchProgram }) {
       getProgramsList={getProgramsList}
       onApplyProgramChange={activeProgram ? onApplyProgramChange : undefined}
       onApplyProgramSwitch={allPrograms.length > 1 ? onApplyProgramSwitch : undefined}
+      onApplyNewProgram={onApplyNewProgram}
     />
   )
 }
