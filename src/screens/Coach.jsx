@@ -4,16 +4,17 @@ import { buildCoachContext, applyProgramChange } from '../lib/ai'
 import { getPrograms, getActiveProgram, getWorkouts, getAiMemory, getProfile, getExercises, updateProgram } from '../lib/db'
 
 /**
- * Fristaende PT-chatt (egen flik). Inte knuten till ett pass - PT:n far
- * kontext om aktivt program, kommande pass och senaste traning.
- * Etapp 2: PT:n kan foresla andringar i det aktiva programmet, som
- * anvandaren maste bekrafta ("tillampa") innan de sparas.
+ * Fristaende PT-chatt (egen flik). PT:n far kontext om aktivt program,
+ * ovriga program, kommande pass och senaste traning.
+ * Etapp 2: foresla andringar i aktiva programmet (bekraftas med "tillampa").
+ * Etapp 3: foresla byte av aktivt program (bekraftas med "tillampa").
  */
-export default function Coach({ session, onProgramUpdated }) {
+export default function Coach({ session, onProgramUpdated, onSwitchProgram }) {
   const [context, setContext] = useState('')
   const [memory, setMemory] = useState(null)
   const [exerciseList, setExerciseList] = useState([])
   const [activeProgram, setActiveProgram] = useState(null)
+  const [allPrograms, setAllPrograms] = useState([])
 
   useEffect(() => {
     let cancelled = false
@@ -31,8 +32,12 @@ export default function Coach({ session, onProgramUpdated }) {
         setMemory(mem || null)
         setExerciseList(exercises || [])
         setActiveProgram(active || null)
+        // Bara anvandarens egna program ar rimliga att byta mellan i PT:n
+        const own = (programs || []).filter(p => !p.is_global || p.id === active?.id)
+        setAllPrograms(own.length ? own : (programs || []))
         setContext(buildCoachContext({
           activeProgram: active,
+          allPrograms: own.length ? own : (programs || []),
           recentWorkouts: recent || [],
           displayName: profile?.display_name || null,
         }))
@@ -46,9 +51,21 @@ export default function Coach({ session, onProgramUpdated }) {
 
   const getContext = useCallback(() => context, [context])
   const getMemory = useCallback(() => memory, [memory])
+  const getProgramsList = useCallback(
+    () => allPrograms.map(p => ({ id: p.id, name: p.name })),
+    [allPrograms]
+  )
 
-  // Tillampar en programandring pa det aktiva programmet och sparar.
-  // Returnerar false om det misslyckas (da markeras den inte som tillampad).
+  const rebuildContext = useCallback((active, programs) => {
+    setContext(buildCoachContext({
+      activeProgram: active,
+      allPrograms: programs,
+      recentWorkouts: [],
+      displayName: null,
+    }))
+  }, [])
+
+  // Etapp 2: tillampa andring i aktiva programmet och spara.
   const onApplyProgramChange = useCallback(async (programChange) => {
     if (!activeProgram?.id) return false
     try {
@@ -56,17 +73,28 @@ export default function Coach({ session, onProgramUpdated }) {
       await updateProgram(activeProgram.id, { sessions: newSessions })
       const updated = { ...activeProgram, sessions: newSessions }
       setActiveProgram(updated)
+      setAllPrograms(prev => prev.map(p => p.id === updated.id ? updated : p))
       onProgramUpdated?.(updated)
-      setContext(buildCoachContext({
-        activeProgram: updated,
-        recentWorkouts: [],
-        displayName: null,
-      }))
+      rebuildContext(updated, allPrograms.map(p => p.id === updated.id ? updated : p))
       return true
     } catch {
       return false
     }
-  }, [activeProgram, onProgramUpdated])
+  }, [activeProgram, allPrograms, onProgramUpdated, rebuildContext])
+
+  // Etapp 3: byt aktivt program.
+  const onApplyProgramSwitch = useCallback(async (programSwitch) => {
+    const target = allPrograms.find(p => p.id === programSwitch.programId)
+    if (!target) return false
+    try {
+      await onSwitchProgram?.(target.id)
+      setActiveProgram(target)
+      rebuildContext(target, allPrograms)
+      return true
+    } catch {
+      return false
+    }
+  }, [allPrograms, onSwitchProgram, rebuildContext])
 
   return (
     <AiChat
@@ -74,7 +102,9 @@ export default function Coach({ session, onProgramUpdated }) {
       getContext={getContext}
       getMemory={getMemory}
       getAvailableExercises={() => exerciseList}
+      getProgramsList={getProgramsList}
       onApplyProgramChange={activeProgram ? onApplyProgramChange : undefined}
+      onApplyProgramSwitch={allPrograms.length > 1 ? onApplyProgramSwitch : undefined}
     />
   )
 }

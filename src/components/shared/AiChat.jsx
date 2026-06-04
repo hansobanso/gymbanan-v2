@@ -16,14 +16,14 @@ const FREE_WORKOUT_SUGGESTIONS = [
   'Ett kort pass, 30 min',
 ]
 
-export default function AiChat({ open, onClose, getContext, getMemory, getDeloadStatus, introMessage, introLoading, workoutNotes, onUpdateNotes, onApplyAdjustment, onApplyDeload, onApplyWorkoutPlan, onApplyProgramChange, getAvailableExercises, freeWorkoutMode, inline = false }) {
+export default function AiChat({ open, onClose, getContext, getMemory, getDeloadStatus, introMessage, introLoading, workoutNotes, onUpdateNotes, onApplyAdjustment, onApplyDeload, onApplyWorkoutPlan, onApplyProgramChange, onApplyProgramSwitch, getProgramsList, getAvailableExercises, freeWorkoutMode, inline = false }) {
   const [input, setInput] = useState('')
   const [notesOpen, setNotesOpen] = useState(false)
   const messagesEndRef = useRef(null)
   const messagesRef = useRef(null)
   const inputRef = useRef(null)
   const notesRef = useRef(null)
-  const { messages, loading, error, send, markAdjustmentApplied, markDeloadApplied, markWorkoutApplied, markProgramChangeApplied } = useAI({ getContext, getMemory, getDeloadStatus, getAvailableExercises, coachMode: inline })
+  const { messages, loading, error, send, markAdjustmentApplied, markDeloadApplied, markWorkoutApplied, markProgramChangeApplied, markProgramSwitchApplied } = useAI({ getContext, getMemory, getDeloadStatus, getAvailableExercises, getProgramsList, coachMode: inline })
 
   // Fokusera input när sheeten öppnar
   useEffect(() => {
@@ -349,6 +349,30 @@ export default function AiChat({ open, onClose, getContext, getMemory, getDeload
                         <path d="M20 6 9 17l-5-5"/>
                       </svg>
                       Sparat i programmet
+                    </div>
+                  )}
+                  {msg.role === 'assistant' && msg.programSwitch && !msg.programSwitchApplied && onApplyProgramSwitch && (
+                    <button
+                      className={styles.adjustmentBtn}
+                      onClick={async () => {
+                        const ok = await onApplyProgramSwitch(msg.programSwitch)
+                        if (ok !== false) markProgramSwitchApplied(i)
+                      }}
+                      type="button"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/>
+                        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>
+                      </svg>
+                      <span className={styles.adjustmentBtnText}>{msg.programSwitch.summary}</span>
+                    </button>
+                  )}
+                  {msg.role === 'assistant' && msg.programSwitchApplied && (
+                    <div className={styles.adjustmentApplied}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M20 6 9 17l-5-5"/>
+                      </svg>
+                      Program bytt
                     </div>
                   )}
                 </motion.div>

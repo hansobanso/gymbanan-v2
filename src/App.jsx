@@ -180,7 +180,7 @@ function AppRoutes({ session }) {
       <Suspense fallback={<div style={{display:'flex',alignItems:'center',justifyContent:'center',flex:1}}><div className="spinner"/></div>}>
         <div style={tabStyle('/')}><Home session={session} programs={programs} programsLoaded={programsLoaded} programsError={programsError} onRetryPrograms={loadPrograms} activeProgramId={activeProgramId} onSetActive={id => { setActiveProgramId(id); setActiveProgram(session.user.id, id).catch(() => {}) }} onReady={() => setHomeReady(true)} /></div>
         <div style={tabStyle('/programs')}><Programs session={session} programs={programs} setPrograms={setPrograms} activeProgramId={activeProgramId} onSetActive={id => { setActiveProgramId(id); setActiveProgram(session.user.id, id).catch(() => {}) }} /></div>
-        <div style={tabStyle('/coach')}><Coach session={session} onProgramUpdated={(updated) => setPrograms(prev => prev.map(p => p.id === updated.id ? updated : p))} /></div>
+        <div style={tabStyle('/coach')}><Coach session={session} onProgramUpdated={(updated) => setPrograms(prev => prev.map(p => p.id === updated.id ? updated : p))} onSwitchProgram={(id) => { setActiveProgramId(id); return setActiveProgram(session.user.id, id) }} /></div>
         <div style={tabStyle('/history')}><History session={session} /></div>
         <div style={tabStyle('/settings')}><Settings session={session} /></div>
 

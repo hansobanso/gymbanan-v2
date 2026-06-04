@@ -188,7 +188,21 @@ Regler:
   ovningsnamn - valj bara bland de som finns.
 - For "adjust"/"remove" maste "exerciseName" matcha en ovning som redan finns i passet.
 - Anvand BARA detta block nar anvandaren faktiskt ber om en andring i programmet.
-  For vanliga fragor svarar du bara i text.`)
+  For vanliga fragor svarar du bara i text.
+
+═══ BYTA AKTIVT PROGRAM ═══
+Om anvandaren vill byta till ett annat program (eller om du starkt
+rekommenderar det), och programmet finns i listan "Tillgangliga program"
+ovan, ska du forklara kort varfor och avsluta med:
+
+<programswitch>
+{ "summary": "Byt till Helkropp", "programName": "Helkropp" }
+</programswitch>
+
+Regler:
+- "programName" MASTE exakt matcha ett av de tillgangliga programmen ovan.
+- Foresla ALDRIG att byta till ett program som inte finns i listan.
+- Byt bara nar anvandaren ber om det eller tydligt skulle ha nytta av det.`)
   }
   if (context) parts.push(`\n${coachMode ? 'Anvandarens aktiva program och senaste traning' : 'Aktuellt pass'}:\n${context}`)
   body.system = parts.join('\n')
@@ -508,7 +522,7 @@ export function buildWorkoutContext(sessionName, exercises, workoutNotes) {
  * @param {Array} opts.recentWorkouts - senaste passen (fran getWorkouts)
  * @param {string|null} opts.displayName - anvandarens namn
  */
-export function buildCoachContext({ activeProgram, recentWorkouts, displayName } = {}) {
+export function buildCoachContext({ activeProgram, recentWorkouts, displayName, allPrograms } = {}) {
   const lines = []
   if (displayName) lines.push(`Anvandare: ${displayName}`, '')
 
@@ -527,6 +541,16 @@ export function buildCoachContext({ activeProgram, recentWorkouts, displayName }
     lines.push('')
   } else {
     lines.push('Anvandaren har inget aktivt program just nu.', '')
+  }
+
+  if (Array.isArray(allPrograms) && allPrograms.length) {
+    lines.push('Tillgangliga program att byta till:')
+    for (const p of allPrograms) {
+      const passNamn = Array.isArray(p.sessions) ? p.sessions.map(s => s.name).filter(Boolean) : []
+      const aktiv = activeProgram?.id === p.id ? ' (aktivt nu)' : ''
+      lines.push(`  - ${p.name}${aktiv}: ${passNamn.join(', ') || '(inga pass)'}`)
+    }
+    lines.push('')
   }
 
   if (Array.isArray(recentWorkouts) && recentWorkouts.length) {
@@ -752,4 +776,41 @@ export function applyProgramChange(sessions, programChange) {
     }
     return { ...sess, exercises }
   })
+}
+
+/**
+ * Parsar ett <programswitch>...</programswitch>-block dar PT:n foreslar
+ * att BYTA aktivt program. Validerar att det foreslagna programmet finns
+ * (matchar pa namn mot availablePrograms), annars returneras null.
+ *
+ * Format:
+ * <programswitch>
+ * { "summary": "Byt till Helkropp 3x/vecka", "programName": "Helkropp" }
+ * </programswitch>
+ *
+ * @param {string} aiText
+ * @param {Array<{id:string,name:string}>} availablePrograms
+ * @returns {{ displayText: string, programSwitch: object|null }}
+ */
+export function parseProgramSwitch(aiText, availablePrograms = []) {
+  if (!aiText) return { displayText: aiText, programSwitch: null }
+  const match = aiText.match(/<programswitch>\s*([\s\S]*?)\s*<\/programswitch>/i)
+  if (!match) return { displayText: aiText, programSwitch: null }
+
+  let programSwitch = null
+  try {
+    const parsed = JSON.parse(match[1].trim())
+    const target = availablePrograms.find(p => p.name === parsed.programName)
+    if (target) {
+      programSwitch = {
+        summary: typeof parsed.summary === 'string' ? parsed.summary : `Byt till ${target.name}`,
+        programId: target.id,
+        programName: target.name,
+      }
+    }
+  } catch {
+    // ogiltig JSON - ignorera
+  }
+  const displayText = aiText.replace(match[0], '').trim()
+  return { displayText, programSwitch }
 }
