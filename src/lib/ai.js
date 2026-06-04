@@ -176,7 +176,12 @@ användarens aktiva program nedan. Om användaren ber dig ändra i programmet
 </programchange>
 
 Regler:
-- "sessionName" MASTE exakt matcha ett av passen i programmet nedan.
+- "sessionName" (pa toppniva) MASTE exakt matcha ett av passen i programmet nedan.
+- FLYTTA en ovning mellan tva pass = tva operationer dar VARJE operation har
+  ett eget "sessionName": en "remove" fran kallpasset och en "add" till malpasset.
+  Exempel: flytta Benpress fran Övre 1 till Övre 2:
+  [ { "op": "remove", "exerciseName": "Benpress", "sessionName": "Övre 1" },
+    { "op": "add", "exerciseName": "Benpress", "sessionName": "Övre 2" } ]
 - "op" ar en av: "adjust", "remove", "add", "replace".
 - For "add" och "replace" MASTE ovningsnamnet (resp. "newExerciseName") exakt
   matcha en ovning i listan over tillgangliga ovningar ovan. Hitta ALDRIG pa
@@ -716,11 +721,15 @@ export function applyProgramChange(sessions, programChange) {
   })
 
   return sessions.map(sess => {
-    // Om sessionName angetts: applicera bara pa det passet.
-    if (sessionName && sess.name !== sessionName) return sess
     let exercises = Array.isArray(sess.exercises) ? [...sess.exercises] : []
 
     for (const op of operations) {
+      // Varje operation kan rikta sig mot ett eget pass (op.sessionName).
+      // Saknas det anvands forslagets gemensamma sessionName. Saknas bada
+      // appliceras operationen pa alla pass (bakatkompatibelt).
+      const target = op.sessionName || sessionName
+      if (target && sess.name !== target) continue
+
       const idx = exercises.findIndex(e => e.name === op.exerciseName)
       if (op.op === 'add') {
         if (idx === -1) exercises.push(defaultsForNew(op))
