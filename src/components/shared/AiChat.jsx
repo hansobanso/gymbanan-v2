@@ -123,37 +123,10 @@ export default function AiChat({ open, onClose, getContext, getMemory, getDeload
     }
   }
 
-  // Wrapper: i inline-lage en vanlig container (chatten ar sidan),
-  // annars overlay-sheet med animering. Innehallet ar identiskt.
-  const Wrapper = ({ children }) => {
-    if (inline) {
-      return <div className={styles.inlineContainer}>{children}</div>
-    }
-    return (
-      <motion.div
-        className={styles.sheet}
-        initial={{ x: '100%', opacity: 0.6 }}
-        animate={{ x: 0, opacity: 1 }}
-        exit={{ x: '100%', opacity: 0.6 }}
-        transition={{ type: 'spring', stiffness: 420, damping: 40 }}
-      >
-        {children}
-      </motion.div>
-    )
-  }
-
-  // I inline-lage ar chatten alltid "oppen"; overlay-lage styrs av open.
-  if (!inline && !open) {
-    return <AnimatePresence />
-  }
-
-  return (
-    <AnimatePresence>
-      {(inline || open) && (
-        <>
-        {/* Backdrop bara i overlay-lage */}
-        {!inline && <div className={styles.sheetBackdrop} />}
-        <Wrapper>
+  // Innehallet (header + body + input) som ren JSX - INTE en egen
+  // komponent, sa att fokus pa textfaltet inte tappas vid omrender.
+  const content = (
+    <>
             {/* Header */}
             <div className={styles.header}>
               <div className={styles.headerLeft}>
@@ -402,7 +375,29 @@ export default function AiChat({ open, onClose, getContext, getMemory, getDeload
                 </svg>
               </button>
             </div>
-          </Wrapper>
+    </>
+  )
+
+  // Inline-lage: chatten ar sjalva sidan (egen flik). Ingen overlay/animering.
+  if (inline) {
+    return <div className={styles.inlineContainer}>{content}</div>
+  }
+
+  // Overlay-lage: sheet som glider in over passet (oforandrat beteende).
+  return (
+    <AnimatePresence>
+      {open && (
+        <>
+          <div className={styles.sheetBackdrop} />
+          <motion.div
+            className={styles.sheet}
+            initial={{ x: '100%', opacity: 0.6 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: '100%', opacity: 0.6 }}
+            transition={{ type: 'spring', stiffness: 420, damping: 40 }}
+          >
+            {content}
+          </motion.div>
         </>
       )}
     </AnimatePresence>
