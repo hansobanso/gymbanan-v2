@@ -16,6 +16,13 @@ const FREE_WORKOUT_SUGGESTIONS = [
   'Ett kort pass, 30 min',
 ]
 
+const COACH_SUGGESTIONS = [
+  'Hur ser min progression ut?',
+  'Lägg till en övning i mitt program',
+  'Byt ut en övning i nästa pass',
+  'Tips för att komma vidare?',
+]
+
 export default function AiChat({ open, onClose, getContext, getMemory, getDeloadStatus, introMessage, introLoading, workoutNotes, onUpdateNotes, onApplyAdjustment, onApplyDeload, onApplyWorkoutPlan, onApplyProgramChange, onApplyProgramSwitch, getProgramsList, getAvailableExercises, freeWorkoutMode, inline = false }) {
   const [input, setInput] = useState('')
   const [notesOpen, setNotesOpen] = useState(false)
@@ -133,7 +140,7 @@ export default function AiChat({ open, onClose, getContext, getMemory, getDeload
                 <span className={styles.ptBadge}>PT</span>
                 <div>
                   <p className={styles.title}>Din personliga tränare</p>
-                  <p className={styles.subtitle}>{inline ? 'Fråga om träning, program och kommande pass' : 'Har tillgång till din passdata'}</p>
+                  {!inline && <p className={styles.subtitle}>Har tillgång till din passdata</p>}
                 </div>
               </div>
               {!inline && (
@@ -231,10 +238,12 @@ export default function AiChat({ open, onClose, getContext, getMemory, getDeload
                   <p className={styles.emptyText}>
                     {freeWorkoutMode
                       ? 'Be mig sätta ihop ett pass åt dig – säg vilken kroppsdel, hur lång tid, eller vilken utrustning du har.'
-                      : 'Ställ frågor om teknik, belastning, återhämtning eller progression.'}
+                      : inline
+                        ? 'Ställ frågor om träning, eller be mig ändra i ditt program – lägga till, ta bort eller byta övningar, eller byta program.'
+                        : 'Ställ frågor om teknik, belastning, återhämtning eller progression.'}
                   </p>
                   <div className={styles.suggestions}>
-                    {(freeWorkoutMode ? FREE_WORKOUT_SUGGESTIONS : SUGGESTIONS).map(s => (
+                    {(freeWorkoutMode ? FREE_WORKOUT_SUGGESTIONS : inline ? COACH_SUGGESTIONS : SUGGESTIONS).map(s => (
                       <button
                         key={s}
                         className={styles.suggestion}
