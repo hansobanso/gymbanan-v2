@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { displayWeightStr } from '../../lib/weightUtils'
 import styles from './WorkoutCard.module.css'
+
+const DELETE_WIDTH = 80
 
 function fmtDate(iso) {
   const d = new Date(iso)
@@ -39,30 +41,86 @@ function fmtVolume(kg) {
 export default function WorkoutCard({ workout, onShowCharts, onDelete, equipmentMap = {} }) {
   const [open, setOpen] = useState(false)
   const [ptOpen, setPtOpen] = useState(false)
-  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [swipeX, setSwipeX] = useState(0)
   const exercises = workout.exercises ?? []
   const { sets, volume, exCount } = calcStats(exercises)
 
+  // ── Swipe-to-delete (touch) ──
+  const swipeXRef = useRef(0)
+  const swipeTouchId = useRef(null)
+  const swipeStartX = useRef(0)
+  const swipeStartY = useRef(0)
+  const swipingH = useRef(false)
+  const isActivelySwipingH = useRef(false)
+
+  function updateSwipeX(val) {
+    swipeXRef.current = val
+    setSwipeX(val)
+  }
+
+  function handleTouchStart(e) {
+    const t = e.touches[0]
+    swipeTouchId.current = t.identifier
+    swipeStartX.current = t.clientX
+    swipeStartY.current = t.clientY
+    swipingH.current = false
+    isActivelySwipingH.current = false
+  }
+
+  function handleTouchMove(e) {
+    const t = Array.from(e.touches).find(t => t.identifier === swipeTouchId.current)
+    if (!t) return
+    const dx = t.clientX - swipeStartX.current
+    const adx = Math.abs(dx)
+    const ady = Math.abs(t.clientY - swipeStartY.current)
+    if (!swipingH.current && adx > 8 && adx > ady * 1.2) {
+      swipingH.current = true
+    }
+    if (swipingH.current) {
+      isActivelySwipingH.current = true
+      const base = swipeXRef.current === -DELETE_WIDTH ? -DELETE_WIDTH : 0
+      const newX = Math.min(0, Math.max(base + dx, -DELETE_WIDTH))
+      updateSwipeX(newX)
+      try { e.preventDefault() } catch { /* ignored */ }
+    }
+  }
+
+  function handleTouchEnd() {
+    if (swipingH.current) {
+      updateSwipeX(swipeXRef.current < -DELETE_WIDTH / 2 ? -DELETE_WIDTH : 0)
+    }
+    swipingH.current = false
+    swipeTouchId.current = null
+  }
+
+  // Om kortet ar swipat: stang det istallet for att expandera vid tap.
+  function handleHeaderClick() {
+    if (swipeXRef.current !== 0) { updateSwipeX(0); return }
+    if (isActivelySwipingH.current) { isActivelySwipingH.current = false; return }
+    setOpen(v => !v)
+  }
+
   return (
-    <div className={styles.card}>
+    <div className={styles.swipeWrapper}>
+      {/* Ta bort-bakgrund som avslojas vid swipe */}
+      <div className={styles.deleteBack}>
+        <button className={styles.deleteBackBtn} onClick={() => onDelete?.(workout.id)} type="button">Ta bort</button>
+      </div>
+      <div
+        className={styles.card}
+        style={{
+          transform: `translateX(${swipeX}px)`,
+          transition: isActivelySwipingH.current ? 'none' : 'transform 0.2s ease',
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
       {/* Header */}
-      <button className={styles.header} onClick={() => setOpen(v => !v)} type="button">
+      <button className={styles.header} onClick={handleHeaderClick} type="button">
         <div className={styles.headerTop}>
           <span className={styles.name}>{workout.session_name ?? 'Pass'}</span>
           <div className={styles.headerRight} onClick={e => e.stopPropagation()}>
-            {confirmDelete ? (
-              <div className={styles.confirmRow}>
-                <span className={styles.confirmLabel}>Ta bort?</span>
-                <button className={styles.confirmYes} onClick={() => onDelete?.(workout.id)} type="button">Ja</button>
-                <button className={styles.confirmNo} onClick={() => setConfirmDelete(false)} type="button">Nej</button>
-              </div>
-            ) : (
-              <button className={styles.deleteBtn} onClick={() => setConfirmDelete(true)} type="button" aria-label="Ta bort pass">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path d="M3 6H5H21M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </button>
-            )}
             <span className={`${styles.chevron} ${open ? styles.chevronOpen : ''}`}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="m6 9 6 6 6-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -151,6 +209,7 @@ export default function WorkoutCard({ workout, onShowCharts, onDelete, equipment
           </motion.div>
         )}
       </AnimatePresence>
+      </div>
     </div>
   )
 }
