@@ -587,3 +587,123 @@ export function parseWorkoutPlan(aiText) {
   const displayText = aiText.replace(match[0], '').trim()
   return { displayText, workoutPlan }
 }
+
+/**
+ * Parsar ett <programchange>...</programchange>-block dar PT:n foreslar
+ * andringar i ett KOMMANDE pass i ett program. Varje operation valideras:
+ * ovningsnamn som ska laggas till/bytas in MASTE finnas i availableNames,
+ * annars slangs operationen (sa vi aldrig skapar orphans i programmet).
+ *
+ * Format som PT:n forvantas generera:
+ * <programchange>
+ * {
+ *   "summary": "Byt ut X mot Y och lagg till Z i passet Ben",
+ *   "sessionName": "Ben",
+ *   "operations": [
+ *     { "op": "adjust", "exerciseName": "Knäböj", "workSets": 3, "repsMin": 5, "repsMax": 8 },
+ *     { "op": "remove", "exerciseName": "Vadpress" },
+ *     { "op": "add", "exerciseName": "Benpress", "workSets": 3, "repsMin": 8, "repsMax": 12 },
+ *     { "op": "replace", "exerciseName": "Sittande bencurl", "newExerciseName": "Liggande bencurl" }
+ *   ]
+ * }
+ * </programchange>
+ *
+ * @param {string} aiText - PT:ns svar
+ * @param {string[]} availableNames - giltiga ovningsnamn (fran exercises)
+ * @returns {{ displayText: string, programChange: object|null, rejected: string[] }}
+ */
+export function parseProgramChange(aiText, availableNames = []) {
+  if (!aiText) return { displayText: aiText, programChange: null, rejected: [] }
+  const match = aiText.match(/<programchange>\s*([\s\S]*?)\s*<\/programchange>/i)
+  if (!match) return { displayText: aiText, programChange: null, rejected: [] }
+
+  const nameSet = new Set(availableNames)
+  const rejected = []
+  let programChange = null
+  try {
+    const parsed = JSON.parse(match[1].trim())
+    const ops = Array.isArray(parsed.operations) ? parsed.operations : []
+    const validOps = []
+    for (const o of ops) {
+      if (!o || typeof o.op !== 'string' || typeof o.exerciseName !== 'string') continue
+      const op = o.op.toLowerCase()
+      // 'adjust' och 'remove' kraver att ovningen redan finns i passet -
+      // det validerar vi nar vi tillampar (mot passet), inte mot biblioteket.
+      // 'add' och 'replace' for IN ett nytt namn som MASTE finnas i biblioteket.
+      if (op === 'add' && !nameSet.has(o.exerciseName)) { rejected.push(o.exerciseName); continue }
+      if (op === 'replace') {
+        if (typeof o.newExerciseName !== 'string' || !nameSet.has(o.newExerciseName)) {
+          rejected.push(o.newExerciseName || o.exerciseName); continue
+        }
+      }
+      if (!['adjust', 'remove', 'add', 'replace'].includes(op)) continue
+      validOps.push({ ...o, op })
+    }
+    if (validOps.length > 0) {
+      programChange = {
+        summary: typeof parsed.summary === 'string' ? parsed.summary : 'Ändra i programmet',
+        sessionName: typeof parsed.sessionName === 'string' ? parsed.sessionName : null,
+        operations: validOps,
+      }
+    }
+  } catch {
+    // ogiltig JSON - ignorera
+  }
+  const displayText = aiText.replace(match[0], '').trim()
+  return { displayText, programChange, rejected }
+}
+
+/**
+ * Tillampar en programChange pa ett programs sessions-array och returnerar
+ * en NY sessions-array (muterar inte originalet). Anvands nar anvandaren
+ * tryckt "tillampa". Operationer mot ovningar som inte finns i passet
+ * ignoreras tyst (adjust/remove/replace pa saknad ovning).
+ *
+ * @param {Array} sessions - programmets sessions
+ * @param {object} programChange - fran parseProgramChange
+ * @returns {Array} ny sessions-array
+ */
+export function applyProgramChange(sessions, programChange) {
+  if (!Array.isArray(sessions) || !programChange) return sessions
+  const { sessionName, operations } = programChange
+
+  const defaultsForNew = (op) => ({
+    name: op.exerciseName,
+    notes: '',
+    repsMin: op.repsMin ?? 8,
+    repsMax: op.repsMax ?? 12,
+    workSets: op.workSets ?? 3,
+    warmupSets: op.warmupSets ?? 2,
+    backoffSets: op.backoffSets ?? 0,
+    restSeconds: op.restSeconds ?? 120,
+  })
+
+  return sessions.map(sess => {
+    // Om sessionName angetts: applicera bara pa det passet.
+    if (sessionName && sess.name !== sessionName) return sess
+    let exercises = Array.isArray(sess.exercises) ? [...sess.exercises] : []
+
+    for (const op of operations) {
+      const idx = exercises.findIndex(e => e.name === op.exerciseName)
+      if (op.op === 'add') {
+        if (idx === -1) exercises.push(defaultsForNew(op))
+      } else if (op.op === 'remove') {
+        if (idx !== -1) exercises.splice(idx, 1)
+      } else if (op.op === 'replace') {
+        if (idx !== -1) exercises[idx] = { ...exercises[idx], name: op.newExerciseName }
+      } else if (op.op === 'adjust') {
+        if (idx !== -1) {
+          const e = { ...exercises[idx] }
+          if (op.workSets != null) e.workSets = op.workSets
+          if (op.warmupSets != null) e.warmupSets = op.warmupSets
+          if (op.backoffSets != null) e.backoffSets = op.backoffSets
+          if (op.repsMin != null) e.repsMin = op.repsMin
+          if (op.repsMax != null) e.repsMax = op.repsMax
+          if (op.restSeconds != null) e.restSeconds = op.restSeconds
+          exercises[idx] = e
+        }
+      }
+    }
+    return { ...sess, exercises }
+  })
+}
