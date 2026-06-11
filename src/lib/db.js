@@ -58,7 +58,7 @@ export async function getProfile(userId) {
   if (cached) return cached
   const { data, error } = await supabase
     .from('profiles')
-    .select('active_program_id, display_name, intro_dismissed')
+    .select('active_program_id, display_name, intro_dismissed, whatsnew_seen')
     .eq('id', userId)
     .maybeSingle()
   if (error) return null

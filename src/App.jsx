@@ -1,10 +1,11 @@
 import { useEffect, useState, useCallback, lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from './lib/supabase'
-import { getPrograms, setActiveProgram, getProfile } from './lib/db'
+import { getPrograms, setActiveProgram, getProfile, cacheInvalidate } from './lib/db'
 import Auth from './screens/Auth'
 import Home from './screens/Home'
 import BottomNav from './components/shared/BottomNav'
+import WhatsNew, { WHATSNEW_VERSION } from './components/shared/WhatsNew'
 import { BananaLogo } from './components/shared/Icons'
 import './App.css'
 
@@ -58,6 +59,7 @@ function AppRoutes({ session }) {
   const [programsError, setProgramsError] = useState(false)
   const [activeProgramId, setActiveProgramId] = useState(null)
   const [homeReady, setHomeReady] = useState(false)
+  const [showWhatsNew, setShowWhatsNew] = useState(false)
   const [splashGone, setSplashGone] = useState(false)
 
   // Nar allt laddat: las baren till 100%, vanta en kort stund sa den hinner
@@ -81,6 +83,9 @@ function AppRoutes({ session }) {
       const activeId = profile?.active_program_id
       if (activeId && progs.some(p => p.id === activeId)) {
         setActiveProgramId(activeId)
+      }
+      if (profile && profile.whatsnew_seen !== WHATSNEW_VERSION) {
+        setShowWhatsNew(true)
       }
       setProgramsLoaded(true)
     }).catch(() => {
@@ -198,6 +203,16 @@ function AppRoutes({ session }) {
       </Suspense>
 
       {isTab && <BottomNav />}
+      <WhatsNew
+        open={showWhatsNew}
+        onClose={() => {
+          setShowWhatsNew(false)
+          supabase.from('profiles')
+            .update({ whatsnew_seen: WHATSNEW_VERSION })
+            .eq('id', session.user.id)
+            .then(() => { cacheInvalidate(`profile:${session.user.id}`) }, () => {})
+        }}
+      />
     </div>
   )
 }
