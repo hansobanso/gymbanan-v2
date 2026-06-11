@@ -1,16 +1,14 @@
 import { useState, useEffect } from 'react'
 import { getWorkouts, getEquipmentMap, deleteWorkout } from '../lib/db'
 import WorkoutCard from '../components/history/WorkoutCard'
-import StrengthView from '../components/history/StrengthView'
-import ExerciseChartSheet from '../components/history/ExerciseChartSheet'
+import ProgressView from '../components/history/ProgressView'
 import { DumbbellIcon } from '../components/shared/Icons'
 import styles from './History.module.css'
 
 export default function History({ session }) {
   const [workouts, setWorkouts] = useState([])
   const [loading, setLoading] = useState(true)
-  const [chartWorkout, setChartWorkout] = useState(null)
-  const [chartSheetOpen, setChartSheetOpen] = useState(false)
+  const [progressOpen, setProgressOpen] = useState(false)
   const [equipmentMap, setEquipmentMap] = useState({})
 
   function reload() {
@@ -45,14 +43,6 @@ export default function History({ session }) {
     <div className={styles.screen}>
       <header className={styles.header}>
         <h1 className={styles.title}>Historik</h1>
-        <button className={styles.chartBtn} onClick={() => setChartSheetOpen(true)} type="button" aria-label="Styrkegrafer">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M3 3v16a2 2 0 0 0 2 2h16"/>
-            <path d="M7 16h8"/>
-            <path d="M7 11h12"/>
-            <path d="M7 6h3"/>
-          </svg>
-        </button>
       </header>
       <div className={styles.body}>
         {loading && (
@@ -73,12 +63,28 @@ export default function History({ session }) {
 
         {!loading && workouts.length > 0 && (
           <div className={styles.list}>
+            {/* Tydlig ingång till styrkeutveckling */}
+            <button className={styles.progressCard} onClick={() => setProgressOpen(true)} type="button">
+              <span className={styles.progressIcon}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M3 3v16a2 2 0 0 0 2 2h16"/>
+                  <path d="m7 14 3-4 3 3 4-6"/>
+                </svg>
+              </span>
+              <span className={styles.progressText}>
+                <span className={styles.progressTitle}>Min styrkeutveckling</span>
+                <span className={styles.progressSub}>Se hur du blir starkare över tid</span>
+              </span>
+              <svg className={styles.progressArrow} width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="m9 18 6-6-6-6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+
             {workouts.map(w => (
               <WorkoutCard
                 key={w.id}
                 workout={w}
                 equipmentMap={equipmentMap}
-                onShowCharts={() => setChartWorkout(w)}
                 onDelete={async (id) => {
                   const ok = await deleteWorkout(id)
                   if (ok) {
@@ -92,18 +98,9 @@ export default function History({ session }) {
         )}
       </div>
 
-      <StrengthView
-        workout={chartWorkout}
-        allWorkouts={workouts}
-        equipmentMap={equipmentMap}
-        open={chartWorkout !== null}
-        onClose={() => setChartWorkout(null)}
-      />
-
-      <ExerciseChartSheet
-        open={chartSheetOpen}
-        onClose={() => setChartSheetOpen(false)}
-        userId={session.user.id}
+      <ProgressView
+        open={progressOpen}
+        onClose={() => setProgressOpen(false)}
         workouts={workouts}
         equipmentMap={equipmentMap}
       />

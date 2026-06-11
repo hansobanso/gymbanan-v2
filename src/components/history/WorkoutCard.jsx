@@ -38,7 +38,7 @@ function fmtVolume(kg) {
   return `${Math.round(kg)} kg`
 }
 
-export default function WorkoutCard({ workout, onShowCharts, onDelete, equipmentMap = {} }) {
+export default function WorkoutCard({ workout, onDelete, equipmentMap = {} }) {
   const [open, setOpen] = useState(false)
   const [ptOpen, setPtOpen] = useState(false)
   const [swipeX, setSwipeX] = useState(0)
@@ -194,16 +194,6 @@ export default function WorkoutCard({ workout, onShowCharts, onDelete, equipment
                     )}
                   </AnimatePresence>
                 </div>
-              )}
-
-              {/* Styrkegrafer */}
-              {onShowCharts && (
-                <button className={styles.chartsBtn} onClick={onShowCharts} type="button">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path d="M3 20L8 14L12 17L17 10L21 13M3 20H21" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  Styrkegrafer
-                </button>
               )}
             </div>
           </motion.div>
