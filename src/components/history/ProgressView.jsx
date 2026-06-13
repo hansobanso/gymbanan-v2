@@ -11,16 +11,36 @@ function epley(weight, reps, equipment) {
   return w * (1 + r / 30)
 }
 
-// Basta estimerade 1RM i ett pass for en ovning
+// Basta estimerade 1RM i ett pass + vilket set som gav det
 function bestRM(sets, equipment) {
-  let best = 0
+  let best = 0, bestSet = null
   for (const s of sets ?? []) {
     if (s.type === 'work' && s.done) {
       const e = epley(s.weight, s.reps, equipment)
-      if (e > best) best = e
+      if (e > best) {
+        best = e
+        bestSet = { weight: displayWeight(parseFloat(s.weight), equipment), reps: parseInt(s.reps) }
+      }
+    }
+  }
+  return { value: best, set: bestSet }
+}
+
+// Hogsta antal reps i ett pass (for kroppsviktsovningar utan vikt)
+function bestReps(sets) {
+  let best = 0
+  for (const s of sets ?? []) {
+    if (s.type === 'work' && s.done) {
+      const r = parseInt(s.reps)
+      if (r > best) best = r
     }
   }
   return best
+}
+
+// Har ovningen nagon vikt loggad i ett pass?
+function hasWeight(sets) {
+  return (sets ?? []).some(s => s.type === 'work' && s.done && parseFloat(s.weight) > 0)
 }
 
 function fmtDate(iso) {
@@ -137,7 +157,9 @@ export default function ProgressView({ open, onClose, workouts, equipmentMap = {
     const counts = new Map()
     for (const w of workouts) {
       for (const ex of w.exercises ?? []) {
-        if ((ex.sets ?? []).some(s => s.type === 'work' && s.done && s.weight)) {
+        // Rakna med ovningar som har minst ett gjort arbetsset (med reps),
+        // aven om vikt saknas (kroppsvikt).
+        if ((ex.sets ?? []).some(s => s.type === 'work' && s.done && parseInt(s.reps) > 0)) {
           counts.set(ex.name, (counts.get(ex.name) ?? 0) + 1)
         }
       }
@@ -151,20 +173,34 @@ export default function ProgressView({ open, onClose, workouts, equipmentMap = {
     ? exercises.filter(e => e.name.toLowerCase().includes(query.toLowerCase()))
     : exercises
 
-  // Datapunkter for vald ovning
+  // Datapunkter for vald ovning. Mode: 'weight' (estimerat 1RM) om ovningen
+  // har vikt nagon gang, annars 'reps' (basta reps) for kroppsviktsovningar.
   const data = useMemo(() => {
     if (!selected) return null
     const equipment = equipmentMap[selected]
     const sorted = [...workouts].sort((a, b) => new Date(a.finished_at) - new Date(b.finished_at))
+
+    // Avgor lage: anvand vikt om ovningen har vikt i nagot pass
+    const anyWeight = sorted.some(w => {
+      const ex = (w.exercises ?? []).find(e => e.name === selected)
+      return ex && hasWeight(ex.sets)
+    })
+    const mode = anyWeight ? 'weight' : 'reps'
+
     const points = []
     for (const w of sorted) {
       const ex = (w.exercises ?? []).find(e => e.name === selected)
       if (!ex) continue
-      const rm = bestRM(ex.sets, equipment)
-      if (rm > 0) points.push({ date: w.finished_at, value: rm })
+      if (mode === 'weight') {
+        const { value, set } = bestRM(ex.sets, equipment)
+        if (value > 0) points.push({ date: w.finished_at, value, set })
+      } else {
+        const reps = bestReps(ex.sets)
+        if (reps > 0) points.push({ date: w.finished_at, value: reps })
+      }
     }
     const trimmed = points.slice(-20)
-    if (trimmed.length === 0) return { points: [], isDouble: equipment === 'Hantel' }
+    if (trimmed.length === 0) return { points: [], mode, isDouble: equipment === 'Hantel' }
 
     const current = trimmed[trimmed.length - 1].value
     const start = trimmed[0].value
@@ -174,9 +210,11 @@ export default function ProgressView({ open, onClose, workouts, equipmentMap = {
     const prPoint = trimmed.find(p => p.value === pr)
     return {
       points: trimmed,
+      mode,
       isDouble: equipment === 'Hantel',
       current, start, change, pct, pr,
       prDate: prPoint?.date,
+      currentSet: trimmed[trimmed.length - 1].set,
     }
   }, [selected, workouts, equipmentMap])
 
@@ -209,16 +247,23 @@ export default function ProgressView({ open, onClose, workouts, equipmentMap = {
               <div className={styles.statHero}>
                 <div className={styles.heroMain}>
                   <span className={styles.heroValue}>{fmtKg(Math.round(data.current))}</span>
-                  <span className={styles.heroUnit}>kg</span>
+                  <span className={styles.heroUnit}>{data.mode === 'weight' ? 'kg' : 'reps'}</span>
                 </div>
-                <span className={styles.heroLabel}>estimerat 1RM nu</span>
+                <span className={styles.heroLabel}>
+                  {data.mode === 'weight' ? 'estimerat 1RM nu' : 'bästa set nu'}
+                </span>
+                {data.mode === 'weight' && data.currentSet && (
+                  <span className={styles.heroDetail}>
+                    {fmtKg(data.currentSet.weight)} kg × {data.currentSet.reps} reps
+                  </span>
+                )}
                 <div className={`${styles.changePill} ${data.change >= 0 ? styles.up : styles.down}`}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                     {data.change >= 0
                       ? <path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
                       : <path d="M12 5v14M5 12l7 7 7-7" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />}
                   </svg>
-                  {data.change >= 0 ? '+' : ''}{fmtKg(Math.round(data.change))} kg ({data.change >= 0 ? '+' : ''}{Math.round(data.pct)}%) sedan start
+                  {data.change >= 0 ? '+' : ''}{fmtKg(Math.round(data.change))} {data.mode === 'weight' ? 'kg' : 'reps'} ({data.change >= 0 ? '+' : ''}{Math.round(data.pct)}%) sedan start
                 </div>
               </div>
 
@@ -228,12 +273,13 @@ export default function ProgressView({ open, onClose, workouts, equipmentMap = {
 
               <div className={styles.prRow}>
                 <span className={styles.prStar}>★</span>
-                <span>PR: <strong>{fmtKg(Math.round(data.pr))} kg</strong>{data.prDate ? ` · ${fmtDate(data.prDate)}` : ''}</span>
+                <span>PR: <strong>{fmtKg(Math.round(data.pr))} {data.mode === 'weight' ? 'kg' : 'reps'}</strong>{data.prDate ? ` · ${fmtDate(data.prDate)}` : ''}</span>
               </div>
 
               <p className={styles.explainer}>
-                Estimerat 1RM beräknas från vikt och reps (Epley) – ett mått på din maxstyrka även när du inte kör singlar.
-                {data.isDouble && ' Hantelvikt visas som total (×2).'}
+                {data.mode === 'weight'
+                  ? <>Estimerat 1RM beräknas från vikt och reps (Epley) – ett mått på din maxstyrka även när du inte kör singlar. Fler reps på samma vikt räknas som framsteg.{data.isDouble && ' Hantelvikt visas som total (×2).'}</>
+                  : 'Den här övningen loggas utan vikt, så vi visar ditt bästa set (flest reps) över tid. Fler reps = starkare.'}
               </p>
             </>
           ) : (
