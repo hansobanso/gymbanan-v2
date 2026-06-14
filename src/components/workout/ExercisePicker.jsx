@@ -174,9 +174,9 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
             <div className={styles.header}>
               <div className={styles.headerText}>
                 <span className={styles.title}>
-                  {replacingMeta ? 'Byt övning' : 'Välj övning'}
+                  {createMode ? 'Skapa övning' : (replacingMeta ? 'Byt övning' : 'Välj övning')}
                 </span>
-                {replacingMeta && (
+                {replacingMeta && !createMode && (
                   <span className={styles.subtitle}>Ersätter {replacingMeta.name}</span>
                 )}
               </div>
@@ -186,6 +186,8 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
                 </svg>
               </button>
             </div>
+            {!createMode && (
+            <>
             <div className={styles.searchWrap}>
               <input
                 ref={searchRef}
@@ -237,6 +239,8 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
                   </button>
                 ))}
               </div>
+            )}
+            </>
             )}
             <div className={styles.list}>
               {createMode ? (
