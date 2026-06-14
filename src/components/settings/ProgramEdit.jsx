@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Reorder, useDragControls } from 'framer-motion'
 import { ProgramMuscleSetSummary } from './MuscleSetSummary'
+import { formatSessionTime } from '../../lib/estimateTime'
 import styles from './ProgramEdit.module.css'
 
 function newSession() {
@@ -46,7 +47,7 @@ function SessionItem({ session, deleteConfirmId, setDeleteConfirmId, handleDelet
       <div className={styles.sessionInfo}>
         <span className={styles.sessionName}>{session.name}</span>
         <span className={styles.sessionMeta}>
-          {(session.exercises ?? []).length} övningar
+          {(session.exercises ?? []).length} övningar{formatSessionTime(session) ? ` · ${formatSessionTime(session)}` : ''}
         </span>
       </div>
       {isConfirming ? (

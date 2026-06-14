@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import { Reorder, useDragControls } from 'framer-motion'
 import ExerciseDetailBottomSheet from './ExerciseDetailBottomSheet'
 import ExercisePicker from '../workout/ExercisePicker'
+import { formatSessionTime } from '../../lib/estimateTime'
 import styles from './SessionEdit.module.css'
 
 const DEFAULT_REST = 120
@@ -341,6 +342,9 @@ export default function SessionEdit({ session, allExercises, onSave, onDelete, o
               Övningar
               {exercises.length > 0 && (
                 <span className={styles.labelCount}>{exercises.length}</span>
+              )}
+              {exercises.length > 0 && (
+                <span className={styles.timeEstimate}>{formatSessionTime({ exercises })}</span>
               )}
             </span>
             <button

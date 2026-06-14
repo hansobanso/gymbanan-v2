@@ -335,6 +335,14 @@
   font-size: 13px;
 }
 
+.timeEstimate {
+  display: inline-block;
+  margin-left: 8px;
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 13px;
+}
+
 /* ── Muscle set summary ─────────────────────────────────────── */
 .muscleSummary {
   margin: 24px 16px 8px;
