@@ -14,6 +14,12 @@ export const MUSCLE_GROUPS = [
 
 export const BROAD_MUSCLE_GROUPS = ['Bröst', 'Rygg', 'Axlar', 'Armar', 'Ben', 'Core', 'Övrigt']
 
+// Utrustningsalternativ (delas av admin-sidan och appens ovningsskapande)
+export const EQUIPMENT_OPTIONS = [
+  'Skivstång', 'Hantel', 'Maskin', 'Kabel',
+  'Kroppsvikt', 'Smithmaskin', 'Övrigt',
+]
+
 export const SUBDIVISION_TO_BROAD = {
   'Bröst': 'Bröst',
   'Främre axel': 'Axlar', 'Mellersta axel': 'Axlar', 'Bakre axel': 'Axlar',

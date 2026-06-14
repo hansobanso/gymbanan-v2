@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { getExercises, saveExercise } from '../../lib/db'
-import { MUSCLE_GROUPS, BROAD_MUSCLE_GROUPS, broadOf, subGroupsOf, matchesSubGroup } from '../../data/muscleGroups'
+import { getExercises, saveExercise, getProfile } from '../../lib/db'
+import { supabase } from '../../lib/supabase'
+import { MUSCLE_GROUPS, BROAD_MUSCLE_GROUPS, EQUIPMENT_OPTIONS, broadOf, subGroupsOf, matchesSubGroup } from '../../data/muscleGroups'
 import styles from './ExercisePicker.module.css'
 
 export default function ExercisePicker({ open, onSelect, onClose, replacingExercise = null }) {
@@ -10,7 +11,11 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
   const [selectedGroup, setSelectedGroup] = useState(null)
   const [selectedSub, setSelectedSub] = useState(null)
   const [createMode, setCreateMode] = useState(false)
+  const [createName, setCreateName] = useState('')
   const [createMuscle, setCreateMuscle] = useState('')
+  const [createSecondary, setCreateSecondary] = useState([])
+  const [createEquipment, setCreateEquipment] = useState('')
+  const [isAdmin, setIsAdmin] = useState(false)
   const [saving, setSaving] = useState(false)
   const searchRef = useRef(null)
 
@@ -39,18 +44,56 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
       setSelectedGroup(null)
       setSelectedSub(null)
       setCreateMode(false)
+      setCreateName('')
       setCreateMuscle('')
+      setCreateSecondary([])
+      setCreateEquipment('')
       return
     }
     getExercises().then(setAllExercises).catch(() => {})
+    // Hamta admin-status sa vi vet om nya ovningar ska bli globala
+    supabase.auth.getUser().then(({ data }) => {
+      const uid = data?.user?.id
+      if (uid) getProfile(uid).then(p => setIsAdmin(!!p?.is_admin)).catch(() => {})
+    })
     setTimeout(() => searchRef.current?.focus(), 100)
   }, [open])
 
+  // Oppna skapa-laget. Forifyll namnet fran sokrutan om man sokt pa nat.
+  function openCreate() {
+    setCreateName(query.trim())
+    setCreateMuscle('')
+    setCreateSecondary([])
+    setCreateEquipment('')
+    setCreateMode(true)
+  }
+
+  function toggleSecondary(mg) {
+    setCreateSecondary(prev =>
+      prev.includes(mg) ? prev.filter(m => m !== mg) : (prev.length < 7 ? [...prev, mg] : prev)
+    )
+  }
+
   async function handleCreate() {
-    if (!query.trim() || saving) return
+    const name = createName.trim()
+    if (!name || !createMuscle || saving) return
     setSaving(true)
     try {
-      const ex = await saveExercise({ name: query.trim(), muscle_group: createMuscle || null })
+      const base = {
+        name,
+        muscle_group: createMuscle,
+        secondary_muscles: createSecondary,
+        equipment: createEquipment || null,
+      }
+      // Admin -> global ovning (for alla). Annars personlig (kraver user_id).
+      let payload = base
+      if (isAdmin) {
+        payload = { ...base, is_global: true, user_id: null }
+      } else {
+        const { data: u } = await supabase.auth.getUser()
+        payload = { ...base, user_id: u?.user?.id, created_by: u?.user?.id }
+      }
+      const ex = await saveExercise(payload)
       setAllExercises(prev => [...prev, ex])
       onSelect(ex)
       onClose()
@@ -192,7 +235,15 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
             <div className={styles.list}>
               {createMode ? (
                 <div className={styles.createWrap}>
-                  <p className={styles.createLabel}>Muskelgrupp för <strong>{query.trim()}</strong></p>
+                  <label className={styles.createFieldLabel}>Namn</label>
+                  <input
+                    className={styles.createNameInput}
+                    value={createName}
+                    onChange={e => setCreateName(e.target.value)}
+                    placeholder="Övningens namn"
+                  />
+
+                  <label className={styles.createFieldLabel}>Primär muskel</label>
                   <div className={styles.muscleGrid}>
                     {MUSCLE_GROUPS.map(mg => (
                       <button
@@ -205,10 +256,42 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
                       </button>
                     ))}
                   </div>
+
+                  <label className={styles.createFieldLabel}>Sekundära muskler <span className={styles.createHint}>(valfritt, max 7)</span></label>
+                  <div className={styles.muscleGrid}>
+                    {MUSCLE_GROUPS.filter(mg => mg !== createMuscle).map(mg => (
+                      <button
+                        key={mg}
+                        className={`${styles.muscleBtn} ${createSecondary.includes(mg) ? styles.muscleBtnSecondary : ''}`}
+                        onClick={() => toggleSecondary(mg)}
+                        type="button"
+                      >
+                        {mg}
+                      </button>
+                    ))}
+                  </div>
+
+                  <label className={styles.createFieldLabel}>Utrustning <span className={styles.createHint}>(valfritt)</span></label>
+                  <div className={styles.muscleGrid}>
+                    {EQUIPMENT_OPTIONS.map(eq => (
+                      <button
+                        key={eq}
+                        className={`${styles.muscleBtn} ${createEquipment === eq ? styles.muscleBtnActive : ''}`}
+                        onClick={() => setCreateEquipment(e => e === eq ? '' : eq)}
+                        type="button"
+                      >
+                        {eq}
+                      </button>
+                    ))}
+                  </div>
+
+                  {isAdmin && (
+                    <p className={styles.createGlobalNote}>Skapas som global övning (för alla)</p>
+                  )}
                   <button
                     className={styles.confirmBtn}
                     onClick={handleCreate}
-                    disabled={saving}
+                    disabled={saving || !createName.trim() || !createMuscle}
                     type="button"
                   >
                     {saving ? 'Sparar…' : 'Skapa övning'}
@@ -224,7 +307,7 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
                       <p className={styles.empty}>Ingen träff</p>
                       <button
                         className={styles.createPrompt}
-                        onClick={() => setCreateMode(true)}
+                        onClick={openCreate}
                         type="button"
                       >
                         + Skapa &quot;{query.trim()}&quot;
@@ -271,6 +354,18 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
                             ))}
                           </div>
                         ))}
+
+                      {/* Alltid nabar: skapa en helt ny ovning */}
+                      <button
+                        className={styles.createNewBtn}
+                        onClick={openCreate}
+                        type="button"
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M12 5v14M5 12h14"/>
+                        </svg>
+                        Skapa ny övning
+                      </button>
                     </>
                   )}
                 </>
