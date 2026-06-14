@@ -5,7 +5,7 @@ import { supabase } from '../../lib/supabase'
 import { MUSCLE_GROUPS, BROAD_MUSCLE_GROUPS, EQUIPMENT_OPTIONS, broadOf, subGroupsOf, matchesSubGroup } from '../../data/muscleGroups'
 import styles from './ExercisePicker.module.css'
 
-export default function ExercisePicker({ open, onSelect, onClose, replacingExercise = null }) {
+export default function ExercisePicker({ open, onSelect, onClose, replacingExercise = null, startInCreate = false }) {
   const [allExercises, setAllExercises] = useState([])
   const [query, setQuery] = useState('')
   const [selectedGroup, setSelectedGroup] = useState(null)
@@ -56,8 +56,14 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
       const uid = data?.user?.id
       if (uid) getProfile(uid).then(p => setIsAdmin(!!p?.is_admin)).catch(() => {})
     })
-    setTimeout(() => searchRef.current?.focus(), 100)
-  }, [open])
+    // Oppna direkt i skapa-laget om den som oppnade vill det (t.ex. + i
+    // ovningsbiblioteket - man vill skapa, inte valja).
+    if (startInCreate) {
+      setCreateMode(true)
+    } else {
+      setTimeout(() => searchRef.current?.focus(), 100)
+    }
+  }, [open, startInCreate])
 
   // Oppna skapa-laget. Forifyll namnet fran sokrutan om man sokt pa nat.
   function openCreate() {
@@ -296,7 +302,7 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
                   >
                     {saving ? 'Sparar…' : 'Skapa övning'}
                   </button>
-                  <button className={styles.cancelLink} onClick={() => setCreateMode(false)} type="button">
+                  <button className={styles.cancelLink} onClick={() => startInCreate ? onClose() : setCreateMode(false)} type="button">
                     Avbryt
                   </button>
                 </div>

@@ -128,6 +128,7 @@ export default function ExerciseLibrary() {
 
       <ExercisePicker
         open={pickerOpen}
+        startInCreate
         onClose={() => setPickerOpen(false)}
         onSelect={(ex) => {
           setPickerOpen(false)
