@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getExercises } from '../lib/db'
 import { BROAD_MUSCLE_GROUPS, broadOf, subGroupsOf, matchesSubGroup } from '../data/muscleGroups'
+import ExercisePicker from '../components/workout/ExercisePicker'
 import styles from './ExerciseLibrary.module.css'
 
 export default function ExerciseLibrary() {
@@ -11,6 +12,7 @@ export default function ExerciseLibrary() {
   const [muscleFilter, setMuscleFilter] = useState(null)
   const [subFilter, setSubFilter] = useState(null)
   const [search, setSearch] = useState('')
+  const [pickerOpen, setPickerOpen] = useState(false)
 
   useEffect(() => {
     getExercises()
@@ -37,7 +39,11 @@ export default function ExerciseLibrary() {
           </svg>
         </button>
         <h1 className={styles.title}>Övningar</h1>
-        <div style={{ width: 36 }} />
+        <button className={styles.addBtn} onClick={() => setPickerOpen(true)} type="button" aria-label="Lägg till övning">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 5v14M5 12h14" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
       </div>
 
       {/* Sökfält */}
@@ -119,6 +125,21 @@ export default function ExerciseLibrary() {
           ))}
         </div>
       </div>
+
+      <ExercisePicker
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        onSelect={(ex) => {
+          setPickerOpen(false)
+          // Lagg till i listan direkt och ga till detaljsidan om den har ett id
+          if (ex?.id) {
+            setAllExercises(prev =>
+              prev.some(e => e.id === ex.id) ? prev : [...prev, ex]
+            )
+            navigate(`/exercises/${encodeURIComponent(ex.id)}`)
+          }
+        }}
+      />
     </div>
   )
 }
