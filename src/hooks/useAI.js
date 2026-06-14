@@ -27,7 +27,7 @@ export function useAI({ getContext, getMemory, getDeloadStatus, getAvailableExer
     await new Promise(r => setTimeout(r, 0))
 
     try {
-      const context = getContext?.()
+      const context = await getContext?.()
       const memory = getMemory?.()
       const deloadStatus = getDeloadStatus?.()
       const availableExercises = getAvailableExercises?.()

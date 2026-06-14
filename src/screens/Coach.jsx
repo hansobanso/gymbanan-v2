@@ -49,7 +49,31 @@ export default function Coach({ session, onProgramUpdated, onSwitchProgram, onPr
     return () => { cancelled = true }
   }, [session.user.id])
 
-  const getContext = useCallback(() => context, [context])
+  // Bygg kontexten FARSKT vid varje meddelande, sa PT:n alltid ser den
+  // senaste versionen av programmen - aven om anvandaren andrat i ett
+  // program mitt under en pagaende chatt. Faller tillbaka pa det cachade
+  // contextet om hamtningen skulle misslyckas.
+  const getContext = useCallback(async () => {
+    try {
+      const [programs, recent, profile] = await Promise.all([
+        getPrograms(session.user.id),
+        getWorkouts(session.user.id, 5),
+        getProfile(session.user.id).catch(() => null),
+      ])
+      const active = await getActiveProgram(session.user.id, programs).catch(() => null)
+      // Hall delat state i synk sa knappar/validering anvander farsk data
+      setActiveProgram(active || null)
+      setAllPrograms(programs || [])
+      return buildCoachContext({
+        activeProgram: active,
+        allPrograms: programs || [],
+        recentWorkouts: recent || [],
+        displayName: profile?.display_name || null,
+      })
+    } catch {
+      return context
+    }
+  }, [session.user.id, context])
   const getMemory = useCallback(() => memory, [memory])
   const getProgramsList = useCallback(
     () => allPrograms.map(p => ({ id: p.id, name: p.name })),
