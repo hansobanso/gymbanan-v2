@@ -267,7 +267,7 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
                     ))}
                   </div>
 
-                  <label className={styles.createFieldLabel}>Sekundära muskler <span className={styles.createHint}>(valfritt, max 7)</span></label>
+                  <label className={styles.createFieldLabel}>Sekundära muskler <span className={styles.createHint}>(valfritt, max 7{createSecondary.length > 0 ? ` · ${createSecondary.length} vald${createSecondary.length > 1 ? 'a' : ''}` : ''})</span></label>
                   <div className={styles.muscleGrid}>
                     {MUSCLE_GROUPS.filter(mg => mg !== createMuscle).map(mg => (
                       <button
