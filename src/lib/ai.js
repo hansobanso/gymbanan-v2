@@ -557,29 +557,33 @@ export function buildCoachContext({ activeProgram, recentWorkouts, displayName, 
   if (displayName) lines.push(`Anvandare: ${displayName}`, '')
 
   if (activeProgram?.name) {
-    lines.push(`Aktivt program: ${activeProgram.name}`)
-    const sessions = Array.isArray(activeProgram.sessions) ? activeProgram.sessions : []
-    if (sessions.length) {
-      lines.push('Pass i programmet:')
-      for (const sess of sessions) {
-        const exNames = Array.isArray(sess.exercises)
-          ? sess.exercises.map(e => e.name).filter(Boolean)
-          : []
-        lines.push(`  - ${sess.name || 'Namnlost pass'}: ${exNames.join(', ') || '(inga ovningar)'}`)
-      }
-    }
-    lines.push('')
+    lines.push(`Aktivt program just nu: ${activeProgram.name}`, '')
   } else {
     lines.push('Anvandaren har inget aktivt program just nu.', '')
   }
 
   if (Array.isArray(allPrograms) && allPrograms.length) {
-    lines.push('Tillgangliga program att byta till:')
+    lines.push('Alla dina program (med innehall):')
     for (const p of allPrograms) {
-      const passNamn = Array.isArray(p.sessions) ? p.sessions.map(s => s.name).filter(Boolean) : []
-      const aktiv = activeProgram?.id === p.id ? ' (aktivt nu)' : ''
-      lines.push(`  - ${p.name}${aktiv}: ${passNamn.join(', ') || '(inga pass)'}`)
+      const aktiv = activeProgram?.id === p.id ? ' (AKTIVT nu)' : ''
+      lines.push(`▸ ${p.name}${aktiv}`)
+      const sessions = Array.isArray(p.sessions) ? p.sessions : []
+      if (sessions.length) {
+        for (const sess of sessions) {
+          const exNames = Array.isArray(sess.exercises)
+            ? sess.exercises.map(e => e.name).filter(Boolean)
+            : []
+          lines.push(`    - ${sess.name || 'Namnlost pass'}: ${exNames.join(', ') || '(inga ovningar)'}`)
+        }
+      } else {
+        lines.push('    (inga pass)')
+      }
     }
+    lines.push('')
+    lines.push('OBS: Du kan bara SPARA andringar i det AKTIVA programmet. Om')
+    lines.push('anvandaren vill andra i ett annat program, ge garna radet i text,')
+    lines.push('och forklara att de behover gora det aktivt forst for att du ska')
+    lines.push('kunna spara andringen at dem.')
     lines.push('')
   }
 

@@ -32,12 +32,12 @@ export default function Coach({ session, onProgramUpdated, onSwitchProgram, onPr
         setMemory(mem || null)
         setExerciseList(exercises || [])
         setActiveProgram(active || null)
-        // Bara anvandarens egna program ar rimliga att byta mellan i PT:n
-        const own = (programs || []).filter(p => !p.is_global || p.id === active?.id)
-        setAllPrograms(own.length ? own : (programs || []))
+        // Ge PT:n ALLA program anvandaren har tillgang till - bade egna
+        // och globala mallar (t.ex. "Jeff") - sa den kan ge rad om dem.
+        setAllPrograms(programs || [])
         setContext(buildCoachContext({
           activeProgram: active,
-          allPrograms: own.length ? own : (programs || []),
+          allPrograms: programs || [],
           recentWorkouts: recent || [],
           displayName: profile?.display_name || null,
         }))
