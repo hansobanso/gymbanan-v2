@@ -7,7 +7,7 @@ const SECONDS_PER_WORK_SET = 45      // sjalva utforandet av ett arbetsset
 const SECONDS_PER_WARMUP_SET = 30    // uppvarmningsset gar snabbare
 const DEFAULT_REST = 120             // om vila inte angetts pa ovningen
 const WARMUP_REST = 60               // kortare vila efter uppvarmningsset
-const SETUP_PER_EXERCISE = 45        // byta station, stalla in vikt, etc.
+const SETUP_PER_EXERCISE = 60        // byta station, ga till maskin, stalla in vikt
 
 /**
  * Uppskattar tiden for ett enskilt pass i sekunder.
