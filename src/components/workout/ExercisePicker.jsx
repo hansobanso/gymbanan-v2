@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { getExercises, saveExercise, getProfile } from '../../lib/db'
 import { supabase } from '../../lib/supabase'
-import { MUSCLE_GROUPS, BROAD_MUSCLE_GROUPS, EQUIPMENT_OPTIONS, broadOf, subGroupsOf, matchesSubGroup } from '../../data/muscleGroups'
+import { MUSCLE_GROUPS, BROAD_MUSCLE_GROUPS, EQUIPMENT_OPTIONS, MOVEMENT_OPTIONS, broadOf, subGroupsOf, matchesSubGroup } from '../../data/muscleGroups'
 import styles from './ExercisePicker.module.css'
 
 export default function ExercisePicker({ open, onSelect, onClose, replacingExercise = null, startInCreate = false }) {
@@ -15,6 +15,9 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
   const [createMuscle, setCreateMuscle] = useState('')
   const [createSecondary, setCreateSecondary] = useState([])
   const [createEquipment, setCreateEquipment] = useState('')
+  const [createMovement, setCreateMovement] = useState('')
+  const [createInstructions, setCreateInstructions] = useState('')
+  const [createRest, setCreateRest] = useState('')
   const [isAdmin, setIsAdmin] = useState(false)
   const [saving, setSaving] = useState(false)
   const searchRef = useRef(null)
@@ -48,6 +51,9 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
       setCreateMuscle('')
       setCreateSecondary([])
       setCreateEquipment('')
+      setCreateMovement('')
+      setCreateInstructions('')
+      setCreateRest('')
       return
     }
     getExercises().then(setAllExercises).catch(() => {})
@@ -71,6 +77,9 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
     setCreateMuscle('')
     setCreateSecondary([])
     setCreateEquipment('')
+    setCreateMovement('')
+    setCreateInstructions('')
+    setCreateRest('')
     setCreateMode(true)
   }
 
@@ -90,6 +99,9 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
         muscle_group: createMuscle,
         secondary_muscles: createSecondary,
         equipment: createEquipment || null,
+        movement_pattern: createMovement || null,
+        instructions: createInstructions.trim() || null,
+        default_rest: createRest ? parseInt(createRest) : null,
       }
       // Admin -> global ovning (for alla). Annars personlig (kraver user_id).
       let payload = base
@@ -294,6 +306,39 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
                       </button>
                     ))}
                   </div>
+
+                  <label className={styles.createFieldLabel}>Rörelsemönster <span className={styles.createHint}>(valfritt)</span></label>
+                  <div className={styles.muscleGrid}>
+                    {MOVEMENT_OPTIONS.map(mv => (
+                      <button
+                        key={mv}
+                        className={`${styles.muscleBtn} ${createMovement === mv ? styles.muscleBtnActive : ''}`}
+                        onClick={() => setCreateMovement(m => m === mv ? '' : mv)}
+                        type="button"
+                      >
+                        {mv}
+                      </button>
+                    ))}
+                  </div>
+
+                  <label className={styles.createFieldLabel}>Vilotid <span className={styles.createHint}>(valfritt, sekunder)</span></label>
+                  <input
+                    className={styles.createNameInput}
+                    type="number"
+                    inputMode="numeric"
+                    value={createRest}
+                    onChange={e => setCreateRest(e.target.value)}
+                    placeholder="t.ex. 120"
+                  />
+
+                  <label className={styles.createFieldLabel}>Instruktioner <span className={styles.createHint}>(valfritt)</span></label>
+                  <textarea
+                    className={styles.createTextarea}
+                    value={createInstructions}
+                    onChange={e => setCreateInstructions(e.target.value)}
+                    placeholder="Kort beskrivning av hur övningen utförs…"
+                    rows={3}
+                  />
 
                   {isAdmin && (
                     <p className={styles.createGlobalNote}>Skapas som global övning (för alla)</p>

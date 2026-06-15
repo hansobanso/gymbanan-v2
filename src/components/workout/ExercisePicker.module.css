@@ -246,12 +246,26 @@
 }
 .createNameInput:focus { border-color: var(--accent); }
 
+.createTextarea {
+  width: 100%;
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  font-size: 15px;
+  font-family: var(--font);
+  padding: 12px 14px;
+  outline: none;
+  resize: vertical;
+  line-height: 1.45;
+}
+.createTextarea:focus { border-color: var(--accent); }
+
 .muscleBtnSecondary {
   background: var(--accent);
   border-color: var(--accent);
   color: #000;
   font-weight: 700;
-  opacity: 0.65;
 }
 
 .createGlobalNote {

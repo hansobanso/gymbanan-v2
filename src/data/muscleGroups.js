@@ -20,6 +20,11 @@ export const EQUIPMENT_OPTIONS = [
   'Kroppsvikt', 'Smithmaskin', 'Övrigt',
 ]
 
+// Rorelsemonster (delas av admin-sidan och appens ovningsskapande)
+export const MOVEMENT_OPTIONS = [
+  'Press', 'Drag', 'Squat', 'Hinge', 'Carry', 'Isolation', 'Övrigt',
+]
+
 export const SUBDIVISION_TO_BROAD = {
   'Bröst': 'Bröst',
   'Främre axel': 'Axlar', 'Mellersta axel': 'Axlar', 'Bakre axel': 'Axlar',
