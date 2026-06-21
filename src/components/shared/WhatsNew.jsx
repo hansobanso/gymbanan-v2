@@ -2,24 +2,28 @@ import { AnimatePresence, motion } from 'framer-motion'
 import styles from './WhatsNew.module.css'
 
 // Hoj denna nar nya nyheter ska visas for alla igen.
-export const WHATSNEW_VERSION = '2026-06-pt'
+export const WHATSNEW_VERSION = '2026-06-pt-2'
 
 const ITEMS = [
   {
-    title: 'Personlig tränare – egen flik',
-    body: 'Prata med PT:n när som helst, utan att starta ett pass. Fråga om träning, teknik och progression.',
+    title: 'Smartare personlig tränare',
+    body: 'PT:n pratar varmare och mer som en riktig coach. Den ser alla dina program, känner igen dina övningar även när du byter program, och hälsar dig välkommen tillbaka efter en paus med vikter från din historik.',
   },
   {
-    title: 'PT kan ändra i dina program',
-    body: 'Be PT:n lägga till, ta bort, byta ut eller flytta övningar mellan pass – du bekräftar innan något sparas.',
+    title: 'PT bygger och ändrar program',
+    body: 'Be PT:n lägga till, ta bort eller flytta övningar – eller skapa ett helt nytt program åt dig. Du bekräftar alltid innan något sparas.',
   },
   {
-    title: 'PT kan skapa nya program',
-    body: 'Be PT:n bygga ett helt program med flera pass. Det sparas bland dina program så du kan aktivera det när du vill.',
+    title: 'Din styrkeutveckling samlad',
+    body: 'En ny vy visar hur du blir starkare över tid – estimerat 1RM, ökning sedan start och dina PR. Funkar även för kroppsviktsövningar som dips och chins.',
   },
   {
-    title: 'Swipe för att ta bort i Historik',
-    body: 'Dra ett pass åt vänster för att ta bort det – enklare än den gamla papperskorgen.',
+    title: 'Skapa egna övningar i appen',
+    body: 'Saknar du en övning? Lägg till den direkt från övningsbiblioteket med muskler, utrustning och instruktioner – utan att lämna appen.',
+  },
+  {
+    title: 'Passtid och smidigare historik',
+    body: 'Se hur länge ett pass tog, få en tidsuppskattning redan när du bygger programmet, och svajpa för att ta bort pass i historiken.',
   },
 ]
 
