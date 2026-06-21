@@ -19,6 +19,19 @@ function fmtTime(iso) {
   return new Date(iso).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })
 }
 
+// Passets langd fran start till slut, snyggt formaterat ("52 min" / "1h 5min")
+function fmtDuration(startedAt, finishedAt) {
+  if (!startedAt || !finishedAt) return null
+  const ms = new Date(finishedAt) - new Date(startedAt)
+  if (ms <= 0) return null
+  const mins = Math.round(ms / 60000)
+  if (mins < 1) return null
+  if (mins < 60) return `${mins} min`
+  const h = Math.floor(mins / 60)
+  const m = mins % 60
+  return m ? `${h}h ${m}min` : `${h}h`
+}
+
 function calcStats(exercises) {
   if (!Array.isArray(exercises)) return { sets: 0, volume: 0, exCount: 0 }
   let sets = 0, volume = 0, exCount = 0
@@ -133,6 +146,9 @@ export default function WorkoutCard({ workout, onDelete, equipmentMap = {} }) {
           <div className={styles.chips}>
             <span className={styles.chip}>{exCount} övn</span>
             <span className={styles.chip}>{sets} set</span>
+            {fmtDuration(workout.started_at, workout.finished_at) && (
+              <span className={styles.chip}>{fmtDuration(workout.started_at, workout.finished_at)}</span>
+            )}
             {volume > 0 && <span className={styles.chip}>{fmtVolume(volume)}</span>}
           </div>
         </div>

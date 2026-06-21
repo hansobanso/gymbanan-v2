@@ -604,10 +604,16 @@ export function buildCoachContext({ activeProgram, recentWorkouts, displayName, 
   if (Array.isArray(recentWorkouts) && recentWorkouts.length) {
     lines.push('Senaste traningen:')
     for (const w of recentWorkouts.slice(0, 5)) {
-      const datum = w.completed_at ? String(w.completed_at).slice(0, 10) : '?'
+      const datum = w.finished_at ? String(w.finished_at).slice(0, 10) : (w.completed_at ? String(w.completed_at).slice(0, 10) : '?')
       const namn = w.session_name || w.name || 'Pass'
       const antal = Array.isArray(w.exercises) ? w.exercises.length : 0
-      lines.push(`  - ${datum}: ${namn} (${antal} ovningar)`)
+      // Passtid om vi har bade start och slut
+      let tid = ''
+      if (w.started_at && w.finished_at) {
+        const mins = Math.round((new Date(w.finished_at) - new Date(w.started_at)) / 60000)
+        if (mins >= 1) tid = mins < 60 ? `, ${mins} min` : `, ${Math.floor(mins / 60)}h ${mins % 60}min`
+      }
+      lines.push(`  - ${datum}: ${namn} (${antal} ovningar${tid})`)
     }
     lines.push('')
   }

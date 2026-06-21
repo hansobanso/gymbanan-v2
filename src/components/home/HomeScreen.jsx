@@ -93,19 +93,24 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
   // Refetch workouts when returning to the app (e.g. after finishing a workout)
   useEffect(() => {
     function refetch() {
-      if (document.visibilityState === 'visible') {
-        getWorkouts(session.user.id, 15).then(ws => {
-          setLastWorkout(ws[0] ?? null)
-          setRecentWorkouts(ws)
-        }).catch(() => {})
-        getDeloadStatus(session.user.id).then(setDeloadStatus).catch(() => {})
-      }
+      getWorkouts(session.user.id, 15).then(ws => {
+        setLastWorkout(ws[0] ?? null)
+        setRecentWorkouts(ws)
+      }).catch(() => {})
+      getDeloadStatus(session.user.id).then(setDeloadStatus).catch(() => {})
     }
-    document.addEventListener('visibilitychange', refetch)
-    window.addEventListener('focus', refetch)
+    function onVisible() {
+      if (document.visibilityState === 'visible') refetch()
+    }
+    // workoutsChanged triggas nar ett pass avslutas (navigering inom appen,
+    // dar visibilitychange INTE sker) - sa muskelfiguren uppdateras direkt.
+    window.addEventListener('workoutsChanged', refetch)
+    document.addEventListener('visibilitychange', onVisible)
+    window.addEventListener('focus', onVisible)
     return () => {
-      document.removeEventListener('visibilitychange', refetch)
-      window.removeEventListener('focus', refetch)
+      window.removeEventListener('workoutsChanged', refetch)
+      document.removeEventListener('visibilitychange', onVisible)
+      window.removeEventListener('focus', onVisible)
     }
   }, [session.user.id])
 
