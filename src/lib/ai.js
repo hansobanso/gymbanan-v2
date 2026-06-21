@@ -272,7 +272,7 @@ Regler:
  * Returnerar en sträng med insikter som skickas in till AI:n
  * tillsammans med vanlig kontext.
  */
-export function analyzeWorkoutContext(recentWorkouts, currentExercises) {
+export function analyzeWorkoutContext(recentWorkouts, currentExercises, currentProgram = null) {
   const insights = []
   if (!recentWorkouts || recentWorkouts.length === 0) {
     insights.push('FÖRSTA PASSET: Användaren har inga tidigare loggade pass.')
@@ -295,6 +295,38 @@ export function analyzeWorkoutContext(recentWorkouts, currentExercises) {
       insights.push(`LÅNG FRÅNVARO: ${daysSinceLast} dagar sedan senaste normala pass (2-4 veckor). Sänk vikten 15-20% första passet och ramp:a upp över 2-3 pass. Använd <adjustment> med weightMultiplier 0.8 för alla övningar.`)
     } else if (daysSinceLast > 28) {
       insights.push(`MYCKET LÅNG FRÅNVARO: ${daysSinceLast} dagar sedan senaste normala pass (1+ månad). Sänk vikten 20-30% och ramp:a upp över 2-3 veckor. Använd <adjustment> med weightMultiplier 0.75.`)
+    }
+  }
+
+  // 0c) PROGRAMBYTE-DETEKTION: kör användaren ett ANNAT program än de
+  // senaste passen? Vikter förifylls per ÖVNINGSNAMN (oberoende av program),
+  // så historiken gäller fortfarande - PT ska påpeka det och lugna användaren.
+  if (currentProgram?.id) {
+    const recentProgramIds = recentWorkouts
+      .slice(0, 8)
+      .map(w => w.program_id)
+      .filter(Boolean)
+    const playedCurrentRecently = recentProgramIds.includes(currentProgram.id)
+    const hadOtherProgram = recentProgramIds.some(id => id !== currentProgram.id)
+    if (!playedCurrentRecently && hadOtherProgram) {
+      // Vilka av dagens övningar har användaren kört förut (oavsett program)?
+      const historicalNames = new Set()
+      for (const w of recentWorkouts) {
+        for (const ex of w.exercises ?? []) {
+          if ((ex.sets ?? []).some(s => s.done && s.weight)) historicalNames.add(ex.name)
+        }
+      }
+      const todayNames = (currentExercises ?? []).map(e => e.name)
+      const known = todayNames.filter(n => historicalNames.has(n))
+      const fresh = todayNames.filter(n => !historicalNames.has(n))
+      let msg = `NYTT PROGRAM: Användaren kör nu programmet "${currentProgram.name || 'nytt program'}" som skiljer sig från de senaste passens program. `
+      if (known.length > 0) {
+        msg += `VIKTIGT: Vikterna förifylls automatiskt per övning från användarens historik, så för övningar de kört förut (${known.slice(0, 6).join(', ')}${known.length > 6 ? ' m.fl.' : ''}) gäller deras tidigare vikter - föreslå att utgå från dem. Säg "välkommen tillbaka" och förklara att du känner igen övningarna även om programmet är nytt. `
+      }
+      if (fresh.length > 0) {
+        msg += `Dessa övningar är nya för användaren (${fresh.slice(0, 6).join(', ')}${fresh.length > 6 ? ' m.fl.' : ''}) - där får de känna sig fram till en lagom vikt.`
+      }
+      insights.push(msg)
     }
   }
 
@@ -451,8 +483,8 @@ export function detectGapAdjustment(recentWorkouts, exerciseNames) {
 /**
  * Genererar en kort PT-intro inför ett pass, nu med proaktiva insikter.
  */
-export async function generateWorkoutIntro({ context, memory, recentWorkouts, currentExercises }) {
-  const insights = analyzeWorkoutContext(recentWorkouts, currentExercises)
+export async function generateWorkoutIntro({ context, memory, recentWorkouts, currentExercises, currentProgram }) {
+  const insights = analyzeWorkoutContext(recentWorkouts, currentExercises, currentProgram)
   const body = {
     model: AI_MODEL,
     max_tokens: 320,
@@ -462,6 +494,7 @@ export async function generateWorkoutIntro({ context, memory, recentWorkouts, cu
 
 VAD DU SKA GÖRA:
 - Plocka 1-2 saker från PROAKTIVA INSIKTER nedan och kommentera konkret. Det är viktigast.
+- Om det finns en NYTT PROGRAM-insikt: prioritera den. Hälsa användaren välkommen tillbaka, nämn att du känner igen övningarna från historiken trots nytt program, och att vikterna utgår från vad de lyft förut.
 - Fira PR-närhet med entusiasm ("Du kan ta din rekord idag på X!")
 - Varna mjukt om paus/stagnation/deload med konkret action.
 - Om inga insikter finns: ge generell men kort genomgång baserat på programmet.

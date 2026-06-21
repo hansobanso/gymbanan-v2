@@ -144,6 +144,7 @@ export default function Workout({ session }) {
         memory: memory || null,
         recentWorkouts,
         currentExercises: sessionExercises,
+        currentProgram: programId ? { id: programId, name: program?.name ?? null } : null,
       })
         .then(intro => { if (!cancelled && intro) setIntroMessage(intro) })
         .catch(() => {})
