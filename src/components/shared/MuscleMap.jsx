@@ -24,6 +24,18 @@ const LEGACY_FALLBACK = {
   'Rygg': ['Lats', 'Övre rygg', 'Ländrygg'],
 }
 
+// Gamla/omdopta ovningsnamn som inte langre matchar biblioteket. Mappar till
+// ett aktuellt biblioteksnamn sa muskelgubben hittar ratt muskler (primar +
+// sekundar) aven for gamla loggade pass.
+const EXERCISE_ALIASES = {
+  'Benböjning sittande': 'Benspark',
+  'Benextension': 'Benspark',
+  'DB sidolyft': 'Sidolyft med hantlar',
+  'Lat-nedragning': 'Latsdrag med smalt neutralt grepp',
+  'Lutande hantel press bort': 'Uppåtlutande hantelpress',
+  'Pullups nära neutral': 'Pullups',
+}
+
 function intensityFromSets(sets) {
   if (!sets || sets <= 0) return 0
   return Math.min(1, sets / 12)
@@ -50,11 +62,11 @@ function intensitiesFromWorkouts(workouts, exerciseMap) {
     if (ageDays > 7) continue
     const decay = Math.max(0, 1 - ageDays / 7)
     for (const ex of w.exercises ?? []) {
-      // Prioritet: muskelgrupp i passloggen -> uppslag i ovningsbiblioteket
-      // (DB) -> hardkodad fallback. Loggen saknar ofta muscle_group, sa
-      // biblioteksuppslaget ar det som faller in for de flesta ovningar.
-      const fromLib = exerciseMap?.[ex.name]
-      const mg = ex.muscle_group ?? fromLib?.muscle_group ?? EXERCISES[ex.name]?.muscle_group
+      // Slå upp ovningen i biblioteket. Om namnet inte finns (gammalt/omdopt),
+      // prova ett alias som pekar pa ett aktuellt biblioteksnamn.
+      const aliasName = EXERCISE_ALIASES[ex.name]
+      const fromLib = exerciseMap?.[ex.name] ?? (aliasName ? exerciseMap?.[aliasName] : null)
+      const mg = ex.muscle_group ?? fromLib?.muscle_group ?? EXERCISES[ex.name]?.muscle_group ?? (aliasName ? EXERCISES[aliasName]?.muscle_group : null)
       const workSets = (ex.sets ?? []).filter(
         s => s.done && s.type !== 'warmup' && s.type !== 'backoff'
       )
