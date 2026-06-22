@@ -29,9 +29,21 @@ function intensityFromSets(sets) {
   return Math.min(1, sets / 12)
 }
 
+// Sekundarmuskler bidrar mindre an primarmuskeln (de jobbar med, men ar
+// inte huvudfokus). 0.5 = halva set-poangen jamfort med primarmuskeln.
+const SECONDARY_FACTOR = 0.5
+
 function intensitiesFromWorkouts(workouts, exerciseMap) {
   const scores = {}
   const now = Date.now()
+
+  // Lagg till poang for en muskel (sprider till subdivisioner vid legacy)
+  function addScore(muscle, amount) {
+    const targets = LEGACY_FALLBACK[muscle] ?? [muscle]
+    const per = amount / targets.length
+    for (const t of targets) scores[t] = (scores[t] ?? 0) + per
+  }
+
   for (const w of workouts ?? []) {
     const finishedAt = w.finished_at ? new Date(w.finished_at).getTime() : now
     const ageDays = (now - finishedAt) / 86_400_000
@@ -43,16 +55,22 @@ function intensitiesFromWorkouts(workouts, exerciseMap) {
       // biblioteksuppslaget ar det som faller in for de flesta ovningar.
       const fromLib = exerciseMap?.[ex.name]
       const mg = ex.muscle_group ?? fromLib?.muscle_group ?? EXERCISES[ex.name]?.muscle_group
-      if (!mg) continue
       const workSets = (ex.sets ?? []).filter(
         s => s.done && s.type !== 'warmup' && s.type !== 'backoff'
       )
       if (workSets.length === 0) continue
-      // Sprid till subdivisioner om det är en legacy-grupp
-      const targets = LEGACY_FALLBACK[mg] ?? [mg]
-      const sharePerTarget = (workSets.length * decay) / targets.length
-      for (const t of targets) {
-        scores[t] = (scores[t] ?? 0) + sharePerTarget
+      const baseScore = workSets.length * decay
+
+      // Primarmuskel - full poang
+      if (mg) addScore(mg, baseScore)
+
+      // Sekundarmuskler - reducerad poang. Hamta fran loggen forst,
+      // annars fran biblioteket (samma prioritetstanke som primar).
+      const secondary = (Array.isArray(ex.secondary_muscles) && ex.secondary_muscles.length
+        ? ex.secondary_muscles
+        : fromLib?.secondary_muscles) ?? []
+      for (const sm of secondary) {
+        if (sm && sm !== mg) addScore(sm, baseScore * SECONDARY_FACTOR)
       }
     }
   }
