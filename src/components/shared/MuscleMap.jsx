@@ -29,7 +29,7 @@ function intensityFromSets(sets) {
   return Math.min(1, sets / 12)
 }
 
-function intensitiesFromWorkouts(workouts) {
+function intensitiesFromWorkouts(workouts, exerciseMap) {
   const scores = {}
   const now = Date.now()
   for (const w of workouts ?? []) {
@@ -38,7 +38,11 @@ function intensitiesFromWorkouts(workouts) {
     if (ageDays > 7) continue
     const decay = Math.max(0, 1 - ageDays / 7)
     for (const ex of w.exercises ?? []) {
-      const mg = ex.muscle_group ?? EXERCISES[ex.name]?.muscle_group
+      // Prioritet: muskelgrupp i passloggen -> uppslag i ovningsbiblioteket
+      // (DB) -> hardkodad fallback. Loggen saknar ofta muscle_group, sa
+      // biblioteksuppslaget ar det som faller in for de flesta ovningar.
+      const fromLib = exerciseMap?.[ex.name]
+      const mg = ex.muscle_group ?? fromLib?.muscle_group ?? EXERCISES[ex.name]?.muscle_group
       if (!mg) continue
       const workSets = (ex.sets ?? []).filter(
         s => s.done && s.type !== 'warmup' && s.type !== 'backoff'
@@ -57,9 +61,9 @@ function intensitiesFromWorkouts(workouts) {
   return out
 }
 
-function resolveIntensities({ breakdown, workouts, intensities }) {
+function resolveIntensities({ breakdown, workouts, intensities, exerciseMap }) {
   if (intensities) return intensities
-  if (workouts) return intensitiesFromWorkouts(workouts)
+  if (workouts) return intensitiesFromWorkouts(workouts, exerciseMap)
   if (breakdown) {
     const out = {}
     for (const { muscle, sets } of breakdown) {
@@ -77,11 +81,12 @@ function resolveIntensities({ breakdown, workouts, intensities }) {
 // Muskelfargning delegeras till lib/muscleColor.js (skogsgron palett).
 const colorFor = colorForIntensity
 
-export default function MuscleMap({ breakdown, workouts, intensities: customIntensities, size = 60 }) {
+export default function MuscleMap({ breakdown, workouts, intensities: customIntensities, exerciseMap, size = 60 }) {
   const intensities = resolveIntensities({
     breakdown,
     workouts,
     intensities: customIntensities,
+    exerciseMap,
   })
 
   // Bygg colors-objekt for MuscleFigure

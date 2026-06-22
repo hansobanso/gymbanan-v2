@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getWorkouts, getDeloadStatus, endDeloadWeek, getProfile, cacheInvalidate } from '../../lib/db'
+import { getWorkouts, getDeloadStatus, endDeloadWeek, getProfile, cacheInvalidate, getExercises } from '../../lib/db'
 import { supabase } from '../../lib/supabase'
 import MuscleMap from '../shared/MuscleMap'
 import { BananaIcon } from '../shared/Icons'
@@ -68,6 +68,7 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
   const [deloadStatus, setDeloadStatus] = useState({ isActive: false, daysLeft: 0 })
   const [displayName, setDisplayName] = useState('')
   const [introDismissed, setIntroDismissed] = useState(true) // antar dolt tills vi laddat (undvik flimmer)
+  const [exerciseMap, setExerciseMap] = useState({})
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -78,6 +79,14 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
       setRecentWorkouts(ws)
       setWorkoutsLoaded(true)
     }).catch(() => { if (!cancelled) setWorkoutsLoaded(true) })
+    // Ovningsbiblioteket: namn -> muscle_group, sa muskelgubben kan slå upp
+    // ratt muskel aven nar passloggen saknar muscle_group.
+    getExercises().then(list => {
+      if (cancelled) return
+      const map = {}
+      for (const ex of list ?? []) map[ex.name] = ex
+      setExerciseMap(map)
+    }).catch(() => {})
     getDeloadStatus(session.user.id).then(s => {
       if (!cancelled) setDeloadStatus(s)
     }).catch(() => {})
@@ -444,7 +453,7 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
             {recentWorkouts.length > 0 ? 'Muskelåterhämtning' : 'Muskelgrupper'}
           </span>
           <div className={styles.muscleBox}>
-            <MuscleMap workouts={recentWorkouts} size={160} />
+            <MuscleMap workouts={recentWorkouts} exerciseMap={exerciseMap} size={160} />
           </div>
           {recentWorkouts.length === 0 && (
             <p className={styles.muscleMapHint}>
