@@ -402,3 +402,17 @@
 .switchOn .switchKnob {
   transform: translateX(18px);
 }
+
+.copyBtn {
+  background: none;
+  border: 1px solid var(--border-2);
+  border-radius: var(--radius-md);
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font);
+  cursor: pointer;
+  text-align: center;
+  padding: 12px;
+}
+.copyBtn:active { opacity: 0.7; }

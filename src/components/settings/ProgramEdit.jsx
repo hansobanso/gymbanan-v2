@@ -88,7 +88,7 @@ function SessionItem({ session, deleteConfirmId, setDeleteConfirmId, handleDelet
   )
 }
 
-export default function ProgramEdit({ program, allExercises, onSave, onDelete, onBack, onEditSession, saveError, activeProgramId, onSetActive, isAdmin = false }) {
+export default function ProgramEdit({ program, allExercises, onSave, onDelete, onBack, onEditSession, onCopy, saveError, activeProgramId, onSetActive, isAdmin = false }) {
   const [name, setName] = useState(program.name ?? '')
   const [sessions, setSessions] = useState(
     (program.sessions ?? []).map(s => ({ _id: Math.random().toString(36).slice(2), ...s }))
@@ -233,6 +233,15 @@ export default function ProgramEdit({ program, allExercises, onSave, onDelete, o
             disabled={activeProgramId === program.id}
           >
             {activeProgramId === program.id ? '✓ Aktivt program' : 'Sätt som aktivt program'}
+          </button>
+        )}
+        {!program._isNew && onCopy && (
+          <button
+            className={styles.copyBtn}
+            onClick={() => onCopy(program)}
+            type="button"
+          >
+            Kopiera & anpassa
           </button>
         )}
         {!program._isNew && (

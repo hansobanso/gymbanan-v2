@@ -106,11 +106,12 @@ export default function Programs({ session, programs, setPrograms, activeProgram
       const saved = await saveProgram({
         name: `${program.name} (kopia)`,
         sessions: program.sessions ?? [],
-        is_global: false,
+        is_global: false,        // kopia blir privat; admin kan toggla global i redigeraren
         user_id: session.user.id,
         created_by: session.user.id,
       })
       setPrograms(prev => [...prev, saved])
+      // Stang ev. oppen redigerare och oppna kopian istallet
       setEditingProgram({ _id: saved.id, ...saved })
     } catch (err) {
       setSaveError(err?.message ?? String(err))
@@ -258,6 +259,7 @@ export default function Programs({ session, programs, setPrograms, activeProgram
               activeProgramId={activeProgramId}
               onSetActive={onSetActive}
               isAdmin={isAdmin}
+              onCopy={handleCopyProgram}
             />
           </motion.div>
         )}
