@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Reorder, useDragControls } from 'framer-motion'
 import { ProgramMuscleSetSummary } from './MuscleSetSummary'
 import { formatSessionTime } from '../../lib/estimateTime'
@@ -90,6 +90,16 @@ function SessionItem({ session, deleteConfirmId, setDeleteConfirmId, handleDelet
 
 export default function ProgramEdit({ program, allExercises, onSave, onDelete, onBack, onEditSession, onCopy, saveError, activeProgramId, onSetActive, isAdmin = false }) {
   const [name, setName] = useState(program.name ?? '')
+  const nameRef = useRef(null)
+
+  // Om programmet ar en farsk kopia ("... (kopia)"): fokusera och markera
+  // namnet sa anvandaren kan dopa om det direkt.
+  useEffect(() => {
+    if (program.name?.endsWith('(kopia)') && nameRef.current) {
+      nameRef.current.focus()
+      nameRef.current.select()
+    }
+  }, [program.name])
   const [sessions, setSessions] = useState(
     (program.sessions ?? []).map(s => ({ _id: Math.random().toString(36).slice(2), ...s }))
   )
@@ -141,6 +151,7 @@ export default function ProgramEdit({ program, allExercises, onSave, onDelete, o
         <div className={styles.section}>
           <label className={styles.label}>Programnamn</label>
           <input
+            ref={nameRef}
             className={styles.nameInput}
             value={name}
             onChange={e => setName(e.target.value)}
