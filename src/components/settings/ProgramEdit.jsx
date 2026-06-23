@@ -108,6 +108,17 @@ export default function ProgramEdit({ program, allExercises, onSave, onDelete, o
   const [deleteConfirmId, setDeleteConfirmId] = useState(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
+  // Nar ett ANNAT program oppnas i samma instans (t.ex. efter "Kopiera &
+  // anpassa") aterinitieras inte useState av sig sjalvt - synka darfor
+  // name, sessions och isGlobal mot det nya programmet.
+  const programKey = program.id ?? program._id
+  useEffect(() => {
+    setName(program.name ?? '')
+    setSessions((program.sessions ?? []).map(s => ({ _id: Math.random().toString(36).slice(2), ...s })))
+    setIsGlobal(program.is_global === true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [programKey])
+
   async function handleSave() {
     if (!name.trim()) return
     setSaving(true)
