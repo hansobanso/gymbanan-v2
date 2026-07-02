@@ -332,7 +332,13 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
           return updated
         }))
 
-        if (gapAdj) setIsAdjustedSession(true)
+        // OBS: gap-justeringen satter INTE isAdjustedSession. Den flaggan ar
+        // for sjuk/deload-pass (tillfalliga anpassningar pa anvandarens
+        // begaran). Ett comeback-pass ar normal traning med lattare vikter:
+        // 1) spara-i-program-dialogen ska fortfarande visas vid strukturella
+        //    andringar (dialogen sparar aldrig vikter, sa inget lacker), och
+        // 2) passet ska raknas som "normalt" av franvaro-detektionen, annars
+        //    sanks vikterna igen nasta pass (dubbel reduktion).
         setLoading(false)
       } catch {
         setLoading(false)
