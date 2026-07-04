@@ -3,11 +3,15 @@
 // for om passet ar rimligt langt nar man bygger det.
 //
 // Antaganden (latta att justera om de kanns fel):
-const SECONDS_PER_WORK_SET = 45      // sjalva utforandet av ett arbetsset
+// Kalibrerade mot 8 verkliga pass (jun 2026): formeln underskattade 30-50%
+// - i verkligheten tar set, vila och stationsbyten langre an teorin,
+// sarskilt vid hard traning (1-0 RIR).
+const SECONDS_PER_WORK_SET = 60      // sjalva utforandet av ett arbetsset
 const SECONDS_PER_WARMUP_SET = 30    // uppvarmningsset gar snabbare
 const DEFAULT_REST = 120             // om vila inte angetts pa ovningen
 const WARMUP_REST = 60               // kortare vila efter uppvarmningsset
-const SETUP_PER_EXERCISE = 60        // byta station, ga till maskin, stalla in vikt
+const SETUP_PER_EXERCISE = 90        // byta station, ga till maskin, stalla in vikt
+const REALITY_FACTOR = 1.25          // verklig vila/spill ar langre an planerad
 
 /**
  * Uppskattar tiden for ett enskilt pass i sekunder.
@@ -34,7 +38,7 @@ export function estimateSessionSeconds(session) {
     // Lite tid for att byta ovning/station
     total += SETUP_PER_EXERCISE
   }
-  return total
+  return Math.round(total * REALITY_FACTOR)
 }
 
 /** Uppskattad tid for ett pass i minuter (avrundat). */
