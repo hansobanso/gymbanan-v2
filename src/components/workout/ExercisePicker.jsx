@@ -20,6 +20,7 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
   const [createRest, setCreateRest] = useState('')
   const [isAdmin, setIsAdmin] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [createError, setCreateError] = useState(null)
   const searchRef = useRef(null)
 
   // Slap upp metadata for ovningen som ersatts (om vi byter ut, inte lagger till).
@@ -93,6 +94,7 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
     const name = createName.trim()
     if (!name || !createMuscle || saving) return
     setSaving(true)
+    setCreateError(null)
     try {
       const base = {
         name,
@@ -112,10 +114,13 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
         payload = { ...base, user_id: u?.user?.id, created_by: u?.user?.id }
       }
       const ex = await saveExercise(payload)
+      if (!ex?.name) throw new Error('Övningen kunde inte sparas')
       setAllExercises(prev => [...prev, ex])
       onSelect(ex)
       onClose()
-    } catch { /* ignored */ }
+    } catch (err) {
+      setCreateError(err?.message || 'Något gick fel – övningen sparades inte. Försök igen.')
+    }
     setSaving(false)
   }
 
@@ -342,6 +347,9 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
 
                   {isAdmin && (
                     <p className={styles.createGlobalNote}>Skapas som global övning (för alla)</p>
+                  )}
+                  {createError && (
+                    <p className={styles.createError}>{createError}</p>
                   )}
                   <button
                     className={styles.confirmBtn}

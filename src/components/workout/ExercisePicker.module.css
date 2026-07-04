@@ -346,3 +346,11 @@
   cursor: pointer;
   padding: 4px 0;
 }
+
+.createError {
+  font-size: 13px;
+  color: var(--danger);
+  text-align: center;
+  margin: 4px 0 0;
+  line-height: 1.4;
+}
