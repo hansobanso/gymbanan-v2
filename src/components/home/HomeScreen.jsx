@@ -455,7 +455,13 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
           <div className={styles.muscleBox}>
             <MuscleMap workouts={recentWorkouts} exerciseMap={exerciseMap} size={160} />
           </div>
-          {recentWorkouts.length === 0 && (
+          {recentWorkouts.length > 0 ? (
+            <div className={styles.muscleLegend}>
+              <span className={styles.legendItem}><span className={styles.legendDot} style={{ background: '#1A2E10' }} /> Otränad</span>
+              <span className={styles.legendItem}><span className={styles.legendDot} style={{ background: '#3D6B1F' }} /> Återhämtad</span>
+              <span className={styles.legendItem}><span className={styles.legendDot} style={{ background: '#F5D020' }} /> Nyligen tränad</span>
+            </div>
+          ) : (
             <p className={styles.muscleMapHint}>
               Lyser upp baserat på dina träningspass
             </p>
