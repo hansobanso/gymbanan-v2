@@ -272,6 +272,14 @@ export async function deleteWorkout(id) {
   return !error
 }
 
+// Aterinsatter ett nyss borttaget pass (angra-funktion). Raden ateranvands
+// i sin helhet inklusive samma id.
+export async function restoreWorkout(workout) {
+  const { error } = await supabase.from('workouts').insert(workout)
+  if (!error) cacheInvalidate('workouts:')
+  return !error
+}
+
 export async function updateWorkout(id, updates) {
   const { data, error } = await supabase
     .from('workouts')

@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { getWorkouts, getEquipmentMap, deleteWorkout } from '../lib/db'
+import { useState, useEffect, useRef } from 'react'
+import { getWorkouts, getEquipmentMap, deleteWorkout, restoreWorkout } from '../lib/db'
 import WorkoutCard from '../components/history/WorkoutCard'
 import ProgressView from '../components/history/ProgressView'
 import { DumbbellIcon } from '../components/shared/Icons'
@@ -10,6 +10,8 @@ export default function History({ session }) {
   const [loading, setLoading] = useState(true)
   const [progressOpen, setProgressOpen] = useState(false)
   const [equipmentMap, setEquipmentMap] = useState({})
+  const [undoState, setUndoState] = useState(null) // { workout }
+  const undoTimerRef = useRef(null)
 
   function reload() {
     getWorkouts(session.user.id, 30)
@@ -86,10 +88,15 @@ export default function History({ session }) {
                 workout={w}
                 equipmentMap={equipmentMap}
                 onDelete={async (id) => {
+                  const deleted = workouts.find(x => x.id === id)
                   const ok = await deleteWorkout(id)
                   if (ok) {
                     setWorkouts(prev => prev.filter(x => x.id !== id))
                     window.dispatchEvent(new CustomEvent('workoutsChanged'))
+                    // Angra-toast i 6 sekunder
+                    if (undoTimerRef.current) clearTimeout(undoTimerRef.current)
+                    setUndoState({ workout: deleted })
+                    undoTimerRef.current = setTimeout(() => setUndoState(null), 6000)
                   }
                 }}
               />
@@ -97,6 +104,29 @@ export default function History({ session }) {
           </div>
         )}
       </div>
+
+      {undoState && (
+        <div className={styles.undoToast}>
+          <span>Pass borttaget</span>
+          <button
+            className={styles.undoBtn}
+            type="button"
+            onClick={async () => {
+              if (undoTimerRef.current) clearTimeout(undoTimerRef.current)
+              const w = undoState.workout
+              setUndoState(null)
+              if (w && await restoreWorkout(w)) {
+                setWorkouts(prev =>
+                  [...prev, w].sort((a, b) => new Date(b.started_at) - new Date(a.started_at))
+                )
+                window.dispatchEvent(new CustomEvent('workoutsChanged'))
+              }
+            }}
+          >
+            Ångra
+          </button>
+        </div>
+      )}
 
       <ProgressView
         open={progressOpen}
