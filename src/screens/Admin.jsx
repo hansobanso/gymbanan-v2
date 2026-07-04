@@ -21,7 +21,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { supabase } from '../lib/supabase'
 import { ProgramMuscleSetSummary, computeProgramMuscleSets } from '../components/settings/MuscleSetSummary'
 import MuscleMap from '../components/shared/MuscleMap'
-import { MUSCLE_GROUPS, BROAD_MUSCLE_GROUPS, broadOf } from '../data/muscleGroups'
+import { MUSCLE_GROUPS, BROAD_MUSCLE_GROUPS, EQUIPMENT_OPTIONS, MOVEMENT_OPTIONS, broadOf } from '../data/muscleGroups'
 import styles from './Admin.module.css'
 
 const ADMIN_PASSWORD = 'banana2024'
@@ -61,15 +61,6 @@ const MUSCLE_CHIP_COLORS = {
 function chipColors(group) {
   return MUSCLE_CHIP_COLORS[group] ?? MUSCLE_CHIP_COLORS['Övrigt']
 }
-
-const EQUIPMENT_OPTIONS = [
-  'Skivstång', 'Hantel', 'Maskin', 'Kabel',
-  'Kroppsvikt', 'Smithmaskin', 'Övrigt',
-]
-
-const MOVEMENT_OPTIONS = [
-  'Press', 'Drag', 'Squat', 'Hinge', 'Carry', 'Isolation', 'Övrigt',
-]
 
 // ── DB helpers ──────────────────────────────────────────────────
 
