@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { displayWeightStr } from '../../lib/weightUtils'
+import { displayWeightStr, displayWeight } from '../../lib/weightUtils'
 import styles from './PostWorkoutFeedback.module.css'
 
 function calcStats(exercises) {
@@ -19,7 +19,7 @@ function fmtVolume(kg) {
   return String(Math.round(kg))
 }
 
-export default function PostWorkoutFeedback({ sessionName, exercises, feedbackStatus, feedbackText, onDone, equipmentMap = {} }) {
+export default function PostWorkoutFeedback({ sessionName, exercises, feedbackStatus, feedbackText, onDone, equipmentMap = {}, durationMin = null, prs = [] }) {
   const { sets, volume, exCount } = calcStats(exercises)
 
   return (
@@ -69,7 +69,48 @@ export default function PostWorkoutFeedback({ sessionName, exercises, feedbackSt
             <span className={styles.statValue}>{fmtVolume(volume)}</span>
             <span className={styles.statLabel}>kg volym</span>
           </div>
+          {durationMin != null && (
+            <>
+              <div className={styles.statDivider} />
+              <div className={styles.stat}>
+                <span className={styles.statValue}>{durationMin}</span>
+                <span className={styles.statLabel}>minuter</span>
+              </div>
+            </>
+          )}
         </motion.div>
+
+        {/* ── Nya PR! ── */}
+        {prs.length > 0 && (
+          <motion.div
+            className={styles.prCard}
+            initial={{ scale: 0.92, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.28, type: 'spring', stiffness: 320, damping: 22 }}
+          >
+            <div className={styles.prHeader}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+                <path d="M4 22h16"/>
+                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+              </svg>
+              <span className={styles.prTitle}>{prs.length === 1 ? 'Nytt PR!' : `${prs.length} nya PR!`}</span>
+            </div>
+            {prs.map(pr => {
+              const shown = displayWeight(pr.value, equipmentMap[pr.name])
+              return (
+                <div key={pr.name} className={styles.prRow}>
+                  <span className={styles.prName}>{pr.name}</span>
+                  <span className={styles.prValue}>{Math.round(shown)} kg</span>
+                </div>
+              )
+            })}
+            <p className={styles.prSub}>Estimerat 1RM – starkare än någonsin!</p>
+          </motion.div>
+        )}
 
         {/* ── PT-feedback ── */}
         <motion.div

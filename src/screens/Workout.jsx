@@ -65,6 +65,8 @@ export default function Workout({ session }) {
   const [detailExerciseId, setDetailExerciseId] = useState(null)
   // postWorkout: null | { status: 'loading'|'done'|'error', feedbackText: string|null, workoutId: string }
   const [postWorkout, setPostWorkout] = useState(null)
+  const [sessionPrs, setSessionPrs] = useState([])
+  const [postDurationMin, setPostDurationMin] = useState(null)
   const [postEquipmentMap, setPostEquipmentMap] = useState({})
   const [introMessage, setIntroMessage] = useState(null)
   const [introLoading, setIntroLoading] = useState(false)
@@ -189,6 +191,21 @@ export default function Workout({ session }) {
   }
 
   // ── Helpers ─────────────────────────────────────────────────
+  // Basta estimerade 1RM (Epley, ra vikt utan hantel-dubbling - dubbling
+  // appliceras vid visning) bland gjorda arbetsset.
+  function best1RM(sets) {
+    let best = 0
+    for (const st of sets ?? []) {
+      if (st.type !== 'work' || !st.done) continue
+      const w = parseFloat(st.weight) || 0
+      const r = parseInt(st.reps) || 0
+      if (w <= 0 || r <= 0) continue
+      const e = r === 1 ? w : w * (1 + r / 30)
+      if (e > best) best = e
+    }
+    return best
+  }
+
   function buildUpdatedSession(originalSession, exercises) {
     return {
       ...originalSession,
@@ -240,7 +257,35 @@ export default function Workout({ session }) {
     }
 
     window.dispatchEvent(new CustomEvent('workoutsChanged'))
+
+    // Passtid till klart-skarmen
+    setPostDurationMin(Math.max(1, Math.round((Date.now() - workout.startedAt.getTime()) / 60000)))
+
+    const snapshotForPrs = [...workout.exercises]
     getWorkouts(session.user.id, 50).then(recent => {
+      // PR-detektion: jamfor dagens basta 1RM per ovning mot historiken
+      // (exkl. det nyss avslutade passet). Fira bara akta PR - dvs nar
+      // ovningen har korts tidigare och dagens varde ar hogre.
+      try {
+        const prs = []
+        for (const ex of snapshotForPrs) {
+          const today = best1RM(ex.sets)
+          if (today <= 0) continue
+          let hist = 0
+          let seen = false
+          for (const w of recent) {
+            if (w.id === workoutId) continue
+            const match = (w.exercises ?? []).find(e => e.name === ex.name)
+            if (!match) continue
+            seen = true
+            const b = best1RM(match.sets)
+            if (b > hist) hist = b
+          }
+          if (seen && today > hist) prs.push({ name: ex.name, value: today })
+        }
+        setSessionPrs(prs)
+      } catch { /* PR-detektion far aldrig stoppa flodet */ }
+
       const newMemory = buildMemoryContent(recent, aiMemory)
       setAiMemory(newMemory)
       return upsertAiMemory(session.user.id, newMemory)
@@ -318,6 +363,8 @@ export default function Workout({ session }) {
         feedbackText={postWorkout.feedbackText}
         onDone={handlePostWorkoutDone}
         equipmentMap={postEquipmentMap}
+        durationMin={postDurationMin}
+        prs={sessionPrs}
       />
     )
   }

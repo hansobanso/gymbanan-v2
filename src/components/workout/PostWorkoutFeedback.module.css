@@ -245,3 +245,45 @@
 .skipBtn:hover {
   color: var(--text-2);
 }
+
+/* ── PR-firande ── */
+.prCard {
+  background: linear-gradient(135deg, rgba(245, 208, 32, 0.16), rgba(245, 208, 32, 0.05));
+  border: 1px solid rgba(245, 208, 32, 0.35);
+  border-radius: 16px;
+  padding: 16px;
+  margin: 0 16px 14px;
+}
+.prHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+.prTitle {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+.prRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+}
+.prName {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+.prValue {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--accent);
+}
+.prSub {
+  font-size: 12.5px;
+  color: var(--text-2);
+  margin: 8px 0 0;
+}
