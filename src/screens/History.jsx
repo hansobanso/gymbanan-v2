@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { getWorkouts, getEquipmentMap, deleteWorkout, restoreWorkout } from '../lib/db'
 import { displayWeight } from '../lib/weightUtils'
 import WorkoutCard from '../components/history/WorkoutCard'
@@ -12,6 +13,20 @@ export default function History({ session }) {
   const [progressOpen, setProgressOpen] = useState(false)
   const [equipmentMap, setEquipmentMap] = useState({})
   const [undoState, setUndoState] = useState(null) // { workout }
+  const [progressInitial, setProgressInitial] = useState(null)
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  // Deep-link fran ovningens detaljsida: oppna styrkeutvecklingen med
+  // ovningen forvald. State rensas sa den inte ater-oppnas vid navigering.
+  useEffect(() => {
+    const name = location.state?.progressExercise
+    if (name) {
+      setProgressInitial(name)
+      setProgressOpen(true)
+      navigate(location.pathname, { replace: true, state: null })
+    }
+  }, [location.state]) // eslint-disable-line react-hooks/exhaustive-deps
   const undoTimerRef = useRef(null)
 
   function reload() {
@@ -165,10 +180,11 @@ export default function History({ session }) {
 
       <ProgressView
         open={progressOpen}
-        onClose={() => setProgressOpen(false)}
+        onClose={() => { setProgressOpen(false); setProgressInitial(null) }}
         workouts={workouts}
         equipmentMap={equipmentMap}
         userId={session.user.id}
+        initialExercise={progressInitial}
       />
     </div>
   )

@@ -433,3 +433,23 @@
   background: var(--surface-3, #222);
   color: var(--text-2);
 }
+
+/* ── Lank till styrkeutveckling ── */
+.progressLink {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--card-bg, #141414);
+  border: 1px solid rgba(245, 208, 32, 0.25);
+  border-radius: var(--card-radius, 14px);
+  color: var(--accent);
+  font-size: 14.5px;
+  font-weight: 600;
+  font-family: var(--font);
+  padding: 14px 16px;
+  cursor: pointer;
+  text-align: left;
+}
+.progressLink svg:last-child { margin-left: auto; color: var(--text-3); }
+.progressLink:active { opacity: 0.75; }

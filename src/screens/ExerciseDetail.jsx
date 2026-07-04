@@ -446,6 +446,24 @@ export default function ExerciseDetail() {
           {saveErr && <p className={styles.saveErr}>{saveErr}</p>}
         </div>
 
+        {/* ── Styrkeutveckling (deep-link) ── */}
+        <div className={styles.section}>
+          <button
+            className={styles.progressLink}
+            onClick={() => navigate('/history', { state: { progressExercise: form.name } })}
+            type="button"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M3 3v16a2 2 0 0 0 2 2h16"/>
+              <path d="m7 14 3-4 3 3 4-6"/>
+            </svg>
+            Se din utveckling i {form.name || 'övningen'}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="m9 18 6-6-6-6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+        </div>
+
         {/* ── Instructions ── */}
         {(canEdit || form.instructions) && (
           <div className={styles.section}>

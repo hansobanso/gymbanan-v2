@@ -145,7 +145,7 @@ function ProgressChart({ points }) {
   )
 }
 
-export default function ProgressView({ open, onClose, workouts, equipmentMap = {}, userId = null }) {
+export default function ProgressView({ open, onClose, workouts, equipmentMap = {}, userId = null, initialExercise = null }) {
   // Hamta langre historik an listans 30 pass sa "sedan start" verkligen
   // betyder sedan start. Faller tillbaka pa prop-datan tills den laddats.
   const [allWorkouts, setAllWorkouts] = useState(null)
@@ -167,8 +167,8 @@ export default function ProgressView({ open, onClose, workouts, equipmentMap = {
   const [selected, setSelected] = useState(null)
 
   useEffect(() => {
-    if (open) { setSelected(null); setQuery('') }
-  }, [open])
+    if (open) { setSelected(initialExercise ?? null); setQuery('') }
+  }, [open, initialExercise])
 
   // Ovningar med data, sorterade efter mest tranade forst
   const exercises = useMemo(() => {
