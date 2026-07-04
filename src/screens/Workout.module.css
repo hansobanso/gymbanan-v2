@@ -528,3 +528,11 @@
 
 .confirmLink:disabled { opacity: 0.4; cursor: not-allowed; }
 .confirmLink:active { color: var(--text-2); }
+
+.confirmText {
+  font-size: 14px;
+  color: var(--text-2, #888);
+  text-align: center;
+  margin: 0 0 16px;
+  line-height: 1.5;
+}

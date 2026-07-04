@@ -345,8 +345,6 @@ export default function Workout({ session }) {
 
   // ── Render ──────────────────────────────────────────────────
 
-  // Debug: verifiera restSeconds från programbyggaren
-
   // Visa laddningsspinner tills all övningsdata är förinläst
   if (workout.loading) {
     return (
@@ -719,7 +717,7 @@ export default function Workout({ session }) {
               </h3>
               {program.user_id === null ? (
                 <>
-                  <p style={{ fontSize: 14, color: '#888', textAlign: 'center', margin: '0 0 16px', lineHeight: 1.5 }}>
+                  <p className={styles.confirmText}>
                     Vill du spara en egen kopia av programmet med dina ändringar? Kopian blir ditt aktiva program.
                   </p>
                   <button
@@ -733,7 +731,7 @@ export default function Workout({ session }) {
                 </>
               ) : (
                 <>
-                  <p style={{ fontSize: 14, color: '#888', textAlign: 'center', margin: '0 0 16px', lineHeight: 1.5 }}>
+                  <p className={styles.confirmText}>
                     Vill du uppdatera programmet med dessa ändringar?
                   </p>
                   <button
