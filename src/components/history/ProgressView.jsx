@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import { displayWeight } from '../../lib/weightUtils'
+import { getWorkouts, getEquipmentMap } from '../../lib/db'
 import styles from './ProgressView.module.css'
 
 // Epley-estimerat 1RM for ett set
@@ -144,7 +145,24 @@ function ProgressChart({ points }) {
   )
 }
 
-export default function ProgressView({ open, onClose, workouts, equipmentMap = {} }) {
+export default function ProgressView({ open, onClose, workouts, equipmentMap = {}, userId = null }) {
+  // Hamta langre historik an listans 30 pass sa "sedan start" verkligen
+  // betyder sedan start. Faller tillbaka pa prop-datan tills den laddats.
+  const [allWorkouts, setAllWorkouts] = useState(null)
+  const [fullEquipment, setFullEquipment] = useState(null)
+  useEffect(() => {
+    if (!open || !userId) return
+    let cancelled = false
+    getWorkouts(userId, 100).then(ws => {
+      if (cancelled) return
+      setAllWorkouts(ws)
+      const names = [...new Set(ws.flatMap(w => (w.exercises ?? []).map(e => e.name)))]
+      return getEquipmentMap(names).then(m => { if (!cancelled) setFullEquipment(m) })
+    }).catch(() => {})
+    return () => { cancelled = true }
+  }, [open, userId])
+  const sourceWorkouts = allWorkouts ?? workouts
+  const sourceEquipment = fullEquipment ?? equipmentMap
   const [query, setQuery] = useState('')
   const [selected, setSelected] = useState(null)
 
@@ -155,7 +173,7 @@ export default function ProgressView({ open, onClose, workouts, equipmentMap = {
   // Ovningar med data, sorterade efter mest tranade forst
   const exercises = useMemo(() => {
     const counts = new Map()
-    for (const w of workouts) {
+    for (const w of sourceWorkouts) {
       for (const ex of w.exercises ?? []) {
         // Rakna med ovningar som har minst ett gjort arbetsset (med reps),
         // aven om vikt saknas (kroppsvikt).
@@ -167,7 +185,7 @@ export default function ProgressView({ open, onClose, workouts, equipmentMap = {
     return [...counts.entries()]
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'sv'))
-  }, [workouts])
+  }, [sourceWorkouts])
 
   const filtered = query.trim()
     ? exercises.filter(e => e.name.toLowerCase().includes(query.toLowerCase()))
@@ -177,8 +195,8 @@ export default function ProgressView({ open, onClose, workouts, equipmentMap = {
   // har vikt nagon gang, annars 'reps' (basta reps) for kroppsviktsovningar.
   const data = useMemo(() => {
     if (!selected) return null
-    const equipment = equipmentMap[selected]
-    const sorted = [...workouts].sort((a, b) => new Date(a.finished_at) - new Date(b.finished_at))
+    const equipment = sourceEquipment[selected]
+    const sorted = [...sourceWorkouts].sort((a, b) => new Date(a.finished_at) - new Date(b.finished_at))
 
     // Avgor lage: anvand vikt om ovningen har vikt i nagot pass
     const anyWeight = sorted.some(w => {
@@ -199,24 +217,26 @@ export default function ProgressView({ open, onClose, workouts, equipmentMap = {
         if (reps > 0) points.push({ date: w.finished_at, value: reps })
       }
     }
+    // Grafen visar de senaste 20 punkterna for lasbarhet, men statistiken
+    // (nuvarande, sedan start, PR) raknas pa HELA serien sa den ar sann.
     const trimmed = points.slice(-20)
     if (trimmed.length === 0) return { points: [], mode, isDouble: equipment === 'Hantel' }
 
-    const current = trimmed[trimmed.length - 1].value
-    const start = trimmed[0].value
+    const current = points[points.length - 1].value
+    const start = points[0].value
     const change = current - start
     const pct = start > 0 ? (change / start) * 100 : 0
-    const pr = Math.max(...trimmed.map(p => p.value))
-    const prPoint = trimmed.find(p => p.value === pr)
+    const pr = Math.max(...points.map(p => p.value))
+    const prPoint = points.find(p => p.value === pr)
     return {
       points: trimmed,
       mode,
       isDouble: equipment === 'Hantel',
       current, start, change, pct, pr,
       prDate: prPoint?.date,
-      currentSet: trimmed[trimmed.length - 1].set,
+      currentSet: points[points.length - 1].set,
     }
-  }, [selected, workouts, equipmentMap])
+  }, [selected, sourceWorkouts, sourceEquipment])
 
   if (!open) return null
 

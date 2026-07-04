@@ -133,6 +133,7 @@ export default function History({ session }) {
         onClose={() => setProgressOpen(false)}
         workouts={workouts}
         equipmentMap={equipmentMap}
+        userId={session.user.id}
       />
     </div>
   )
