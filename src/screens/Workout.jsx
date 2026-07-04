@@ -4,7 +4,7 @@ import { Reorder, AnimatePresence, motion } from 'framer-motion'
 import { useWorkout } from '../hooks/useWorkout'
 import { useTimer } from '../hooks/useTimer'
 import { buildWorkoutContext, buildMemoryContent, appendUserNote, chatWithAI, generateWorkoutIntro } from '../lib/ai'
-import { updateWorkout, getWorkouts, getAiMemory, upsertAiMemory, getEquipmentMap, updateProgram, saveProgram, getDeloadStatus, startDeloadWeek, getExercises } from '../lib/db'
+import { updateWorkout, getWorkouts, getAiMemory, upsertAiMemory, getEquipmentMap, updateProgram, saveProgram, setActiveProgram, getDeloadStatus, startDeloadWeek, getExercises } from '../lib/db'
 import TimerBar from '../components/workout/TimerBar'
 import TimerExpanded from '../components/workout/TimerExpanded'
 import ExerciseBlock from '../components/workout/ExerciseBlock'
@@ -324,7 +324,10 @@ export default function Workout({ session }) {
           user_id: session.user.id,
           created_by: session.user.id,
         })
-        localStorage.setItem('gymbanan_active_program_id', saved.id)
+        // Kopian ska bli anvandarens aktiva program - spara i DB (dar
+        // aktivt program faktiskt bor) och meddela App sa state synkas.
+        await setActiveProgram(session.user.id, saved.id)
+        window.dispatchEvent(new CustomEvent('activeProgramChanged', { detail: { program: saved } }))
       }
     } catch (err) {
       console.error('sync program error:', err)
@@ -717,7 +720,7 @@ export default function Workout({ session }) {
               {program.user_id === null ? (
                 <>
                   <p style={{ fontSize: 14, color: '#888', textAlign: 'center', margin: '0 0 16px', lineHeight: 1.5 }}>
-                    Vill du spara en egen kopia av programmet med dina ändringar?
+                    Vill du spara en egen kopia av programmet med dina ändringar? Kopian blir ditt aktiva program.
                   </p>
                   <button
                     className={styles.confirmPrimary}

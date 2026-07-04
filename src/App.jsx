@@ -58,6 +58,19 @@ function AppRoutes({ session }) {
   const [programsLoaded, setProgramsLoaded] = useState(false)
   const [programsError, setProgramsError] = useState(false)
   const [activeProgramId, setActiveProgramId] = useState(null)
+
+  // Nar ett pass sparats som kopia (och blivit aktivt) meddelar Workout
+  // via event - synka programlistan och aktivt program utan omladdning.
+  useEffect(() => {
+    function onActiveChanged(e) {
+      const prog = e.detail?.program
+      if (!prog?.id) return
+      setPrograms(prev => prev.some(p => p.id === prog.id) ? prev : [...prev, prog])
+      setActiveProgramId(prog.id)
+    }
+    window.addEventListener('activeProgramChanged', onActiveChanged)
+    return () => window.removeEventListener('activeProgramChanged', onActiveChanged)
+  }, [])
   const [homeReady, setHomeReady] = useState(false)
   const [showWhatsNew, setShowWhatsNew] = useState(false)
   const [splashGone, setSplashGone] = useState(false)
