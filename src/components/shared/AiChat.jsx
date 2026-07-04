@@ -30,7 +30,7 @@ export default function AiChat({ open, onClose, getContext, getMemory, getDeload
   const messagesRef = useRef(null)
   const inputRef = useRef(null)
   const notesRef = useRef(null)
-  const { messages, loading, error, send, markAdjustmentApplied, markDeloadApplied, markWorkoutApplied, markProgramChangeApplied, markProgramSwitchApplied, markNewProgramApplied } = useAI({ getContext, getMemory, getDeloadStatus, getAvailableExercises, getProgramsList, coachMode: inline })
+  const { messages, loading, error, send, reset, markAdjustmentApplied, markDeloadApplied, markWorkoutApplied, markProgramChangeApplied, markProgramSwitchApplied, markNewProgramApplied } = useAI({ getContext, getMemory, getDeloadStatus, getAvailableExercises, getProgramsList, coachMode: inline })
 
   // Fokusera input när sheeten öppnar
   useEffect(() => {
@@ -138,6 +138,14 @@ export default function AiChat({ open, onClose, getContext, getMemory, getDeload
             {inline ? (
               <div className={styles.inlineHeader}>
                 <h1 className={styles.inlineTitle}>Personlig tränare</h1>
+                {messages.length > 0 && (
+                  <button className={styles.newChatBtn} onClick={reset} type="button">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                    Ny chatt
+                  </button>
+                )}
               </div>
             ) : (
             <div className={styles.header}>
