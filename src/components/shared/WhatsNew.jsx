@@ -2,28 +2,28 @@ import { AnimatePresence, motion } from 'framer-motion'
 import styles from './WhatsNew.module.css'
 
 // Hoj denna nar nya nyheter ska visas for alla igen.
-export const WHATSNEW_VERSION = '2026-06-pt-2'
+export const WHATSNEW_VERSION = '2026-07-polish'
 
 const ITEMS = [
   {
-    title: 'Smartare personlig tränare',
-    body: 'PT:n pratar varmare och mer som en riktig coach. Den ser alla dina program, känner igen dina övningar även när du byter program, och hälsar dig välkommen tillbaka efter en paus med vikter från din historik.',
+    title: 'Fira dina rekord',
+    body: 'Slår du ditt bästa estimerade 1RM visas ett gyllene PR-kort direkt när passet är klart. Passtiden syns nu också på klart-skärmen och i historiken.',
   },
   {
-    title: 'PT bygger och ändrar program',
-    body: 'Be PT:n lägga till, ta bort eller flytta övningar – eller skapa ett helt nytt program åt dig. Du bekräftar alltid innan något sparas.',
+    title: 'Kopiera och gör program till dina egna',
+    body: 'Öppna ett program och tryck "Kopiera & anpassa" – du får en egen kopia att ändra fritt i. Sparar du ändringar efter ett pass blir kopian automatiskt ditt aktiva program.',
   },
   {
-    title: 'Din styrkeutveckling samlad',
-    body: 'En ny vy visar hur du blir starkare över tid – estimerat 1RM, ökning sedan start och dina PR. Funkar även för kroppsviktsövningar som dips och chins.',
+    title: 'Tryggare historik',
+    body: 'Råkade du svajpa bort ett pass? Tryck Ångra i rutan som dyker upp så är det tillbaka.',
   },
   {
-    title: 'Skapa egna övningar i appen',
-    body: 'Saknar du en övning? Lägg till den direkt från övningsbiblioteket med muskler, utrustning och instruktioner – utan att lämna appen.',
+    title: 'Tydligare muskelgubbe',
+    body: 'En liten förklaring visar vad färgerna betyder, och gubben räknar nu även sekundärmuskler – så hela bilden av din träning syns.',
   },
   {
-    title: 'Passtid och smidigare historik',
-    body: 'Se hur länge ett pass tog, få en tidsuppskattning redan när du bygger programmet, och svajpa för att ta bort pass i historiken.',
+    title: 'Ny chatt med PT:n',
+    body: 'Börja om konversationen när du vill med nya "Ny chatt"-knappen i PT-fliken.',
   },
 ]
 

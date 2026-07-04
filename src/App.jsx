@@ -69,7 +69,13 @@ function AppRoutes({ session }) {
       setActiveProgramId(prog.id)
     }
     window.addEventListener('activeProgramChanged', onActiveChanged)
-    return () => window.removeEventListener('activeProgramChanged', onActiveChanged)
+    // "Vad ar nytt?" i Installningar oppnar nyhetsrutan manuellt
+    function onShowWhatsNew() { setShowWhatsNew(true) }
+    window.addEventListener('showWhatsNew', onShowWhatsNew)
+    return () => {
+      window.removeEventListener('activeProgramChanged', onActiveChanged)
+      window.removeEventListener('showWhatsNew', onShowWhatsNew)
+    }
   }, [])
   const [homeReady, setHomeReady] = useState(false)
   const [showWhatsNew, setShowWhatsNew] = useState(false)

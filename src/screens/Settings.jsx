@@ -116,6 +116,15 @@ export default function Settings({ session }) {
           </div>
 
           <div className={styles.rowCard}>
+            <button className={styles.row} onClick={() => window.dispatchEvent(new CustomEvent('showWhatsNew'))} type="button">
+              <span className={styles.rowLabel}>Vad är nytt?</span>
+              <div className={styles.rowRight}>
+                <Chevron />
+              </div>
+            </button>
+          </div>
+
+          <div className={styles.rowCard}>
             <button className={styles.row} onClick={() => setRestExpanded(v => !v)} type="button">
               <span className={styles.rowLabel}>Standard vilotid</span>
               <div className={styles.rowRight}>
