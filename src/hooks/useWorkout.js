@@ -112,9 +112,12 @@ async function loadExerciseData(ex, userId, restOverrides, caches = {}) {
   const exEquipment = exData?.equipment || null
   const isTimeBased = exData?.is_time_based === true
   const restSeconds = ex.restSeconds ?? (restOverrides?.[ex.name] ?? null)
+  // Berika med muskelgrupp fran biblioteket - programmets pass lagrar den
+  // inte, sa utan detta loggas passet med muscle_group: null.
+  const muscleGroup = ex.muscleGroup ?? exData?.muscle_group ?? null
 
   if (!prevSets?.length) {
-    return { ...ex, restSeconds, exInstructions, exNotes, exEquipment, isTimeBased, prevSets: null, progressionHint: null, progressionAction: null, dataLoaded: true }
+    return { ...ex, muscleGroup, restSeconds, exInstructions, exNotes, exEquipment, isTimeBased, prevSets: null, progressionHint: null, progressionAction: null, dataLoaded: true }
   }
 
   // Tidsbaserade ovningar (planka etc): ingen vikt/tid-progression.
@@ -132,7 +135,7 @@ async function loadExerciseData(ex, userId, restOverrides, caches = {}) {
         prefilled: !!(lastSet?.reps),
       }
     })
-    return { ...ex, sets: prefSets, restSeconds, exInstructions, exNotes, exEquipment, isTimeBased, prevSets, progressionHint: null, progressionAction: null, dataLoaded: true }
+    return { ...ex, muscleGroup, sets: prefSets, restSeconds, exInstructions, exNotes, exEquipment, isTimeBased, prevSets, progressionHint: null, progressionAction: null, dataLoaded: true }
   }
 
   // Harleda ovningskategori fran equipment + movement_pattern
@@ -210,6 +213,7 @@ async function loadExerciseData(ex, userId, restOverrides, caches = {}) {
 
   return {
     ...ex,
+    muscleGroup,
     restSeconds,
     sets,
     progressionHint,
