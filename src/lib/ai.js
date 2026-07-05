@@ -196,7 +196,13 @@ Regler:
   Exempel: flytta Benpress fran Övre 1 till Övre 2:
   [ { "op": "remove", "exerciseName": "Benpress", "sessionName": "Övre 1" },
     { "op": "add", "exerciseName": "Benpress", "sessionName": "Övre 2" } ]
-- "op" ar en av: "adjust", "remove", "add", "replace".
+- "op" ar en av: "adjust", "remove", "add", "replace", "superset", "removesuperset".
+- SUPERSET: tva ovningar som kors varvat utan vila emellan (vila forst nar
+  bada gjort sitt set). Lanka med:
+  { "op": "superset", "exerciseName": "Lutad bicepscurl", "secondExerciseName": "Overhead triceps hantel" }
+  Bada ovningarna MASTE redan finnas i passet. Ta bort ett par med:
+  { "op": "removesuperset", "exerciseName": "Lutad bicepscurl" }
+  En ovning kan bara inga i ETT par (exakt 2 ovningar per par).
 - For "add" och "replace" MASTE ovningsnamnet (resp. "newExerciseName") exakt
   matcha en ovning i listan over tillgangliga ovningar ovan. Hitta ALDRIG pa
   ovningsnamn - valj bara bland de som finns.
@@ -577,7 +583,8 @@ export function buildWorkoutContext(sessionName, exercises, workoutNotes) {
   for (const ex of exercises) {
     const doneSets = ex.sets.filter(s => s.done)
     if (doneSets.length === 0) continue
-    lines.push(`${ex.name}${ex.muscleGroup ? ` (${ex.muscleGroup})` : ''}:`)
+    const ssPartner = ex.supersetId ? exercises.find(o => o !== ex && o.supersetId === ex.supersetId) : null
+    lines.push(`${ex.name}${ex.muscleGroup ? ` (${ex.muscleGroup})` : ''}${ssPartner ? ` [superset med ${ssPartner.name}]` : ''}:`)
     for (const s of doneSets) {
       const label = s.type === 'warmup' ? 'Uppvarmning' : 'Set'
       const rir = s.rir !== null && s.rir !== undefined ? ` · RIR ${s.rir}` : ''
@@ -617,9 +624,15 @@ export function buildCoachContext({ activeProgram, recentWorkouts, displayName, 
       const sessions = Array.isArray(p.sessions) ? p.sessions : []
       if (sessions.length) {
         for (const sess of sessions) {
-          const exNames = Array.isArray(sess.exercises)
-            ? sess.exercises.map(e => e.name).filter(Boolean)
-            : []
+          const exs = Array.isArray(sess.exercises) ? sess.exercises : []
+          const exNames = exs.map(e => {
+            if (!e?.name) return null
+            if (e.supersetId) {
+              const partner = exs.find(o => o !== e && o.supersetId === e.supersetId)
+              if (partner) return `${e.name} [superset med ${partner.name}]`
+            }
+            return e.name
+          }).filter(Boolean)
           lines.push(`    - ${sess.name || 'Namnlost pass'}: ${exNames.join(', ') || '(inga ovningar)'}`)
         }
       } else {
@@ -789,7 +802,8 @@ export function parseProgramChange(aiText, availableNames = []) {
           rejected.push(o.newExerciseName || o.exerciseName); continue
         }
       }
-      if (!['adjust', 'remove', 'add', 'replace'].includes(op)) continue
+      if (op === 'superset' && typeof o.secondExerciseName !== 'string') continue
+      if (!['adjust', 'remove', 'add', 'replace', 'superset', 'removesuperset'].includes(op)) continue
       validOps.push({ ...o, op })
     }
     if (validOps.length > 0) {
@@ -848,6 +862,25 @@ export function applyProgramChange(sessions, programChange) {
         if (idx !== -1) exercises.splice(idx, 1)
       } else if (op.op === 'replace') {
         if (idx !== -1) exercises[idx] = { ...exercises[idx], name: op.newExerciseName }
+      } else if (op.op === 'superset') {
+        // Lanka tva befintliga ovningar i passet. Ev. gamla par de ingar i bryts.
+        const a = exercises.findIndex(e => e.name === op.exerciseName)
+        const b = exercises.findIndex(e => e.name === op.secondExerciseName)
+        if (a !== -1 && b !== -1 && a !== b) {
+          const oldIds = new Set([exercises[a].supersetId, exercises[b].supersetId].filter(Boolean))
+          const ssId = 'ss_' + Math.random().toString(36).slice(2, 8)
+          exercises = exercises.map((e, i) => {
+            if (i === a || i === b) return { ...e, supersetId: ssId }
+            if (e.supersetId && oldIds.has(e.supersetId)) return { ...e, supersetId: null }
+            return e
+          })
+        }
+      } else if (op.op === 'removesuperset') {
+        const t = exercises.find(e => e.name === op.exerciseName)
+        if (t?.supersetId) {
+          const ssId = t.supersetId
+          exercises = exercises.map(e => e.supersetId === ssId ? { ...e, supersetId: null } : e)
+        }
       } else if (op.op === 'adjust') {
         if (idx !== -1) {
           const e = { ...exercises[idx] }
@@ -861,6 +894,12 @@ export function applyProgramChange(sessions, programChange) {
         }
       }
     }
+    // Stada superset-par som tappat en medlem (t.ex. efter remove)
+    const ssCount = {}
+    for (const e of exercises) if (e.supersetId) ssCount[e.supersetId] = (ssCount[e.supersetId] ?? 0) + 1
+    exercises = exercises.map(e =>
+      e.supersetId && ssCount[e.supersetId] !== 2 ? { ...e, supersetId: null } : e
+    )
     return { ...sess, exercises }
   })
 }
