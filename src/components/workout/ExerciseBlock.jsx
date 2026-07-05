@@ -50,6 +50,8 @@ export default function ExerciseBlock({
   supersetPartner,
   supersetFirstId,
   onSupersetJump,
+  onSupersetLinkStart,
+  onSupersetUnlink,
   onShowDetail,
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -485,6 +487,15 @@ export default function ExerciseBlock({
             <button className={styles.menuItem} onClick={() => { onReplaceExercise?.(exercise); setMenuOpen(false) }}>
               Byt övning
             </button>
+            {supersetPartner ? (
+              <button className={styles.menuItem} onClick={() => { onSupersetUnlink?.(exercise); setMenuOpen(false) }}>
+                Ta bort superset
+              </button>
+            ) : (
+              <button className={styles.menuItem} onClick={() => { onSupersetLinkStart?.(exercise); setMenuOpen(false) }}>
+                Superset med…
+              </button>
+            )}
             <button className={styles.menuItem} onClick={() => { onShowHistory?.(exercise); setMenuOpen(false) }}>Historik</button>
             <button className={styles.menuItem} onClick={() => { onShowInstructions?.(exercise); setMenuOpen(false) }}>Övningsinstruktioner</button>
             <div className={styles.menuDivider} />

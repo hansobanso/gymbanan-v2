@@ -880,6 +880,8 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
     addExercise,
     addGeneratedWorkout,
     removeExercise,
+    setSupersetPair,
+    clearSuperset,
     replaceExercise,
     updateExercise,
     updateExerciseReps,

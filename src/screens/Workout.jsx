@@ -70,6 +70,7 @@ export default function Workout({ session }) {
   // Superset: fokus-override som flyttar "aktiv ovning" till partnern
   // mitt i ett par. null = harledd aktiv (forsta ej fardiga ovningen).
   const [focusExId, setFocusExId] = useState(null)
+  const [supersetPickFor, setSupersetPickFor] = useState(null) // ovning som ska paras
 
   function handleSupersetJump(localId) {
     setFocusExId(localId)
@@ -603,6 +604,8 @@ export default function Workout({ session }) {
                 supersetPartner={supersetPartner}
                 supersetFirstId={supersetFirstId}
                 onSupersetJump={handleSupersetJump}
+                onSupersetLinkStart={ex => setSupersetPickFor(ex)}
+                onSupersetUnlink={ex => workout.clearSuperset(ex.localId)}
                 onShowDetail={id => setDetailExerciseId(id)}
               />
               )
@@ -792,6 +795,37 @@ export default function Workout({ session }) {
       />
 
       {/* ── AI PT-chat ── */}
+      {/* ── Valj superset-partner ── */}
+      {supersetPickFor && (
+        <>
+          <div className={styles.ssPickBackdrop} onClick={() => setSupersetPickFor(null)} />
+          <div className={styles.ssPickSheet}>
+            <p className={styles.ssPickTitle}>Superset: {supersetPickFor.name} +</p>
+            <div className={styles.ssPickList}>
+              {workout.exercises
+                .filter(e => e.localId !== supersetPickFor.localId)
+                .map(e => (
+                  <button
+                    key={e.localId}
+                    className={styles.ssPickItem}
+                    type="button"
+                    onClick={() => {
+                      workout.setSupersetPair(supersetPickFor.localId, e.localId)
+                      setSupersetPickFor(null)
+                    }}
+                  >
+                    <span>{e.name}</span>
+                    {e.supersetId && <span className={styles.ssPickNote}>i superset – byts</span>}
+                  </button>
+                ))}
+            </div>
+            <button className={styles.ssPickCancel} onClick={() => setSupersetPickFor(null)} type="button">
+              Avbryt
+            </button>
+          </div>
+        </>
+      )}
+
       <AiChat
         open={aiChatOpen}
         onClose={() => setAiChatOpen(false)}
