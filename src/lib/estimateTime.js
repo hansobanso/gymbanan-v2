@@ -31,8 +31,10 @@ export function estimateSessionSeconds(session) {
     total += warmup * SECONDS_PER_WARMUP_SET
 
     // Vila mellan set (det blir n-1 vilor, men vi forenklar till n
-    // for att tacka in lite extra spill - haller uppskattningen arlig)
-    total += work * rest
+    // for att tacka in lite extra spill - haller uppskattningen arlig).
+    // Superset: tva ovningar delar vila, sa vardera bidrar med halva.
+    const restShare = ex.supersetId ? 0.5 : 1
+    total += work * rest * restShare
     total += warmup * WARMUP_REST
 
     // Lite tid for att byta ovning/station
