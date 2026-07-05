@@ -395,3 +395,32 @@
   color: var(--accent);
   font-weight: 700;
 }
+
+/* ── Superset ── */
+.exRowSuperset {
+  border-left: 3px solid var(--accent);
+}
+.badgeSuperset {
+  font-size: 11px;
+  font-weight: 700;
+  color: #000;
+  background: var(--accent);
+  border-radius: 8px;
+  padding: 2px 8px;
+}
+.linkBtn {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  color: var(--text-3);
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+.linkBtnActive { color: var(--accent); }
+.linkBtn:active { opacity: 0.6; }

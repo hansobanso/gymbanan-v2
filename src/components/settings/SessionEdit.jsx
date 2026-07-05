@@ -31,7 +31,7 @@ function newExercise(name = '') {
 const DELETE_WIDTH = 80
 
 // ── ExerciseRow ──────────────────────────────────────────────
-function ExerciseRow({ ex, onTap, onRemove }) {
+function ExerciseRow({ ex, onTap, onRemove, isLinked, canLink, onToggleLink }) {
   const dragControls = useDragControls()
   const [dragging, setDragging] = useState(false)
   const [swipeX, setSwipeX] = useState(0)
@@ -161,7 +161,7 @@ function ExerciseRow({ ex, onTap, onRemove }) {
         </div>
         {/* Row — slides left to reveal delete */}
         <div
-          className={styles.exRow}
+          className={`${styles.exRow} ${isLinked ? styles.exRowSuperset : ''}`}
           style={{
             transform: `translateX(${swipeX}px)`,
             transition: isActivelySwipingH.current ? 'none' : 'transform 0.2s ease',
@@ -204,9 +204,23 @@ function ExerciseRow({ ex, onTap, onRemove }) {
               <span className={`${styles.badgeVila} ${restCustom ? styles.badgeAccent : ''}`}>
                 {restLabel} vila
               </span>
+              {isLinked && <span className={styles.badgeSuperset}>Superset</span>}
             </div>
           </div>
           <div className={styles.exRowRight}>
+            {(isLinked || canLink) && (
+              <button
+                className={`${styles.linkBtn} ${isLinked ? styles.linkBtnActive : ''}`}
+                onClick={(e) => { e.stopPropagation(); onToggleLink() }}
+                type="button"
+                aria-label={isLinked ? 'Ta bort superset' : 'Superset med nästa övning'}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                </svg>
+              </button>
+            )}
             <span className={styles.chevron}>›</span>
           </div>
         </div>
@@ -251,6 +265,24 @@ export default function SessionEdit({ session, allExercises, onSave, onDelete, o
   function closePicker() {
     setShowSearch(false)
     setSwappingExId(null)
+  }
+
+  // Superset: lanka en ovning med NASTA i listan (par om exakt 2).
+  // Tryck igen pa nagon av dem for att bryta paret.
+  function toggleSuperset(id) {
+    setExercises(prev => {
+      const idx = prev.findIndex(e => e._id === id)
+      if (idx === -1) return prev
+      const ex = prev[idx]
+      if (ex.supersetId) {
+        // Bryt paret: rensa bada medlemmarna
+        return prev.map(e => e.supersetId === ex.supersetId ? { ...e, supersetId: null } : e)
+      }
+      const next = prev[idx + 1]
+      if (!next || next.supersetId) return prev
+      const ssId = 'ss_' + Math.random().toString(36).slice(2, 8)
+      return prev.map((e, i) => (i === idx || i === idx + 1) ? { ...e, supersetId: ssId } : e)
+    })
   }
 
   function removeExercise(id) {
@@ -365,11 +397,14 @@ export default function SessionEdit({ session, allExercises, onSave, onDelete, o
                 as="div"
                 style={{ touchAction: 'pan-y' }}
               >
-                {exercises.map(ex => (
+                {exercises.map((ex, exIdx) => (
                   <ExerciseRow
                     key={ex._id}
                     ex={ex}
                     onTap={() => setSelectedExId(ex._id)}
+                    isLinked={!!ex.supersetId}
+                    canLink={!ex.supersetId && exIdx < exercises.length - 1 && !exercises[exIdx + 1]?.supersetId}
+                    onToggleLink={() => toggleSuperset(ex._id)}
                     onRemove={() => removeExercise(ex._id)}
                   />
                 ))}
