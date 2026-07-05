@@ -3,13 +3,13 @@
 // for om passet ar rimligt langt nar man bygger det.
 //
 // Antaganden (latta att justera om de kanns fel):
-// Kalibrerade mot 8 verkliga pass (jun 2026): formeln underskattade 30-50%
-// - i verkligheten tar set, vila och stationsbyten langre an teorin,
-// sarskilt vid hard traning (1-0 RIR).
+// Kalibrerade mot verkliga pass (jul 2026, Push 49/Pull 51/Under 53 min):
+// vila raknas MELLAN set (n-1, inte n - pausen efter sista setet ar
+// stationsbytet), och uppvarmningsset flyter pa med kort vila.
 const SECONDS_PER_WORK_SET = 60      // sjalva utforandet av ett arbetsset
 const SECONDS_PER_WARMUP_SET = 30    // uppvarmningsset gar snabbare
 const DEFAULT_REST = 120             // om vila inte angetts pa ovningen
-const WARMUP_REST = 60               // kortare vila efter uppvarmningsset
+const WARMUP_REST = 30               // uppvarmningar flyter pa med minimal vila
 const SETUP_PER_EXERCISE = 90        // byta station, ga till maskin, stalla in vikt
 const REALITY_FACTOR = 1.25          // verklig vila/spill ar langre an planerad
 
@@ -30,11 +30,10 @@ export function estimateSessionSeconds(session) {
     total += work * SECONDS_PER_WORK_SET
     total += warmup * SECONDS_PER_WARMUP_SET
 
-    // Vila mellan set (det blir n-1 vilor, men vi forenklar till n
-    // for att tacka in lite extra spill - haller uppskattningen arlig).
-    // Superset: tva ovningar delar vila, sa vardera bidrar med halva.
+    // Vila MELLAN seten (n-1) - pausen efter sista setet ingar i
+    // stationsbytet. Superset: tva ovningar delar vila, halva var.
     const restShare = ex.supersetId ? 0.5 : 1
-    total += work * rest * restShare
+    total += Math.max(0, work - 1) * rest * restShare
     total += warmup * WARMUP_REST
 
     // Lite tid for att byta ovning/station
