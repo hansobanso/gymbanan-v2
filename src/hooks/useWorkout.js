@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import { createWorkout, updateWorkout, getTwoPreviousSetsForExercise, getExerciseByName, getRestOverrides, getUserExerciseNote, getWorkouts, getExercises, getAllUserExerciseNotes } from '../lib/db'
 import { computeProgression, deriveCategory, epleyAdjustedReps } from '../lib/progression'
 import { detectGapAdjustment } from '../lib/ai'
+import { sortSupersetsAdjacent } from '../lib/superset.js'
 
 // Smart default viktsteg baserat pa equipment. Anvands nar exercises.weight_increment ar null.
 function defaultWeightIncrement(equipment) {
@@ -233,11 +234,13 @@ async function loadExerciseData(ex, userId, restOverrides, caches = {}) {
 
 export function useWorkout({ sessionName, sessionExercises = [], programId, userId, resumed, aiMemory = '', defaultRest = 120 }) {
   const [exercises, setExercises] = useState(() =>
-    resumed
-      ? resumed.exercises
-      : sessionExercises.length > 0
-        ? sessionExercises.map(sessionExToEx)
-        : []
+    sortSupersetsAdjacent(
+      resumed
+        ? resumed.exercises
+        : sessionExercises.length > 0
+          ? sessionExercises.map(sessionExToEx)
+          : []
+    )
   )
   const [loading, setLoading] = useState(!resumed)
 

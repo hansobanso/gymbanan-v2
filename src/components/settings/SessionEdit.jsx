@@ -3,6 +3,7 @@ import { Reorder, useDragControls } from 'framer-motion'
 import ExerciseDetailBottomSheet from './ExerciseDetailBottomSheet'
 import ExercisePicker from '../workout/ExercisePicker'
 import { formatSessionTime } from '../../lib/estimateTime'
+import { sortSupersetsAdjacent } from '../../lib/superset.js'
 import styles from './SessionEdit.module.css'
 
 const DEFAULT_REST = 120
@@ -393,7 +394,7 @@ export default function SessionEdit({ session, allExercises, onSave, onDelete, o
               <Reorder.Group
                 axis="y"
                 values={exercises}
-                onReorder={setExercises}
+                onReorder={(order) => setExercises(sortSupersetsAdjacent(order))}
                 as="div"
                 style={{ touchAction: 'pan-y' }}
               >

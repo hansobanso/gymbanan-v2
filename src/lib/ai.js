@@ -1,3 +1,4 @@
+import { sortSupersetsAdjacent } from './superset.js'
 const AI_ENDPOINT = 'https://opta-proxy.gymbanan.workers.dev'
 // Sonnet ger markbart battre och mer idiomatisk svenska an Haiku
 // (mindre svengelska). Lite langsammare/dyrare men vart det for PT-kvalitet.
@@ -900,6 +901,8 @@ export function applyProgramChange(sessions, programChange) {
     exercises = exercises.map(e =>
       e.supersetId && ssCount[e.supersetId] !== 2 ? { ...e, supersetId: null } : e
     )
+    // Superset-par sorteras alltid intill varandra
+    exercises = sortSupersetsAdjacent(exercises)
     return { ...sess, exercises }
   })
 }
