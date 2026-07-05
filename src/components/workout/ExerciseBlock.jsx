@@ -47,6 +47,9 @@ export default function ExerciseBlock({
   onShowInstructions,
   onLongPressStart,
   onTimerStart,
+  supersetPartner,
+  supersetFirstId,
+  onSupersetJump,
   onShowDetail,
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -133,9 +136,25 @@ export default function ExerciseBlock({
     }
 
     await onCompleteSet(exercise.localId, setId)
-    if (!wasCompleted && set?.type === 'work' && !isLastSetOfWorkout) {
-      const secs = exercise.restSeconds ?? defaultRestSeconds ?? 120
-      onTimerStart?.(exercise.name, secs)
+    if (!wasCompleted && set?.type === 'work') {
+      if (supersetPartner) {
+        // Superset: hoppa till partnern om den ligger efter (ingen vila an).
+        // Nar bada gjort lika manga set ar paret klart -> vila startar och
+        // fokus gar tillbaka till forsta ovningen i paret.
+        const doneSelfAfter = exercise.sets.filter(s => s.type === 'work' && s.done).length + 1
+        const donePartner = supersetPartner.sets.filter(s => s.type === 'work' && s.done).length
+        const partnerHasUndone = supersetPartner.sets.some(s => s.type === 'work' && !s.done)
+        if (partnerHasUndone && donePartner < doneSelfAfter) {
+          onSupersetJump?.(supersetPartner.localId)
+        } else if (!isLastSetOfWorkout) {
+          const secs = exercise.restSeconds ?? supersetPartner.restSeconds ?? defaultRestSeconds ?? 120
+          onTimerStart?.(`${exercise.name} + ${supersetPartner.name}`, secs)
+          if (supersetFirstId) onSupersetJump?.(supersetFirstId)
+        }
+      } else if (!isLastSetOfWorkout) {
+        const secs = exercise.restSeconds ?? defaultRestSeconds ?? 120
+        onTimerStart?.(exercise.name, secs)
+      }
     }
     // Start 1 min rest after last warmup (next set is work)
     if (!wasCompleted && set?.type === 'warmup') {
@@ -202,7 +221,7 @@ export default function ExerciseBlock({
   const collapsedMeta = `${doneSets.length} set · ${bestWeight > 0 ? displayWeightStr(bestWeight, exEquipment) + ' kg' : '–'}`
 
   return (
-    <div className={styles.blockWrapper}>
+    <div className={styles.blockWrapper} data-exid={exercise.localId}>
       {isInProgress && <div className={styles.progressBar} />}
       {allWorkDone && <div className={styles.doneBar} />}
     <div className={styles.block}>
@@ -271,6 +290,15 @@ export default function ExerciseBlock({
             >
               {exercise.name}
             </button>
+            {supersetPartner && (
+              <span className={styles.supersetChip}>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                </svg>
+                Superset
+              </span>
+            )}
             {editingReps ? (
               <div className={styles.repsRangeEdit} onPointerDown={e => e.stopPropagation()}>
                 <input

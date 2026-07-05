@@ -67,6 +67,16 @@ export default function Workout({ session }) {
   const [postWorkout, setPostWorkout] = useState(null)
   const [sessionPrs, setSessionPrs] = useState([])
   const [postDurationMin, setPostDurationMin] = useState(null)
+  // Superset: fokus-override som flyttar "aktiv ovning" till partnern
+  // mitt i ett par. null = harledd aktiv (forsta ej fardiga ovningen).
+  const [focusExId, setFocusExId] = useState(null)
+
+  function handleSupersetJump(localId) {
+    setFocusExId(localId)
+    setTimeout(() => {
+      document.querySelector(`[data-exid="${localId}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }, 100)
+  }
   const [postEquipmentMap, setPostEquipmentMap] = useState({})
   const [introMessage, setIntroMessage] = useState(null)
   const [introLoading, setIntroLoading] = useState(false)
@@ -211,6 +221,7 @@ export default function Workout({ session }) {
       ...originalSession,
       exercises: exercises.map(ex => ({
         name: ex.name,
+        supersetId: ex.supersetId ?? null,
         warmupSets: ex.sets.filter(s => s.type === 'warmup').length,
         workSets: ex.sets.filter(s => s.type === 'work' && s.subtype !== 'backoff').length,
         backoffSets: ex.sets.filter(s => s.subtype === 'backoff').length,
@@ -547,13 +558,26 @@ export default function Workout({ session }) {
               </div>
             )}
             {workout.exercises.map((ex, idx) => {
-              // Active = first exercise that isn't fully done
+              // Active = first exercise that isn't fully done - om inte ett
+              // superset-fokus pekar pa en annan ovning med set kvar.
               const workSets = ex.sets.filter(s => s.type === 'work')
               const allDone = workSets.length > 0 && workSets.every(s => s.done)
-              const isActive = !allDone && workout.exercises.slice(0, idx).every(prev => {
+              const focusEx = focusExId ? workout.exercises.find(e => e.localId === focusExId) : null
+              const focusValid = focusEx && focusEx.sets.some(s => s.type === 'work' && !s.done)
+              const derivedActive = !allDone && workout.exercises.slice(0, idx).every(prev => {
                 const ws = prev.sets.filter(s => s.type === 'work')
                 return ws.length > 0 && ws.every(s => s.done)
               })
+              const isActive = focusValid ? ex.localId === focusExId : derivedActive
+              // Superset-partner: annan ovning med samma supersetId
+              const supersetPartner = ex.supersetId
+                ? workout.exercises.find(o => o.supersetId === ex.supersetId && o.localId !== ex.localId) ?? null
+                : null
+              const supersetFirstId = supersetPartner
+                ? (workout.exercises.findIndex(o => o.localId === ex.localId) <
+                   workout.exercises.findIndex(o => o.localId === supersetPartner.localId)
+                    ? ex.localId : supersetPartner.localId)
+                : null
               return (
               <ExerciseBlock
                 key={ex.localId}
@@ -576,6 +600,9 @@ export default function Workout({ session }) {
                 userId={session.user.id}
                 onLongPressStart={handleLongPressStart}
                 onTimerStart={(name, secs) => timer.start(name, secs)}
+                supersetPartner={supersetPartner}
+                supersetFirstId={supersetFirstId}
+                onSupersetJump={handleSupersetJump}
                 onShowDetail={id => setDetailExerciseId(id)}
               />
               )

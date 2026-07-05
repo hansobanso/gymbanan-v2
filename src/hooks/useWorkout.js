@@ -43,6 +43,7 @@ function sessionExToEx(ex) {
     exerciseId: ex.exercise_id ?? null,
     name: ex.name ?? 'Övning',
     muscleGroup: ex.muscleGroup ?? ex.muscle_group ?? null,
+    supersetId: ex.supersetId ?? null,
     restSeconds: ex.restSeconds ?? ex.rest_seconds ?? null,
     notes: ex.notes ?? '',
     defaultRepsMin: ex.repsMin ?? ex.default_reps_min ?? ex.defaultRepsMin ?? null,

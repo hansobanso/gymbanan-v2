@@ -681,3 +681,20 @@
   border-color: var(--accent-border) !important;
   color: var(--accent) !important;
 }
+
+/* ── Superset-chip ── */
+.supersetChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--accent);
+  background: rgba(245, 208, 32, 0.12);
+  border: 1px solid rgba(245, 208, 32, 0.3);
+  border-radius: 9px;
+  padding: 2px 7px;
+  margin-left: 8px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
