@@ -568,6 +568,35 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
     })
   }, [defaultRest])
 
+  // Superset mitt i passet: lanka tva ovningar (ev. gamla par bryts),
+  // eller bryt ett befintligt par. Raknas som programandring sa
+  // spara-dialogen kan erbjuda att uppdatera programmet efterat.
+  function setSupersetPair(idA, idB) {
+    setExercises(prev => {
+      const a = prev.find(e => e.localId === idA)
+      const b = prev.find(e => e.localId === idB)
+      if (!a || !b || idA === idB) return prev
+      const oldIds = new Set([a.supersetId, b.supersetId].filter(Boolean))
+      const ssId = 'ss_' + Math.random().toString(36).slice(2, 8)
+      return sortSupersetsAdjacent(prev.map(e => {
+        if (e.localId === idA || e.localId === idB) return { ...e, supersetId: ssId }
+        if (e.supersetId && oldIds.has(e.supersetId)) return { ...e, supersetId: null }
+        return e
+      }))
+    })
+    setProgramChanged(true)
+  }
+
+  function clearSuperset(localId) {
+    setExercises(prev => {
+      const t = prev.find(e => e.localId === localId)
+      if (!t?.supersetId) return prev
+      const ssId = t.supersetId
+      return prev.map(e => e.supersetId === ssId ? { ...e, supersetId: null } : e)
+    })
+    setProgramChanged(true)
+  }
+
   const removeExercise = useCallback((exId) => {
     setProgramChanged(true)
     setExercises(prev => prev.filter(ex => ex.localId !== exId))
