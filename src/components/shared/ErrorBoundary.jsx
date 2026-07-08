@@ -5,10 +5,12 @@ import { Component } from 'react'
 export default class ErrorBoundary extends Component {
   constructor(props) {
     super(props)
-    this.state = { hasError: false }
+    this.state = { hasError: false, errorInfo: '' }
   }
-  static getDerivedStateFromError() {
-    return { hasError: true }
+  static getDerivedStateFromError(error) {
+    const msg = error?.message || String(error)
+    const stackLine = (error?.stack || '').split('\n').slice(1, 3).join(' ')
+    return { hasError: true, errorInfo: `${msg} ${stackLine}`.slice(0, 300) }
   }
   componentDidCatch(error, info) {
     console.error('ErrorBoundary fangade:', error, info)
@@ -26,6 +28,12 @@ export default class ErrorBoundary extends Component {
         <p style={{ fontSize: 14, color: '#999', margin: 0, lineHeight: 1.5 }}>
           Ladda om appen så hämtas senaste versionen.
         </p>
+        {this.state.errorInfo && (
+          <p style={{ fontSize: 11, color: '#555', margin: 0, maxWidth: 320,
+                      wordBreak: 'break-word', lineHeight: 1.4, fontFamily: 'monospace' }}>
+            {this.state.errorInfo}
+          </p>
+        )}
         <button
           onClick={() => window.location.reload()}
           style={{
