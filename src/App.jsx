@@ -1,4 +1,5 @@
-import { useEffect, useState, useCallback, lazy, Suspense } from 'react'
+import { useEffect, useState, useCallback, Suspense } from 'react'
+import { lazyWithRetry } from './lib/lazyWithRetry'
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from './lib/supabase'
 import { getPrograms, setActiveProgram, getProfile, cacheInvalidate } from './lib/db'
@@ -11,15 +12,15 @@ import './App.css'
 
 // Lazy-ladda allt utom Home + Auth (forsta skarmarna man ser).
 // Drar ner main-bundlen rejalt sa appen startar snabbare.
-const Workout = lazy(() => import('./screens/Workout'))
-const History = lazy(() => import('./screens/History'))
-const Settings = lazy(() => import('./screens/Settings'))
-const ExerciseLibrary = lazy(() => import('./screens/ExerciseLibrary'))
-const ExerciseDetail = lazy(() => import('./screens/ExerciseDetail'))
-const Admin = lazy(() => import('./screens/Admin'))
-const BodyWeight = lazy(() => import('./screens/BodyWeight'))
-const Programs = lazy(() => import('./screens/Programs'))
-const Coach = lazy(() => import('./screens/Coach'))
+const Workout = lazyWithRetry(() => import('./screens/Workout'))
+const History = lazyWithRetry(() => import('./screens/History'))
+const Settings = lazyWithRetry(() => import('./screens/Settings'))
+const ExerciseLibrary = lazyWithRetry(() => import('./screens/ExerciseLibrary'))
+const ExerciseDetail = lazyWithRetry(() => import('./screens/ExerciseDetail'))
+const Admin = lazyWithRetry(() => import('./screens/Admin'))
+const BodyWeight = lazyWithRetry(() => import('./screens/BodyWeight'))
+const Programs = lazyWithRetry(() => import('./screens/Programs'))
+const Coach = lazyWithRetry(() => import('./screens/Coach'))
 
 const TAB_PATHS = ['/', '/programs', '/coach', '/history', '/settings']
 const ACTIVE_WORKOUT_KEY = 'gymbanan_active_workout'

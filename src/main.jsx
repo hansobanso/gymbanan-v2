@@ -22,6 +22,6 @@ if ('serviceWorker' in navigator) {
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <ErrorBoundary><App /></ErrorBoundary>
   </StrictMode>,
 )
