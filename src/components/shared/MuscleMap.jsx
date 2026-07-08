@@ -45,6 +45,18 @@ function intensityFromSets(sets) {
 // inte huvudfokus). 0.5 = halva set-poangen jamfort med primarmuskeln.
 const SECONDARY_FACTOR = 0.5
 
+// Effort per set utifran RIR (reps in reserve): nara failure = mer
+// stimulans. Utan loggat RIR raknas setet som 1.0.
+function setEffort(st) {
+  const r = st?.rir == null || st.rir === '' ? NaN : Number(st.rir)
+  if (Number.isNaN(r)) return 1
+  if (r <= 0) return 1.3
+  if (r === 1) return 1.15
+  if (r === 2) return 1.0
+  if (r === 3) return 0.85
+  return 0.7
+}
+
 function intensitiesFromWorkouts(workouts, exerciseMap) {
   const scores = {}
   const now = Date.now()
@@ -71,7 +83,9 @@ function intensitiesFromWorkouts(workouts, exerciseMap) {
         s => s.done && s.type !== 'warmup' && s.type !== 'backoff'
       )
       if (workSets.length === 0) continue
-      const baseScore = workSets.length * decay
+      // Effortviktning: ett set nara failure (lag RIR) ger mer stimulans
+      // an ett latt set - vikta darfor per set istallet for att bara rakna.
+      const baseScore = workSets.reduce((sum, st) => sum + setEffort(st), 0) * decay
 
       // Primarmuskel - full poang
       if (mg) addScore(mg, baseScore)
@@ -87,7 +101,12 @@ function intensitiesFromWorkouts(workouts, exerciseMap) {
     }
   }
   const out = {}
-  for (const [m, s] of Object.entries(scores)) out[m] = Math.min(1, s / 8)
+  // Mattnadskurva istallet for linjar skala: de forsta harda seten ger
+  // mest stimulans, sen mattas det av. ~2 harda set -> tydligt gulnande,
+  // 4-5 harda set -> full gul (mot tidigare 8 set for full gul).
+  for (const [m, s] of Object.entries(scores)) {
+    out[m] = Math.min(1, (1 - Math.exp(-s / 3)) / 0.85)
+  }
   return out
 }
 
