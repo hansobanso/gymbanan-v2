@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
+import ErrorBoundary from './components/shared/ErrorBoundary'
 
 // Registrera INTE service worker pa admin-sidan. SW har root-scope (/),
 // vilket far iOS att knyta admin-PWA:n till huvudappen istallet for att
