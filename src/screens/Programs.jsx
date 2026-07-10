@@ -79,8 +79,14 @@ export default function Programs({ session, programs, setPrograms, activeProgram
         const updated = await updateProgram(program.id, {
           name: rest.name,
           sessions: rest.sessions ?? [],
-          // Tillat admin att andra global-status pa befintligt program
-          ...(isAdmin ? { is_global: program.is_global === true } : {}),
+          // Tillat admin att andra global-status pa befintligt program.
+          // VIKTIGT: user_id maste foljas at - mallar kraver user_id NULL,
+          // annars hamnar programmet i limbo (globalt men syns ej som mall).
+          ...(isAdmin
+            ? (program.is_global === true
+                ? { is_global: true, user_id: null }
+                : { is_global: false, user_id: session.user.id })
+            : {}),
         })
         setPrograms(prev => prev.map(p => p.id === updated.id ? updated : p))
       }
