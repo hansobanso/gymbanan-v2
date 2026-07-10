@@ -279,6 +279,31 @@ Regler:
  * Returnerar en sträng med insikter som skickas in till AI:n
  * tillsammans med vanlig kontext.
  */
+
+// Raknar fram anvandarens typiska traningsintensitet ur loggade RIR-varden
+// (senaste ~5 passen). Returnerar en textrad for AI-kontext, eller null om
+// for lite data finns. Syfte: PT ska veta att lag RIR ar ett MEDVETET val
+// och inte foresla lagre intensitet i onodan.
+export function buildIntensityProfile(recentWorkouts) {
+  const rirs = []
+  for (const w of (recentWorkouts ?? []).slice(0, 5)) {
+    for (const ex of w.exercises ?? []) {
+      for (const st of ex.sets ?? []) {
+        if (!st.done || st.type === 'warmup') continue
+        const r = st.rir == null || st.rir === '' ? NaN : Number(st.rir)
+        if (!Number.isNaN(r)) rirs.push(r)
+      }
+    }
+  }
+  if (rirs.length < 8) return null
+  const avg = rirs.reduce((a, b) => a + b, 0) / rirs.length
+  const rounded = Math.round(avg * 10) / 10
+  if (avg <= 2.2) {
+    return `INTENSITETSPROFIL: Anvandaren tranar medvetet hart - snitt-RIR ${rounded} over senaste passen (${rirs.length} set). Detta ar deras valda stil. Foresla INTE att trana lattare eller "lamna mer i tanken" om de inte sjalva ber om det eller nagot tyder pa overtraning/skada. Uppmuntra istallet den harda insatsen.`
+  }
+  return `INTENSITETSPROFIL: Anvandarens snitt-RIR ar ${rounded} over senaste passen (${rirs.length} set).`
+}
+
 export function analyzeWorkoutContext(recentWorkouts, currentExercises, currentProgram = null) {
   const insights = []
   if (!recentWorkouts || recentWorkouts.length === 0) {
@@ -288,6 +313,11 @@ export function analyzeWorkoutContext(recentWorkouts, currentExercises, currentP
 
   const NOW = Date.now()
   const DAYS = (ms) => Math.round(ms / (1000 * 60 * 60 * 24))
+
+  // Intensitetsprofil (RIR-filosofi) - viktig for att PT inte ska
+  // uppmuntra lagre intensitet nar anvandaren medvetet kor nara failure.
+  const intensity = buildIntensityProfile(recentWorkouts)
+  if (intensity) insights.push(intensity)
 
   // 0) FRÅNVARO-DETEKTION: hur länge sedan senaste pass?
   // Hoppa över anpassade pass (sjuk/deload) - de räknas inte som "tränat normalt"
@@ -649,6 +679,11 @@ export function buildCoachContext({ activeProgram, recentWorkouts, displayName, 
   }
 
   if (Array.isArray(recentWorkouts) && recentWorkouts.length) {
+    const intensityLine = buildIntensityProfile(recentWorkouts)
+    if (intensityLine) {
+      lines.push(intensityLine)
+      lines.push('')
+    }
     lines.push('Senaste traningen:')
     for (const w of recentWorkouts.slice(0, 5)) {
       const datum = w.finished_at ? String(w.finished_at).slice(0, 10) : (w.completed_at ? String(w.completed_at).slice(0, 10) : '?')
