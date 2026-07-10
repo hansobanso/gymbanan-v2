@@ -286,22 +286,39 @@ Regler:
 // och inte foresla lagre intensitet i onodan.
 export function buildIntensityProfile(recentWorkouts) {
   const rirs = []
+  const firstRirs = []   // RIR pa forsta arbetssetet per ovning
+  const lastRirs = []    // RIR pa sista arbetssetet per ovning
   for (const w of (recentWorkouts ?? []).slice(0, 5)) {
     for (const ex of w.exercises ?? []) {
-      for (const st of ex.sets ?? []) {
-        if (!st.done || st.type === 'warmup') continue
+      const work = (ex.sets ?? []).filter(st => {
+        if (!st.done || st.type === 'warmup') return false
         const r = st.rir == null || st.rir === '' ? NaN : Number(st.rir)
-        if (!Number.isNaN(r)) rirs.push(r)
+        return !Number.isNaN(r)
+      })
+      for (const st of work) rirs.push(Number(st.rir))
+      if (work.length >= 2) {
+        firstRirs.push(Number(work[0].rir))
+        lastRirs.push(Number(work[work.length - 1].rir))
       }
     }
   }
   if (rirs.length < 8) return null
-  const avg = rirs.reduce((a, b) => a + b, 0) / rirs.length
-  const rounded = Math.round(avg * 10) / 10
-  if (avg <= 2.2) {
-    return `INTENSITETSPROFIL: Anvandaren tranar medvetet hart - snitt-RIR ${rounded} over senaste passen (${rirs.length} set). Detta ar deras valda stil. Foresla INTE att trana lattare eller "lamna mer i tanken" om de inte sjalva ber om det eller nagot tyder pa overtraning/skada. Uppmuntra istallet den harda insatsen.`
+  const avg = arr => Math.round((arr.reduce((a, b) => a + b, 0) / arr.length) * 10) / 10
+  const total = avg(rirs)
+
+  // Rampmonster: forsta setet med marginal, sista till/nara failure.
+  // Da ar RIR 0 pa sista setet PLANERAT - inte for tung ingangsvikt.
+  if (firstRirs.length >= 5) {
+    const f = avg(firstRirs)
+    const l = avg(lastRirs)
+    if (l <= 0.7 && f - l >= 0.7) {
+      return `INTENSITETSPROFIL: Anvandaren kor ett medvetet ramp-upplagg: forsta arbetssetet med marginal (snitt-RIR ${f}) och sista setet till/nara failure (snitt-RIR ${l}). RIR 0 pa sista setet ar PLANERAT och ska INTE tolkas som for tung ingangsvikt. Foresla inte lagre vikter eller "lamna mer i tanken" om inte anvandaren ber om det eller nagot tyder pa overtraning/skada. Uppmuntra istallet upplagget.`
+    }
   }
-  return `INTENSITETSPROFIL: Anvandarens snitt-RIR ar ${rounded} over senaste passen (${rirs.length} set).`
+  if (total <= 2.2) {
+    return `INTENSITETSPROFIL: Anvandaren tranar medvetet hart - snitt-RIR ${total} over senaste passen (${rirs.length} set). Detta ar deras valda stil. Foresla INTE att trana lattare eller "lamna mer i tanken" om de inte sjalva ber om det eller nagot tyder pa overtraning/skada. Uppmuntra istallet den harda insatsen.`
+  }
+  return `INTENSITETSPROFIL: Anvandarens snitt-RIR ar ${total} over senaste passen (${rirs.length} set).`
 }
 
 export function analyzeWorkoutContext(recentWorkouts, currentExercises, currentProgram = null) {
