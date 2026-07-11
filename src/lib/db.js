@@ -164,7 +164,9 @@ export async function updateExercise(id, updates) {
     .eq('id', id)
     .select()
     .single()
-  if (error) return []
+  // Skicka med felkoden sa UI:t kan skilja pa t.ex. namnkrock (23505)
+  // och andra fel. Objektet saknar .id sa gamla truthiness-checkar haller.
+  if (error) return { _error: error.code || 'unknown' }
   invalidateExercisesCache()
   return data
 }

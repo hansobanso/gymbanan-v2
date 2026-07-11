@@ -225,6 +225,8 @@ export default function ExerciseDetail() {
         if (result && result.id) {
           setSaved(true)
           setEditingMode(false)
+        } else if (result?._error === '23505') {
+          setSaveErr('Det finns redan en övning med det namnet.')
         } else {
           setSaveErr('Kunde inte spara. Försök igen.')
         }
