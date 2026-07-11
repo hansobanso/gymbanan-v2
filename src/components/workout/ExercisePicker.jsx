@@ -213,6 +213,16 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
                 onChange={e => setQuery(e.target.value)}
                 placeholder="Sök övning…"
               />
+              {query && (
+                <button
+                  className={styles.searchClear}
+                  onClick={() => { setQuery(''); searchRef.current?.focus() }}
+                  type="button"
+                  aria-label="Rensa sökning"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                </button>
+              )}
             </div>
             {/* Chips doljs under sokning sa traffarna syns direkt under
                 sokfaltet istallet for bakom tangentbordet */}

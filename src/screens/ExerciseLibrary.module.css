@@ -214,3 +214,24 @@
   flex-shrink: 0;
 }
 .addBtn:active { opacity: 0.8; }
+
+/* ── Rensa-kryss i sokfaltet ── */
+.searchWrap { position: relative; }
+.searchClear {
+  position: absolute;
+  right: 26px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-2, #2a2a2a);
+  border: none;
+  border-radius: 50%;
+  color: var(--text-2);
+  cursor: pointer;
+  padding: 0;
+}
+.searchClear:active { opacity: 0.6; }

@@ -14,6 +14,7 @@ export default function ExerciseLibrary() {
   const [search, setSearch] = useState('')
   const [pickerOpen, setPickerOpen] = useState(false)
   const restoreScrollRef = useRef(null)
+  const searchInputRef = useRef(null)
 
   // Aterstall sok/filter/scrollposition nar man kommer TILLBAKA fran en
   // ovnings detaljsida (sparas vid navigering dit, konsumeras har).
@@ -81,12 +82,23 @@ export default function ExerciseLibrary() {
       {/* Sökfält */}
       <div className={styles.searchWrap}>
         <input
+          ref={searchInputRef}
           className={styles.searchInput}
           type="search"
           placeholder="Sök övning..."
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
+        {search && (
+          <button
+            className={styles.searchClear}
+            onClick={() => { setSearch(''); searchInputRef.current?.focus() }}
+            type="button"
+            aria-label="Rensa sökning"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        )}
       </div>
 
       {/* Chip-filter - doljs under sokning sa traffarna syns direkt under
