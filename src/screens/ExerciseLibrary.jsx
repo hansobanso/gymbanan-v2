@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getExercises } from '../lib/db'
 import { BROAD_MUSCLE_GROUPS, broadOf, subGroupsOf, matchesSubGroup } from '../data/muscleGroups'
@@ -13,6 +13,38 @@ export default function ExerciseLibrary() {
   const [subFilter, setSubFilter] = useState(null)
   const [search, setSearch] = useState('')
   const [pickerOpen, setPickerOpen] = useState(false)
+  const restoreScrollRef = useRef(null)
+
+  // Aterstall sok/filter/scrollposition nar man kommer TILLBAKA fran en
+  // ovnings detaljsida (sparas vid navigering dit, konsumeras har).
+  useEffect(() => {
+    const saved = sessionStorage.getItem('gymbanan_exlib_state')
+    if (!saved) return
+    sessionStorage.removeItem('gymbanan_exlib_state')
+    try {
+      const st = JSON.parse(saved)
+      setSearch(st.search ?? '')
+      setMuscleFilter(st.muscleFilter ?? null)
+      setSubFilter(st.subFilter ?? null)
+      restoreScrollRef.current = st.scrollY ?? 0
+    } catch { /* korrupt state - ignorera */ }
+  }, [])
+
+  // Scrolla tillbaka nar listan laddats
+  useEffect(() => {
+    if (!loading && restoreScrollRef.current != null) {
+      const y = restoreScrollRef.current
+      restoreScrollRef.current = null
+      requestAnimationFrame(() => window.scrollTo(0, y))
+    }
+  }, [loading])
+
+  function goToExercise(id) {
+    sessionStorage.setItem('gymbanan_exlib_state', JSON.stringify({
+      search, muscleFilter, subFilter, scrollY: window.scrollY,
+    }))
+    navigate(`/exercises/${encodeURIComponent(id)}`)
+  }
 
   useEffect(() => {
     getExercises()
@@ -57,7 +89,9 @@ export default function ExerciseLibrary() {
         />
       </div>
 
-      {/* Chip-filter */}
+      {/* Chip-filter - doljs under sokning sa traffarna syns direkt under
+          sokfaltet (annars goms de bakom tangentbordet) */}
+      {!search && (
       <div className={styles.chips}>
         <button
           className={`${styles.chip} ${!muscleFilter ? styles.chipActive : ''}`}
@@ -76,9 +110,10 @@ export default function ExerciseLibrary() {
           >{mg}</button>
         ))}
       </div>
+      )}
 
       {/* Sub-chip-filter (visas bara nar broad-grupp med subs ar vald) */}
-      {muscleFilter && subGroupsOf(muscleFilter).length > 0 && (
+      {!search && muscleFilter && subGroupsOf(muscleFilter).length > 0 && (
         <div className={`${styles.chips} ${styles.subChips}`}>
           <button
             className={`${styles.chip} ${styles.subChip} ${!subFilter ? styles.chipActive : ''}`}
@@ -111,7 +146,7 @@ export default function ExerciseLibrary() {
             <button
               key={ex.id}
               className={`${styles.exRow} ${i < arr.length - 1 ? styles.rowBorder : ''}`}
-              onClick={() => navigate(`/exercises/${encodeURIComponent(ex.id)}`)}
+              onClick={() => goToExercise(ex.id)}
               type="button"
             >
               <span className={styles.exName}>{ex.name}</span>
@@ -137,7 +172,7 @@ export default function ExerciseLibrary() {
             setAllExercises(prev =>
               prev.some(e => e.id === ex.id) ? prev : [...prev, ex]
             )
-            navigate(`/exercises/${encodeURIComponent(ex.id)}`)
+            goToExercise(ex.id)
           }
         }}
       />

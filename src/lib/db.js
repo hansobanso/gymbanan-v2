@@ -169,15 +169,6 @@ export async function updateExercise(id, updates) {
   return data
 }
 
-export async function deleteExercise(id) {
-  const { error } = await supabase
-    .from('exercises')
-    .delete()
-    .eq('id', id)
-  if (error) return []
-  invalidateExercisesCache()
-}
-
 export async function getExerciseByName(name) {
   const { data, error } = await supabase
     .from('exercises')
