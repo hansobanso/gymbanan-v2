@@ -326,6 +326,12 @@
   max-width: 82%;
   white-space: pre-wrap;
   word-break: break-word;
+  /* Tillat markering/kopiering av chattens text (globalt ar user-select
+     avstangt for app-kansla) - sa svar kan delas utan skarmdumpar. */
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
 }
 
 .userBubble {
