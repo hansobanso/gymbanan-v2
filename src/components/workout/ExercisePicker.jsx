@@ -214,6 +214,9 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
                 placeholder="Sök övning…"
               />
             </div>
+            {/* Chips doljs under sokning sa traffarna syns direkt under
+                sokfaltet istallet for bakom tangentbordet */}
+            {!query.trim() && (
             <div className={styles.chips}>
               <button
                 className={`${styles.chip} ${!selectedGroup ? styles.chipActive : ''}`}
@@ -236,7 +239,8 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
                 </button>
               ))}
             </div>
-            {selectedGroup && subGroupsOf(selectedGroup).length > 0 && (
+            )}
+            {!query.trim() && selectedGroup && subGroupsOf(selectedGroup).length > 0 && (
               <div className={`${styles.chips} ${styles.subChips}`}>
                 <button
                   className={`${styles.chip} ${styles.subChip} ${!selectedSub ? styles.chipActive : ''}`}
