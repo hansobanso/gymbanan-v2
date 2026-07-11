@@ -14,6 +14,7 @@ export default function History({ session }) {
   const [equipmentMap, setEquipmentMap] = useState({})
   const [undoState, setUndoState] = useState(null) // { workout }
   const [progressInitial, setProgressInitial] = useState(null)
+  const [progressFromLink, setProgressFromLink] = useState(false) // oppnad via 'Se din utveckling'
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -23,6 +24,7 @@ export default function History({ session }) {
     const name = location.state?.progressExercise
     if (name) {
       setProgressInitial(name)
+      setProgressFromLink(true)
       setProgressOpen(true)
       navigate(location.pathname, { replace: true, state: null })
     }
@@ -180,7 +182,16 @@ export default function History({ session }) {
 
       <ProgressView
         open={progressOpen}
-        onClose={() => { setProgressOpen(false); setProgressInitial(null) }}
+        onClose={() => {
+          setProgressOpen(false)
+          setProgressInitial(null)
+          // Kom man hit via "Se din utveckling" pa en ovning ska stangning
+          // ga TILLBAKA till ovningen, inte lamna en pa historik-fliken.
+          if (progressFromLink) {
+            setProgressFromLink(false)
+            navigate(-1)
+          }
+        }}
         workouts={workouts}
         equipmentMap={equipmentMap}
         userId={session.user.id}
