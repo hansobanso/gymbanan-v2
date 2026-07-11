@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { updateExercise, copyExerciseForUser, upsertRestOverride, deleteRestOverride, getUserExerciseNote, upsertUserExerciseNote, getExerciseById } from '../lib/db'
+import { updateExercise, copyExerciseForUser, deleteExercise, upsertRestOverride, deleteRestOverride, getUserExerciseNote, upsertUserExerciseNote, getExerciseById } from '../lib/db'
 import { EXERCISES } from '../data/exercises'
 import { MUSCLE_GROUPS } from '../data/muscleGroups'
 import MuscleMap from '../components/shared/MuscleMap'
@@ -107,6 +107,8 @@ export default function ExerciseDetail() {
   const [form, setForm]       = useState(null)
   const [dbId, setDbId]       = useState(null)
   const [isOwned, setIsOwned] = useState(false)
+  const [deleteArmed, setDeleteArmed] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [saving, setSaving]   = useState(false)
   const [saved, setSaved]     = useState(false)
   const [copying, setCopying] = useState(false)
@@ -512,6 +514,48 @@ export default function ExerciseDetail() {
           >
             {noteSaving ? 'Sparar…' : noteSaved ? 'Sparat ✓' : 'Spara anteckning'}
           </button>
+        )}
+
+        {/* ── Ta bort ovning (egna, eller globala som admin) ── */}
+        {(isOwned || canEditGlobalAsAdmin) && dbId != null && (
+          <div className={styles.section}>
+            {!deleteArmed ? (
+              <button
+                className={styles.deleteBtn}
+                onClick={() => setDeleteArmed(true)}
+                type="button"
+              >
+                Ta bort övning
+              </button>
+            ) : (
+              <>
+                <p className={styles.deleteWarn}>
+                  Övningen tas bort ur biblioteket{isGlobal ? ' för alla användare' : ''}.
+                  Din historik och dina program påverkas inte.
+                </p>
+                <div className={styles.deleteRow}>
+                  <button className={styles.deleteCancel} onClick={() => setDeleteArmed(false)} type="button">
+                    Avbryt
+                  </button>
+                  <button
+                    className={styles.deleteConfirm}
+                    onClick={async () => {
+                      if (deleting) return
+                      setDeleting(true)
+                      const ok = await deleteExercise(dbId)
+                      setDeleting(false)
+                      if (ok) navigate('/exercises')
+                      else setDeleteArmed(false)
+                    }}
+                    disabled={deleting}
+                    type="button"
+                  >
+                    {deleting ? 'Tar bort…' : 'Ja, ta bort'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         )}
 
         {/* ── Copy and customize for global exercises ── */}

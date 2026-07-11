@@ -138,6 +138,14 @@ export async function copyExerciseForUser(exercise, userId) {
   return data
 }
 
+// Tar bort en ovning ur biblioteket. Historik och program som anvander
+// namnet paverkas inte (de lagrar namnet, inte id).
+export async function deleteExercise(id) {
+  const { error } = await supabase.from('exercises').delete().eq('id', id)
+  if (!error) invalidateExercisesCache()
+  return !error
+}
+
 export async function saveExercise(exercise) {
   const { data, error } = await supabase
     .from('exercises')

@@ -453,3 +453,49 @@
 }
 .progressLink svg:last-child { margin-left: auto; color: var(--text-3); }
 .progressLink:active { opacity: 0.75; }
+
+/* ── Ta bort ovning ── */
+.deleteBtn {
+  width: 100%;
+  background: none;
+  border: 1px solid rgba(255, 92, 92, 0.4);
+  border-radius: var(--card-radius, 14px);
+  color: #ff5c5c;
+  font-size: 14.5px;
+  font-weight: 600;
+  font-family: var(--font);
+  padding: 13px;
+  cursor: pointer;
+}
+.deleteWarn {
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.5;
+  margin: 0 0 10px;
+  text-align: center;
+}
+.deleteRow { display: flex; gap: 10px; }
+.deleteCancel {
+  flex: 1;
+  background: var(--surface-2, #222);
+  border: none;
+  border-radius: var(--radius-md, 12px);
+  color: var(--text-2);
+  font-size: 14.5px;
+  font-weight: 600;
+  font-family: var(--font);
+  padding: 13px;
+  cursor: pointer;
+}
+.deleteConfirm {
+  flex: 1;
+  background: #ff5c5c;
+  border: none;
+  border-radius: var(--radius-md, 12px);
+  color: #fff;
+  font-size: 14.5px;
+  font-weight: 700;
+  font-family: var(--font);
+  padding: 13px;
+  cursor: pointer;
+}
