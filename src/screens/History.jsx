@@ -196,6 +196,7 @@ export default function History({ session }) {
         equipmentMap={equipmentMap}
         userId={session.user.id}
         initialExercise={progressInitial}
+        fromLink={progressFromLink}
       />
     </div>
   )
