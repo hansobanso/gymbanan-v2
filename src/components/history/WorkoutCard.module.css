@@ -83,6 +83,10 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  /* Radbryt hellre an att klippa bort chips (passtid/volym forsvann
+     utanfor kortet pa telefonbredd) */
+  flex-wrap: wrap;
+  row-gap: 6px;
 }
 
 .metaDate {
@@ -94,11 +98,14 @@
   display: flex;
   gap: 8px;
   align-items: center;
+  flex-wrap: wrap;
+  row-gap: 6px;
 }
 
 .chip {
   font-size: 12px;
   font-weight: 500;
+  white-space: nowrap;
   color: var(--text-3);
   background: transparent;
   border-radius: 0;
