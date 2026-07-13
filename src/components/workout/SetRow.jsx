@@ -74,18 +74,24 @@ export default function SetRow({
   }, [])
 
   function handleDragEnd(_, info) {
-    // Higher threshold (90px) + check velocity so small/uncertain swipes always snap back cleanly
-    const offset = info.offset.x
+    // Besluta utifran POSITIONEN raden hamnat pa (inte dragets langd fran
+    // start). Da blir det symmetriskt: fran oppet lage racker ett litet
+    // drag tillbaka for att stanga, och man kan inte kastas fran ena
+    // sidan rakt over till den andra av ett normalt stangningsdrag.
+    const pos = x.get()
     const velocity = info.velocity.x
-    const passedLeft = offset < -90 || (offset < -40 && velocity < -500)
-    const passedRight = offset > 90 || (offset > 40 && velocity > 500)
+    let target = 0
+    if (pos < -55 || (pos < -25 && velocity < -600)) {
+      target = -80
+    } else if ((pos > 55 || (pos > 25 && velocity > 600)) && onDuplicate) {
+      target = 80
+    }
+    animate(x, target, { type: 'spring', stiffness: 500, damping: 40 })
+  }
 
-    if (passedLeft) {
-      animate(x, -80, { type: 'spring', stiffness: 500, damping: 40 })
-    } else if (passedRight && onDuplicate) {
-      animate(x, 80, { type: 'spring', stiffness: 500, damping: 40 })
-    } else {
-      // Snap back - closes both delete and duplicate reveals
+  // Tryck var som helst pa raden nar den ar oppen -> stang till normallaget
+  function handleRowPointerDown() {
+    if (Math.abs(x.get()) > 5) {
       animate(x, 0, { type: 'spring', stiffness: 500, damping: 40 })
     }
   }
@@ -151,6 +157,7 @@ export default function SetRow({
         className={`${styles.row} ${set.done ? styles.done : ''} ${isWarmup ? styles.warmup : ''} ${isNext ? styles.nextSet : ''}`}
         style={{ x, opacity: rowOpacity }}
         drag={set.done ? false : 'x'}
+        onPointerDown={handleRowPointerDown}
         dragConstraints={{ left: -80, right: 80 }}
         dragElastic={{ left: 0.08, right: 0.08 }}
         onDragEnd={handleDragEnd}
