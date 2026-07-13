@@ -3,6 +3,7 @@ import { createWorkout, updateWorkout, getTwoPreviousSetsForExercise, getExercis
 import { computeProgression, deriveCategory, epleyAdjustedReps } from '../lib/progression'
 import { detectGapAdjustment } from '../lib/ai'
 import { sortSupersetsAdjacent } from '../lib/superset.js'
+import { namesMatching } from '../lib/exerciseAliases.js'
 
 // Smart default viktsteg baserat pa equipment. Anvands nar exercises.weight_increment ar null.
 function defaultWeightIncrement(equipment) {
@@ -69,19 +70,26 @@ const ACTIVE_WORKOUT_KEY = 'gymbanan_active_workout'
 // Extraherar prev/prevPrev-set for en ovning fran redan hamtade workouts.
 // Undviker att traffa databasen en gang per ovning (stor prestandavinst).
 function extractPrevSets(recentWorkouts, exerciseName) {
+  // Samma matchningsregler som getTwoPreviousSetsForExercise i db.js:
+  // alias-medveten (omdopta ovningar) och returnerar datum for spårbarhet.
+  const aliasNames = namesMatching(exerciseName)
   const found = []
   for (const workout of recentWorkouts ?? []) {
     if (workout.adjusted) continue
     if (!workout.finished_at) continue
-    const ex = (workout.exercises ?? []).find(e => e.name === exerciseName)
+    const ex = (workout.exercises ?? []).find(e => aliasNames.has(e.name))
     if (!ex) continue
     const allSets = (ex.sets ?? []).filter(s => s.done && s.weight !== undefined && s.weight !== null)
     if (allSets.length > 0) {
-      found.push(allSets)
+      found.push({ sets: allSets, date: workout.finished_at ?? null })
       if (found.length >= 2) break
     }
   }
-  return { prev: found[0] ?? null, prevPrev: found[1] ?? null }
+  return {
+    prev: found[0]?.sets ?? null,
+    prevPrev: found[1]?.sets ?? null,
+    prevDate: found[0]?.date ?? null,
+  }
 }
 
 // Hamtar prev-historik + ovningsmetadata for en ovning och returnerar
