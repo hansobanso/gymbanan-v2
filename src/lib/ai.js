@@ -390,7 +390,7 @@ export function analyzeWorkoutContext(recentWorkouts, currentExercises, currentP
   if (lastWasAdjusted && recentAdjusted >= 1) {
     const daysSinceLastAny = DAYS(NOW - new Date(recentWorkouts[0].finished_at).getTime())
     if (daysSinceLastAny <= 7) {
-      insights.push(`ÅTERKOMST EFTER SJUKPASS: Senaste pass var anpassat (sjuk/lättare). Om användaren mår bra idag - ta vid där det var INNAN sjukpasset. Hoppa över de anpassade vikterna när du föreslår progression.`)
+      insights.push(`FÖRRA PASSET VAR ANPASSAT: Senaste passet kördes med medvetet sänkta vikter (t.ex. sjuk, trött eller deload - anta INTE vilken orsak utan fråga eller håll det neutralt). Om användaren är i form idag: ta vid där nivån var INNAN det anpassade passet och hoppa över de sänkta vikterna i progressionen.`)
     }
   }
 

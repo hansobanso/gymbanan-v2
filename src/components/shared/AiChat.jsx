@@ -25,6 +25,7 @@ const COACH_SUGGESTIONS = [
 
 export default function AiChat({ open, onClose, getContext, getMemory, getDeloadStatus, introMessage, introLoading, workoutNotes, onUpdateNotes, onApplyAdjustment, onApplyDeload, onApplyWorkoutPlan, onApplyProgramChange, onApplyProgramSwitch, onApplyNewProgram, getProgramsList, getAvailableExercises, freeWorkoutMode, inline = false }) {
   const [input, setInput] = useState('')
+  const [copiedIdx, setCopiedIdx] = useState(null) // vilken bubbla som nyss kopierats
   const [notesOpen, setNotesOpen] = useState(false)
   const messagesEndRef = useRef(null)
   const messagesRef = useRef(null)
@@ -280,6 +281,30 @@ export default function AiChat({ open, onClose, getContext, getMemory, getDeload
                   transition={{ duration: 0.2 }}
                 >
                   {msg.displayContent ?? msg.content}
+                  {msg.role === 'assistant' && (msg.displayContent ?? msg.content) && (
+                    <button
+                      className={styles.copyBtn}
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(msg.displayContent ?? msg.content)
+                          setCopiedIdx(i)
+                          setTimeout(() => setCopiedIdx(v => (v === i ? null : v)), 1500)
+                        } catch { /* clipboard nekad - ignorera */ }
+                      }}
+                      type="button"
+                      aria-label="Kopiera meddelandet"
+                    >
+                      {copiedIdx === i ? 'Kopierad ✓' : (
+                        <>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <rect width="14" height="14" x="8" y="8" rx="2"/>
+                            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+                          </svg>
+                          Kopiera
+                        </>
+                      )}
+                    </button>
+                  )}
                   {msg.role === 'assistant' && msg.adjustment && !msg.adjustmentApplied && onApplyAdjustment && (
                     <button
                       className={styles.adjustmentBtn}

@@ -650,3 +650,20 @@
   margin: 0;
   letter-spacing: -0.5px;
 }
+
+/* ── Kopiera-knapp pa PT-meddelanden ── */
+.copyBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  background: none;
+  border: none;
+  color: var(--text-3);
+  font-size: 11.5px;
+  font-weight: 600;
+  font-family: var(--font);
+  padding: 2px 0;
+  cursor: pointer;
+}
+.copyBtn:active { opacity: 0.6; }

@@ -829,7 +829,12 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
    */
   const applyAdjustment = useCallback((adjustment) => {
     if (!adjustment?.changes?.length) return false
-    setIsAdjustedSession(true)
+    // Flagga passet som "anpassat" BARA om vikter sanktes - da ar vikterna
+    // inte representativa for progression/forifyllning. Andra justeringar
+    // (tyngre, farre set pga tidsbrist, reps-mal) lamnar vikterna arliga
+    // och ska inte ge sjuk-snack eller hoppas over i historiken.
+    const lowersWeights = adjustment.changes.some(c => c.weightMultiplier != null && c.weightMultiplier < 1)
+    if (lowersWeights) setIsAdjustedSession(true)
     setExercises(prev => prev.map(ex => {
       const change = adjustment.changes.find(c => c.exerciseName === ex.name)
       if (!change) return ex
