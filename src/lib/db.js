@@ -346,11 +346,15 @@ export async function getTwoPreviousSetsForExercise(userId, exerciseName) {
     if (!ex) continue
     const allSets = (ex.sets ?? []).filter(s => s.done && (s.weight !== undefined && s.weight !== null))
     if (allSets.length > 0) {
-      found.push(allSets)
+      found.push({ sets: allSets, date: workout.finished_at ?? null })
       if (found.length >= 2) break
     }
   }
-  return { prev: found[0] ?? null, prevPrev: found[1] ?? null }
+  return {
+    prev: found[0]?.sets ?? null,
+    prevPrev: found[1]?.sets ?? null,
+    prevDate: found[0]?.date ?? null,
+  }
 }
 
 // Returns { exerciseName: equipment } for a list of names

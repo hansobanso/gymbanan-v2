@@ -565,7 +565,9 @@ export default function ExerciseBlock({
               <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
             </svg>
           </span>
-          <span className={styles.prevText}>Förra passet: {prevStr}</span>
+          <span className={styles.prevText}>
+            Förra passet{exercise.prevDate ? ` (${new Date(exercise.prevDate).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' })})` : ''}: {prevStr}
+          </span>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true" className={styles.prevChevron}>
             <path d="M9 6L15 12L9 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>

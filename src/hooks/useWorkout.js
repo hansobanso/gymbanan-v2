@@ -106,7 +106,7 @@ async function loadExerciseData(ex, userId, restOverrides, caches = {}) {
     ? Promise.resolve(notesMap[name] ?? null)
     : getUserExerciseNote(userId, name)
 
-  const [{ prev: prevSets, prevPrev: prevPrevSets }, exData, userNote] = await Promise.all([
+  const [{ prev: prevSets, prevPrev: prevPrevSets, prevDate }, exData, userNote] = await Promise.all([
     prevPromise, exDataPromise, notePromise,
   ])
   const exInstructions = exData?.instructions || null
@@ -119,7 +119,7 @@ async function loadExerciseData(ex, userId, restOverrides, caches = {}) {
   const muscleGroup = ex.muscleGroup ?? exData?.muscle_group ?? null
 
   if (!prevSets?.length) {
-    return { ...ex, muscleGroup, restSeconds, exInstructions, exNotes, exEquipment, isTimeBased, prevSets: null, progressionHint: null, progressionAction: null, dataLoaded: true }
+    return { ...ex, muscleGroup, restSeconds, exInstructions, exNotes, exEquipment, isTimeBased, prevSets: null, prevDate: null, progressionHint: null, progressionAction: null, dataLoaded: true }
   }
 
   // Tidsbaserade ovningar (planka etc): ingen vikt/tid-progression.
@@ -137,7 +137,7 @@ async function loadExerciseData(ex, userId, restOverrides, caches = {}) {
         prefilled: !!(lastSet?.reps),
       }
     })
-    return { ...ex, muscleGroup, sets: prefSets, restSeconds, exInstructions, exNotes, exEquipment, isTimeBased, prevSets, progressionHint: null, progressionAction: null, dataLoaded: true }
+    return { ...ex, muscleGroup, sets: prefSets, restSeconds, exInstructions, exNotes, exEquipment, isTimeBased, prevSets, prevDate, progressionHint: null, progressionAction: null, dataLoaded: true }
   }
 
   // Harleda ovningskategori fran equipment + movement_pattern
@@ -218,6 +218,7 @@ async function loadExerciseData(ex, userId, restOverrides, caches = {}) {
     muscleGroup,
     restSeconds,
     sets,
+    prevDate,
     progressionHint,
     progressionAction: progression.action,
     progressionReason: progression.reason,
