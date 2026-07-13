@@ -573,6 +573,11 @@ export default function ExerciseBlock({
           </svg>
         </button>
       )}
+      {!prevStr && exercise.dataLoaded && (
+        <div className={styles.prevRowEmpty}>
+          Första gången – ingen tidigare data för övningen
+        </div>
+      )}
 
           </motion.div>
         )}
