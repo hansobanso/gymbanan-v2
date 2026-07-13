@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
+import { calendarDaysAgo } from '../../lib/dates'
 import { AnimatePresence, motion } from 'framer-motion'
 import { getWorkouts } from '../../lib/db'
 import styles from './ExerciseHistory.module.css'
 
 function relativeDate(iso) {
   const d = new Date(iso)
-  const diffDays = Math.floor((Date.now() - d) / 86_400_000)
+  const diffDays = calendarDaysAgo(iso)
   if (diffDays === 0) return 'Idag'
   if (diffDays === 1) return 'Igår'
   if (diffDays < 7) return `${diffDays} dagar sedan`

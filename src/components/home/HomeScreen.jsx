@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { calendarDaysAgo } from '../../lib/dates'
 import { useNavigate } from 'react-router-dom'
 import { getWorkouts, getDeloadStatus, endDeloadWeek, getProfile, cacheInvalidate, getExercises } from '../../lib/db'
 import { supabase } from '../../lib/supabase'
@@ -20,7 +21,7 @@ function getMonday() {
 
 function relativeDate(iso) {
   const d = new Date(iso)
-  const diffDays = Math.floor((Date.now() - d) / 86_400_000)
+  const diffDays = calendarDaysAgo(iso)
   if (diffDays === 0) return 'Idag'
   if (diffDays === 1) return 'Igår'
   if (diffDays < 7) return `${diffDays} dagar sedan`

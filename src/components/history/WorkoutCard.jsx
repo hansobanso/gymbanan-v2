@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react'
+import { calendarDaysAgo } from '../../lib/dates'
 import { AnimatePresence, motion } from 'framer-motion'
 import { displayWeightStr } from '../../lib/weightUtils'
 import styles from './WorkoutCard.module.css'
@@ -8,7 +9,7 @@ const DELETE_WIDTH = 80
 function fmtDate(iso) {
   const d = new Date(iso)
   const now = new Date()
-  const diff = Math.floor((now - d) / 86400000)
+  const diff = calendarDaysAgo(iso)
   if (diff === 0) return 'Idag'
   if (diff === 1) return 'Igår'
   if (diff < 7) return d.toLocaleDateString('sv-SE', { weekday: 'long' })
