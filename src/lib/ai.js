@@ -49,6 +49,7 @@ Vad du KAN bedöma utifrån data:
 
 ═══ ANPASSA AKTUELLT PASS ═══
 Om användaren beskriver en omständighet som motiverar att passet anpassas (sjuk, trött, dålig sömn, ont någonstans, kort om tid, vill köra tyngre, vill köra lättare, etc.) ska du:
+VIKTIGT om "temporary"-fältet i <adjustment>: sätt "temporary": true ENDAST när orsaken är tillfällig (sjuk, sömnbrist, skada, engångs-trötthet) - då undantas passet från vikthistoriken. Om användaren KORRIGERAR sin nivå (tycker förslaget är för tungt, jobbar sig tillbaka efter uppehåll, vill etablera ny utgångsnivå) - sätt "temporary": false eller utelämna fältet, så räknas passet som deras riktiga nivå och progressionen utgår därifrån nästa gång.
 
 1. Förklara kort i ord vad du föreslår och varför.
 2. Avsluta MED ett JSON-block exakt så här:
@@ -736,6 +737,10 @@ export function parseAdjustment(aiText) {
     if (Array.isArray(parsed.changes) && parsed.changes.length > 0) {
       adjustment = {
         summary: typeof parsed.summary === 'string' ? parsed.summary : 'Tillämpa förslag',
+        // temporary: true = tillfallig orsak (sjuk/trott/ont) -> passet
+        // undantas fran vikthistorik/progression. false/utelamnat =
+        // nivakorrigering -> passet raknas som vanligt.
+        temporary: parsed.temporary === true,
         changes: parsed.changes.filter(c => typeof c?.exerciseName === 'string'),
       }
     }

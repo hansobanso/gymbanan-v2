@@ -829,12 +829,12 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
    */
   const applyAdjustment = useCallback((adjustment) => {
     if (!adjustment?.changes?.length) return false
-    // Flagga passet som "anpassat" BARA om vikter sanktes - da ar vikterna
-    // inte representativa for progression/forifyllning. Andra justeringar
-    // (tyngre, farre set pga tidsbrist, reps-mal) lamnar vikterna arliga
-    // och ska inte ge sjuk-snack eller hoppas over i historiken.
+    // Flagga passet som "anpassat" BARA om vikter sanktes AV TILLFALLIG
+    // orsak (sjuk/trott/ont - PT satter temporary: true). En nivakorrigering
+    // ("for tungt foreslaget, jag jobbar mig tillbaka") ar anvandarens
+    // riktiga niva och SKA raknas i vikthistorik och progression.
     const lowersWeights = adjustment.changes.some(c => c.weightMultiplier != null && c.weightMultiplier < 1)
-    if (lowersWeights) setIsAdjustedSession(true)
+    if (lowersWeights && adjustment.temporary === true) setIsAdjustedSession(true)
     setExercises(prev => prev.map(ex => {
       const change = adjustment.changes.find(c => c.exerciseName === ex.name)
       if (!change) return ex
