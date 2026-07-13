@@ -14,6 +14,7 @@
  */
 
 import { EXERCISES } from '../../data/exercises'
+import { EXERCISE_ALIASES } from '../../lib/exerciseAliases.js'
 import MuscleFigure from '../MuscleFigure'
 import { colorForIntensity } from '../../lib/muscleColor'
 
@@ -24,17 +25,7 @@ const LEGACY_FALLBACK = {
   'Rygg': ['Lats', 'Övre rygg', 'Ländrygg'],
 }
 
-// Gamla/omdopta ovningsnamn som inte langre matchar biblioteket. Mappar till
-// ett aktuellt biblioteksnamn sa muskelgubben hittar ratt muskler (primar +
-// sekundar) aven for gamla loggade pass.
-const EXERCISE_ALIASES = {
-  'Benböjning sittande': 'Benspark',
-  'Benextension': 'Benspark',
-  'DB sidolyft': 'Sidolyft med hantlar',
-  'Lat-nedragning': 'Latsdrag med smalt neutralt grepp',
-  'Lutande hantel press bort': 'Uppåtlutande hantelpress',
-  'Pullups nära neutral': 'Pullups',
-}
+// Alias for omdopta ovningar delas med vikthistoriken (lib/exerciseAliases).
 
 function intensityFromSets(sets) {
   if (!sets || sets <= 0) return 0

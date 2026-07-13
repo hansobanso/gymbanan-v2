@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { namesMatching } from './exerciseAliases.js'
 import { EXERCISES } from '../data/exercises'
 
 // Fallback when Supabase is unreachable
@@ -296,6 +297,7 @@ export async function updateWorkout(id, updates) {
 
 // Returns the work sets from the most recent completed workout containing this exercise
 export async function getPreviousSetsForExercise(userId, exerciseName) {
+  const aliasNames = namesMatching(exerciseName)
   const { data, error } = await supabase
     .from('workouts')
     .select('exercises, adjusted')
@@ -308,7 +310,7 @@ export async function getPreviousSetsForExercise(userId, exerciseName) {
   // de representerar inte användarens normala progression.
   for (const workout of data) {
     if (workout.adjusted) continue
-    const ex = (workout.exercises ?? []).find(e => e.name === exerciseName)
+    const ex = (workout.exercises ?? []).find(e => aliasNames.has(e.name))
     if (!ex) continue
     const allSets = (ex.sets ?? []).filter(s => s.done && (s.weight !== undefined && s.weight !== null))
     if (allSets.length > 0) return allSets
@@ -316,7 +318,7 @@ export async function getPreviousSetsForExercise(userId, exerciseName) {
   // Fallback: om INGA icke-anpassade pass finns, ta första bästa - hellre någon
   // data än ingen alls.
   for (const workout of data) {
-    const ex = (workout.exercises ?? []).find(e => e.name === exerciseName)
+    const ex = (workout.exercises ?? []).find(e => aliasNames.has(e.name))
     if (!ex) continue
     const allSets = (ex.sets ?? []).filter(s => s.done && (s.weight !== undefined && s.weight !== null))
     if (allSets.length > 0) return allSets
@@ -327,6 +329,7 @@ export async function getPreviousSetsForExercise(userId, exerciseName) {
 // Returnerar de tva senaste passens sets for en ovning.
 // Anvands av progressionsmotorn for "under repMin 2 pass i rad"-flagga.
 export async function getTwoPreviousSetsForExercise(userId, exerciseName) {
+  const aliasNames = namesMatching(exerciseName)
   const { data, error } = await supabase
     .from('workouts')
     .select('exercises, adjusted')
@@ -339,7 +342,7 @@ export async function getTwoPreviousSetsForExercise(userId, exerciseName) {
   const found = []
   for (const workout of data) {
     if (workout.adjusted) continue
-    const ex = (workout.exercises ?? []).find(e => e.name === exerciseName)
+    const ex = (workout.exercises ?? []).find(e => aliasNames.has(e.name))
     if (!ex) continue
     const allSets = (ex.sets ?? []).filter(s => s.done && (s.weight !== undefined && s.weight !== null))
     if (allSets.length > 0) {
