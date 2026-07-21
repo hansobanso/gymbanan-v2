@@ -376,6 +376,31 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
   const ensurePromiseRef = useRef(null)
   const startedAt = useRef(resumed ? new Date(resumed.startedAt) : new Date())
 
+  // Spara passets tillstand till localStorage vid VARJE andring av
+  // exercises (vikt, reps, avbockning, ovningar, superset...) sa inget
+  // arbete tappas om appen/telefonen dor mitt i passet. Kraver att passet
+  // har ett id (annars finns inget att ateruppta an).
+  useEffect(() => {
+    if (!workoutId) return
+    persistWorkout(exercises)
+  }, [exercises, workoutId, persistWorkout])
+
+  // Sparar hela passets tillstand till localStorage sa det kan aterupptas
+  // om appen/telefonen dor. Anropas vid VARJE andring (vikt, reps, set,
+  // ovningar) - inte bara vid avbockade set - sa inget arbete tappas.
+  const persistWorkout = useCallback((exercisesToSave) => {
+    const wId = workoutIdRef.current
+    if (!wId) return
+    try {
+      localStorage.setItem(ACTIVE_WORKOUT_KEY, JSON.stringify({
+        workoutId: wId,
+        exercises: exercisesToSave,
+        startedAt: startedAt.current.toISOString(),
+        sessionName,
+      }))
+    } catch { /* localStorage full/nekad - ignorera */ }
+  }, [sessionName])
+
   // Skapa workout-raden i Supabase direkt vid start (inte lazily)
   useEffect(() => {
     if (!resumed) ensureWorkout()
@@ -400,7 +425,8 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
   }
 
   const updateSet = useCallback((exId, setId, field, value) => {
-    setExercises(prev => prev.map(ex => {
+    setExercises(prev => {
+      const next = prev.map(ex => {
       if (ex.localId !== exId) return ex
 
       const sets = ex.sets.map(s => {
@@ -452,8 +478,12 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
       })
 
       return { ...ex, sets }
-    }))
-  }, [])
+    })
+      // Spara efter varje vikt/reps-andring sa inget tappas vid krasch
+      persistWorkout(next)
+      return next
+    })
+  }, [persistWorkout])
 
   const addBackoffSet = useCallback((exId) => {
     // Set-justeringar (extra/borttaget set) ar engangsbeteende for dagens
@@ -773,19 +803,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
         }
         return { ...ex, sets }
       })
-      const wId = workoutIdRef.current
-      if (wId) {
-        try {
-          const data = {
-            workoutId: wId,
-            exercises: next,
-            startedAt: startedAt.current.toISOString(),
-            sessionName,
-          }
-          localStorage.setItem(ACTIVE_WORKOUT_KEY, JSON.stringify(data))
-          const saved = localStorage.getItem(ACTIVE_WORKOUT_KEY)
-        } catch { /* ignored */ }
-      }
+      persistWorkout(next)
       return next
     })
   }, [sessionName])
