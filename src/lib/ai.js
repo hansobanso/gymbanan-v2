@@ -416,6 +416,13 @@ export function analyzeWorkoutContext(recentWorkouts, currentExercises, currentP
     }
   }
 
+  // Sortera varje ovnings historik nyast-forst. Utan detta arver listan
+  // ordningen fran recentWorkouts, sa hist[0] kunde bli ett GAMMALT pass
+  // -> "senast tranad for 100 dagar sedan" trots att det var 10 dagar.
+  for (const name of Object.keys(exHistory)) {
+    exHistory[name].sort((a, b) => new Date(b.date) - new Date(a.date))
+  }
+
   // 2) Övningar som inte tränats på länge (i aktuellt pass)
   for (const exName of currentExNames) {
     const hist = exHistory[exName]
