@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react'
-import { chatWithAI, parseAdjustment, parseDeload, parseWorkoutPlan, parseProgramChange, parseProgramSwitch, parseNewProgram } from '../lib/ai'
+import { chatWithAI, parseAdjustment, parseDeload, parseWorkoutPlan, parseProgramChange, parseProgramSwitch, parseNewProgram, stripTechnicalBlocks } from '../lib/ai'
 
 export function useAI({ getContext, getMemory, getDeloadStatus, getAvailableExercises, getProgramsList, coachMode = false }) {
   const [messages, setMessages] = useState([])
@@ -38,10 +38,14 @@ export function useAI({ getContext, getMemory, getDeloadStatus, getAvailableExer
       const pc = parseProgramChange(wp.displayText, availableExercises?.map(e => e.name) || [])
       const ps = parseProgramSwitch(pc.displayText, getProgramsList?.() || [])
       const np = parseNewProgram(ps.displayText, availableExercises?.map(e => e.name) || [])
+      // Skyddsnat: aven om ett parse-steg missar ska INGA tekniska block
+      // na anvandaren. Strippa dem generellt som sista atgard.
+      let display = np.displayText || ps.displayText || pc.displayText || wp.displayText || dl.displayText || adj.displayText || reply
+      display = stripTechnicalBlocks(display)
       setMessages(prev => [...prev, {
         role: 'assistant',
         content: reply,
-        displayContent: np.displayText || ps.displayText || pc.displayText || wp.displayText || dl.displayText || adj.displayText || reply,
+        displayContent: display,
         adjustment: adj.adjustment,
         deload: dl.deload,
         workoutPlan: wp.workoutPlan,

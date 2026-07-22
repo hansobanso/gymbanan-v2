@@ -843,6 +843,21 @@ export function parseWorkoutPlan(aiText) {
  * @param {string[]} availableNames - giltiga ovningsnamn (fran exercises)
  * @returns {{ displayText: string, programChange: object|null, rejected: string[] }}
  */
+// Sista skyddsnat: tar bort alla kanda tekniska block ur en text sa de
+// aldrig visas for anvandaren, aven om ett specifikt parse-steg missat.
+export function stripTechnicalBlocks(text) {
+  if (!text) return text
+  return text
+    .replace(/<adjustment>[\s\S]*?<\/adjustment>/gi, '')
+    .replace(/<deload>[\s\S]*?<\/deload>/gi, '')
+    .replace(/<workoutplan>[\s\S]*?<\/workoutplan>/gi, '')
+    .replace(/<programchange>[\s\S]*?<\/programchange>/gi, '')
+    .replace(/<programswitch>[\s\S]*?<\/programswitch>/gi, '')
+    .replace(/<newprogram>[\s\S]*?<\/newprogram>/gi, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
 export function parseProgramChange(aiText, availableNames = []) {
   if (!aiText) return { displayText: aiText, programChange: null, rejected: [] }
   const match = aiText.match(/<programchange>\s*([\s\S]*?)\s*<\/programchange>/i)
