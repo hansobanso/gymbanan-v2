@@ -1,0 +1,7 @@
+name = "gymbanan-keepalive"
+main = "worker.js"
+compatibility_date = "2026-01-01"
+
+# Kor varje dygn kl 06:00 UTC - langt under 7-dagarsgransen
+[triggers]
+crons = ["0 6 * * *"]
