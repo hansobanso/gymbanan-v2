@@ -37,6 +37,7 @@ function builtinDefaults(name) {
     secondary_muscles: data.secondary_muscle ? [data.secondary_muscle] : [],
     equipment:        data.equipment ?? '',
     movement_pattern: data.movement_pattern ?? '',
+    is_cardio: data.is_cardio === true,
     default_rest:     null,
     instructions:     '',
     isBuiltin:        true,
@@ -218,6 +219,7 @@ export default function ExerciseDetail() {
           secondary_muscle:  secArr[0] || null,
           equipment:         form.equipment        || null,
           movement_pattern:  form.movement_pattern || null,
+          is_cardio:         form.is_cardio === true,
           default_rest:      form.default_rest     ?? null,
           instructions:      form.instructions     || null,
         }
@@ -424,6 +426,24 @@ export default function ExerciseDetail() {
               </select>
             ) : (
               <span className={styles.infoValue}>{form.movement_pattern || '–'}</span>
+            )}
+          </div>
+
+          <div className={styles.divider} />
+
+          <div className={styles.infoRow}>
+            <span className={styles.infoLabel}>Kardio (km + min)</span>
+            {canEdit ? (
+              <button
+                type="button"
+                className={styles.infoSelect}
+                onClick={() => set('is_cardio', !form.is_cardio)}
+                style={{ cursor: 'pointer', color: form.is_cardio ? 'var(--accent)' : 'var(--text-2)' }}
+              >
+                {form.is_cardio ? 'Ja – loggas i km och minuter' : 'Nej – vanlig styrkeövning'}
+              </button>
+            ) : (
+              <span className={styles.infoValue}>{form.is_cardio ? 'Ja' : 'Nej'}</span>
             )}
           </div>
         </div>

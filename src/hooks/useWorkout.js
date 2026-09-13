@@ -121,18 +121,19 @@ async function loadExerciseData(ex, userId, restOverrides, caches = {}) {
   const exNotes = userNote ?? null
   const exEquipment = exData?.equipment || null
   const isTimeBased = exData?.is_time_based === true
+  const isCardio = exData?.is_cardio === true
   const restSeconds = ex.restSeconds ?? (restOverrides?.[ex.name] ?? null)
   // Berika med muskelgrupp fran biblioteket - programmets pass lagrar den
   // inte, sa utan detta loggas passet med muscle_group: null.
   const muscleGroup = ex.muscleGroup ?? exData?.muscle_group ?? null
 
   if (!prevSets?.length) {
-    return { ...ex, muscleGroup, restSeconds, exInstructions, exNotes, exEquipment, isTimeBased, prevSets: null, prevDate: null, progressionHint: null, progressionAction: null, dataLoaded: true }
+    return { ...ex, muscleGroup, restSeconds, exInstructions, exNotes, exEquipment, isTimeBased, isCardio, prevSets: null, prevDate: null, progressionHint: null, progressionAction: null, dataLoaded: true }
   }
 
   // Tidsbaserade ovningar (planka etc): ingen vikt/tid-progression.
   // Prefyll bara forra passets varden (sekunder lagras i reps-faltet).
-  if (isTimeBased) {
+  if (isTimeBased || isCardio) {
     const lastWork = prevSets.filter(s => s.type !== 'warmup')
     const lastSet = lastWork[lastWork.length - 1] ?? prevSets[prevSets.length - 1]
     const prefSets = ex.sets.map(s => {
@@ -145,7 +146,7 @@ async function loadExerciseData(ex, userId, restOverrides, caches = {}) {
         prefilled: !!(lastSet?.reps),
       }
     })
-    return { ...ex, muscleGroup, sets: prefSets, restSeconds, exInstructions, exNotes, exEquipment, isTimeBased, prevSets, prevDate, progressionHint: null, progressionAction: null, dataLoaded: true }
+    return { ...ex, muscleGroup, sets: prefSets, restSeconds, exInstructions, exNotes, exEquipment, isTimeBased, isCardio, prevSets, prevDate, progressionHint: null, progressionAction: null, dataLoaded: true }
   }
 
   // Harleda ovningskategori fran equipment + movement_pattern
@@ -227,6 +228,7 @@ async function loadExerciseData(ex, userId, restOverrides, caches = {}) {
     restSeconds,
     sets,
     prevDate,
+    isCardio,
     progressionHint,
     progressionAction: progression.action,
     progressionReason: progression.reason,
@@ -235,6 +237,7 @@ async function loadExerciseData(ex, userId, restOverrides, caches = {}) {
     exNotes,
     exEquipment,
     isTimeBased,
+    isCardio: ex.is_cardio === true,
     weightIncrement,
     movementPattern,
     dataLoaded: true,
@@ -565,6 +568,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
       exNotes: null, // personlig anteckning - laddas via loadExerciseData
       exEquipment: ex.equipment ?? null,
       isTimeBased: ex.is_time_based === true,
+      isCardio: ex.is_cardio === true,
       dataLoaded: false,  // triggers fetch of previous sets
       sets: [makeSet('work')],
     }])
@@ -599,6 +603,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
           exNotes: null,
           exEquipment: match.equipment ?? null,
           isTimeBased: match.is_time_based === true,
+          isCardio: match.is_cardio === true,
           dataLoaded: false, // triggar laddning av prev-sets + progression
           sets: workSets,
         }

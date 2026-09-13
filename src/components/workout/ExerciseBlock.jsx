@@ -188,6 +188,9 @@ export default function ExerciseBlock({
         .filter(s => s.type === 'work' && parseInt(s.reps) > 0)
         .map(s => {
           const w = parseFloat(s.weight) || 0
+          if (exercise.isCardio) {
+            return w > 0 ? `${w} km × ${s.reps} min` : `${s.reps} min`
+          }
           if (exercise.isTimeBased) {
             return w > 0 ? `${displayWeightStr(s.weight, exEquipment)}kg×${s.reps}s` : `${s.reps}s`
           }
@@ -214,7 +217,10 @@ export default function ExerciseBlock({
 
   const hasWarmups = exercise.sets.some(s => s.type === 'warmup')
   const isTimeBased = exercise.isTimeBased === true
-  const colLabels = ['SET', 'KG', isTimeBased ? 'SEK' : 'REPS', 'KLAR']
+  const isCardio = exercise.isCardio === true
+  const colLabels = isCardio
+    ? ['SET', 'KM', 'MIN', 'KLAR']
+    : ['SET', 'KG', isTimeBased ? 'SEK' : 'REPS', 'KLAR']
 
   // Collapsed summary
   const bestWeight = doneSets.length > 0
@@ -540,6 +546,7 @@ export default function ExerciseBlock({
                   prev1RM={prev1RM}
                   prefilled={!!set.prefilled}
                   isTimeBased={isTimeBased}
+                  isCardio={isCardio}
                   onUpdate={(field, value) => onUpdateSet(exercise.localId, set.id, field, value)}
                   onRemove={() => onRemoveSet(exercise.localId, set.id)}
                   onDuplicate={() => onDuplicateSet?.(exercise.localId, set.id)}

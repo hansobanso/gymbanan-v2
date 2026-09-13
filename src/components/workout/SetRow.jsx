@@ -36,6 +36,7 @@ export default function SetRow({
   prev1RM,
   prefilled,
   isTimeBased,
+  isCardio,
   onUpdate,
   onRemove,
   onDuplicate,
@@ -102,15 +103,16 @@ export default function SetRow({
   }
 
   const best1RM = !isWarmup ? (getBest1RM(allSets) || prev1RM) : null
-  const suggested = !isTimeBased && !isWarmup && set.subtype !== 'backoff' && set.weight ? suggestReps(set.weight, best1RM) : null
-  const repPlaceholder = isTimeBased ? 'Sek' : (suggested ? `~${suggested}` : 'Reps')
+  const suggested = !isTimeBased && !isCardio && !isWarmup && set.subtype !== 'backoff' && set.weight ? suggestReps(set.weight, best1RM) : null
+  const repPlaceholder = isCardio ? 'Min' : isTimeBased ? 'Sek' : (suggested ? `~${suggested}` : 'Reps')
+  const weightPlaceholder = isCardio ? 'Km' : 'Kg'
 
   const rirValue = !isWarmup && set.rir !== null && set.rir !== undefined ? String(set.rir) : null
 
   function adjustWeight(delta) {
     if (set.done) return
     const cur = parseFloat(set.weight) || 0
-    const next = Math.round((cur + delta) * 2) / 2
+    const next = Math.max(0, Math.round((cur + delta) * 2) / 2)
     onUpdate('weight', String(next))
   }
 
@@ -170,7 +172,7 @@ export default function SetRow({
         <div className={`${styles.stepper} ${set.done ? styles.stepperDone : ''}`}>
           <button
             className={styles.stepBtn}
-            onClick={e => { e.stopPropagation(); adjustWeight(-2.5) }}
+            onClick={e => { e.stopPropagation(); adjustWeight(isCardio ? -0.5 : -2.5) }}
             onPointerDown={e => e.stopPropagation()}
             type="button"
             disabled={set.done}
@@ -184,12 +186,12 @@ export default function SetRow({
             value={set.weight}
             onChange={e => onUpdate('weight', e.target.value)}
             onFocus={e => e.target.select()}
-            placeholder="Kg"
+            placeholder={weightPlaceholder}
             disabled={set.done}
           />
           <button
             className={styles.stepBtn}
-            onClick={e => { e.stopPropagation(); adjustWeight(2.5) }}
+            onClick={e => { e.stopPropagation(); adjustWeight(isCardio ? 0.5 : 2.5) }}
             onPointerDown={e => e.stopPropagation()}
             type="button"
             disabled={set.done}
@@ -230,7 +232,7 @@ export default function SetRow({
               tabIndex={-1}
             >+</button>
           </div>
-          {!isWarmup ? (
+          {!isWarmup && !isCardio && !isTimeBased ? (
             <button
               className={`${styles.splitRir} ${rirValue !== null ? styles.splitRirSet : ''}`}
               onClick={e => {
