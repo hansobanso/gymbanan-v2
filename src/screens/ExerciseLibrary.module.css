@@ -235,3 +235,9 @@
   padding: 0;
 }
 .searchClear:active { opacity: 0.6; }
+
+/* Kardio-etikett pa ovningsrad - sarskiljs fran muskelgrupp */
+.exGroupCardio {
+  color: var(--accent);
+  border-color: var(--accent);
+}

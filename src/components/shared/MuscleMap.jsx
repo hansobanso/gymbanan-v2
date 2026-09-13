@@ -69,6 +69,9 @@ function intensitiesFromWorkouts(workouts, exerciseMap) {
       // prova ett alias som pekar pa ett aktuellt biblioteksnamn.
       const aliasName = EXERCISE_ALIASES[ex.name]
       const fromLib = exerciseMap?.[ex.name] ?? (aliasName ? exerciseMap?.[aliasName] : null)
+      // Kardio-ovningar (jogga etc) bidrar inte till muskelvolym - hoppa over
+      // sa muskelgubben inte falskt lyser t.ex. quads efter ett joggpass.
+      if (ex.is_cardio || fromLib?.is_cardio) continue
       const mg = ex.muscle_group ?? fromLib?.muscle_group ?? EXERCISES[ex.name]?.muscle_group ?? (aliasName ? EXERCISES[aliasName]?.muscle_group : null)
       const workSets = (ex.sets ?? []).filter(
         s => s.done && s.type !== 'warmup' && s.type !== 'backoff'

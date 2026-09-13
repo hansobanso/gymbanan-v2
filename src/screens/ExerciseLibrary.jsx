@@ -56,10 +56,14 @@ export default function ExerciseLibrary() {
   const filtered = allExercises.filter(e => {
     if (search && !e.name.toLowerCase().includes(search.toLowerCase())) return false
     if (!muscleFilter) return true
+    if (muscleFilter === 'Kardio') return e.is_cardio === true
+    if (e.is_cardio) return false  // kardio visas bara under Kardio-filtret
     if (broadOf(e.muscle_group) !== muscleFilter) return false
     if (subFilter && !matchesSubGroup(e.muscle_group, muscleFilter, subFilter)) return false
     return true
   })
+
+  const hasCardio = allExercises.some(e => e.is_cardio)
 
   return (
     <div className={styles.screen}>
@@ -121,6 +125,13 @@ export default function ExerciseLibrary() {
             type="button"
           >{mg}</button>
         ))}
+        {hasCardio && (
+          <button
+            className={`${styles.chip} ${muscleFilter === 'Kardio' ? styles.chipActive : ''}`}
+            onClick={() => { setMuscleFilter(g => g === 'Kardio' ? null : 'Kardio'); setSubFilter(null) }}
+            type="button"
+          >Kardio</button>
+        )}
       </div>
       )}
 
@@ -163,7 +174,9 @@ export default function ExerciseLibrary() {
             >
               <span className={styles.exName}>{ex.name}</span>
               <div className={styles.exMeta}>
-                {ex.muscle_group && <span className={styles.exGroup}>{ex.muscle_group}</span>}
+                {ex.is_cardio
+                  ? <span className={`${styles.exGroup} ${styles.exGroupCardio}`}>Kardio</span>
+                  : ex.muscle_group && <span className={styles.exGroup}>{ex.muscle_group}</span>}
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className={styles.exChevron}>
                   <path d="m9 18 6-6-6-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>

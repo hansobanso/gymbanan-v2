@@ -127,11 +127,19 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
   // Filtrera pa fritext + muskelgrupp-chip + ev. sub-chip.
   const filtered = allExercises.filter(e => {
     const matchQuery = !query.trim() || e.name.toLowerCase().includes(query.toLowerCase())
-    let matchGroup = !selectedGroup || broadOf(e.muscle_group) === selectedGroup
-    // Om sub-chip ar vald, kraver vi att muscle_group matchar precis den sub
-    if (matchGroup && selectedSub && selectedGroup) {
-      matchGroup = matchesSubGroup(e.muscle_group, selectedGroup, selectedSub)
+    let matchGroup
+    if (selectedGroup === 'Kardio') {
+      matchGroup = e.is_cardio === true
+    } else if (e.is_cardio) {
+      matchGroup = false  // kardio bara under Kardio-filtret (om ej sokning)
+    } else {
+      matchGroup = !selectedGroup || broadOf(e.muscle_group) === selectedGroup
+      if (matchGroup && selectedSub && selectedGroup) {
+        matchGroup = matchesSubGroup(e.muscle_group, selectedGroup, selectedSub)
+      }
     }
+    // Vid fritextsokning: visa aven kardio bland traffarna
+    if (query.trim()) return matchQuery
     return matchQuery && matchGroup
   })
 
@@ -248,6 +256,15 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
                   {mg}
                 </button>
               ))}
+              {allExercises.some(e => e.is_cardio) && (
+                <button
+                  className={`${styles.chip} ${selectedGroup === 'Kardio' ? styles.chipActive : ''}`}
+                  onClick={() => { setSelectedGroup(g => g === 'Kardio' ? null : 'Kardio'); setSelectedSub(null) }}
+                  type="button"
+                >
+                  Kardio
+                </button>
+              )}
             </div>
             )}
             {!query.trim() && selectedGroup && subGroupsOf(selectedGroup).length > 0 && (
