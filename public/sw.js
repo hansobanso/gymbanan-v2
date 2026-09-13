@@ -1,4 +1,4 @@
-const CACHE = 'gymbanan-v16'
+const CACHE = 'gymbanan-v17'
 const PRECACHE = ['/', '/index.html', '/manifest.json']
 
 self.addEventListener('install', (e) => {
@@ -23,6 +23,22 @@ self.addEventListener('fetch', (e) => {
   // (admin vs huvudapp). Cacha dem aldrig.
   if (url.includes('manifest')) {
     e.respondWith(fetch(e.request).catch(() => caches.match(e.request)))
+    return
+  }
+
+  // Navigeringar och index.html: ALLTID farskt fran natet (med cache bara
+  // som offline-reserv). Utan detta kan en gammal cachad index.html peka pa
+  // borttagna JS-chunkar sa ny kod aldrig laddas efter en deploy.
+  if (e.request.mode === 'navigate' || url.endsWith('/') || url.endsWith('/index.html')) {
+    e.respondWith(
+      fetch(e.request)
+        .then((res) => {
+          const clone = res.clone()
+          caches.open(CACHE).then((c) => c.put(e.request, clone))
+          return res
+        })
+        .catch(() => caches.match(e.request).then((r) => r || caches.match('/index.html')))
+    )
     return
   }
 
