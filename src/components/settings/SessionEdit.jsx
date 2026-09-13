@@ -32,7 +32,7 @@ function newExercise(name = '') {
 const DELETE_WIDTH = 80
 
 // ── ExerciseRow ──────────────────────────────────────────────
-function ExerciseRow({ ex, onTap, onRemove, isLinked, canLink, onToggleLink }) {
+function ExerciseRow({ ex, onTap, onRemove, isLinked, canLink, onToggleLink, isCardio }) {
   const dragControls = useDragControls()
   const [dragging, setDragging] = useState(false)
   const [swipeX, setSwipeX] = useState(0)
@@ -198,8 +198,8 @@ function ExerciseRow({ ex, onTap, onRemove, isLinked, canLink, onToggleLink }) {
           <div className={styles.exRowContent}>
             <div className={styles.exRowName}>{ex.name}</div>
             <div className={styles.exRowBadges}>
-              <span className={styles.badge}>{workSets} set</span>
-              {(repsMin !== null || repsMax !== null) && (
+              <span className={styles.badge}>{workSets} {isCardio ? (workSets === 1 ? 'runda' : 'rundor') : 'set'}</span>
+              {!isCardio && (repsMin !== null || repsMax !== null) && (
                 <span className={styles.badge}>{repsMin ?? ''}–{repsMax ?? ''} reps</span>
               )}
               <span className={`${styles.badgeVila} ${restCustom ? styles.badgeAccent : ''}`}>
@@ -232,6 +232,7 @@ function ExerciseRow({ ex, onTap, onRemove, isLinked, canLink, onToggleLink }) {
 
 // ── SessionEdit ──────────────────────────────────────────────
 export default function SessionEdit({ session, allExercises, onSave, onDelete, onBack }) {
+  const cardioNames = new Set((allExercises ?? []).filter(e => e.is_cardio).map(e => e.name))
   const [name, setName]           = useState(session.name ?? '')
   const [exercises, setExercises] = useState(
     (session.exercises ?? []).map(e => ({ _id: Math.random().toString(36).slice(2), notes: '', ...e }))
@@ -407,6 +408,7 @@ export default function SessionEdit({ session, allExercises, onSave, onDelete, o
                     canLink={!ex.supersetId && exIdx < exercises.length - 1 && !exercises[exIdx + 1]?.supersetId}
                     onToggleLink={() => toggleSuperset(ex._id)}
                     onRemove={() => removeExercise(ex._id)}
+                    isCardio={cardioNames.has(ex.name)}
                   />
                 ))}
               </Reorder.Group>
@@ -424,6 +426,7 @@ export default function SessionEdit({ session, allExercises, onSave, onDelete, o
       {/* ── Övningsdetalj bottom sheet ── */}
       <ExerciseDetailBottomSheet
         exercise={selectedEx}
+        isCardio={selectedEx ? cardioNames.has(selectedEx.name) : false}
         onUpdate={patch => selectedExId && updateEx(selectedExId, patch)}
         onClose={() => setSelectedExId(null)}
         onSwap={() => {

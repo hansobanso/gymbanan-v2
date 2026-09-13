@@ -31,7 +31,7 @@ function Stepper({ label, value, min = 0, onChange }) {
   )
 }
 
-export default function ExerciseDetailBottomSheet({ exercise, onUpdate, onClose, onSwap }) {
+export default function ExerciseDetailBottomSheet({ exercise, onUpdate, onClose, onSwap, isCardio }) {
   if (!exercise) return null
 
   const repsMin = exercise.repsMin ?? ''
@@ -68,26 +68,35 @@ export default function ExerciseDetailBottomSheet({ exercise, onUpdate, onClose,
 
             {/* Content */}
             <div className={styles.content}>
+              {!isCardio && (
+                <Stepper
+                  label="Uppvärmning"
+                  value={exercise.warmupSets ?? 1}
+                  min={0}
+                  onChange={v => onUpdate({ warmupSets: v })}
+                />
+              )}
               <Stepper
-                label="Uppvärmning"
-                value={exercise.warmupSets ?? 1}
-                min={0}
-                onChange={v => onUpdate({ warmupSets: v })}
-              />
-              <Stepper
-                label="Arbetsset"
-                value={exercise.workSets ?? 3}
+                label={isCardio ? 'Rundor' : 'Arbetsset'}
+                value={exercise.workSets ?? (isCardio ? 1 : 3)}
                 min={1}
                 onChange={v => onUpdate({ workSets: v })}
               />
-              <Stepper
-                label="Back-off"
-                value={exercise.backoffSets ?? 0}
-                min={0}
-                onChange={v => onUpdate({ backoffSets: v })}
-              />
+              {!isCardio && (
+                <Stepper
+                  label="Back-off"
+                  value={exercise.backoffSets ?? 0}
+                  min={0}
+                  onChange={v => onUpdate({ backoffSets: v })}
+                />
+              )}
+
+              {isCardio && (
+                <p className={styles.cardioHint}>Distans (km) och tid (min) fyller du i under passet.</p>
+              )}
 
               {/* Reps */}
+              {!isCardio && (
               <div className={styles.repsRow}>
                 <span className={styles.stepperLabel}>Reps</span>
                 <div className={styles.repsInputs}>
@@ -118,6 +127,7 @@ export default function ExerciseDetailBottomSheet({ exercise, onUpdate, onClose,
                   />
                 </div>
               </div>
+              )}
 
               {/* Rest chips */}
               <div className={styles.restSection}>

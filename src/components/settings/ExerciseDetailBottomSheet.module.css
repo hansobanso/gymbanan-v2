@@ -234,3 +234,10 @@
 .swapBtn:active {
   background: var(--surface-3);
 }
+
+.cardioHint {
+  font-size: 13px;
+  color: var(--text-3);
+  line-height: 1.45;
+  margin: 4px 2px 0;
+}
