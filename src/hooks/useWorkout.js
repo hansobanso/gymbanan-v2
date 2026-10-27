@@ -383,14 +383,11 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
   // exercises (vikt, reps, avbockning, ovningar, superset...) sa inget
   // arbete tappas om appen/telefonen dor mitt i passet. Kraver att passet
   // har ett id (annars finns inget att ateruppta an).
-  useEffect(() => {
-    if (!workoutId) return
-    persistWorkout(exercises)
-  }, [exercises, workoutId, persistWorkout])
-
   // Sparar hela passets tillstand till localStorage sa det kan aterupptas
   // om appen/telefonen dor. Anropas vid VARJE andring (vikt, reps, set,
   // ovningar) - inte bara vid avbockade set - sa inget arbete tappas.
+  // MASTE definieras FORE effekten nedan som anvander den i sin dep-array,
+  // annars TDZ-krash ("Cannot access 'S' before initialization") vid mount.
   const persistWorkout = useCallback((exercisesToSave) => {
     const wId = workoutIdRef.current
     if (!wId) return
@@ -403,6 +400,11 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
       }))
     } catch { /* localStorage full/nekad - ignorera */ }
   }, [sessionName])
+
+  useEffect(() => {
+    if (!workoutId) return
+    persistWorkout(exercises)
+  }, [exercises, workoutId, persistWorkout])
 
   // Skapa workout-raden i Supabase direkt vid start (inte lazily)
   useEffect(() => {
