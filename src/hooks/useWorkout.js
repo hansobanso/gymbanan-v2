@@ -237,7 +237,6 @@ async function loadExerciseData(ex, userId, restOverrides, caches = {}) {
     exNotes,
     exEquipment,
     isTimeBased,
-    isCardio: ex.is_cardio === true,
     weightIncrement,
     movementPattern,
     dataLoaded: true,

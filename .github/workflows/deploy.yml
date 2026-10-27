@@ -17,6 +17,13 @@ jobs:
 
       - run: npm ci
 
+      # Krasch-grind: stoppar deployen vid fel som bygget slapper igenom men
+      # som ger vit skarm i prod - TDZ (variabel anvand fore definition, t.ex.
+      # en hook-dep-array som pekar pa en const langre ner) och dubblerade
+      # objektnycklar. Se scripts/crash-lint.mjs.
+      - name: Krasch-lint (TDZ + dubbletter)
+        run: node scripts/crash-lint.mjs
+
       - name: Build
         run: npm run build
         env:

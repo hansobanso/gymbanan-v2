@@ -59,6 +59,9 @@ function AppRoutes({ session }) {
   const [programsLoaded, setProgramsLoaded] = useState(false)
   const [programsError, setProgramsError] = useState(false)
   const [activeProgramId, setActiveProgramId] = useState(null)
+  const [homeReady, setHomeReady] = useState(false)
+  const [showWhatsNew, setShowWhatsNew] = useState(false)
+  const [splashGone, setSplashGone] = useState(false)
 
   // Nar ett pass sparats som kopia (och blivit aktivt) meddelar Workout
   // via event - synka programlistan och aktivt program utan omladdning.
@@ -78,9 +81,6 @@ function AppRoutes({ session }) {
       window.removeEventListener('showWhatsNew', onShowWhatsNew)
     }
   }, [])
-  const [homeReady, setHomeReady] = useState(false)
-  const [showWhatsNew, setShowWhatsNew] = useState(false)
-  const [splashGone, setSplashGone] = useState(false)
 
   // Nar allt laddat: las baren till 100%, vanta en kort stund sa den hinner
   // synas fylld, ta sen bort splash-overlayn.

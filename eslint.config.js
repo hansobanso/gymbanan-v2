@@ -24,6 +24,10 @@ export default defineConfig([
     },
     rules: {
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      // Fangar TDZ-krashar som "Cannot access X before initialization":
+      // en const/let/funktion som anvands (t.ex. i en hooks dep-array)
+      // innan den deklarerats. Bygget missar detta, lint gor inte det.
+      'no-use-before-define': ['error', { functions: false, variables: true, classes: true }],
     },
   },
 ])
