@@ -1,10 +1,9 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Reorder, AnimatePresence, motion } from 'framer-motion'
 import { useWorkout } from '../hooks/useWorkout'
 import { useTimer } from '../hooks/useTimer'
-import { buildWorkoutContext, buildMemoryContent, appendUserNote, chatWithAI, generateWorkoutIntro } from '../lib/ai'
-import { updateWorkout, getWorkouts, getAiMemory, upsertAiMemory, getEquipmentMap, updateProgram, saveProgram, setActiveProgram, getDeloadStatus, startDeloadWeek, getExercises } from '../lib/db'
+import { getWorkouts, getEquipmentMap, updateProgram, saveProgram, setActiveProgram, getDeloadStatus, startDeloadWeek } from '../lib/db'
 import TimerBar from '../components/workout/TimerBar'
 import TimerExpanded from '../components/workout/TimerExpanded'
 import ExerciseBlock from '../components/workout/ExerciseBlock'
@@ -13,7 +12,6 @@ import ExerciseHistory from '../components/workout/ExerciseHistory'
 import WorkoutHistorySheet from '../components/workout/WorkoutHistorySheet'
 import InstructionsSheet from '../components/workout/InstructionsSheet'
 import ExerciseDetailSheet from './ExerciseDetailSheet'
-import AiChat from '../components/shared/AiChat'
 import PostWorkoutFeedback from '../components/workout/PostWorkoutFeedback'
 import styles from './Workout.module.css'
 
@@ -30,8 +28,6 @@ export default function Workout({ session }) {
   const navigate = useNavigate()
   const { sessionName = 'Pass', sessionExercises = [], programId = null, resumed = null, program = null } = location.state ?? {}
 
-  const [aiMemory, setAiMemory] = useState('')
-
   const defaultRest = (() => {
     const v = localStorage.getItem('gymbanan_default_rest')
     return v ? Number(v) : 120
@@ -42,7 +38,6 @@ export default function Workout({ session }) {
     programId,
     userId: session.user.id,
     resumed,
-    aiMemory,
     defaultRest,
   })
   const timer = useTimer()
@@ -50,8 +45,7 @@ export default function Workout({ session }) {
   const [elapsed, setElapsed] = useState('0m')
   const [headerMenuOpen, setHeaderMenuOpen] = useState(false)
   const [timerExpandedOpen, setTimerExpandedOpen] = useState(false)
-  const [aiChatOpen, setAiChatOpen] = useState(false)
-  const [workoutNotes, setWorkoutNotes] = useState('')
+  const [adjustOpen, setAdjustOpen] = useState(false)
   const [isReordering, setIsReordering] = useState(false)
   const [reorderSnapshot, setReorderSnapshot] = useState(null)
   const [undoToast, setUndoToast] = useState(null)
@@ -63,7 +57,7 @@ export default function Workout({ session }) {
   const [workoutHistoryOpen, setWorkoutHistoryOpen] = useState(false)
   const [instructionsTarget, setInstructionsTarget] = useState(null) // exercise for instructions sheet
   const [detailExerciseId, setDetailExerciseId] = useState(null)
-  // postWorkout: null | { status: 'loading'|'done'|'error', feedbackText: string|null, workoutId: string }
+  // postWorkout: null | { status: 'done', workoutId }
   const [postWorkout, setPostWorkout] = useState(null)
   const [sessionPrs, setSessionPrs] = useState([])
   const [postDurationMin, setPostDurationMin] = useState(null)
@@ -78,14 +72,9 @@ export default function Workout({ session }) {
       document.querySelector(`[data-exid="${localId}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }, 100)
   }
-  const [postEquipmentMap, setPostEquipmentMap] = useState({})
-  const [introMessage, setIntroMessage] = useState(null)
-  const [introLoading, setIntroLoading] = useState(false)
-  const [exerciseList, setExerciseList] = useState([])
 
-  useEffect(() => {
-    getExercises().then(setExerciseList).catch(() => {})
-  }, [])
+  const [postEquipmentMap, setPostEquipmentMap] = useState({})
+
   const [deloadStatus, setDeloadStatus] = useState({ isActive: false, daysLeft: 0 })
   const [showRepsToast, setShowRepsToast] = useState(false)
   const repsToastTimerRef = useRef(null)
@@ -118,55 +107,6 @@ export default function Workout({ session }) {
     }).catch(() => {})
   }, [session?.user?.id])
 
-  // Ladda AI-minne + generera pass-intro. Allt har kor i BAKGRUNDEN och
-  // blockerar aldrig att passet visas - introMessage fylls nar det ar klart.
-  useEffect(() => {
-    let cancelled = false
-    if (sessionExercises.length === 0) return
-    setIntroLoading(true)
-
-    ;(async () => {
-      const [mem, recentWorkouts] = await Promise.all([
-        getAiMemory(session.user.id).catch(() => null),
-        getWorkouts(session.user.id, 20).catch(() => []),
-      ])
-      if (cancelled) return
-      const memory = mem?.content || ''
-      if (memory) setAiMemory(memory)
-
-      // Bygg prev-sets-kontext in-memory fran de redan hamtade passen,
-      // istallet for en query per ovning (var en dold flaskhals).
-      const lines = [`Pass: ${sessionName}`, '']
-      sessionExercises.forEach(ex => {
-        let prev = null
-        for (const w of recentWorkouts) {
-          if (w.adjusted || !w.finished_at) continue
-          const found = (w.exercises ?? []).find(e => e.name === ex.name)
-          if (!found) continue
-          const sets = (found.sets ?? []).filter(s => s.done && s.weight != null)
-          if (sets.length) { prev = sets; break }
-        }
-        lines.push(`${ex.name}${ex.muscle_group ? ` (${ex.muscle_group})` : ''}:`)
-        lines.push(prev?.length
-          ? `  Förra passet: ${prev.map(s => `${s.weight}kg×${s.reps}`).join(', ')}`
-          : '  Ingen tidigare data')
-      })
-
-      generateWorkoutIntro({
-        context: lines.join('\n'),
-        memory: memory || null,
-        recentWorkouts,
-        currentExercises: sessionExercises,
-        currentProgram: programId ? { id: programId, name: program?.name ?? null } : null,
-      })
-        .then(intro => { if (!cancelled && intro) setIntroMessage(intro) })
-        .catch(() => {})
-        .finally(() => { if (!cancelled) setIntroLoading(false) })
-    })()
-
-    return () => { cancelled = true }
-  }, [session.user.id]) // eslint-disable-line react-hooks/exhaustive-deps
-
   // Stäng header-meny vid klick utanför
   useEffect(() => {
     if (!headerMenuOpen) return
@@ -174,10 +114,6 @@ export default function Workout({ session }) {
     const t = setTimeout(() => document.addEventListener('pointerdown', close), 10)
     return () => { clearTimeout(t); document.removeEventListener('pointerdown', close) }
   }, [headerMenuOpen])
-
-  // Bygg kontext för AI – alltid färsk snapshot av pågående pass
-  const getContext = useCallback(() => buildWorkoutContext(sessionName, workout.exercises, workoutNotes), [sessionName, workout.exercises, workoutNotes])
-  const getMemory = useCallback(() => aiMemory || null, [aiMemory])
 
   // ── Reorder ────────────────────────────────────────────────
   function handleLongPressStart() {
@@ -237,22 +173,7 @@ export default function Workout({ session }) {
   function proceedToPostWorkout(workoutId, snapshot) {
     const exNames = snapshot.map(ex => ex.name)
     getEquipmentMap(exNames).then(setPostEquipmentMap).catch(() => {})
-    setPostWorkout({ status: 'loading', feedbackText: null, workoutId });
-    (async () => {
-      try {
-        const context = buildWorkoutContext(sessionName, snapshot, workoutNotes)
-        const feedback = await chatWithAI({
-          messages: [{ role: 'user', content: 'Ge mig kort, konkret feedback på detta pass. Max 3-4 meningar. Skriv på svenska.' }],
-          context,
-        })
-        if (workoutId) {
-          await updateWorkout(workoutId, { ai_feedback: feedback }).catch(() => {})
-        }
-        setPostWorkout(prev => prev ? { ...prev, status: 'done', feedbackText: feedback } : prev)
-      } catch {
-        setPostWorkout(prev => prev ? { ...prev, status: 'error', feedbackText: null } : prev)
-      }
-    })()
+    setPostWorkout({ status: 'done', workoutId })
   }
 
   // ── Avsluta pass ───────────────────────────────────────────
@@ -298,9 +219,6 @@ export default function Workout({ session }) {
         setSessionPrs(prs)
       } catch { /* PR-detektion far aldrig stoppa flodet */ }
 
-      const newMemory = buildMemoryContent(recent, aiMemory)
-      setAiMemory(newMemory)
-      return upsertAiMemory(session.user.id, newMemory)
     }).catch(() => {})
 
     setShowFinish(false)
@@ -355,6 +273,26 @@ export default function Workout({ session }) {
     navigate('/', { replace: true })
   }
 
+  // Manuell anpassning av passet (ersatter PT-chattens justeringar).
+  // Sanker vikter/reps pa ALLA ovningar. temporary: true gor att passet
+  // flaggas som anpassat sa de sankta vikterna inte blir ny baslinje.
+  function applyManualAdjustment({ weightMultiplier, repsMultiplier, summary, deloadWeek }) {
+    const changes = workout.exercises.map(ex => ({
+      exerciseName: ex.name,
+      weightMultiplier,
+      repsMultiplier,
+    }))
+    if (changes.length > 0) {
+      workout.applyAdjustment({ summary, changes, temporary: true })
+    }
+    if (deloadWeek) {
+      startDeloadWeek(session.user.id, 7)
+        .then(result => setDeloadStatus({ isActive: true, daysLeft: result.daysLeft, deloadUntil: result.deloadUntil }))
+        .catch(() => {})
+    }
+    setAdjustOpen(false)
+  }
+
   // ── Render ──────────────────────────────────────────────────
 
   // Visa laddningsspinner tills all övningsdata är förinläst
@@ -372,8 +310,6 @@ export default function Workout({ session }) {
       <PostWorkoutFeedback
         sessionName={sessionName}
         exercises={workout.exercises}
-        feedbackStatus={postWorkout.status}
-        feedbackText={postWorkout.feedbackText}
         onDone={handlePostWorkoutDone}
         equipmentMap={postEquipmentMap}
         durationMin={postDurationMin}
@@ -435,15 +371,18 @@ export default function Workout({ session }) {
               <path d="M12 6.5V12L15.5 14.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
           </button>
-          {/* PT-knapp */}
+          {/* Anpassa passet (lätt dag / sjuk / deload) */}
           <button
-            className={`${styles.chatIconBtn} ${aiChatOpen ? styles.chatIconBtnActive : ''}`}
-            onClick={() => setAiChatOpen(true)}
+            className={`${styles.chatIconBtn} ${adjustOpen ? styles.chatIconBtnActive : ''}`}
+            onClick={() => setAdjustOpen(true)}
             type="button"
-            aria-label="Öppna PT-chat"
+            aria-label="Anpassa passet"
           >
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>
+              <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/>
+              <line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/>
+              <line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/>
+              <line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>
             </svg>
           </button>
           {/* ··· meny */}
@@ -537,18 +476,8 @@ export default function Workout({ session }) {
               <div className={styles.emptyChoice}>
                 <p className={styles.emptyChoiceTitle}>Fritt pass</p>
                 <p className={styles.emptyChoiceText}>
-                  Lägg till övningar själv, eller låt PT sätta ihop ett pass åt dig.
+                  Lägg till övningar själv för att bygga passet.
                 </p>
-                <button
-                  className={styles.emptyPtBtn}
-                  onClick={() => setAiChatOpen(true)}
-                  type="button"
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/>
-                  </svg>
-                  Be PT skapa ett pass
-                </button>
                 <button
                   className={styles.emptyAddBtn}
                   onClick={() => setPickerTarget({ _add: true })}
@@ -794,7 +723,6 @@ export default function Workout({ session }) {
         onClose={() => setTimerExpandedOpen(false)}
       />
 
-      {/* ── AI PT-chat ── */}
       {/* ── Valj superset-partner ── */}
       {supersetPickFor && (
         <>
@@ -826,51 +754,48 @@ export default function Workout({ session }) {
         </>
       )}
 
-      <AiChat
-        open={aiChatOpen}
-        onClose={() => setAiChatOpen(false)}
-        getContext={getContext}
-        getMemory={getMemory}
-        getDeloadStatus={() => deloadStatus}
-        introMessage={introMessage}
-        introLoading={introLoading}
-        freeWorkoutMode={!programId && workout.exercises.length === 0}
-        getAvailableExercises={() => exerciseList}
-        onApplyWorkoutPlan={(plan) => {
-          workout.addGeneratedWorkout(plan.exercises, exerciseList)
-          return true
-        }}
-        workoutNotes={workoutNotes}
-        onUpdateNotes={setWorkoutNotes}
-        onUpdateMemory={async (note) => {
-          const updated = appendUserNote(aiMemory, note)
-          setAiMemory(updated)
-          await upsertAiMemory(session.user.id, updated)
-        }}
-        onApplyAdjustment={(adjustment) => workout.applyAdjustment(adjustment)}
-        onApplyDeload={async (deload) => {
-          try {
-            const result = await startDeloadWeek(session.user.id, deload.days || 7)
-            setDeloadStatus({ isActive: true, daysLeft: result.daysLeft, deloadUntil: result.deloadUntil })
-            // Också applicera på aktuella passet direkt
-            const changes = sessionExercises.map(ex => ({
-              exerciseName: ex.name,
-              weightMultiplier: deload.weightMultiplier ?? 0.85,
-              setMultiplier: deload.setReduction ? 1 - (deload.setReduction / 4) : 0.8,
-            }))
-            if (changes.length > 0) {
-              workout.applyAdjustment({
-                summary: deload.summary,
-                changes,
-              })
-            }
-            return true
-          } catch (err) {
-            console.error('startDeloadWeek error:', err)
-            return false
-          }
-        }}
-      />
+      {/* ── Anpassa passet (lätt dag / sjuk / deload) ── */}
+      {adjustOpen && (
+        <>
+          <div className={styles.ssPickBackdrop} onClick={() => setAdjustOpen(false)} />
+          <div className={styles.ssPickSheet}>
+            <p className={styles.ssPickTitle}>Anpassa passet</p>
+            <p className={styles.adjustHint}>
+              Sänker vikter och reps på alla övningar i passet. Räknas som tillfälligt,
+              så det påverkar inte din vanliga progression nästa gång.
+            </p>
+            <div className={styles.ssPickList}>
+              <button
+                className={styles.ssPickItem}
+                type="button"
+                onClick={() => applyManualAdjustment({ weightMultiplier: 0.9, repsMultiplier: 0.9, summary: 'Lätt dag -10%' })}
+              >
+                <span>Lätt dag / trött</span>
+                <span className={styles.ssPickNote}>−10%</span>
+              </button>
+              <button
+                className={styles.ssPickItem}
+                type="button"
+                onClick={() => applyManualAdjustment({ weightMultiplier: 0.75, repsMultiplier: 0.75, summary: 'Sjuk -25%' })}
+              >
+                <span>Sjuk</span>
+                <span className={styles.ssPickNote}>−25%</span>
+              </button>
+              <button
+                className={styles.ssPickItem}
+                type="button"
+                onClick={() => applyManualAdjustment({ weightMultiplier: 0.75, repsMultiplier: 0.75, summary: 'Deload -25%', deloadWeek: true })}
+              >
+                <span>Deload-vecka</span>
+                <span className={styles.ssPickNote}>−25% · hela veckan</span>
+              </button>
+            </div>
+            <button className={styles.ssPickCancel} onClick={() => setAdjustOpen(false)} type="button">
+              Avbryt
+            </button>
+          </div>
+        </>
+      )}
 
       {/* ── Byt övning ── */}
       <ExercisePicker

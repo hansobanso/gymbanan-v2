@@ -19,7 +19,7 @@ function fmtVolume(kg) {
   return String(Math.round(kg))
 }
 
-export default function PostWorkoutFeedback({ sessionName, exercises, feedbackStatus, feedbackText, onDone, equipmentMap = {}, durationMin = null, prs = [] }) {
+export default function PostWorkoutFeedback({ sessionName, exercises, onDone, equipmentMap = {}, durationMin = null, prs = [] }) {
   const { sets, volume, exCount } = calcStats(exercises)
 
   return (
@@ -112,51 +112,6 @@ export default function PostWorkoutFeedback({ sessionName, exercises, feedbackSt
           </motion.div>
         )}
 
-        {/* ── PT-feedback ── */}
-        <motion.div
-          className={styles.feedbackCard}
-          initial={{ y: 16, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.3 }}
-        >
-          <div className={styles.feedbackHeader}>
-            <svg className={styles.ptBadge} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F5D020" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/>
-              <path d="M12 11h.01"/>
-              <path d="M16 11h.01"/>
-              <path d="M8 11h.01"/>
-            </svg>
-            <span className={styles.feedbackTitle}>Feedback på passet</span>
-          </div>
-
-          {feedbackStatus === 'loading' && (
-            <div className={styles.loading}>
-              <div className={styles.loadingDots}>
-                <span /><span /><span />
-              </div>
-              <p className={styles.loadingText}>Din PT analyserar passet…</p>
-            </div>
-          )}
-
-          {feedbackStatus === 'done' && feedbackText && (
-            <div className={styles.feedbackText}>
-              {feedbackText.replace(/\*\*(.+?)\*\*/g, '$1').replace(/\*(.+?)\*/g, '$1')}
-            </div>
-          )}
-
-          {feedbackStatus === 'done' && !feedbackText && (
-            <p className={styles.feedbackNone}>
-              Ingen feedback tillgänglig just nu – försök igen från historiken.
-            </p>
-          )}
-
-          {feedbackStatus === 'error' && (
-            <p className={styles.feedbackNone}>
-              Kunde inte hämta feedback. Kolla anslutningen och försök igen.
-            </p>
-          )}
-        </motion.div>
-
         {/* ── Övningslista (kollapsad) ── */}
         <motion.div
           className={styles.exerciseList}
@@ -189,19 +144,9 @@ export default function PostWorkoutFeedback({ sessionName, exercises, feedbackSt
           className={styles.doneBtn}
           onClick={onDone}
           type="button"
-          disabled={feedbackStatus === 'loading'}
         >
-          {feedbackStatus === 'loading' ? 'Väntar på PT…' : 'Till hemskärmen'}
+          Till hemskärmen
         </button>
-        {feedbackStatus === 'loading' && (
-          <button
-            className={styles.skipBtn}
-            onClick={onDone}
-            type="button"
-          >
-            Skippa feedback
-          </button>
-        )}
       </motion.div>
     </motion.div>
   )

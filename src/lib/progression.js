@@ -305,3 +305,45 @@ function distributeReps(totalTarget, numSets, repsMin, repsMax) {
     return r
   })
 }
+
+/**
+ * Automatisk "comeback"-sankning efter langt uppehall. REN datum-matematik,
+ * ingen AI. Flyttad hit fran ai.js nar AI-delen togs bort. Returnerar ett
+ * adjustment-objekt (samma form som applyAdjustment vantar) eller null.
+ */
+export function detectGapAdjustment(recentWorkouts, exerciseNames) {
+  if (!recentWorkouts?.length || !exerciseNames?.length) return null
+  const lastNormal = recentWorkouts.find(w => !w.adjusted)
+  if (!lastNormal?.finished_at) return null
+
+  const daysSince = Math.round((Date.now() - new Date(lastNormal.finished_at).getTime()) / 86400000)
+
+  let weightMult = null
+  let repsMult = null
+  let summary = null
+
+  if (daysSince >= 8 && daysSince <= 14) {
+    weightMult = 0.9
+    repsMult = 0.85
+    summary = `${daysSince} dagar sedan senaste passet - vikter sankta 10%`
+  } else if (daysSince >= 15 && daysSince <= 28) {
+    weightMult = 0.8
+    repsMult = 0.75
+    summary = `${daysSince} dagar sedan senaste passet - vikter sankta 20%`
+  } else if (daysSince > 28) {
+    weightMult = 0.75
+    repsMult = 0.7
+    summary = `${daysSince} dagar sedan senaste passet - vikter sankta 25%`
+  }
+
+  if (!weightMult) return null
+
+  return {
+    summary,
+    changes: exerciseNames.map(name => ({
+      exerciseName: name,
+      weightMultiplier: weightMult,
+      repsMultiplier: repsMult,
+    })),
+  }
+}

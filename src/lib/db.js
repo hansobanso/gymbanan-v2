@@ -508,65 +508,6 @@ export async function getBodyWeights(userId, limit = 20) {
   return data ?? []
 }
 
-// ── AI Memory ─────────────────────────────────────────────
-export async function getAiMemory(userId) {
-  const { data, error } = await supabase
-    .from('ai_memory')
-    .select('content')
-    .eq('user_id', userId)
-    .maybeSingle()
-  if (error) return null
-  return data
-}
-
-export async function upsertAiMemory(userId, content) {
-  await supabase
-    .from('ai_memory')
-    .upsert({ user_id: userId, content, updated_at: new Date().toISOString() }, { onConflict: 'user_id' })
-}
-
-// ── AI Conversations ───────────────────────────────────────
-export async function createConversation({ userId, context }) {
-  const { data, error } = await supabase
-    .from('ai_conversations')
-    .insert({ user_id: userId, context, messages: [] })
-    .select()
-    .single()
-  if (error) return []
-  return data
-}
-
-export async function appendMessage(conversationId, message) {
-  // Hämta befintliga meddelanden och lägg till nytt
-  const { data: conv, error: fetchErr } = await supabase
-    .from('ai_conversations')
-    .select('messages')
-    .eq('id', conversationId)
-    .single()
-  if (fetchErr) throw fetchErr
-
-  const messages = [...(conv.messages ?? []), message]
-  const { data, error } = await supabase
-    .from('ai_conversations')
-    .update({ messages })
-    .eq('id', conversationId)
-    .select()
-    .single()
-  if (error) return []
-  return data
-}
-
-export async function getConversations(userId, limit = 20) {
-  const { data, error } = await supabase
-    .from('ai_conversations')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-    .limit(limit)
-  if (error) return []
-  return data ?? []
-}
-
 // ── Personliga anteckningar (user_exercise_notes) ─────────────
 
 export async function getUserExerciseNote(userId, exerciseName) {

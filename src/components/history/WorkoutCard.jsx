@@ -54,7 +54,6 @@ function fmtVolume(kg) {
 
 export default function WorkoutCard({ workout, onDelete, equipmentMap = {} }) {
   const [open, setOpen] = useState(false)
-  const [ptOpen, setPtOpen] = useState(false)
   const [swipeX, setSwipeX] = useState(0)
   const exercises = workout.exercises ?? []
   const { sets, volume, exCount } = calcStats(exercises)
@@ -186,32 +185,6 @@ export default function WorkoutCard({ workout, onDelete, equipmentMap = {} }) {
                   </div>
                 )
               })}
-
-              {/* AI-feedback – kollapsad */}
-              {workout.ai_feedback && (
-                <div className={styles.aiFeedback}>
-                  <button className={styles.ptToggle} onClick={() => setPtOpen(v => !v)} type="button">
-                    <span className={styles.ptBadge}>PT</span>
-                    <span className={styles.ptToggleLabel}>Feedback</span>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ transform: ptOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', color: 'var(--text-3)', marginLeft: 'auto' }}>
-                      <path d="m6 9 6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </button>
-                  <AnimatePresence initial={false}>
-                    {ptOpen && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2, ease: 'easeInOut' }}
-                        style={{ overflow: 'hidden' }}
-                      >
-                        <p className={styles.aiFeedbackText}>{workout.ai_feedback}</p>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              )}
             </div>
           </motion.div>
         )}

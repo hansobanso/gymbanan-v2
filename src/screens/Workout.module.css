@@ -608,3 +608,11 @@
   padding: 13px;
   cursor: pointer;
 }
+
+/* Hint i Anpassa passet-sheeten */
+.adjustHint {
+  font-size: 13px;
+  color: var(--text-3);
+  line-height: 1.45;
+  margin: 0 2px 4px;
+}

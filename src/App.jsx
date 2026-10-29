@@ -20,9 +20,8 @@ const ExerciseDetail = lazyWithRetry(() => import('./screens/ExerciseDetail'))
 const Admin = lazyWithRetry(() => import('./screens/Admin'))
 const BodyWeight = lazyWithRetry(() => import('./screens/BodyWeight'))
 const Programs = lazyWithRetry(() => import('./screens/Programs'))
-const Coach = lazyWithRetry(() => import('./screens/Coach'))
 
-const TAB_PATHS = ['/', '/programs', '/coach', '/history', '/settings']
+const TAB_PATHS = ['/', '/programs', '/history', '/settings']
 const ACTIVE_WORKOUT_KEY = 'gymbanan_active_workout'
 
 // Branded laddningsskarm: banan-logga + svepande gul bar (obestamd).
@@ -205,7 +204,6 @@ function AppRoutes({ session }) {
       <Suspense fallback={<div style={{display:'flex',alignItems:'center',justifyContent:'center',flex:1}}><div className="spinner"/></div>}>
         <div style={tabStyle('/')}><Home session={session} programs={programs} programsLoaded={programsLoaded} programsError={programsError} onRetryPrograms={loadPrograms} activeProgramId={activeProgramId} onSetActive={id => { setActiveProgramId(id); setActiveProgram(session.user.id, id).catch(() => {}) }} onReady={() => setHomeReady(true)} /></div>
         <div style={tabStyle('/programs')}><Programs session={session} programs={programs} setPrograms={setPrograms} activeProgramId={activeProgramId} onSetActive={id => { setActiveProgramId(id); setActiveProgram(session.user.id, id).catch(() => {}) }} /></div>
-        <div style={tabStyle('/coach')}><Coach session={session} onProgramUpdated={(updated) => setPrograms(prev => prev.map(p => p.id === updated.id ? updated : p))} onSwitchProgram={(id) => { setActiveProgramId(id); return setActiveProgram(session.user.id, id) }} onProgramCreated={(created) => setPrograms(prev => [...prev, created])} /></div>
         <div style={tabStyle('/history')}><History session={session} /></div>
         <div style={tabStyle('/settings')}><Settings session={session} /></div>
 
