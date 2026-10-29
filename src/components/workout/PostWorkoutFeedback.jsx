@@ -1,5 +1,9 @@
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { displayWeightStr, displayWeight } from '../../lib/weightUtils'
+import { getExercises } from '../../lib/db'
+import MuscleMap from '../shared/MuscleMap'
+import { colorForIntensityRed } from '../../lib/muscleColor'
 import styles from './PostWorkoutFeedback.module.css'
 
 function calcStats(exercises) {
@@ -21,6 +25,28 @@ function fmtVolume(kg) {
 
 export default function PostWorkoutFeedback({ sessionName, exercises, onDone, equipmentMap = {}, durationMin = null, prs = [] }) {
   const { sets, volume, exCount } = calcStats(exercises)
+
+  // Ovningsbibliotek sa muskelgubben kan sla upp primar + sekundar muskel
+  // (passets snapshot bar bara primar muscleGroup, inte sekundarer).
+  const [exMap, setExMap] = useState({})
+  useEffect(() => {
+    getExercises().then(list => {
+      const m = {}
+      for (const e of list ?? []) m[e.name] = e
+      setExMap(m)
+    }).catch(() => {})
+  }, [])
+
+  // Dagens pass som en "workout" for MuscleMap. Mappa camelCase -> snake_case
+  // sa primarmuskel/kardio-flagga funkar direkt, exMap fyller i sekundarer.
+  const sessionWorkout = [{
+    finished_at: new Date().toISOString(),
+    exercises: exercises.map(e => ({
+      ...e,
+      muscle_group: e.muscle_group ?? e.muscleGroup ?? null,
+      is_cardio: e.is_cardio ?? e.isCardio ?? false,
+    })),
+  }]
 
   return (
     <motion.div
@@ -111,6 +137,19 @@ export default function PostWorkoutFeedback({ sessionName, exercises, onDone, eq
             <p className={styles.prSub}>Estimerat 1RM – starkare än någonsin!</p>
           </motion.div>
         )}
+
+        {/* ── Muskler som jobbat ── */}
+        <motion.div
+          className={styles.muscleSection}
+          initial={{ y: 16, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.32, duration: 0.3 }}
+        >
+          <span className={styles.muscleTitle}>Muskler som jobbat</span>
+          <div className={styles.muscleFigure}>
+            <MuscleMap workouts={sessionWorkout} exerciseMap={exMap} colorFn={colorForIntensityRed} size={150} />
+          </div>
+        </motion.div>
 
         {/* ── Övningslista (kollapsad) ── */}
         <motion.div

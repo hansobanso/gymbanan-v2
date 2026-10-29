@@ -37,3 +37,23 @@ export function colorForIntensity(intensity) {
   }
   return `rgb(${c[0]}, ${c[1]}, ${c[2]})`
 }
+
+// ── Rod skala for pass-sammanfattningen (vilka muskler jobbade idag) ──
+// Outranad = dampad gra, jobbad = rod gradient (morkrod -> klarrod).
+const MUSCLE_RED_IDLE = [74, 79, 87]    // #4A4F57 - gra, muskeln jobbade inte
+const MUSCLE_RED_LOW  = [142, 42, 36]   // #8E2A24 - morkrod, lite jobb
+const MUSCLE_RED_HIGH = [245, 64, 58]   // #F5403A - klarrod, mycket jobb
+
+export function colorForIntensityRed(intensity) {
+  if (!intensity || intensity <= 0) {
+    const c = MUSCLE_RED_IDLE
+    return `rgb(${c[0]}, ${c[1]}, ${c[2]})`
+  }
+  let c
+  if (intensity < 0.15) {
+    c = lerp(MUSCLE_RED_IDLE, MUSCLE_RED_LOW, intensity / 0.15)
+  } else {
+    c = lerp(MUSCLE_RED_LOW, MUSCLE_RED_HIGH, (intensity - 0.15) / 0.85)
+  }
+  return `rgb(${c[0]}, ${c[1]}, ${c[2]})`
+}

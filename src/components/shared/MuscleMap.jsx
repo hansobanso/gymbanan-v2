@@ -124,7 +124,7 @@ function resolveIntensities({ breakdown, workouts, intensities, exerciseMap }) {
 // Muskelfargning delegeras till lib/muscleColor.js (skogsgron palett).
 const colorFor = colorForIntensity
 
-export default function MuscleMap({ breakdown, workouts, intensities: customIntensities, exerciseMap, size = 60 }) {
+export default function MuscleMap({ breakdown, workouts, intensities: customIntensities, exerciseMap, colorFn, size = 60 }) {
   const intensities = resolveIntensities({
     breakdown,
     workouts,
@@ -132,10 +132,12 @@ export default function MuscleMap({ breakdown, workouts, intensities: customInte
     exerciseMap,
   })
 
-  // Bygg colors-objekt for MuscleFigure
+  // Bygg colors-objekt for MuscleFigure. colorFn override:ar standard-
+  // (grona) paletten - anvands t.ex. for den roda pass-sammanfattningen.
+  const paint = colorFn || colorFor
   const colors = {}
   for (const [muscle, intensity] of Object.entries(intensities)) {
-    colors[muscle] = colorFor(intensity)
+    colors[muscle] = paint(intensity)
   }
 
   // size = ungefarlig bredd per figur. SVG har viewBox 800x750 (front + back i samma).
