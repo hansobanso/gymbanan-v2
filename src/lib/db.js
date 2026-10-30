@@ -357,6 +357,23 @@ export async function getTwoPreviousSetsForExercise(userId, exerciseName) {
   }
 }
 
+// ── AI-minne (PT:ns långtidsminne om användarens träning) ──
+export async function getAiMemory(userId) {
+  const { data, error } = await supabase
+    .from('ai_memory')
+    .select('content')
+    .eq('user_id', userId)
+    .maybeSingle()
+  if (error) return null
+  return data
+}
+
+export async function upsertAiMemory(userId, content) {
+  await supabase
+    .from('ai_memory')
+    .upsert({ user_id: userId, content, updated_at: new Date().toISOString() }, { onConflict: 'user_id' })
+}
+
 // Returns { exerciseName: equipment } for a list of names
 export async function getEquipmentMap(exerciseNames) {
   if (!exerciseNames?.length) return {}
