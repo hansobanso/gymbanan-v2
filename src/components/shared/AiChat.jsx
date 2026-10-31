@@ -1,8 +1,6 @@
-import { useState, useRef, useEffect, useMemo } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useAI } from '../../hooks/useAI'
-import MuscleMap from './MuscleMap'
-import { colorForIntensityRed } from '../../lib/muscleColor'
 import styles from './AiChat.module.css'
 
 const SUGGESTIONS = [
@@ -25,7 +23,7 @@ const COACH_SUGGESTIONS = [
   'Tips för att komma vidare?',
 ]
 
-export default function AiChat({ open, onClose, getContext, getMemory, getDeloadStatus, introMessage, introLoading, workoutNotes, onUpdateNotes, onApplyAdjustment, onApplyDeload, onApplyWorkoutPlan, onApplyProgramChange, onApplyProgramSwitch, onApplyNewProgram, getProgramsList, getAvailableExercises, currentExercises = [], freeWorkoutMode, inline = false }) {
+export default function AiChat({ open, onClose, getContext, getMemory, getDeloadStatus, introMessage, introLoading, workoutNotes, onUpdateNotes, onApplyAdjustment, onApplyDeload, onApplyWorkoutPlan, onApplyProgramChange, onApplyProgramSwitch, onApplyNewProgram, getProgramsList, getAvailableExercises, freeWorkoutMode, inline = false }) {
   const [input, setInput] = useState('')
   const [copiedIdx, setCopiedIdx] = useState(null) // vilken bubbla som nyss kopierats
   const [notesOpen, setNotesOpen] = useState(false)
@@ -34,26 +32,6 @@ export default function AiChat({ open, onClose, getContext, getMemory, getDeload
   const inputRef = useRef(null)
   const notesRef = useRef(null)
   const { messages, loading, error, send, reset, markAdjustmentApplied, markDeloadApplied, markWorkoutApplied, markProgramChangeApplied, markProgramSwitchApplied, markNewProgramApplied } = useAI({ getContext, getMemory, getDeloadStatus, getAvailableExercises, getProgramsList, coachMode: inline })
-
-  // Muskelgubbe: vilka muskler som jobbat i passet hittills (bara klarade set).
-  // Ovningsbiblioteket ger primar + sekundar muskel; roda skalan skiljer den
-  // fran den grona veckovyn pa hemskarmen.
-  const exMap = useMemo(() => {
-    const m = {}
-    for (const e of getAvailableExercises?.() ?? []) m[e.name] = e
-    return m
-  }, [getAvailableExercises])
-  const muscleWorkouts = useMemo(() => [{
-    finished_at: new Date().toISOString(),
-    exercises: (currentExercises ?? []).map(e => ({
-      ...e,
-      muscle_group: e.muscle_group ?? e.muscleGroup ?? null,
-      is_cardio: e.is_cardio ?? e.isCardio ?? false,
-    })),
-  }], [currentExercises])
-  const hasTrainedSomething = (currentExercises ?? []).some(
-    ex => (ex.sets ?? []).some(s => s.done && s.type !== 'warmup')
-  )
 
   // Fokusera input när sheeten öppnar
   useEffect(() => {
@@ -263,17 +241,6 @@ export default function AiChat({ open, onClose, getContext, getMemory, getDeload
                     <span className={styles.introSpinner} />
                     <span className={styles.introLoadingText}>PT förbereder din genomgång…</span>
                   </div>
-                </div>
-              )}
-              {!freeWorkoutMode && (
-                <div className={styles.muscleBubble}>
-                  <span className={styles.introLabel}>Muskler hittills</span>
-                  <div className={styles.muscleFigureWrap}>
-                    <MuscleMap workouts={muscleWorkouts} exerciseMap={exMap} colorFn={colorForIntensityRed} size={120} />
-                  </div>
-                  {!hasTrainedSomething && (
-                    <p className={styles.muscleHint}>Fyll i dina set så lyser musklerna upp.</p>
-                  )}
                 </div>
               )}
               {messages.length === 0 && !introMessage && !introLoading && (

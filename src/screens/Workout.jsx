@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Reorder, AnimatePresence, motion } from 'framer-motion'
 import { useWorkout } from '../hooks/useWorkout'
@@ -14,6 +14,8 @@ import WorkoutHistorySheet from '../components/workout/WorkoutHistorySheet'
 import InstructionsSheet from '../components/workout/InstructionsSheet'
 import ExerciseDetailSheet from './ExerciseDetailSheet'
 import AiChat from '../components/shared/AiChat'
+import MuscleMap from '../components/shared/MuscleMap'
+import { colorForIntensityRed } from '../lib/muscleColor'
 import PostWorkoutFeedback from '../components/workout/PostWorkoutFeedback'
 import styles from './Workout.module.css'
 
@@ -361,6 +363,22 @@ export default function Workout({ session }) {
     setAdjustOpen(false)
   }
 
+  // Muskelgubbe langst ner i passet: visar vilka muskelgrupper som jobbat
+  // hittills (bara klarade set) sa man ser luckor innan man avslutar.
+  const muscleExMap = useMemo(() => {
+    const m = {}
+    for (const e of exerciseList ?? []) m[e.name] = e
+    return m
+  }, [exerciseList])
+  const muscleSessionWorkout = useMemo(() => [{
+    finished_at: new Date().toISOString(),
+    exercises: (workout.exercises ?? []).map(e => ({
+      ...e,
+      muscle_group: e.muscle_group ?? e.muscleGroup ?? null,
+      is_cardio: e.is_cardio ?? e.isCardio ?? false,
+    })),
+  }], [workout.exercises])
+
   // ── Render ──────────────────────────────────────────────────
 
   // Visa laddningsspinner tills all övningsdata är förinläst
@@ -632,6 +650,14 @@ export default function Workout({ session }) {
             {/* Lägg till övning + Avsluta pass - doljs nar passet ar tomt
                 (da visas empty-choice-knapparna istallet) */}
             {workout.exercises.length > 0 && (
+            <>
+            {/* ── Tränade muskelgrupper (muskelgubbe langst ner) ── */}
+            <div className={styles.muscleSummary}>
+              <span className={styles.muscleSummaryTitle}>Tränade muskelgrupper</span>
+              <div className={styles.muscleSummaryFigure}>
+                <MuscleMap workouts={muscleSessionWorkout} exerciseMap={muscleExMap} colorFn={colorForIntensityRed} size={130} />
+              </div>
+            </div>
             <div className={styles.finishWrap}>
               <button
                 className={styles.addExerciseBtn}
@@ -648,6 +674,7 @@ export default function Workout({ session }) {
                 AVSLUTA
               </button>
             </div>
+            </>
             )}
           </>
         )}
@@ -897,7 +924,6 @@ export default function Workout({ session }) {
         introLoading={introLoading}
         freeWorkoutMode={!programId && workout.exercises.length === 0}
         getAvailableExercises={() => exerciseList}
-        currentExercises={workout.exercises}
         onApplyWorkoutPlan={(plan) => {
           workout.addGeneratedWorkout(plan.exercises, exerciseList)
           return true

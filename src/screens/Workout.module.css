@@ -271,6 +271,29 @@
 .emptyAddBtn:active { background: var(--surface-3); }
 
 /* ── Avsluta pass-knapp (ej fast) ── */
+/* ── Tränade muskelgrupper (muskelgubbe langst ner i passet) ── */
+.muscleSummary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 16px 4px;
+}
+
+.muscleSummaryTitle {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+.muscleSummaryFigure {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
 .finishWrap {
   padding: 14px 16px calc(var(--safe-bottom, 0px) + 14px);
   display: flex;
