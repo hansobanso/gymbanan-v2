@@ -897,6 +897,7 @@ export default function Workout({ session }) {
         introLoading={introLoading}
         freeWorkoutMode={!programId && workout.exercises.length === 0}
         getAvailableExercises={() => exerciseList}
+        currentExercises={workout.exercises}
         onApplyWorkoutPlan={(plan) => {
           workout.addGeneratedWorkout(plan.exercises, exerciseList)
           return true
