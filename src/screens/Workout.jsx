@@ -19,6 +19,13 @@ import { colorForIntensityRed } from '../lib/muscleColor'
 import PostWorkoutFeedback from '../components/workout/PostWorkoutFeedback'
 import styles from './Workout.module.css'
 
+// Val i "Anpassa passet"-arket. Valet markeras forst (gult), applas vid Tillämpa.
+const ADJUST_OPTIONS = [
+  { key: 'light', label: 'Lätt dag / trött', note: '−10%', apply: { weightMultiplier: 0.9, repsMultiplier: 0.9, summary: 'Lätt dag -10%' } },
+  { key: 'sick', label: 'Sjuk', note: '−25%', apply: { weightMultiplier: 0.75, repsMultiplier: 0.75, summary: 'Sjuk -25%' } },
+  { key: 'deload', label: 'Deload-vecka', note: '−25% · hela veckan', apply: { weightMultiplier: 0.75, repsMultiplier: 0.75, summary: 'Deload -25%', deloadWeek: true } },
+]
+
 function fmtElapsed(startedAt) {
   const s = Math.floor((Date.now() - startedAt) / 1000)
   const m = Math.floor(s / 60)
@@ -53,6 +60,7 @@ export default function Workout({ session }) {
   const [timerExpandedOpen, setTimerExpandedOpen] = useState(false)
   const [aiChatOpen, setAiChatOpen] = useState(false)
   const [adjustOpen, setAdjustOpen] = useState(false)
+  const [adjustChoice, setAdjustChoice] = useState(null)
   const [workoutNotes, setWorkoutNotes] = useState('')
   const [isReordering, setIsReordering] = useState(false)
   const [reorderSnapshot, setReorderSnapshot] = useState(null)
@@ -360,7 +368,13 @@ export default function Workout({ session }) {
         .then(result => setDeloadStatus({ isActive: true, daysLeft: result.daysLeft, deloadUntil: result.deloadUntil }))
         .catch(() => {})
     }
+    closeAdjust()
+  }
+
+  // Stanger Anpassa-arket och nollstaller valet.
+  function closeAdjust() {
     setAdjustOpen(false)
+    setAdjustChoice(null)
   }
 
   // Muskelgubbe langst ner i passet: visar vilka muskelgrupper som jobbat
@@ -471,7 +485,7 @@ export default function Workout({ session }) {
           {/* Anpassa passet (lätt dag / sjuk / deload) - snabbval utan chatt */}
           <button
             className={`${styles.chatIconBtn} ${adjustOpen ? styles.chatIconBtnActive : ''}`}
-            onClick={() => setAdjustOpen(true)}
+            onClick={() => { setAdjustChoice(null); setAdjustOpen(true) }}
             type="button"
             aria-label="Anpassa passet"
           >
@@ -874,7 +888,7 @@ export default function Workout({ session }) {
       {/* ── Anpassa passet (lätt dag / sjuk / deload) ── */}
       {adjustOpen && (
         <>
-          <div className={styles.ssPickBackdrop} onClick={() => setAdjustOpen(false)} />
+          <div className={styles.ssPickBackdrop} onClick={() => closeAdjust()} />
           <div className={styles.ssPickSheet}>
             <p className={styles.ssPickTitle}>Anpassa passet</p>
             <p className={styles.adjustHint}>
@@ -882,32 +896,31 @@ export default function Workout({ session }) {
               så det påverkar inte din vanliga progression nästa gång.
             </p>
             <div className={styles.ssPickList}>
-              <button
-                className={styles.ssPickItem}
-                type="button"
-                onClick={() => applyManualAdjustment({ weightMultiplier: 0.9, repsMultiplier: 0.9, summary: 'Lätt dag -10%' })}
-              >
-                <span>Lätt dag / trött</span>
-                <span className={styles.ssPickNote}>−10%</span>
-              </button>
-              <button
-                className={styles.ssPickItem}
-                type="button"
-                onClick={() => applyManualAdjustment({ weightMultiplier: 0.75, repsMultiplier: 0.75, summary: 'Sjuk -25%' })}
-              >
-                <span>Sjuk</span>
-                <span className={styles.ssPickNote}>−25%</span>
-              </button>
-              <button
-                className={styles.ssPickItem}
-                type="button"
-                onClick={() => applyManualAdjustment({ weightMultiplier: 0.75, repsMultiplier: 0.75, summary: 'Deload -25%', deloadWeek: true })}
-              >
-                <span>Deload-vecka</span>
-                <span className={styles.ssPickNote}>−25% · hela veckan</span>
-              </button>
+              {ADJUST_OPTIONS.map(opt => (
+                <button
+                  key={opt.key}
+                  className={`${styles.ssPickItem} ${adjustChoice === opt.key ? styles.ssPickItemActive : ''}`}
+                  type="button"
+                  aria-pressed={adjustChoice === opt.key}
+                  onClick={() => setAdjustChoice(opt.key)}
+                >
+                  <span>{opt.label}</span>
+                  <span className={styles.ssPickNote}>{opt.note}</span>
+                </button>
+              ))}
             </div>
-            <button className={styles.ssPickCancel} onClick={() => setAdjustOpen(false)} type="button">
+            <button
+              className={styles.ssPickApply}
+              type="button"
+              disabled={!adjustChoice}
+              onClick={() => {
+                const opt = ADJUST_OPTIONS.find(o => o.key === adjustChoice)
+                if (opt) applyManualAdjustment(opt.apply)
+              }}
+            >
+              Tillämpa
+            </button>
+            <button className={styles.ssPickCancel} onClick={() => closeAdjust()} type="button">
               Avbryt
             </button>
           </div>

@@ -614,11 +614,40 @@
   text-align: left;
 }
 .ssPickItem:active { opacity: 0.6; }
+/* Markerat val i Anpassa passet - tydligt gult sa man ser vad man klickat i */
+.ssPickItemActive {
+  background: var(--accent);
+  color: #141414;
+  border-radius: var(--radius-md, 12px);
+  border-bottom-color: transparent;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+.ssPickItemActive .ssPickNote {
+  color: #141414;
+  opacity: 0.75;
+}
 .ssPickNote {
   font-size: 12px;
   font-weight: 500;
   color: var(--text-3);
   flex-shrink: 0;
+}
+.ssPickApply {
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-md, 12px);
+  color: #141414;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: var(--font);
+  padding: 14px;
+  cursor: pointer;
+}
+.ssPickApply:disabled {
+  background: var(--surface-2);
+  color: var(--text-3);
+  cursor: default;
 }
 .ssPickCancel {
   background: var(--surface-2);
