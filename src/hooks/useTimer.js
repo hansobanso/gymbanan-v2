@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { primeRestSound, scheduleRestBeep, cancelRestBeep, endRestSound } from '../lib/restSound'
 
 export function useTimer() {
   const [active, setActive]           = useState(false)
@@ -23,12 +24,17 @@ export function useTimer() {
     setTotalSeconds(seconds)
     setActive(true)
     setPaused(false)
+    // Las upp ljudet (anropas i tap-gesten) och schemalagg plinget vid
+    // sluttiden - spelas aven om skarmen slacks.
+    primeRestSound()
+    scheduleRestBeep(endTimeRef.current)
     tickRef.current = setInterval(() => {
       const left = Math.max(0, Math.ceil((endTimeRef.current - Date.now()) / 1000))
       setSecondsLeft(left)
       if (left <= 0) {
         clearInterval(tickRef.current); tickRef.current = null
         setActive(false)
+        endRestSound()
         try { navigator.vibrate?.([200, 100, 200]) } catch { /* ignored */ }
       }
     }, 500)
@@ -39,6 +45,8 @@ export function useTimer() {
     endTimeRef.current = null
     setActive(false)
     setPaused(false)
+    cancelRestBeep()
+    endRestSound()
   }, [])
 
   const pause = useCallback(() => {
@@ -46,17 +54,20 @@ export function useTimer() {
     pausedLeftRef.current = Math.max(0, Math.ceil((endTimeRef.current - Date.now()) / 1000))
     clearTick()
     setPaused(true)
+    cancelRestBeep()
   }, [])
 
   const resume = useCallback(() => {
     endTimeRef.current = Date.now() + pausedLeftRef.current * 1000
     setPaused(false)
+    scheduleRestBeep(endTimeRef.current)
     tickRef.current = setInterval(() => {
       const left = Math.max(0, Math.ceil((endTimeRef.current - Date.now()) / 1000))
       setSecondsLeft(left)
       if (left <= 0) {
         clearInterval(tickRef.current); tickRef.current = null
         setActive(false)
+        endRestSound()
         try { navigator.vibrate?.([200, 100, 200]) } catch { /* ignored */ }
       }
     }, 500)
@@ -68,9 +79,11 @@ export function useTimer() {
     const left = Math.max(0, Math.ceil((endTimeRef.current - Date.now()) / 1000))
     setSecondsLeft(left)
     if (delta > 0) setTotalSeconds(prev => Math.max(prev, left))
+    // Sluttiden andrades - schemalagg om plinget.
+    scheduleRestBeep(endTimeRef.current)
   }, [])
 
-  useEffect(() => () => clearTick(), [])
+  useEffect(() => () => { clearTick(); cancelRestBeep(); endRestSound() }, [])
 
   return { active, paused, exerciseName, secondsLeft, totalSeconds, start, stop, pause, resume, addSeconds }
 }
