@@ -206,21 +206,21 @@ export function computeProgression({
   // ── Punkt 3: Alla set vid repMax → redo for viktökning ──
   if (repsMax != null && allSetsAtMax(workSets, repsMax)) {
 
-    // ── Punkt 4: Heavy compound + 0 RIR → upprepa en gång ──
-    if (category === 'heavy_compound') {
-      const zeroRIR = allSetsZeroRIR(workSets)
-      if (zeroRIR) {
-        return {
-          action: 'repeat_weight',
-          nextWeight: currentWeight,
-          nextTargetTotalReps: repsMax * numWorkSets,
-          nextTargetRepsPerSet: Array(numWorkSets).fill(repsMax),
-          messageToUser: `Alla set på ${repsMax} reps, men 0 RIR på en tung basövning. Upprepa ${currentWeight} kg — om du klarar samma sak igen höjer vi nästa gång.`,
-          reason: 'heavy_compound_zero_rir_caution',
-        }
+    // ── Punkt 4: 0 RIR på alla set (alla övningstyper) → upprepa en gång ──
+    // Nådde taket men till total failure: befäst vikten innan höjning.
+    if (allSetsZeroRIR(workSets)) {
+      return {
+        action: 'repeat_weight',
+        nextWeight: currentWeight,
+        nextTargetTotalReps: repsMax * numWorkSets,
+        nextTargetRepsPerSet: Array(numWorkSets).fill(repsMax),
+        messageToUser: `Alla set på ${repsMax} reps men 0 RIR — upprepa ${currentWeight} kg. Klarar du samma igen med marginal höjer vi nästa gång.`,
+        reason: 'zero_rir_caution',
       }
+    }
 
-      // Heavy compound utan RIR-data: lagg till +1 totalrep buffert
+    // Heavy compound utan RIR-data: lagg till +1 totalrep buffert
+    if (category === 'heavy_compound') {
       const avgRir = averageRIR(workSets)
       if (avgRir === null) {
         const bufferedTarget = repsMax * numWorkSets + 1
@@ -274,18 +274,33 @@ export function computeProgression({
     }
   }
 
-  // ── Punkt 2: Behåll vikten, öka totalreps ──
-  const nextTargetTotal = prevTotal + 1
-  // Berakna per-set-mal for meddelandet
-  const perSetTarget = distributeReps(nextTargetTotal, numWorkSets, repsMin, repsMax)
+  // ── Punkt 2: Behåll vikten, öka totalreps (skalat efter RIR) ──
+  // Marginal kvar (snitt-RIR >= 3) -> ta ett större kliv (+2 reps).
+  // Nära failure (snitt-RIR < 0.5) -> befäst samma mål (+0) istället för
+  // att kräva mer när du redan var slut. Annars +1 som vanligt.
+  const avgRir = averageRIR(workSets)
+  let repStep = 1
+  if (avgRir != null && avgRir >= 3) repStep = 2
+  else if (avgRir != null && avgRir < 0.5) repStep = 0
+
+  const perSetTarget = distributeReps(prevTotal + repStep, numWorkSets, repsMin, repsMax)
+  // Hall totalen konsekvent med per-set efter min/max-klampning.
+  const nextTargetTotal = perSetTarget.reduce((a, b) => a + b, 0)
   const perSetStr = perSetTarget.join(' + ')
+  const msg = repStep === 0
+    ? `Du körde till failure — behåll ${currentWeight} kg och samma mål (${perSetStr}) tills det känns lättare.`
+    : repStep === 2
+      ? `Bra marginal kvar! Behåll ${currentWeight} kg — sikta på ${perSetStr} reps.`
+      : `Behåll ${currentWeight} kg — sikta på ${perSetStr} reps.`
   return {
     action: 'keep_weight_add_reps',
     nextWeight: currentWeight,
     nextTargetTotalReps: nextTargetTotal,
     nextTargetRepsPerSet: perSetTarget,
-    messageToUser: `Behåll ${currentWeight} kg — sikta på ${perSetStr} reps.`,
-    reason: 'total_reps_progressing',
+    messageToUser: msg,
+    reason: avgRir != null && avgRir >= 3 ? 'reps_progressing_high_rir'
+      : avgRir != null && avgRir < 0.5 ? 'reps_hold_zero_rir'
+      : 'total_reps_progressing',
   }
 }
 
