@@ -292,14 +292,16 @@ export function computeProgression({
 
 // ─── Hjalpfunktion: fordela totalreps over set ─────────────────
 // Fordelar reps jamnt med avrundning, respekterar min/max granser.
-// T.ex. 21 reps over 2 set → [11, 10]
+// Extrarepsen laggs pa de SISTA seten, sa okningen kommer bakifran:
+// 7+7+7 → 7+7+8 → 7+8+8 → 8+8+8. T.ex. 21 reps over 2 set → [10, 11].
 
 function distributeReps(totalTarget, numSets, repsMin, repsMax) {
   if (numSets <= 0) return []
   const base = Math.floor(totalTarget / numSets)
   const remainder = totalTarget % numSets
   return Array.from({ length: numSets }, (_, i) => {
-    let r = i < remainder ? base + 1 : base
+    // Sista `remainder` seten far +1 (okningen kommer bakifran).
+    let r = i >= numSets - remainder ? base + 1 : base
     if (repsMin != null) r = Math.max(r, repsMin)
     if (repsMax != null) r = Math.min(r, repsMax)
     return r
