@@ -302,3 +302,20 @@
   border-color: var(--done-green) !important;
   cursor: default;
 }
+
+/* Personbasta: guldcirkel med PB-text istallet for gron */
+.pb {
+  background: #F5D020 !important;
+  border-color: #F5D020 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 3px rgba(245, 208, 32, 0.25);
+}
+.pbLabel {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  color: #141414;
+  line-height: 1;
+}

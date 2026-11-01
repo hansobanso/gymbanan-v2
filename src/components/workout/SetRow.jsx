@@ -256,13 +256,15 @@ export default function SetRow({
           )}
         </div>
 
-        {/* Fyll-cirkel */}
+        {/* Fyll-cirkel (visar PB nar setet ar ett personbasta) */}
         <button
-          className={`${styles.checkBtn} ${set.done ? styles.checked : ''}`}
+          className={`${styles.checkBtn} ${set.done ? styles.checked : ''} ${set.done && set.isPB ? styles.pb : ''}`}
           onClick={() => onComplete()}
           type="button"
-          aria-label={set.done ? 'Ångra set' : 'Markera set som klart'}
-        />
+          aria-label={set.done ? (set.isPB ? 'Personbästa! Ångra set' : 'Ångra set') : 'Markera set som klart'}
+        >
+          {set.done && set.isPB && <span className={styles.pbLabel}>PB</span>}
+        </button>
       </motion.div>
     </div>
   )

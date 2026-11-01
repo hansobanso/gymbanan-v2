@@ -15,6 +15,55 @@ function defaultWeightIncrement(equipment) {
   return 2.5
 }
 
+// ── Personbasta (PB) ────────────────────────────────────────────
+// Bygger per ovning: tyngsta vikt nagonsin + flest reps per vikt, fran
+// historiken. Ett klarat set ar PB om det slar tyngsta vikten (aven 1 rep)
+// ELLER tar fler reps an nagonsin pa exakt den vikten.
+function buildPbMap(workouts) {
+  const map = {}
+  for (const w of workouts ?? []) {
+    for (const ex of w.exercises ?? []) {
+      if (!ex?.name) continue
+      let e = map[ex.name]
+      if (!e) e = map[ex.name] = { maxWeight: null, reps: {} }
+      for (const s of ex.sets ?? []) {
+        if (!s.done || s.type !== 'work' || s.subtype === 'backoff') continue
+        const r = parseInt(s.reps)
+        if (Number.isNaN(r) || r <= 0) continue
+        const wf = parseFloat(s.weight)
+        const wv = Number.isNaN(wf) ? 0 : wf
+        if (e.maxWeight == null || wv > e.maxWeight) e.maxWeight = wv
+        if (e.reps[wv] == null || r > e.reps[wv]) e.reps[wv] = r
+      }
+    }
+  }
+  return map
+}
+
+// Ar detta set ett PB? historySet = ovningar som hade historik INNAN passet
+// (forsta gangen en ovning kors flaggas inget - det blir baslinjen).
+function detectPBIn(map, historySet, name, weight, reps) {
+  if (!historySet || !historySet.has(name)) return false
+  const e = map[name]
+  if (!e) return false
+  if (Number.isNaN(reps) || reps <= 0) return false
+  const wv = Number.isNaN(weight) ? 0 : weight
+  if (e.maxWeight != null && wv > e.maxWeight) return true   // ny tyngsta vikt
+  if (e.reps[wv] != null && reps > e.reps[wv]) return true    // fler reps pa vikten
+  return false
+}
+
+// Uppdaterar PB-kartan efter ett klarat set sa senare set i samma pass
+// jamfors mot det nya basta.
+function recordPBIn(map, name, weight, reps) {
+  if (Number.isNaN(reps) || reps <= 0) return
+  let e = map[name]
+  if (!e) e = map[name] = { maxWeight: null, reps: {} }
+  const wv = Number.isNaN(weight) ? 0 : weight
+  if (e.maxWeight == null || wv > e.maxWeight) e.maxWeight = wv
+  if (e.reps[wv] == null || reps > e.reps[wv]) e.reps[wv] = reps
+}
+
 // uid + makeSet hjalp-funktioner
 
 function uid() {
@@ -253,6 +302,23 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
     )
   )
   const [loading, setLoading] = useState(!resumed)
+
+  // PB-data: tyngsta vikt + flest reps per vikt, per ovning. Byggs fran
+  // historiken vid passets start (aven vid resume) sa PB kan flaggas direkt
+  // nar ett set bockas av. pbHistoryRef = ovningar som fanns INNAN passet.
+  const pbMapRef = useRef({})
+  const pbHistoryRef = useRef(new Set())
+  useEffect(() => {
+    if (!userId) return
+    let cancelled = false
+    getWorkouts(userId, 100).then(ws => {
+      if (cancelled) return
+      const map = buildPbMap(ws)
+      pbMapRef.current = map
+      pbHistoryRef.current = new Set(Object.keys(map))
+    }).catch(() => {})
+    return () => { cancelled = true }
+  }, [userId])
 
   // Pre-fill weight/reps/rir from last session + preload exercise metadata
   useEffect(() => {
@@ -771,8 +837,17 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
         if (ex.localId !== exId) return ex
         const completingSet = ex.sets.find(s => s.id === setId)
         const wasCompleted = completingSet?.done
-        // Toggle set
-        let sets = ex.sets.map(s => s.id !== setId ? s : { ...s, done: !s.done })
+        // PB-koll nar setet bockas av (ej vid angra). Work-set, ej backoff.
+        const willBeDone = !wasCompleted
+        let isPB = false
+        if (willBeDone && completingSet?.type === 'work' && completingSet.subtype !== 'backoff') {
+          const W = parseFloat(completingSet.weight)
+          const R = parseInt(completingSet.reps)
+          isPB = detectPBIn(pbMapRef.current, pbHistoryRef.current, ex.name, W, R)
+          recordPBIn(pbMapRef.current, ex.name, W, R)
+        }
+        // Toggle set (nollstall PB-flaggan vid angra)
+        let sets = ex.sets.map(s => s.id !== setId ? s : { ...s, done: willBeDone, isPB: willBeDone ? isPB : false })
         // Copy weight to next undone work set when completing a work set
         if (!wasCompleted && completingSet?.type === 'work' && completingSet.subtype !== 'backoff' && completingSet.weight) {
           const completedIdx = sets.findIndex(s => s.id === setId)
