@@ -489,10 +489,10 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
   }, [persistWorkout])
 
   const addBackoffSet = useCallback((exId) => {
-    // Set-justeringar (extra/borttaget set) ar engangsbeteende for dagens
-    // pass och triggar inte programChanged. Bara ovning-relaterade
-    // strukturandringar (ny ovning, borttagen ovning, byt ovning, andrad
-    // reps-target) prompar 'spara kopia / uppdatera program'.
+    // Set-andringar (lagt till/tagit bort set) raknas numera som en
+    // programandring sa 'spara kopia / uppdatera program' dyker upp vid
+    // avslut och antalet set foljer med till nasta gang.
+    setProgramChanged(true)
     setExercises(prev => prev.map(ex => {
       if (ex.localId !== exId) return ex
       const lastWork = [...ex.sets].reverse().find(s => s.type === 'work' && s.weight)
@@ -512,6 +512,9 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
   }, [])
 
   const addSet = useCallback((exId, type) => {
+    // Andrat antal arbetsset ska kunna sparas till programmet. Uppvarmnings-
+    // set ar for transienta for att rakna som en programandring.
+    if (type !== 'warmup') setProgramChanged(true)
     setExercises(prev => prev.map(ex => {
       if (ex.localId !== exId) return ex
       if (type === 'warmup') {
@@ -527,9 +530,13 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
   }, [])
 
   const removeSet = useCallback((exId, setId) => {
-    setExercises(prev => prev.map(ex =>
-      ex.localId !== exId ? ex : { ...ex, sets: ex.sets.filter(s => s.id !== setId) }
-    ))
+    setExercises(prev => prev.map(ex => {
+      if (ex.localId !== exId) return ex
+      const removed = ex.sets.find(s => s.id === setId)
+      // Borttaget arbets-/backoffset raknas som programandring (ej uppvarmning).
+      if (removed && removed.type !== 'warmup') setProgramChanged(true)
+      return { ...ex, sets: ex.sets.filter(s => s.id !== setId) }
+    }))
   }, [])
 
   const duplicateSet = useCallback((exId, setId) => {
@@ -537,6 +544,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
       if (ex.localId !== exId) return ex
       const idx = ex.sets.findIndex(s => s.id === setId)
       if (idx === -1) return ex
+      if (ex.sets[idx]?.type !== 'warmup') setProgramChanged(true)
       const orig = ex.sets[idx]
       // Clone the set with a new id and reset done/completedAt
       const cloned = {

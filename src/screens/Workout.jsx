@@ -322,6 +322,11 @@ export default function Workout({ session }) {
           s.name === sessionName ? buildUpdatedSession(s, snapshot) : s
         )
         await updateProgram(program.id, { sessions: updatedSessions })
+        // Uppdatera appens state sa andringarna syns direkt nasta pass utan
+        // omladdning (makeActive: false - andrar inte vilket program som ar aktivt).
+        window.dispatchEvent(new CustomEvent('activeProgramChanged', {
+          detail: { program: { ...program, sessions: updatedSessions }, makeActive: false },
+        }))
       } else if (choice === 'copy' && program) {
         const saved = await saveProgram({
           name: program.name,

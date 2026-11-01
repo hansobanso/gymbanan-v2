@@ -68,8 +68,13 @@ function AppRoutes({ session }) {
     function onActiveChanged(e) {
       const prog = e.detail?.program
       if (!prog?.id) return
-      setPrograms(prev => prev.some(p => p.id === prog.id) ? prev : [...prev, prog])
-      setActiveProgramId(prog.id)
+      // Ersatt ett befintligt program (uppdatering) eller lagg till nytt (kopia),
+      // sa listan alltid speglar senaste sessions.
+      setPrograms(prev => prev.some(p => p.id === prog.id)
+        ? prev.map(p => p.id === prog.id ? prog : p)
+        : [...prev, prog])
+      // makeActive: false vid ren uppdatering - andra inte vilket som ar aktivt.
+      if (e.detail?.makeActive !== false) setActiveProgramId(prog.id)
     }
     window.addEventListener('activeProgramChanged', onActiveChanged)
     // "Vad ar nytt?" i Installningar oppnar nyhetsrutan manuellt
