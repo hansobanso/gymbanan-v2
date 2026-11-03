@@ -1,23 +1,16 @@
-// Pling nar vilotiden ar ute - aven med slackt skarm (iPhone-PWA).
+// Pling nar vilotiden ar ute.
 //
-// Problemet: nar skarmen slacks fryser iOS vanliga timers (setInterval),
-// sa vi kan inte "spela ljud nar left === 0" - den koden kors aldrig forran
-// appen kommer i forgrunden igen.
+// Vi anvander BARA Web Audio (en kort ton schemalagd vid sluttiden). Web
+// Audio mixas med annat ljud pa iPhone, sa det pausar INTE Spotify/musik.
 //
-// Losningen (tva delar som maste samverka):
-//  1. Schemalagg sjalva plinget i Web Audio vid den EXAKTA sluttiden redan
-//     nar vilan startar (osc.start(when)). Web Audio har en egen klocka och
-//     spelar pa utsatt tid aven utan att JS kor.
-//  2. Hall ljud-sessionen vid liv i bakgrunden med ett tyst loopande ljud.
-//     Annars suspendar iOS hela AudioContext nar skarmen slacks, klockan
-//     pausar och plinget kommer aldrig (eller for sent).
-//
-// Allt maste startas fran en anvandargest (tap) - vilotimern startar fran
-// att man bockar av ett set, sa den gesten racker for att "lasa upp" ljudet.
+// Tidigare holls en tyst <audio>-loop igang i bakgrunden for att plinget
+// skulle spela aven med slackt skarm - men ett <audio>-element tar over
+// ljudsessionen pa iOS och pausar anvandarens musik. Det var fel pris, sa
+// det ar borttaget. Nackdelen: med helt slackt skarm kan iOS frysa
+// ljudklockan sa plinget uteblir eller kommer sent. Med skarmen pa (appen
+// i forgrunden, som nar man tittar pa vilotimern) spelar det som det ska.
 
 let ctx = null
-let keepAliveEl = null
-let silentUrl = null
 let scheduled = []
 
 function getCtx() {
@@ -29,50 +22,10 @@ function getCtx() {
   return ctx
 }
 
-// Bygger ett kort tyst WAV-ljud i minnet (blob-url) som keep-alive-loop.
-function getSilentUrl() {
-  if (silentUrl) return silentUrl
-  try {
-    const rate = 8000
-    const n = Math.floor(0.5 * rate)
-    const buf = new ArrayBuffer(44 + n * 2)
-    const dv = new DataView(buf)
-    const ws = (off, s) => { for (let i = 0; i < s.length; i++) dv.setUint8(off + i, s.charCodeAt(i)) }
-    ws(0, 'RIFF'); dv.setUint32(4, 36 + n * 2, true); ws(8, 'WAVE')
-    ws(12, 'fmt '); dv.setUint32(16, 16, true); dv.setUint16(20, 1, true)
-    dv.setUint16(22, 1, true); dv.setUint32(24, rate, true); dv.setUint32(28, rate * 2, true)
-    dv.setUint16(32, 2, true); dv.setUint16(34, 16, true)
-    ws(36, 'data'); dv.setUint32(40, n * 2, true)
-    // samplingarna ar redan 0 = tystnad
-    silentUrl = URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }))
-  } catch { /* ignored */ }
-  return silentUrl
-}
-
-// Anropas fran anvandargesten nar vilan startar: skapa/resuma ljudkontext
-// och forbered keep-alive-elementet.
+// Anropas fran anvandargesten nar vilan startar sa ljudkontexten lases upp.
 export function primeRestSound() {
   const c = getCtx()
   try { if (c && c.state === 'suspended') c.resume() } catch { /* ignored */ }
-  if (!keepAliveEl) {
-    try {
-      const url = getSilentUrl()
-      if (url) {
-        keepAliveEl = new Audio(url)
-        keepAliveEl.loop = true
-        keepAliveEl.volume = 0.02
-        keepAliveEl.setAttribute('playsinline', '')
-      }
-    } catch { /* ignored */ }
-  }
-}
-
-function startKeepAlive() {
-  try { keepAliveEl?.play?.()?.catch?.(() => {}) } catch { /* ignored */ }
-}
-
-function stopKeepAlive() {
-  try { keepAliveEl?.pause?.() } catch { /* ignored */ }
 }
 
 // Schemalagg plinget vid given wall-clock-tid (Date.now()-ms). Avbryter ev.
@@ -82,7 +35,6 @@ export function scheduleRestBeep(endEpochMs) {
   cancelRestBeep()
   if (!c) return
   try { if (c.state === 'suspended') c.resume() } catch { /* ignored */ }
-  startKeepAlive()
   const offset = Math.max(0, (endEpochMs - Date.now()) / 1000)
   const when = c.currentTime + offset
   // Tre korta toner - tydligt men inte skrikigt.
@@ -104,7 +56,7 @@ export function scheduleRestBeep(endEpochMs) {
   }
 }
 
-// Avbryter schemalagt pling och tystar keep-alive. Anropas vid stopp/paus.
+// Avbryter schemalagt pling. Anropas vid stopp/paus/omschemalaggning.
 export function cancelRestBeep() {
   for (const o of scheduled) {
     try { o.stop() } catch { /* ignored */ }
@@ -113,7 +65,5 @@ export function cancelRestBeep() {
   scheduled = []
 }
 
-// Timern tog slut (eller stoppades) - sluta hall ljudsessionen vid liv.
-export function endRestSound() {
-  stopKeepAlive()
-}
+// Behalls for bakatkompatibilitet med useTimer (keep-alive finns inte langre).
+export function endRestSound() { /* no-op */ }
