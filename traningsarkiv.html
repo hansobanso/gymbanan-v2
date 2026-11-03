@@ -1,0 +1,350 @@
+<title>Träningsarkivet</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+  /* Layout: en lugn rapport i en spalt, muskelbalansen som stapeldiagram hogst upp, fragerutan i mitten, ovningstabellen sist. */
+  :root {
+    --bg:#f7f4ee; --surface:#fffdf8; --fg:#1b1a16; --muted:#716a5d;
+    --line:#e8e2d6; --accent:#b47d1f; --accent-soft:rgba(180,125,31,.14);
+    --low:#b5451f; --ok:#3d7a3a; --track:#ece6da;
+    --display:"Barlow Condensed",Impact,sans-serif;
+    --body:"Hanken Grotesk",system-ui,sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+    --bg:#15140f; --surface:#1e1c16; --fg:#f2efe6; --muted:#a39b8a;
+    --line:#2e2b22; --accent:#f5d020; --accent-soft:rgba(245,208,32,.13);
+    --low:#ef7a52; --ok:#7bbf6a; --track:#2a271f; color-scheme:dark;
+  }}
+  :root[data-theme="dark"]{
+    --bg:#15140f; --surface:#1e1c16; --fg:#f2efe6; --muted:#a39b8a;
+    --line:#2e2b22; --accent:#f5d020; --accent-soft:rgba(245,208,32,.13);
+    --low:#ef7a52; --ok:#7bbf6a; --track:#2a271f; color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--fg);font-family:var(--body);line-height:1.5}
+  .wrap{max-width:740px;margin:0 auto;
+    padding-left:max(16px,env(safe-area-inset-left,0px));
+    padding-right:max(16px,env(safe-area-inset-right,0px));
+    padding-block:28px 56px}
+  h1{font-family:var(--display);font-weight:700;font-size:clamp(34px,9vw,52px);
+    letter-spacing:.01em;line-height:.98;margin:0;text-transform:uppercase;text-wrap:balance}
+  .sub{color:var(--muted);font-size:14px;margin-top:8px}
+  h2{font-family:var(--display);font-weight:700;font-size:24px;letter-spacing:.02em;
+    text-transform:uppercase;margin:40px 0 14px;display:flex;align-items:baseline;gap:10px}
+  h2 .hint{font-family:var(--body);font-weight:500;font-size:12.5px;color:var(--muted);text-transform:none;letter-spacing:0}
+  .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+  /* Summering */
+  .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:22px}
+  .tile{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 14px 13px}
+  .tile .n{font-family:var(--display);font-weight:700;font-size:30px;line-height:1}
+  .tile .l{color:var(--muted);font-size:12px;margin-top:6px}
+  .note{background:var(--accent-soft);border-radius:12px;padding:12px 14px;margin-top:12px;font-size:13.5px}
+  .note b{color:var(--accent)}
+
+  /* Muskelbalans */
+  .toggle{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin-left:auto}
+  .toggle button{font-family:var(--body);font-size:12.5px;font-weight:600;border:0;background:transparent;
+    color:var(--muted);padding:5px 12px;cursor:pointer}
+  .toggle button[aria-pressed="true"]{background:var(--accent);color:#1b1a16}
+  .bars{display:flex;flex-direction:column;gap:9px}
+  .bar{display:grid;grid-template-columns:118px 1fr auto;align-items:center;gap:10px}
+  .bar .name{font-size:13.5px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bar .track{background:var(--track);border-radius:7px;height:16px;overflow:hidden}
+  .bar .fill{height:100%;border-radius:7px;background:var(--accent);transition:width .5s ease}
+  .bar.low .fill{background:var(--low)}
+  .bar .val{font-family:var(--mono);font-size:12.5px;color:var(--muted);min-width:34px;text-align:right}
+  .bar.low .name{color:var(--low);font-weight:600}
+  .focus{margin-top:16px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:15px 16px}
+  .focus h3{margin:0 0 8px;font-size:14px;font-family:var(--display);letter-spacing:.03em;text-transform:uppercase}
+  .focus p{margin:0;font-size:13.5px;color:var(--muted)}
+  .focus b{color:var(--fg)}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+  .chip{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:3px 10px;color:var(--muted)}
+  .chip.low{border-color:var(--low);color:var(--low)}
+
+  /* Fraga */
+  .ask{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px}
+  .ask textarea{width:100%;resize:vertical;min-height:52px;font-family:var(--body);font-size:15px;
+    color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:11px;padding:11px 12px}
+  .ask textarea:focus{outline:2px solid var(--accent);outline-offset:1px}
+  .suggest{display:flex;flex-wrap:wrap;gap:8px;margin:11px 0}
+  .suggest button{font-family:var(--body);font-size:12.5px;text-align:left;cursor:pointer;
+    background:var(--accent-soft);border:0;color:var(--fg);border-radius:999px;padding:6px 12px}
+  .row{display:flex;gap:10px;align-items:center}
+  .send{font-family:var(--display);letter-spacing:.04em;text-transform:uppercase;font-weight:700;font-size:15px;
+    background:var(--accent);color:#1b1a16;border:0;border-radius:11px;padding:10px 20px;cursor:pointer}
+  .send:disabled{opacity:.5;cursor:default}
+  .answer{margin-top:14px;font-size:14.5px;white-space:pre-wrap;line-height:1.6}
+  .answer:empty{display:none}
+  .amuted{color:var(--muted)}
+
+  /* Ovningar */
+  .tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px}
+  table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:440px}
+  th,td{text-align:right;padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+  th{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600}
+  th:first-child,td:first-child{text-align:left}
+  td.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  tr:last-child td{border-bottom:0}
+  .more{margin-top:10px;background:transparent;border:1px solid var(--line);border-radius:10px;
+    color:var(--fg);font-family:var(--body);font-size:13px;font-weight:600;padding:8px 14px;cursor:pointer}
+  footer{margin-top:40px;color:var(--muted);font-size:12px;border-top:1px solid var(--line);padding-top:16px}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Träningsarkivet</h1>
+    <p class="sub" id="sub"></p>
+  </header>
+
+  <section class="tiles" id="tiles"></section>
+  <div class="note" id="returnNote"></div>
+
+  <h2>Muskelbalans
+    <div class="toggle" role="group" aria-label="Period">
+      <button id="tTot" aria-pressed="true">Totalt</button>
+      <button id="tRec" aria-pressed="false">Senaste passen</button>
+    </div>
+  </h2>
+  <div class="bars" id="bars"></div>
+  <div class="focus" id="focus"></div>
+
+  <h2>Fråga om din träning</h2>
+  <div class="ask">
+    <textarea id="q" placeholder="T.ex. Vilken muskelgrupp behöver jag jobba mer på?"></textarea>
+    <div class="suggest" id="suggest"></div>
+    <div class="row">
+      <button class="send" id="send">Fråga</button>
+      <span class="amuted" id="askState" style="font-size:12.5px"></span>
+    </div>
+    <div class="answer" id="answer"></div>
+  </div>
+
+  <h2>Övningar <span class="hint">sorterat på antal set</span></h2>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Övning</th><th>Set</th><th>Tyngsta</th><th>Est. 1RM</th><th>Senast</th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+  <button class="more" id="more" hidden>Visa alla övningar</button>
+
+  <footer id="foot"></footer>
+</div>
+
+<script>
+/* ===== Data (uppdateras automatiskt varje vecka) ===== */
+const DATA = {
+  updated: "2026-11-01",
+  summary: { workouts: 22, first: "2026-04-10", last: "2026-11-01", sessions7d: 3, sessions28d: 3 },
+  // total = viktade set hela perioden; recent = viktade set senaste 28 dagarna (primar 1.0, sekundar 0.5)
+  muscles: [
+    { m:"Lats", total:59.0, recent:15.2 },
+    { m:"Bröst", total:51.0, recent:15.2 },
+    { m:"Främre axel", total:50.5, recent:9.6 },
+    { m:"Triceps", total:49.5, recent:11.2 },
+    { m:"Biceps", total:45.5, recent:15.6 },
+    { m:"Underarmar", total:42.5, recent:13.2 },
+    { m:"Quads", total:39.0, recent:6.0 },
+    { m:"Bakre axel", total:33.5, recent:7.6 },
+    { m:"Ländrygg", total:33.5, recent:7.6 },
+    { m:"Rumpa", total:30.5, recent:6.0 },
+    { m:"Mellersta axel", total:29.0, recent:7.2 },
+    { m:"Rotatorkuff", total:27.5, recent:7.6 },
+    { m:"Vader", total:26.5, recent:5.2 },
+    { m:"Adduktorer", total:22.5, recent:4.4 },
+    { m:"Trapezius", total:22.0, recent:4.4 },
+    { m:"Hamstrings", total:17.0, recent:5.6 },
+    { m:"Core", total:3.0, recent:0.0 },
+  ],
+  legs: ["Quads","Hamstrings","Rumpa","Vader","Adduktorer"],
+  exercises: [
+    { n:"Skivstångsrodd", sets:18, max:77.5, e1rm:95.6, last:"2026-11-01" },
+    { n:"Benpress", sets:14, max:125, e1rm:187.5, last:"2026-10-29" },
+    { n:"Knäböj", sets:14, max:87.5, e1rm:105.0, last:"2026-11-01" },
+    { n:"Rumänska marklyft", sets:14, max:105, e1rm:133.0, last:"2026-10-29" },
+    { n:"Liggande hantelpress", sets:13, max:27.5, e1rm:34.8, last:"2026-09-06" },
+    { n:"Latsdrag smalt neutralt grepp", sets:12, max:80, e1rm:104.0, last:"2026-11-01" },
+    { n:"Sidolyft med hantlar", sets:12, max:10, e1rm:14.7, last:"2026-11-01" },
+    { n:"Chins", sets:11, max:0, e1rm:0, last:"2026-10-29" },
+    { n:"Militärpress", sets:10, max:40, e1rm:52.0, last:"2026-10-29" },
+    { n:"Triceps pushdown", sets:8, max:22.5, e1rm:33.8, last:"2026-07-08" },
+    { n:"Bänkpress", sets:8, max:75, e1rm:77.5, last:"2026-10-29" },
+    { n:"Bicepscurl alternerande", sets:8, max:12.5, e1rm:18.8, last:"2026-11-01" },
+    { n:"Lutande hantelpress", sets:8, max:22, e1rm:27.9, last:"2026-11-01" },
+    { n:"Sidolyft med kabel", sets:8, max:6.3, e1rm:8.8, last:"2026-07-11" },
+    { n:"Hantelrodd", sets:6, max:32.5, e1rm:43.3, last:"2026-09-06" },
+    { n:"Sittande bencurl", sets:6, max:55, e1rm:79.2, last:"2026-11-01" },
+    { n:"Dips", sets:6, max:0, e1rm:0, last:"2026-09-06" },
+    { n:"Triceps push med maskin", sets:5, max:65, e1rm:97.5, last:"2026-10-29" },
+    { n:"Stående kabelflyes", sets:5, max:13.75, e1rm:19.3, last:"2026-11-01" },
+    { n:"Kabel curl", sets:5, max:25, e1rm:34.2, last:"2026-04-19" },
+    { n:"Vadpress", sets:4, max:140, e1rm:182.0, last:"2026-04-21" },
+    { n:"Benspark", sets:4, max:45, e1rm:61.5, last:"2026-07-11" },
+    { n:"Maskinflyes", sets:4, max:40, e1rm:61.3, last:"2026-07-10" },
+    { n:"Liggande bencurl", sets:4, max:40, e1rm:53.3, last:"2026-07-11" },
+    { n:"Hantelcurl", sets:4, max:15, e1rm:19.5, last:"2026-07-13" },
+    { n:"Axelpress med hantlar", sets:4, max:17.5, e1rm:22.8, last:"2026-07-10" },
+    { n:"Lutad bicepscurl", sets:4, max:14, e1rm:18.2, last:"2026-05-21" },
+    { n:"Pullups nära neutral", sets:4, max:0, e1rm:0, last:"2026-05-21" },
+    { n:"Sissy squat", sets:4, max:0, e1rm:0, last:"2026-05-21" },
+    { n:"Kabelrodd med smalt grepp", sets:4, max:28.5, e1rm:39.0, last:"2026-07-13" },
+  ],
+};
+
+/* ===== Hjalpare ===== */
+const monthsSv = ["jan","feb","mar","apr","maj","jun","jul","aug","sep","okt","nov","dec"];
+function fmtDate(iso){ const d=new Date(iso+"T00:00:00"); return d.getDate()+" "+monthsSv[d.getMonth()]; }
+function fmtDateY(iso){ const d=new Date(iso+"T00:00:00"); return d.getDate()+" "+monthsSv[d.getMonth()]+" "+d.getFullYear(); }
+const kg = v => v>0 ? v.toLocaleString("sv-SE")+" kg" : "kroppsvikt";
+
+/* ===== Summering ===== */
+document.getElementById("sub").textContent =
+  "Uppdaterad "+fmtDateY(DATA.updated)+" · "+DATA.summary.workouts+" pass sedan "+fmtDate(DATA.summary.first);
+
+const tiles = [
+  { n: DATA.summary.workouts, l: "pass totalt" },
+  { n: fmtDate(DATA.summary.first)+"–"+fmtDate(DATA.summary.last), l: "träningsperiod" },
+  { n: DATA.summary.sessions7d, l: "pass senaste 7 dagarna" },
+];
+document.getElementById("tiles").innerHTML = tiles.map(t=>
+  `<div class="tile"><div class="n mono">${t.n}</div><div class="l">${t.l}</div></div>`).join("");
+
+/* Aterkomst-notis nar nyligen tunt */
+if (DATA.summary.sessions28d <= 6) {
+  document.getElementById("returnNote").innerHTML =
+    `<b>Precis tillbaka.</b> Bara ${DATA.summary.sessions28d} pass senaste 4 veckorna, så balansen nedan bygger på <b>hela perioden</b> (stabilare). Växla till "Senaste passen" för att se vad du kört sedan du kom igång igen.`;
+} else {
+  document.getElementById("returnNote").hidden = true;
+}
+
+/* ===== Muskelbalans ===== */
+let metric = "total";
+const legSet = new Set(DATA.legs);
+function renderBars(){
+  const arr = [...DATA.muscles].sort((a,b)=> b[metric]-a[metric]);
+  const max = Math.max(...arr.map(x=>x[metric]), 1);
+  // "Lag" = understa fjardedelen av skalan OCH bland de lagsta grupperna
+  const lowCut = max*0.45;
+  document.getElementById("bars").innerHTML = arr.map(x=>{
+    const w = Math.max(2,(x[metric]/max*100));
+    const low = x[metric] < lowCut;
+    return `<div class="bar ${low?"low":""}">
+      <span class="name">${x.m}</span>
+      <span class="track"><span class="fill" style="width:${w}%"></span></span>
+      <span class="val">${x[metric].toLocaleString("sv-SE")}</span>
+    </div>`;
+  }).join("");
+}
+function setMetric(m){
+  metric=m;
+  document.getElementById("tTot").setAttribute("aria-pressed", m==="total");
+  document.getElementById("tRec").setAttribute("aria-pressed", m==="recent");
+  renderBars();
+}
+document.getElementById("tTot").onclick=()=>setMetric("total");
+document.getElementById("tRec").onclick=()=>setMetric("recent");
+setMetric("total");
+
+/* Fokusomraden */
+(function(){
+  const byTotal = [...DATA.muscles].sort((a,b)=>a.total-b.total);
+  const bottom = byTotal.slice(0,4);
+  const legTot = DATA.muscles.filter(x=>legSet.has(x.m)).reduce((s,x)=>s+x.total,0);
+  const upperTot = DATA.muscles.filter(x=>!legSet.has(x.m)).reduce((s,x)=>s+x.total,0);
+  const ratio = (legTot/upperTot*100).toFixed(0);
+  document.getElementById("focus").innerHTML =
+    `<h3>Fokusområden</h3>
+     <p>Minst tränat över perioden: ${bottom.map(b=>`<b>${b.m}</b>`).join(", ")}.
+     Ben står för <b>${ratio}%</b> av överkroppens volym (${Math.round(legTot)} mot ${Math.round(upperTot)} viktade set),
+     så underkropp och core är det som släpar mest.</p>
+     <div class="chips">${bottom.map(b=>`<span class="chip low">${b.m}</span>`).join("")}</div>`;
+})();
+
+/* ===== Ovningstabell ===== */
+const tbody=document.getElementById("tbody");
+let showAll=false;
+function renderTbl(){
+  const rows = showAll ? DATA.exercises : DATA.exercises.slice(0,14);
+  tbody.innerHTML = rows.map(e=>
+    `<tr><td>${e.n}</td><td class="num">${e.sets}</td><td class="num">${kg(e.max)}</td>`+
+    `<td class="num">${e.e1rm>0? e.e1rm.toLocaleString("sv-SE")+" kg":"–"}</td>`+
+    `<td class="num amuted">${fmtDate(e.last)}</td></tr>`).join("");
+}
+if (DATA.exercises.length>14){
+  const more=document.getElementById("more"); more.hidden=false;
+  more.onclick=()=>{ showAll=!showAll; more.textContent=showAll?"Visa färre":"Visa alla övningar"; renderTbl(); };
+}
+renderTbl();
+
+document.getElementById("foot").innerHTML =
+  "Data från din Gymbanan-logg. Est. 1RM beräknas med Epley (vikt × (1 + reps/30)). "+
+  "Viktade set: primär muskel 1,0, sekundär 0,5. Uppdateras automatiskt varje vecka.";
+
+/* ===== Fraga om din traning (via claude.use("sample")) ===== */
+const SUGGEST = [
+  "Vilken muskelgrupp behöver jag jobba mer på?",
+  "Hur ser min balans ben mot överkropp ut?",
+  "Vad har jag försummat sedan jag kom tillbaka?",
+  "Vilka lyft har jag starkast 1RM på?",
+];
+document.getElementById("suggest").innerHTML =
+  SUGGEST.map(s=>`<button type="button">${s}</button>`).join("");
+document.querySelectorAll("#suggest button").forEach(b=>{
+  b.onclick=()=>{ document.getElementById("q").value=b.textContent; ask(); };
+});
+
+const answerEl=document.getElementById("answer");
+const stateEl=document.getElementById("askState");
+const sendBtn=document.getElementById("send");
+let samplePromise=null, asking=false;
+
+function context(){
+  return "ANVÄNDARENS TRÄNINGSDATA (Gymbanan)\n"+
+    "Pass totalt: "+DATA.summary.workouts+" ("+DATA.summary.first+" till "+DATA.summary.last+"). "+
+    "Senaste 7 dagarna: "+DATA.summary.sessions7d+" pass, senaste 28 dagarna: "+DATA.summary.sessions28d+" pass (precis tillbaka efter uppehåll).\n"+
+    "MUSKELVOLYM (viktade set, primär 1.0 + sekundär 0.5) — total hela perioden / senaste 28 dagarna:\n"+
+    DATA.muscles.map(m=>`- ${m.m}: total ${m.total}, senaste ${m.recent}`).join("\n")+"\n"+
+    "Ben räknas som: "+DATA.legs.join(", ")+".\n"+
+    "ÖVNINGAR (set, tyngsta vikt kg, est 1RM kg Epley, senast):\n"+
+    DATA.exercises.map(e=>`- ${e.n}: ${e.sets} set, ${e.max} kg, 1RM ${e.e1rm}, ${e.last}`).join("\n");
+}
+
+async function ask(){
+  if (asking) return;
+  const q=document.getElementById("q").value.trim();
+  if (!q) return;
+  if (samplePromise===null) samplePromise = (window.claude?.use ? claude.use("sample") : Promise.resolve(null));
+  const sample = await samplePromise;
+  if (!sample){
+    answerEl.innerHTML='<span class="amuted">Frågefunktionen är inte tillgänglig i den här vyn. Öppna arkivet i Claude-appen, eller fråga mig direkt i chatten.</span>';
+    return;
+  }
+  asking=true; sendBtn.disabled=true; stateEl.textContent="Tänker…"; answerEl.textContent="";
+  const input =
+    "Du är en rak, kunnig styrketränings-coach. Svara på svenska, kort och konkret (max ~6 meningar), "+
+    "BARA utifrån datan nedan. Peka på siffror när det hjälper. Om datan inte räcker för frågan, säg det ärligt. "+
+    "Kom ihåg att användaren precis är tillbaka efter ett uppehåll, så senaste-siffrorna är tunna.\n\n"+
+    context()+"\n\nFRÅGA: "+q;
+  try{
+    const res = await sample(input, { onText:({text})=>{ answerEl.textContent=text; }, modelTier:"default" });
+    if (res && res.text) answerEl.textContent=res.text;
+    stateEl.textContent="";
+  }catch(err){
+    stateEl.textContent="";
+    const code = err && err.code;
+    answerEl.innerHTML = code==="rate_limited"
+      ? '<span class="amuted">För många frågor just nu, vänta en stund och försök igen.</span>'
+      : '<span class="amuted">Kunde inte hämta svar just nu. Försök igen.</span>';
+  }
+  asking=false; sendBtn.disabled=false;
+}
+sendBtn.onclick=ask;
+document.getElementById("q").addEventListener("keydown",e=>{
+  if (e.key==="Enter" && (e.metaKey||e.ctrlKey)) ask();
+});
+</script>

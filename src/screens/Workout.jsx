@@ -674,7 +674,7 @@ export default function Workout({ session }) {
             <div className={styles.muscleSummary}>
               <span className={styles.muscleSummaryTitle}>Tränade muskelgrupper</span>
               <div className={styles.muscleSummaryFigure}>
-                <MuscleMap workouts={muscleSessionWorkout} exerciseMap={muscleExMap} colorFn={colorForIntensityRed} size={130} />
+                <MuscleMap workouts={muscleSessionWorkout} exerciseMap={muscleExMap} colorFn={colorForIntensityRed} sensitivity={6} size={130} />
               </div>
             </div>
             <div className={styles.finishWrap}>

@@ -48,7 +48,7 @@ function setEffort(st) {
   return 0.7
 }
 
-function intensitiesFromWorkouts(workouts, exerciseMap) {
+function intensitiesFromWorkouts(workouts, exerciseMap, sensitivity = 3) {
   const scores = {}
   const now = Date.now()
 
@@ -99,14 +99,17 @@ function intensitiesFromWorkouts(workouts, exerciseMap) {
   // mest stimulans, sen mattas det av. ~2 harda set -> tydligt gulnande,
   // 4-5 harda set -> full gul (mot tidigare 8 set for full gul).
   for (const [m, s] of Object.entries(scores)) {
-    out[m] = Math.min(1, (1 - Math.exp(-s / 3)) / 0.85)
+    // Hogre sensitivity-tal = snalare skala (kraver mer volym for att lysa).
+    // 3 = hemskarmens 7-dagarsvy (nagra set -> gult). Pass-gubben kor hogre
+    // sa ett enda set bara ger en svag glod och fargen byggs upp med volymen.
+    out[m] = Math.min(1, (1 - Math.exp(-s / sensitivity)) / 0.85)
   }
   return out
 }
 
-function resolveIntensities({ breakdown, workouts, intensities, exerciseMap }) {
+function resolveIntensities({ breakdown, workouts, intensities, exerciseMap, sensitivity }) {
   if (intensities) return intensities
-  if (workouts) return intensitiesFromWorkouts(workouts, exerciseMap)
+  if (workouts) return intensitiesFromWorkouts(workouts, exerciseMap, sensitivity)
   if (breakdown) {
     const out = {}
     for (const { muscle, sets } of breakdown) {
@@ -124,12 +127,13 @@ function resolveIntensities({ breakdown, workouts, intensities, exerciseMap }) {
 // Muskelfargning delegeras till lib/muscleColor.js (skogsgron palett).
 const colorFor = colorForIntensity
 
-export default function MuscleMap({ breakdown, workouts, intensities: customIntensities, exerciseMap, colorFn, size = 60 }) {
+export default function MuscleMap({ breakdown, workouts, intensities: customIntensities, exerciseMap, colorFn, sensitivity = 3, size = 60 }) {
   const intensities = resolveIntensities({
     breakdown,
     workouts,
     intensities: customIntensities,
     exerciseMap,
+    sensitivity,
   })
 
   // Bygg colors-objekt for MuscleFigure. colorFn override:ar standard-
