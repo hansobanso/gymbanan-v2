@@ -1,0 +1,389 @@
+/* Startsidan (designsprak 2026-11). Aldre delar ligger kvar i
+   HomeScreen.module.css: skelett, felkort, deload-banner, valkomst. */
+
+/* ── Sidhuvud ── */
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.headText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+}
+
+.headline {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #fff;
+  text-wrap: balance;
+}
+
+.headIcon {
+  width: 28px;
+  height: auto;
+  flex-shrink: 0;
+}
+
+/* ── Sektion ── */
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 16px;
+  margin-bottom: 20px;
+}
+
+.labelRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--d-muted);
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.labelRight {
+  flex-shrink: 0;
+  font-size: 13px;
+  color: #B5B5B5;
+}
+
+.labelRight b {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.linkBtn {
+  flex-shrink: 0;
+  border: 0;
+  background: transparent;
+  color: #B5B5B5;
+  font-size: 13px;
+  font-weight: 600;
+  /* Storre tryckyta an texten utan att flytta layouten */
+  padding: 12px 0 12px 16px;
+  margin: -12px 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.linkBtn:active { color: var(--accent); }
+
+/* ── Veckoremsa ── */
+.week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.dayLetter,
+.dayLetterToday {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--d-dim);
+}
+
+.dayLetterToday {
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.dot {
+  width: 34px;
+  height: 34px;
+  box-sizing: border-box;
+  border-radius: 17px;
+  background: var(--d-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dotFuture {
+  background: transparent;
+  border: 1px dashed #3A3A3A;
+}
+
+.dotToday {
+  background: transparent;
+  border: 2px solid var(--accent);
+}
+
+.dotDone {
+  background: var(--d-ok-dim);
+  color: var(--d-ok);
+}
+
+.dotDone.dotToday {
+  background: var(--d-ok-dim);
+}
+
+.dotCore {
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--accent);
+}
+
+/* ── Nasta pass ── */
+.hero {
+  margin: 0 16px 20px;
+  padding: 16px;
+  background: var(--d-card);
+  border: 1px solid var(--d-card-border);
+  border-radius: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.heroTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.heroTitleCol {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.heroName {
+  font-family: var(--font-num);
+  font-size: 44px;
+  line-height: 0.95;
+  font-weight: 700;
+  color: #fff;
+  overflow-wrap: anywhere;
+}
+
+.sub {
+  font-size: 13px;
+  color: var(--d-muted);
+}
+
+.heroStats {
+  display: flex;
+  gap: 14px;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.statNum {
+  font-family: var(--font-num);
+  font-size: 26px;
+  line-height: 1;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.statLabel {
+  font-size: 11px;
+  color: var(--d-muted);
+}
+
+.preview {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.previewRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 32px;
+  border-top: 1px solid #1F1F1F;
+}
+
+.previewName {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text);
+}
+
+.previewMeta {
+  flex-shrink: 0;
+  color: var(--d-muted);
+}
+
+.previewMore {
+  min-height: 44px;
+  margin-bottom: -10px;
+  border: 0;
+  border-top: 1px solid #1F1F1F;
+  background: transparent;
+  color: #B5B5B5;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.previewMore:active { color: var(--accent); }
+
+.hint {
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--d-hint);
+}
+
+.startBtn {
+  min-height: 56px;
+  padding: 8px 16px;
+  border-radius: 16px;
+  border: 0;
+  background: var(--accent);
+  color: #141414;
+  font-size: 17px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.12s var(--ease), filter 0.12s var(--ease);
+}
+
+.startBtn:active {
+  transform: scale(0.98);
+  filter: brightness(0.92);
+}
+
+/* ── Ovriga pass ── */
+.rows {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid var(--d-line);
+}
+
+.rows:empty { display: none; }
+
+.row {
+  min-height: 56px;
+  border: 0;
+  border-top: 1px solid var(--d-line);
+  background: transparent;
+  color: var(--text);
+  padding: 8px 2px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.row:active { background: #0E0E0E; }
+
+.rowText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.rowName {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.rowMeta {
+  font-size: 12px;
+  color: var(--d-muted);
+}
+
+.rowChevron {
+  flex-shrink: 0;
+  display: flex;
+  color: #6A6A6A;
+}
+
+/* ── Muskellage ── */
+.muscleGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 20px;
+  row-gap: 12px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  padding-top: 2px;
+}
+
+.muscle {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.muscleTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.muscleName {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.muscleDays {
+  color: var(--d-muted);
+}
+
+.stateReady,
+.stateResting,
+.stateNeglected {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.stateReady { color: var(--d-ok); }
+.stateResting { color: var(--accent); }
+.stateNeglected { color: var(--d-hint); }

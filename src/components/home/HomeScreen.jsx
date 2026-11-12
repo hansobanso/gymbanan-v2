@@ -3,55 +3,43 @@ import { calendarDaysAgo } from '../../lib/dates'
 import { useNavigate } from 'react-router-dom'
 import { getWorkouts, getDeloadStatus, endDeloadWeek, getProfile, cacheInvalidate, getExercises } from '../../lib/db'
 import { supabase } from '../../lib/supabase'
-import MuscleMap from '../shared/MuscleMap'
+import { detectGapAdjustment } from '../../lib/progression'
+import { weekStrip, muscleStatus, sessionSummary, daysLabel, workoutMinutes, pbCount } from '../../lib/homeStats'
 import { BananaIcon } from '../shared/Icons'
 import AppInfo from '../shared/AppInfo'
 import SessionPreview from './SessionPreview'
 import styles from './HomeScreen.module.css'
+import h from './Home.module.css'
 
-function getMonday() {
-  const now = new Date()
-  const day = now.getDay()
-  const diff = day === 0 ? 6 : day - 1
-  const mon = new Date(now)
-  mon.setDate(now.getDate() - diff)
-  mon.setHours(0, 0, 0, 0)
-  return mon
+const WEEKDAYS_AGO = ['i söndags', 'i måndags', 'i tisdags', 'i onsdags', 'i torsdags', 'i fredags', 'i lördags']
+
+// "idag", "igår", "i måndags", "för 12 dagar sedan"
+function relativeAgo(iso) {
+  const days = calendarDaysAgo(iso)
+  if (days <= 0) return 'idag'
+  if (days === 1) return 'igår'
+  if (days < 7) return WEEKDAYS_AGO[new Date(iso).getDay()]
+  return `för ${days} dagar sedan`
 }
 
-function relativeDate(iso) {
-  const d = new Date(iso)
-  const diffDays = calendarDaysAgo(iso)
-  if (diffDays === 0) return 'Idag'
-  if (diffDays === 1) return 'Igår'
-  if (diffDays < 7) return `${diffDays} dagar sedan`
-  return d.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' })
+function isoWeek(date = new Date()) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
+  const day = d.getUTCDay() || 7
+  d.setUTCDate(d.getUTCDate() + 4 - day)
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
+  return Math.ceil(((d - yearStart) / 86400000 + 1) / 7)
 }
 
-function fmtDuration(workout) {
-  // workouts-tabellen har started_at (inte created_at) - med fel kolumn
-  // visades passtiden aldrig pa hemskarmen.
-  if (!workout.finished_at || !workout.started_at) return null
-  const mins = Math.round((new Date(workout.finished_at) - new Date(workout.started_at)) / 60000)
-  if (mins < 1) return null
-  if (mins < 60) return `${mins} min`
-  const h = Math.floor(mins / 60), m = mins % 60
-  return m ? `${h}h ${m}min` : `${h}h`
+function fmtKg(w) {
+  return String(Math.round(w * 100) / 100).replace('.', ',')
 }
 
-function workSetCount(workout) {
-  return (workout.exercises ?? []).reduce(
-    (sum, ex) => sum + (ex.sets ?? []).filter(s => s.type === 'work' && s.done).length, 0
-  )
-}
-
-function fmtExSummary(ex) {
-  const ws = (ex.sets ?? []).filter(s => s.type === 'work' && s.done)
-  const best = Math.max(...ws.map(s => parseFloat(s.weight) || 0))
-  if (best > 0) return `${ws.length}×${best}kg`
-  if (ws.length > 0) return `${ws.length} set`
-  return null
-}
+const CheckIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+)
+const Chevron = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+)
 
 // Nasta pass = passet efter det senast korda passet SOM HOR TILL PROGRAMMET.
 // Ett fritt pass (eller ett pass fran ett annat program) emellan ska inte
@@ -67,10 +55,8 @@ function getNextSession(program, recentWorkouts) {
 }
 
 export default function HomeScreen({ session, programs = [], programsLoaded = false, programsError = false, onRetryPrograms, activeProgramId = null, onSetActive, onReady }) {
-  const [lastWorkout, setLastWorkout] = useState(null)
   const [recentWorkouts, setRecentWorkouts] = useState([])
   const [workoutsLoaded, setWorkoutsLoaded] = useState(false)
-  const [lastExpanded, setLastExpanded] = useState(false)
   const [previewSession, setPreviewSession] = useState(null) // { session, program }
   const [deloadStatus, setDeloadStatus] = useState({ isActive: false, daysLeft: 0 })
   const [displayName, setDisplayName] = useState('')
@@ -82,7 +68,6 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
     let cancelled = false
     getWorkouts(session.user.id, 15).then(ws => {
       if (cancelled) return
-      setLastWorkout(ws[0] ?? null)
       setRecentWorkouts(ws)
       setWorkoutsLoaded(true)
     }).catch(() => { if (!cancelled) setWorkoutsLoaded(true) })
@@ -110,7 +95,6 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
   useEffect(() => {
     function refetch() {
       getWorkouts(session.user.id, 15).then(ws => {
-        setLastWorkout(ws[0] ?? null)
         setRecentWorkouts(ws)
       }).catch(() => {})
       getDeloadStatus(session.user.id).then(setDeloadStatus).catch(() => {})
@@ -176,13 +160,6 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
   const hasLoadError = programsError && programs.length === 0
   const isNewUser = !activeProgram && !hasLoadError
 
-  const monday = getMonday()
-  const weeklyCount = recentWorkouts.filter(w => new Date(w.finished_at) >= monday).length
-
-  const programSummary = activeProgram
-    ? `${activeProgram.name} · ${(activeProgram.sessions ?? []).length} pass/vecka`
-    : null
-
   if (loading) {
     return (
       <div className={styles.screen}>
@@ -221,11 +198,43 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
   }
 
   const nextSession = getNextSession(activeProgram, recentWorkouts)
-  const lastSetCount = lastWorkout ? workSetCount(lastWorkout) : 0
-  const duration = lastWorkout ? fmtDuration(lastWorkout) : null
-  const lastExercises = lastWorkout?.exercises ?? []
+  const sessions = activeProgram?.sessions ?? []
+  const otherSessions = sessions.filter(s => s !== nextSession)
+  const strip = weekStrip(recentWorkouts)
+  const today = strip.days.find(d => d.isToday)
+  const trainedToday = !!today?.trained
+  const next = nextSession ? sessionSummary(nextSession, recentWorkouts, exerciseMap) : null
+  const nextCount = (nextSession?.exercises ?? []).length
+  const previewRows = next ? next.preview.slice(0, nextCount <= 3 ? 3 : 2) : []
+  const muscles = muscleStatus(recentWorkouts, exerciseMap)
+
+  // PT-besked pa kortet: sag i forvag om uppehallet paverkar dagens vikter.
+  let ptNote = null
+  if (nextSession && !deloadStatus.isActive) {
+    const gap = detectGapAdjustment(recentWorkouts, (nextSession.exercises ?? []).map(e => e.name))
+    if (gap?.hold) ptNote = `${gap.days} dagar sedan sist. Du får samma vikter och reps som förra gången.`
+    else if (gap) ptNote = `${gap.days} dagar sedan sist. Vikterna sänks ${gap.days > 28 ? 20 : 10} % idag.`
+  }
+
+  const dayName = today ? today.name.charAt(0).toUpperCase() + today.name.slice(1) : ''
+  const headline = trainedToday ? 'Bra jobbat idag'
+    : nextSession ? `${dayName}, dags för ${nextSession.name}`
+    : 'Gymbanan'
 
   return (
+    <div className={styles.screen}>
+      <header className={styles.pageHeader}>
+        <div className={h.head}>
+          <div className={h.headText}>
+            <span className={h.eyebrow}>GYMBANAN</span>
+            <h1 className={h.headline}>{headline}</h1>
+          </div>
+          <BananaIcon className={h.headIcon} />
+        </div>
+      </header>
+      <div className={styles.container}>
+
+        {/* ── Laddningsfel  return (
     <div className={styles.screen}>
       <header className={styles.pageHeader}>
         <h1 className={styles.pageTitle}>
@@ -278,44 +287,128 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
           </div>
         )}
 
-        {/* ── Alla pass i programmet ── */}
-        {activeProgram && (activeProgram.sessions ?? []).length > 0 && (
-          <section className={styles.section}>
-            <span className={styles.programHeading}>
-              <span className={styles.programLabel}>PROGRAM:</span> {activeProgram.name}
-            </span>
-            <div className={styles.sessionList}>
-              {(activeProgram.sessions ?? []).map((s, i) => {
-                const isNext = s.name === nextSession?.name
-                const isLast = s.name === lastWorkout?.session_name
-                return (
-                  <div key={s._id ?? s.id ?? i} className={`${styles.sessionRow} ${isNext ? styles.sessionRowNext : ''}`}>
-                    <button
-                      className={styles.sessionInfo}
-                      onClick={() => setPreviewSession({ session: s, program: activeProgram })}
-                      type="button"
-                    >
-                      <span className={styles.sessionName}>{s.name}</span>
-                      <div className={styles.sessionMetaRow}>
-                        {isNext && <span className={styles.sessionBadgeNext}>NÄSTA</span>}
-                        {isLast && !isNext && <span className={styles.sessionBadgeLast}>SENAST</span>}
-                        {(s.exercises ?? []).length > 0 && (
-                          <span className={styles.sessionMeta}>{s.exercises.length} övningar</span>
-                        )}
-                      </div>
-                    </button>
-                    <button
-                      className={styles.sessionStartBtn}
-                      onClick={() => handleStartSession(s, activeProgram)}
-                      type="button"
-                      aria-label={`Starta ${s.name}`}
-                    >
-                      <span className={styles.sessionStartLabel}>Starta</span>
-                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <path d="m9 18 6-6-6-6"/>
-                      </svg>
-                    </button>
+        {/* ── Veckan: bara vad som ar gjort, inget mal ── */}
+        {(activeProgram || recentWorkouts.length > 0) && (
+          <section className={h.block}>
+            <div className={h.labelRow}>
+              <span className={h.label}>Vecka {isoWeek()}</span>
+              <span className={h.labelRight}><b>{strip.count}</b> pass hittills</span>
+            </div>
+            <div
+              className={h.week}
+              role="img"
+              aria-label={`Tränat ${strip.days.filter(d => d.trained).map(d => d.name).join(', ') || 'inga dagar'} den här veckan`}
+            >
+              {strip.days.map((d, i) => (
+                <div key={i} className={h.day}>
+                  <span className={d.isToday ? h.dayLetterToday : h.dayLetter}>{d.letter}</span>
+                  <span className={[
+                    h.dot,
+                    d.trained ? h.dotDone : '',
+                    d.isToday ? h.dotToday : '',
+                    d.isFuture ? h.dotFuture : '',
+                  ].join(' ')}>
+                    {d.trained ? <CheckIcon /> : d.isToday ? <span className={h.dotCore} /> : null}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ── Nasta pass: sidans huvudsak ── */}
+        {nextSession && (
+          <section className={h.hero}>
+            <div className={h.heroTop}>
+              <div className={h.heroTitleCol}>
+                <span className={h.eyebrow}>NÄSTA PASS</span>
+                <span className={h.heroName}>{nextSession.name}</span>
+                {next.muscles.length > 0 && (
+                  <span className={h.sub}>{next.muscles.slice(0, 3).join(' · ')}</span>
+                )}
+              </div>
+              <div className={h.heroStats}>
+                {nextCount > 0 && (
+                  <div className={h.stat}>
+                    <span className={h.statNum}>{nextCount}</span>
+                    <span className={h.statLabel}>övningar</span>
                   </div>
+                )}
+                {next.estMin && (
+                  <div className={h.stat}>
+                    <span className={h.statNum}>~{next.estMin}</span>
+                    <span className={h.statLabel}>min</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {nextCount > 0 && (
+              <div className={h.preview}>
+                {previewRows.map((ex, i) => (
+                  <div key={i} className={h.previewRow}>
+                    <span className={h.previewName}>{ex.name}</span>
+                    <span className={h.previewMeta}>
+                      {ex.weight > 0 ? `${ex.sets} × ${fmtKg(ex.weight)} kg`
+                        : ex.repsMin && ex.repsMax ? `${ex.sets} × ${ex.repsMin}–${ex.repsMax}`
+                        : `${ex.sets} set`}
+                    </span>
+                  </div>
+                ))}
+                <button
+                  className={h.previewMore}
+                  onClick={() => setPreviewSession({ session: nextSession, program: activeProgram })}
+                  type="button"
+                >
+                  Visa alla {nextCount} övningar
+                </button>
+              </div>
+            )}
+
+            {ptNote && <span className={h.hint}>{ptNote}</span>}
+
+            <button
+              className={h.startBtn}
+              onClick={() => handleStartSession(nextSession, activeProgram)}
+              type="button"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5Z"/></svg>
+              Starta {nextSession.name}
+            </button>
+          </section>
+        )}
+
+        {/* ── Ovriga pass i programmet + fritt pass ── */}
+        {activeProgram && (
+          <section className={h.block}>
+            <div className={h.labelRow}>
+              <span className={h.label}>{activeProgram.name}</span>
+              <button className={h.linkBtn} onClick={handleStartFreeWorkout} type="button">
+                Fritt pass
+              </button>
+            </div>
+            <div className={h.rows}>
+              {otherSessions.map((s, i) => {
+                const sum = sessionSummary(s, recentWorkouts, exerciseMap)
+                const mins = workoutMinutes(sum.last)
+                const pbs = pbCount(sum.last)
+                const count = (s.exercises ?? []).length
+                const meta = sum.last
+                  ? [`Senast ${relativeAgo(sum.last.finished_at)}`, mins ? `${mins} min` : null, pbs ? `${pbs} PB` : null]
+                  : [count ? `${count} övningar` : null, 'inte kört än']
+                return (
+                  <button
+                    key={s._id ?? s.id ?? i}
+                    className={h.row}
+                    onClick={() => setPreviewSession({ session: s, program: activeProgram })}
+                    type="button"
+                  >
+                    <span className={h.rowText}>
+                      <span className={h.rowName}>{s.name}</span>
+                      <span className={h.rowMeta}>{meta.filter(Boolean).join(' · ')}</span>
+                    </span>
+                    <span className={h.rowChevron}><Chevron /></span>
+                  </button>
                 )
               })}
             </div>
@@ -400,80 +493,30 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
           </div>
         )}
 
-        {/* Fritt pass + veckocount på samma rad */}
-        {activeProgram && (
-          <div className={styles.freeRow}>
-            <span className={styles.weeklyCount}>{weeklyCount} pass denna vecka</span>
-            <button className={styles.freeLink} onClick={handleStartFreeWorkout} type="button">
-              + Starta fritt pass
-            </button>
-          </div>
-        )}
-
-        {/* ── Senaste passet (kollapsbart) ── */}
-        {lastWorkout && (
-          <section className={styles.section}>
-            <span className={styles.sectionTitle}>Senaste passet</span>
-            <div className={styles.lastCard}>
-              <button
-                className={styles.lastCardHeader}
-                onClick={() => setLastExpanded(v => !v)}
-                type="button"
-              >
-                <div className={styles.lastHeaderLeft}>
-                  <span className={styles.lastName}>{lastWorkout.session_name || 'Pass'}</span>
-                  <div className={styles.lastMeta}>
-                    <span className={styles.lastDate}>{relativeDate(lastWorkout.finished_at)}</span>
-                    {duration && <span className={styles.chip}>{duration}</span>}
-                    <span className={styles.chip}>{(lastWorkout.exercises ?? []).length} övningar</span>
-                    <span className={styles.chip}>{lastSetCount} set</span>
+        {/* ── Muskellage: nar ar varje grupp farsk igen? ── */}
+        {recentWorkouts.length > 0 && (
+          <section className={h.block}>
+            <div className={h.labelRow}>
+              <span className={h.label}>Muskelläge</span>
+              <span className={h.labelRight}>senast tränad</span>
+            </div>
+            <div className={h.muscleGrid}>
+              {muscles.map(m => (
+                <div key={m.group} className={h.muscle}>
+                  <div className={h.muscleTop}>
+                    <span className={h.muscleName}>{m.group}</span>
+                    <span className={h.muscleDays}>{daysLabel(m.days)}</span>
                   </div>
+                  {m.state === 'ready' && <span className={h.stateReady}>Redo</span>}
+                  {m.state === 'resting' && <span className={h.stateResting}>Vilar, {m.readyLabel}</span>}
+                  {m.state === 'neglected' && (
+                    <span className={h.stateNeglected}>{m.days == null ? 'Inte tränad' : 'Inte tränad på länge'}</span>
+                  )}
                 </div>
-                <svg
-                  className={`${styles.lastChevron} ${lastExpanded ? styles.lastChevronOpen : ''}`}
-                  width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"
-                >
-                  <path d="m9 18 6-6-6-6"/>
-                </svg>
-              </button>
-
-              {lastExpanded && lastExercises.length > 0 && (
-                <div className={styles.lastExList}>
-                  {lastExercises.map((ex, i) => {
-                    const summary = fmtExSummary(ex)
-                    return (
-                      <div key={i} className={styles.lastExRow}>
-                        <span className={styles.lastExName}>{ex.name}</span>
-                        {summary && <span className={styles.lastExSummary}>{summary}</span>}
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
+              ))}
             </div>
           </section>
         )}
-
-        {/* Muskelkarta - visas alltid, dimmad om inga pass an */}
-        <section className={styles.section}>
-          <span className={styles.sectionTitle}>
-            {recentWorkouts.length > 0 ? 'Muskelåterhämtning' : 'Muskelgrupper'}
-          </span>
-          <div className={styles.muscleBox}>
-            <MuscleMap workouts={recentWorkouts} exerciseMap={exerciseMap} size={160} />
-          </div>
-          {recentWorkouts.length > 0 ? (
-            <div className={styles.muscleLegend}>
-              <span className={styles.legendItem}><span className={styles.legendDot} style={{ background: '#1A2E10' }} /> Otränad</span>
-              <span className={styles.legendItem}><span className={styles.legendDot} style={{ background: '#3D6B1F' }} /> Återhämtad</span>
-              <span className={styles.legendItem}><span className={styles.legendDot} style={{ background: '#F5D020' }} /> Nyligen tränad</span>
-            </div>
-          ) : (
-            <p className={styles.muscleMapHint}>
-              Lyser upp baserat på dina träningspass
-            </p>
-          )}
-        </section>
 
       </div>
 
