@@ -30,14 +30,14 @@ const MUSCLE_GROUPS = [
   "Quads"
 ]
 
-export default function MuscleFigure({ colors = {}, className, style }) {
+export default function MuscleFigure({ colors = {}, baseColor = '#1A2E10', className, style }) {
   // Default-farg for muskler utan explicit farg = mork skogsgron (outranad).
   // Synca med MUSCLE_UNTRAINED i src/lib/muscleColor.js och --muscle-untrained i index.css.
   const c = useMemo(() => {
     const out = {}
-    for (const m of MUSCLE_GROUPS) out[m] = colors[m] ?? '#1A2E10'
+    for (const m of MUSCLE_GROUPS) out[m] = colors[m] ?? baseColor
     return out
-  }, [colors])
+  }, [colors, baseColor])
 
   // Silhuett-farg: helsvart.
   const silhouetteColor = '#000000'

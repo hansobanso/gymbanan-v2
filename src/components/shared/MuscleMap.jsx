@@ -150,6 +150,7 @@ export default function MuscleMap({ breakdown, workouts, intensities: customInte
   return (
     <MuscleFigure
       colors={colors}
+      baseColor={paint(0)}
       style={{ width: totalWidth, height: 'auto', display: 'block' }}
     />
   )
