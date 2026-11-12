@@ -1,62 +1,68 @@
 import { useState, useRef } from 'react'
-import { calendarDaysAgo } from '../../lib/dates'
+import { workoutMinutes, pbCount, fmtMinutes } from '../../lib/homeStats'
 import { AnimatePresence, motion } from 'framer-motion'
 import { displayWeightStr } from '../../lib/weightUtils'
 import styles from './WorkoutCard.module.css'
 
 const DELETE_WIDTH = 80
 
-function fmtDate(iso) {
-  const d = new Date(iso)
-  const now = new Date()
-  const diff = calendarDaysAgo(iso)
-  if (diff === 0) return 'Idag'
-  if (diff === 1) return 'Igår'
-  if (diff < 7) return d.toLocaleDateString('sv-SE', { weekday: 'long' })
-  return d.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' })
-}
-
-function fmtTime(iso) {
-  return new Date(iso).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })
-}
-
-// Passets langd fran start till slut, snyggt formaterat ("52 min" / "1h 5min")
-function fmtDuration(startedAt, finishedAt) {
-  if (!startedAt || !finishedAt) return null
-  const ms = new Date(finishedAt) - new Date(startedAt)
-  if (ms <= 0) return null
-  const mins = Math.round(ms / 60000)
-  if (mins < 1) return null
-  if (mins < 60) return `${mins} min`
-  const h = Math.floor(mins / 60)
-  const m = mins % 60
-  return m ? `${h}h ${m}min` : `${h}h`
-}
+const WEEKDAYS = ['Sön', 'Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör']
 
 function calcStats(exercises) {
-  if (!Array.isArray(exercises)) return { sets: 0, volume: 0, exCount: 0 }
-  let sets = 0, volume = 0, exCount = 0
-  for (const ex of exercises) {
-    if (!ex.sets) continue
-    const work = ex.sets.filter(s => s.type === 'work' && s.done)
+  let sets = 0, exCount = 0
+  for (const ex of exercises ?? []) {
+    const work = (ex.sets ?? []).filter(s => s.type === 'work' && s.done)
     if (work.length === 0) continue
     exCount++
     sets += work.length
-    volume += work.reduce((s, w) => s + (parseFloat(w.weight) || 0) * (parseInt(w.reps) || 0), 0)
   }
-  return { sets, volume, exCount }
+  return { sets, exCount }
 }
 
-function fmtVolume(kg) {
-  if (kg >= 1000) return `${(kg / 1000).toFixed(1)}k kg`
-  return `${Math.round(kg)} kg`
+// Ett pass sets pa en rad: "22 kg × 8 · 8 · 9" nar vikten ar densamma,
+// annars "22 × 8 · 24 × 6". PB-set markeras.
+function SetSummary({ sets, equipment, className }) {
+  const weights = sets.map(s => parseFloat(s.weight) || 0)
+  const sameWeight = weights.every(w => w === weights[0])
+  const w0 = weights[0] > 0 ? displayWeightStr(sets[0].weight, equipment) : null
+  const anyPb = sets.some(s => s.isPB)
+  const sep = (i) => i > 0 ? ' · ' : ''
+  if (sameWeight) {
+    return (
+      <span>
+        {w0 && `${w0} kg × `}
+        {sets.map((s, i) => (
+          <span key={i}>{sep(i)}<span className={s.isPB ? className : undefined}>{s.reps}</span></span>
+        ))}
+        {!w0 && ' reps'}
+        {anyPb && <span className="sr-only"> (personbästa)</span>}
+      </span>
+    )
+  }
+  return (
+    <span>
+      {sets.map((s, i) => (
+        <span key={i}>{sep(i)}<span className={s.isPB ? className : undefined}>
+          {weights[i] > 0 ? `${displayWeightStr(s.weight, equipment)} × ${s.reps}` : `${s.reps}`}
+        </span></span>
+      ))}
+    </span>
+  )
 }
 
 export default function WorkoutCard({ workout, onDelete, equipmentMap = {} }) {
   const [open, setOpen] = useState(false)
   const [swipeX, setSwipeX] = useState(0)
   const exercises = workout.exercises ?? []
-  const { sets, volume, exCount } = calcStats(exercises)
+  const { sets, exCount } = calcStats(exercises)
+  const date = new Date(workout.started_at ?? workout.finished_at)
+  const pbs = pbCount(workout)
+  const meta = [
+    workout.adjusted ? 'Anpassat pass' : null,
+    fmtMinutes(workoutMinutes(workout)),
+    `${exCount} övningar`,
+    `${sets} set`,
+  ].filter(Boolean).join(' · ')
 
   // ── Swipe-to-delete (touch) ──
   const swipeXRef = useRef(0)
@@ -116,11 +122,11 @@ export default function WorkoutCard({ workout, onDelete, equipmentMap = {} }) {
   return (
     <div className={styles.swipeWrapper}>
       {/* Ta bort-bakgrund som avslojas vid swipe */}
-      <div className={styles.deleteBack}>
+      <div className={styles.deleteBack} style={{ visibility: swipeX < 0 ? 'visible' : 'hidden' }}>
         <button className={styles.deleteBackBtn} onClick={() => onDelete?.(workout.id)} type="button">Ta bort</button>
       </div>
       <div
-        className={styles.card}
+        className={`${styles.card} ${open ? styles.cardOpen : ''}`}
         style={{
           transform: `translateX(${swipeX}px)`,
           transition: isActivelySwipingH.current ? 'none' : 'transform 0.2s ease',
@@ -129,32 +135,21 @@ export default function WorkoutCard({ workout, onDelete, equipmentMap = {} }) {
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-      {/* Header */}
-      <button className={styles.header} onClick={handleHeaderClick} type="button">
-        <div className={styles.headerTop}>
+      <button className={styles.header} onClick={handleHeaderClick} type="button" aria-expanded={open}>
+        <span className={styles.date}>
+          <span className={styles.dateDay}>{WEEKDAYS[date.getDay()]}</span>
+          <span className={styles.dateNum}>{date.getDate()}</span>
+        </span>
+        <span className={styles.headText}>
           <span className={styles.name}>{workout.session_name ?? 'Pass'}</span>
-          <div className={styles.headerRight} onClick={e => e.stopPropagation()}>
-            <span className={`${styles.chevron} ${open ? styles.chevronOpen : ''}`}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="m6 9 6 6 6-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </span>
-          </div>
-        </div>
-        <div className={styles.headerMeta}>
-          <span className={styles.metaDate}>{fmtDate(workout.started_at)} · {fmtTime(workout.started_at)}</span>
-          <div className={styles.chips}>
-            <span className={styles.chip}>{exCount} övn</span>
-            <span className={styles.chip}>{sets} set</span>
-            {fmtDuration(workout.started_at, workout.finished_at) && (
-              <span className={styles.chip}>{fmtDuration(workout.started_at, workout.finished_at)}</span>
-            )}
-            {volume > 0 && <span className={styles.chip}>{fmtVolume(volume)}</span>}
-          </div>
-        </div>
+          <span className={`${styles.meta} ${workout.adjusted ? styles.metaAdjusted : ''}`}>{meta}</span>
+        </span>
+        {pbs > 0 && <span className={styles.pbBadge}>{pbs} PB</span>}
+        <span className={`${styles.chevron} ${open ? styles.chevronOpen : ''}`}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+        </span>
       </button>
 
-      {/* Expanderat innehåll */}
       <AnimatePresence initial={false}>
         {open && (
           <motion.div
@@ -162,26 +157,17 @@ export default function WorkoutCard({ workout, onDelete, equipmentMap = {} }) {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25, ease: 'easeInOut' }}
+            transition={{ duration: 0.22, ease: 'easeInOut' }}
           >
             <div className={styles.bodyInner}>
-              {/* Övningar */}
-              {exercises.filter(ex => ex.sets?.some(s => s.type === 'work' && s.done)).map(ex => {
+              {exercises.filter(ex => ex.sets?.some(s => s.type === 'work' && s.done)).map((ex, i) => {
                 const work = ex.sets.filter(s => s.type === 'work' && s.done)
-                const equipment = equipmentMap[ex.name]
-                const isDouble = equipment === 'Hantel'
                 return (
-                  <div key={ex.localId ?? ex.name} className={styles.exBlock}>
-                    <div className={styles.exName}>
-                      {ex.name}{isDouble && <span className={styles.doubleTag}>×2</span>}
-                    </div>
-                    <div className={styles.setList}>
-                      {work.map((s, i) => (
-                        <span key={i} className={styles.setChip}>
-                          {s.weight ? `${displayWeightStr(s.weight, equipment)}×${s.reps}` : `${s.reps} reps`}
-                        </span>
-                      ))}
-                    </div>
+                  <div key={ex.localId ?? `${ex.name}-${i}`} className={styles.exRow}>
+                    <span className={styles.exName}>{ex.name}</span>
+                    <span className={styles.exSets}>
+                      <SetSummary sets={work} equipment={equipmentMap[ex.name]} className={styles.pbSet} />
+                    </span>
                   </div>
                 )
               })}

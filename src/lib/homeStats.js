@@ -184,3 +184,60 @@ export function sessionSummary(session, workouts, exerciseMap) {
 
   return { last, estMin, muscles, preview }
 }
+
+// ── Historik ──
+
+function isoWeekOf(date) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
+  const day = d.getUTCDay() || 7
+  d.setUTCDate(d.getUTCDate() + 4 - day)
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
+  return { year: d.getUTCFullYear(), week: Math.ceil(((d - yearStart) / DAY_MS + 1) / 7) }
+}
+
+/** ISO-veckonummer for ett datum. */
+export function isoWeek(date = new Date()) {
+  return isoWeekOf(date).week
+}
+
+/**
+ * Grupperar pass (nyast forst) per ISO-vecka, i samma ordning.
+ * -> [{ key: '2026-46', week: 46, workouts: [...] }]
+ */
+export function groupByWeek(workouts) {
+  const groups = []
+  for (const w of workouts ?? []) {
+    const { year, week } = isoWeekOf(new Date(w.started_at ?? w.finished_at))
+    const key = `${year}-${week}`
+    const last = groups[groups.length - 1]
+    if (last && last.key === key) last.workouts.push(w)
+    else groups.push({ key, week, workouts: [w] })
+  }
+  return groups
+}
+
+const MONTHS = ['Januari', 'Februari', 'Mars', 'April', 'Maj', 'Juni', 'Juli', 'Augusti', 'September', 'Oktober', 'November', 'December']
+
+/** Summering av innevarande manad: antal pass, total tid och PB. */
+export function monthStats(workouts, now = new Date()) {
+  const inMonth = (workouts ?? []).filter(w => {
+    const d = new Date(w.started_at ?? w.finished_at)
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
+  })
+  const minutes = inMonth.reduce((sum, w) => sum + (workoutMinutes(w) ?? 0), 0)
+  return {
+    month: MONTHS[now.getMonth()],
+    count: inMonth.length,
+    minutes,
+    timeLabel: `${Math.floor(minutes / 60)}:${String(minutes % 60).padStart(2, '0')}`,
+    pbs: inMonth.reduce((sum, w) => sum + pbCount(w), 0),
+  }
+}
+
+/** "58 min", "1 h 57 min", "2 h" */
+export function fmtMinutes(mins) {
+  if (!mins) return null
+  if (mins < 60) return `${mins} min`
+  const h = Math.floor(mins / 60), m = mins % 60
+  return m ? `${h} h ${m} min` : `${h} h`
+}

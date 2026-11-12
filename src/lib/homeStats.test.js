@@ -140,3 +140,30 @@ describe('smatt', () => {
     expect(daysLabel(9)).toBe('9 dagar')
   })
 })
+
+import { groupByWeek, monthStats, fmtMinutes, isoWeek } from './homeStats.js'
+
+describe('historik', () => {
+  const mk = (y, m, d, mins = 60, pb = 0) => ({
+    started_at: new Date(y, m, d, 18, 0).toISOString(),
+    finished_at: new Date(y, m, d, 18, mins).toISOString(),
+    exercises: [{ sets: Array.from({ length: pb }, () => ({ done: true, isPB: true })) }],
+  })
+  it('grupperar per ISO-vecka, aven over arsskifte', () => {
+    const g = groupByWeek([mk(2027, 0, 2), mk(2026, 11, 29), mk(2026, 11, 22)])
+    expect(g.map(x => [x.week, x.workouts.length])).toEqual([[53, 2], [52, 1]])
+  })
+  it('isoWeek', () => {
+    expect(isoWeek(new Date(2026, 10, 12))).toBe(46)
+  })
+  it('monthStats raknar bara innevarande manad', () => {
+    const s = monthStats([mk(2026, 10, 12, 117, 2), mk(2026, 10, 3, 129, 1), mk(2026, 9, 29, 50, 3)], new Date(2026, 10, 13))
+    expect(s).toMatchObject({ month: 'November', count: 2, minutes: 246, timeLabel: '4:06', pbs: 3 })
+  })
+  it('fmtMinutes', () => {
+    expect(fmtMinutes(58)).toBe('58 min')
+    expect(fmtMinutes(117)).toBe('1 h 57 min')
+    expect(fmtMinutes(120)).toBe('2 h')
+    expect(fmtMinutes(0)).toBe(null)
+  })
+})

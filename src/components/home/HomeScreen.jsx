@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { getWorkouts, getDeloadStatus, endDeloadWeek, getProfile, cacheInvalidate, getExercises } from '../../lib/db'
 import { supabase } from '../../lib/supabase'
 import { detectGapAdjustment } from '../../lib/progression'
-import { weekStrip, muscleStatus, sessionSummary, daysLabel, workoutMinutes, pbCount } from '../../lib/homeStats'
+import { weekStrip, muscleStatus, sessionSummary, daysLabel, workoutMinutes, pbCount, isoWeek } from '../../lib/homeStats'
 import { BananaIcon } from '../shared/Icons'
 import AppInfo from '../shared/AppInfo'
 import SessionPreview from './SessionPreview'
@@ -20,14 +20,6 @@ function relativeAgo(iso) {
   if (days === 1) return 'igår'
   if (days < 7) return WEEKDAYS_AGO[new Date(iso).getDay()]
   return `för ${days} dagar sedan`
-}
-
-function isoWeek(date = new Date()) {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
-  const day = d.getUTCDay() || 7
-  d.setUTCDate(d.getUTCDate() + 4 - day)
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
-  return Math.ceil(((d - yearStart) / 86400000 + 1) / 7)
 }
 
 function fmtKg(w) {

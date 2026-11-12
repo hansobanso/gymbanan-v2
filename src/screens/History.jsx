@@ -5,6 +5,7 @@ import { displayWeight } from '../lib/weightUtils'
 import WorkoutCard from '../components/history/WorkoutCard'
 import ProgressView from '../components/history/ProgressView'
 import { DumbbellIcon } from '../components/shared/Icons'
+import { groupByWeek, monthStats } from '../lib/homeStats'
 import styles from './History.module.css'
 
 export default function History({ session }) {
@@ -89,10 +90,16 @@ export default function History({ session }) {
     return pr
   }, [workouts])
 
+  const stats = monthStats(workouts)
+  const weeks = groupByWeek(workouts)
+
   return (
     <div className={styles.screen}>
       <header className={styles.header}>
-        <h1 className={styles.title}>Historik</h1>
+        <div className={styles.headText}>
+          <span className={styles.eyebrow}>HISTORIK</span>
+          <h1 className={styles.title}>{stats.month}</h1>
+        </div>
       </header>
       <div className={styles.body}>
         {loading && (
@@ -113,28 +120,51 @@ export default function History({ session }) {
 
         {!loading && workouts.length > 0 && (
           <div className={styles.list}>
-            {/* Tydlig ingång till styrkeutveckling */}
+            <div className={styles.stats}>
+              <div className={styles.stat}>
+                <span className={styles.statNum}>{stats.count}</span>
+                <span className={styles.statLabel}>pass</span>
+              </div>
+              <div className={styles.stat}>
+                <span className={styles.statNum}>{stats.timeLabel}</span>
+                <span className={styles.statLabel}>timmar</span>
+              </div>
+              <div className={styles.stat}>
+                <span className={`${styles.statNum} ${stats.pbs > 0 ? styles.statNumPb : ''}`}>{stats.pbs}</span>
+                <span className={styles.statLabel}>personbästa</span>
+              </div>
+            </div>
+
+            {/* Ingång till styrkeutveckling per övning */}
             <button className={styles.progressCard} onClick={() => setProgressOpen(true)} type="button">
               <span className={styles.progressIcon}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M3 3v16a2 2 0 0 0 2 2h16"/>
                   <path d="m7 14 3-4 3 3 4-6"/>
                 </svg>
               </span>
               <span className={styles.progressText}>
-                <span className={styles.progressTitle}>Min styrkeutveckling</span>
+                <span className={styles.progressTitle}>Styrkeutveckling per övning</span>
                 <span className={styles.progressSub}>
                   {latestPr
-                    ? `Senaste PR: ${latestPr.name} ${Math.round(displayWeight(latestPr.value, equipmentMap[latestPr.name]))} kg`
+                    ? `Senaste rekord: ${latestPr.name} ${Math.round(displayWeight(latestPr.value, equipmentMap[latestPr.name]))} kg`
                     : 'Se hur du blir starkare över tid'}
                 </span>
               </span>
-              <svg className={styles.progressArrow} width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="m9 18 6-6-6-6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+              <svg className={styles.progressArrow} width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="m9 18 6-6-6-6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
 
-            {workouts.map(w => (
+            {weeks.map(g => (
+              <section key={g.key} className={styles.week}>
+                <div className={styles.weekHead}>
+                  <span className={styles.weekLabel}>Vecka {g.week}</span>
+                  <span className={styles.weekCount}>{g.workouts.length} pass</span>
+                </div>
+                <div className={styles.weekList}>
+            {g.workouts.map(w => (
+
               <WorkoutCard
                 key={w.id}
                 workout={w}
@@ -152,6 +182,9 @@ export default function History({ session }) {
                   }
                 }}
               />
+            ))}
+                </div>
+              </section>
             ))}
           </div>
         )}

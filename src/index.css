@@ -319,3 +319,13 @@ input, textarea, select {
 .tab-screen-active {
   animation: tabFadeIn 220ms cubic-bezier(0.32, 0.72, 0, 1);
 }
+
+/* Text bara for skarmlasare */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
