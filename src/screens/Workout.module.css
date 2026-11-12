@@ -12,7 +12,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: calc(var(--safe-top) + 10px) 14px 10px;
+  padding: calc(var(--safe-top) + 10px) 16px 6px;
   background: var(--bg);
   z-index: 60;
   min-height: var(--header-height);
@@ -25,135 +25,71 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 2px;
 }
 
 .sessionBtn {
-  background: none;
-  border: none;
-  padding: 0;
-  font-size: 18px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--accent);
-  letter-spacing: 0.5px;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  cursor: pointer;
-  text-align: left;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 220px;
-  font-family: var(--font);
-  -webkit-tap-highlight-color: transparent;
-}
-
-.headerSubRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
 .elapsed {
-  font-size: 12px;
-  color: #F5D020;
+  font-size: 13px;
+  color: var(--d-muted);
   font-variant-numeric: tabular-nums;
-}
-
-.exerciseDots {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.exerciseDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #444;
-  flex-shrink: 0;
-}
-
-.exerciseDotDone {
-  background: var(--done-green);
-}
-
-.timerPill {
-  background: transparent;
-  font-size: 26px;
-  font-weight: 700;
-  border-radius: 0;
-  padding: 4px 8px;
-  border: none;
-  cursor: pointer;
-  font-family: var(--font);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.2px;
-  -webkit-tap-highlight-color: transparent;
-  transition: color 0.6s ease;
 }
 
 .headerRight {
   display: flex;
   align-items: center;
+  gap: 2px;
+  margin-right: -6px;
+}
+
+.headIconBtn {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  border-radius: 22px;
+  color: #C9C9C9;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.headIconBtn:active,
+.headIconBtnActive {
+  background: #1C1C1C;
+  color: var(--accent);
+}
+
+/* ── Framsteg: ett segment per ovning ── */
+.progress {
+  display: grid;
   gap: 4px;
+  padding: 2px 16px 10px;
+  flex-shrink: 0;
+  background: var(--bg);
 }
 
-.ptBtn,
-.dotsBtn {
-  width: 34px;
-  height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: 2px solid var(--accent);
-  border-radius: 50%;
-  color: #F5D020;
-  cursor: pointer;
-  padding: 0;
-  transition: background 0.1s, color 0.1s, border-color 0.1s;
+.progressSeg {
+  height: 4px;
+  border-radius: 2px;
+  background: #2A2A2A;
+  transition: background 0.3s var(--ease);
 }
 
-.ptBtn:active,
-.ptBtnActive,
-.dotsBtn:active,
-.dotsBtnActive {
-  background: var(--surface-2);
-  color: var(--text);
-  border-color: var(--accent);
-}
-
-.ptBtnLabel {
-  font-size: 13px;
-  font-weight: 700;
-  color: inherit;
-  letter-spacing: 0.3px;
-}
-
-/* Timer icon button — no outer ring, the clock outline IS the circle */
-.timerIconBtn,
-.dotsIconBtn,
-.chatIconBtn {
-  width: 34px;
-  height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  color: #F5D020;
-  cursor: pointer;
-  padding: 0;
-  transition: opacity 0.1s;
-}
-
-.timerIconBtn:active,
-.dotsIconBtn:active,
-.chatIconBtn:active,
-.dotsBtnActive,
-.chatIconBtnActive {
-  opacity: 0.6;
-}
+.progressSegDone { background: var(--d-ok); }
+.progressSegActive { background: var(--accent); }
 
 /* ── Header dropdown menu ── */
 .headerMenu {
@@ -203,6 +139,12 @@
   min-height: 0;
   background: #000000;
 }
+
+/* Plats for vilodockan sa den inte tacker sista raden */
+.scrollWithDock { padding-bottom: 84px; }
+
+/* Toasts lyfts ovanfor vilodockan */
+.toastAboveDock { bottom: calc(var(--safe-bottom, 0px) + 86px); }
 
 .empty {
   display: flex;

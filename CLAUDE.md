@@ -55,7 +55,10 @@ och om setState i effekter (befintligt mönster). Titta bara på nya fel.
 | `src/hooks/useWorkout.js` | Passets hela tillstånd: set, förifyllning, PB, lokal sparning, avslut |
 | `src/lib/progression.js` | Ren progressionslogik utan React. Har tester |
 | `src/screens/Workout.jsx` | Passvyn: timer, anpassa passet, avsluta, spara till program |
-| `src/components/workout/ExerciseBlock.jsx`, `SetRow.jsx` | Övningskort och setrad |
+| `src/components/workout/ExerciseBlock.jsx` | Övningsblock: klar/kommande som en rad, öppen med settabell (Set/Förra/Idag) |
+| `src/components/workout/SetHero.jsx` | Det öppna setet: stora siffror, +/−, RIR-knapp, "Set klart" |
+| `src/components/workout/RestDock.jsx` | Vilotimern som docka längst ner |
+| `src/components/home/HomeScreen.jsx`, `src/lib/homeStats.js` | Startsidan + ren logik (veckoremsa, muskelläge). Har tester |
 | `src/lib/db.js` | Alla Supabase-anrop + liten cache |
 | `src/App.jsx` | Routing, "Pågående pass"-dialogen, programlista |
 | `src/lib/ai.js`, `src/hooks/useAI.js` | PT-intro och PT-chatt via `opta-proxy.gymbanan.workers.dev` |
@@ -95,6 +98,17 @@ och om setState i effekter (befintligt mönster). Titta bara på nya fel.
 - Passet flaggas `adjusted` och räknas inte in i progressionen.
 - "Ingen anpassning" återställer till de vanliga förslagen.
 - Under en aktiv deload-vecka sänks varje nytt pass automatiskt.
+
+**Startsidan**
+- Inget veckomål. Veckoremsan visar bara gjorda pass, aldrig "missat".
+- Muskelläge: Redo / Vilar / Inte tränad på länge. Vila 72 h för bröst,
+  rygg och ben, 48 h för övriga, +24 h efter 10 set eller fler. "På länge"
+  är 14 dagar.
+
+**Designspråk** (nov 2026): svart bakgrund, kort `--d-card`, gul accent,
+grönt för klart, blå `--d-hint` för PT-besked, stora siffror i
+`--font-num` (Barlow Condensed). Variablerna `--d-*` ligger i
+`src/index.css`. Skisser: https://claude.ai/artifact/4S251Xb86AV2poTdM2m4hM
 
 **PB**: guldcirkel med "PB" när ett set slår tyngsta vikten någonsin (även
 1 rep) eller ger fler reps än någonsin på exakt den vikten. Första gången en
@@ -141,6 +155,9 @@ Tester och bygge räcker inte för passflödet. Två metoder som fungerat:
    `sb-test-auth-token` och starta ett pass genom att sätta
    `history.pushState({usr: {...}})` på `/workout` och ladda om.
    Mobilvy 390×844. Klicka på knappar via `getByRole`, inte `text=`.
+   Startsidan ligger kvar dold under passvyn, så `text=`-väljare kan
+   träffa den. `index.css` tvingar `font-size: 16px !important` på alla
+   input; större siffror kräver egen `!important`.
 
 ## Utanför repot
 

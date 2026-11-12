@@ -1,368 +1,234 @@
+/* Ovningsblock i passvyn (designsprak 2026-11).
+   Tre lagen: klar (en rad), kommande (en rad) och oppen (rubrik + settabell). */
+
 .blockWrapper {
-  position: relative;
-  margin: 0 8px 10px;
-  border-radius: var(--radius-md);
-  background: #111;
-  border: 1px solid #1a1a1a;
-  overflow: hidden;
+  border-bottom: 1px solid var(--d-line);
 }
 
-.block {
+.open {
+  padding: 18px 16px 16px;
+}
+
+/* ── En rad: klar eller kommande ovning ── */
+.compact {
+  width: 100%;
+  min-height: 60px;
+  padding: 10px 16px;
+  border: 0;
   background: transparent;
-  overflow: visible;
-  padding-top: 14px;
-}
-
-.progressBar {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: var(--accent);
-  border-radius: 0 3px 3px 0;
-  z-index: 2;
-  pointer-events: none;
-}
-
-.doneBar {
-  position: absolute;
-  left: -1px;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: rgba(42, 122, 42, 0.4);
-  border-radius: 2px 0 0 2px;
-  z-index: 2;
-  pointer-events: none;
-}
-
-/* ── Collapsed summary ── */
-.collapsedRow {
+  color: var(--text);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 12px 14px;
-  gap: 10px;
+  gap: 14px;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
-.collapsedLeft {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
+.compact:active { background: #0E0E0E; }
 
-.collapsedCheck {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--success);
+.compactCheck,
+.compactRing {
+  width: 24px;
+  height: 24px;
+  box-sizing: border-box;
+  border-radius: 12px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
 }
 
-.collapsedName {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-2);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.compactCheck {
+  background: var(--d-ok-dim);
+  color: var(--d-ok);
 }
 
-.collapsedMeta {
-  font-size: 12px;
-  color: var(--text-3);
-  margin-top: 1px;
+.compactRing {
+  border: 2px solid #3A3A3A;
 }
 
-.collapsedInfo {
+.compactText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   min-width: 0;
 }
 
-.expandBtn {
-  width: 32px;
-  height: 32px;
-  background: none;
-  border: none;
-  color: #ffffff;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  padding: 0;
+.compactName,
+.compactNameDone {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
 }
 
-/* ── Header ── */
+.compactNameDone { color: var(--d-dim); }
+
+.compactMeta {
+  font-size: 13px;
+  color: var(--d-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Rubrik pa oppen ovning ── */
 .header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.titleRow {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  padding: 12px 16px 10px;
-  cursor: default;
-  user-select: none;
-  gap: 8px;
-}
-
-.headerInfo {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.nameRow {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  min-width: 0;
-}
-
-.repsRange {
-  font-size: 11px;
-  color: var(--text-2);
-  font-weight: 600;
-  white-space: nowrap;
-  flex-shrink: 0;
-  cursor: pointer;
-  padding: 3px 8px;
-  border-radius: var(--radius-full);
-  background: #1c1c1c;
-  border: 1px solid #2a2a2a;
-  letter-spacing: 0.3px;
-}
-
-.repsRangeEmpty {
-  font-size: 13px;
-  color: var(--accent);
-  font-weight: 600;
-  white-space: nowrap;
-  flex-shrink: 0;
-  cursor: pointer;
-  padding: 3px 8px;
-  border-radius: 6px;
-  background: rgba(245, 208, 32, 0.1);
-  border: 1px dashed rgba(245, 208, 32, 0.4);
-}
-.repsRangeEmpty:hover { background: rgba(245, 208, 32, 0.18); }
-
-/* Varning under ovningsnamnet pa aktiv ovning utan rep-mal.
-   Forklara att progression inte fungerar och erbjud direktlank till editering. */
-.repsWarning {
-  font-size: 12px;
-  color: var(--text-2);
-  background: rgba(245, 208, 32, 0.06);
-  border: 1px solid rgba(245, 208, 32, 0.18);
-  border-radius: 6px;
-  padding: 8px 10px;
-  margin-top: 6px;
-  line-height: 1.4;
-}
-
-.repsWarningLink {
-  background: none;
-  border: none;
-  color: var(--accent);
-  font-weight: 600;
-  font-family: var(--font);
-  font-size: inherit;
-  padding: 0;
-  cursor: pointer;
-  text-decoration: underline;
-}
-.repsWarningLink:hover { opacity: 0.85; }
-
-.repsRangeEdit {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex-shrink: 0;
-}
-
-.repsRangeInput {
-  width: 36px;
-  background: #1c1c1c;
-  border: 1px solid #F5D020;
-  border-radius: 4px;
-  color: #F5D020;
-  font-size: 13px;
-  font-weight: 600;
-  font-family: var(--font);
-  text-align: center;
-  padding: 2px 0;
-  outline: none;
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-.repsRangeInput::-webkit-outer-spin-button,
-.repsRangeInput::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-
-.repsRangeDash {
-  font-size: 13px;
-  color: #888;
+  gap: 10px;
 }
 
 .nameLink {
-  background: none;
-  border: none;
-  padding: 0;
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--text);
-  font-family: var(--font);
-  text-align: left;
-  cursor: pointer;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  -webkit-tap-highlight-color: transparent;
-  flex-shrink: 1;
   min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-size: 24px;
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  text-align: left;
+  overflow-wrap: anywhere;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.nameChevron {
-  color: #F5D020;
-  font-weight: 600;
-  font-size: 20px;
-}
-
-.progressBadge {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--success);
-  background: rgba(48, 209, 88, 0.12);
-  border-radius: var(--radius-full);
-  padding: 2px 7px;
-  white-space: nowrap;
+.titleActions {
   flex-shrink: 0;
-  letter-spacing: 0.1px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  /* Lyft ikonknappen sa den linjerar med rubrikens forsta rad */
+  margin: -8px -12px -8px 0;
 }
 
-.progressionHint {
+.leftChip {
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 13px;
+  background: #1C1C1C;
+  color: #D6D6D6;
   font-size: 12px;
-  color: var(--text-2);
-  font-weight: 500;
-  margin-top: 2px;
-  line-height: 1.4;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
-/* Viktökning — positiv, grön accent */
-.progressionUp {
-  color: #4ade80;
-  font-weight: 600;
+.leftChipDone {
+  background: var(--d-ok-dim);
+  color: var(--d-ok);
 }
 
-/* Varning: för tung — röd-orange */
-.progressionWarn {
-  color: #f87171;
-  font-weight: 600;
+.iconBtn {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 22px;
+  background: transparent;
+  color: #C9C9C9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* Försiktighet: upprepa vikt — gul */
-.progressionCaution {
-  color: var(--accent);
-  font-weight: 600;
-}
-
-/* Uppehåll: gap-justering — lugn blå-grå */
-.progressionGap {
-  color: #93a3b8;
-  font-weight: 500;
-}
+.iconBtnActive,
+.iconBtn:active { background: #1C1C1C; }
 
 .metaRow {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
   align-items: center;
+  column-gap: 6px;
+  row-gap: 2px;
+  font-size: 13px;
+  color: var(--d-muted);
 }
 
-.muscleTag {
-  font-size: 11px;
-  color: var(--text-3);
-  font-weight: 500;
-  letter-spacing: 0.2px;
+.metaRow > * + *::before {
+  content: '·';
+  margin-right: 6px;
+  color: #5A5A5A;
 }
 
-.targetTag {
-  font-size: 11px;
-  color: var(--text-3);
-  font-weight: 500;
-  letter-spacing: 0.2px;
-}
-
-.exNotesBtn {
-  background: none;
-  border: none;
-  padding: 0;
-  margin-top: 1px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  cursor: pointer;
+.metaBtn {
+  padding: 6px 0;
+  margin: -6px 0;
+  border: 0;
+  background: transparent;
+  color: var(--d-muted);
+  font-size: 13px;
   text-align: left;
+  overflow-wrap: anywhere;
   -webkit-tap-highlight-color: transparent;
 }
 
-.exNotes {
-  font-size: 12px;
-  color: var(--text);
-  line-height: 1.4;
-  white-space: pre-wrap;
-  word-break: break-word;
-  font-family: var(--font);
-}
+.metaBtn:active { color: var(--accent); }
 
-.exNotesEmpty {
-  font-size: 12px;
-  color: #666;
-  font-family: var(--font);
-}
-
-.headerActions {
-  display: flex;
+.repsRangeEdit {
+  display: inline-flex;
   align-items: center;
-  gap: 2px;
-  flex-shrink: 0;
+  gap: 4px;
 }
 
-.iconBtn {
-  width: 34px;
-  height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  border-radius: var(--radius-sm);
-  color: var(--text-3);
-  cursor: pointer;
+.repsRangeInput {
+  width: 44px;
+  height: 32px;
   padding: 0;
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  background: #1A1A1A;
+  color: var(--text);
+  /* 16px sa iOS inte zoomar in vid fokus */
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
 }
 
-.iconBtn:active,
-.iconBtnActive {
-  background: var(--surface-2);
-  color: var(--text-2);
+.repsRangeInput:focus { outline: none; border-color: var(--accent); }
+
+.supersetChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  border-radius: 9px;
+  padding: 2px 7px;
+  white-space: nowrap;
+  vertical-align: middle;
 }
 
-/* ── Dropdowns ── */
-.dropdown {
-  background: var(--bg-3);
-  border: 1px solid var(--border-2);
-  border-radius: var(--radius-md);
-  margin: 0 12px 8px;
-  overflow: hidden;
-  box-shadow: var(--shadow-md);
+.compactName .supersetChip { margin-left: 8px; }
+
+.progressionHint {
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--d-hint);
 }
 
+.progressionWarn { color: var(--warning); }
+
+.repsWarning {
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--warning);
+}
+
+/* ── Meny ── */
 .dropdownFixed {
   position: fixed;
   background: var(--bg-3);
@@ -371,46 +237,9 @@
   overflow: hidden;
   box-shadow: var(--shadow-md);
   z-index: 200;
-  min-width: 200px;
-}
-
-.dropdownTitle {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  color: var(--text-3);
-  padding: 10px 14px 4px;
-  margin: 0;
-}
-
-.restPresets {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1px;
-  background: var(--border);
-  margin: 6px;
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-}
-
-.restPreset {
-  background: var(--surface-2);
-  border: none;
-  color: var(--text-2);
-  font-size: 14px;
-  font-weight: 600;
-  padding: 12px 4px;
-  cursor: pointer;
-  font-family: var(--font);
-  text-align: center;
-}
-
-.restPreset:active { background: var(--surface-3); }
-
-.restPresetActive {
-  background: var(--accent-dim) !important;
-  color: var(--accent) !important;
+  min-width: 220px;
+  max-height: 70vh;
+  overflow-y: auto;
 }
 
 .menuItem {
@@ -434,273 +263,107 @@
   margin: 2px 0;
 }
 
-/* ── Kolumnrubriker: # | Kg | Reps | ✓ ── */
-.colHeaders {
-  display: grid;
-  grid-template-columns: 28px minmax(0, 0.85fr) minmax(0, 1.15fr) 34px;
-  gap: 10px;
-  padding: 10px 16px 6px;
-  align-items: center;
-}
-
-.colLabel {
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  color: var(--text-3);
-  text-align: center;
-}
-
-.colLabel:first-child {
-  text-align: left;
-}
-
-/* REPS-kolumnen i raderna innehaller reps-rutan + RIR-elementet (34px + 6px
-   margin = 40px) sida vid sida. Rubriken ska centreras over sjalva reps-rutan,
-   inte over hela kolumnen, sa vi skiftar den vanster med samma 40px. */
-.colLabelReps {
-  margin-right: 40px;
-}
-
-/* ── Sets + warmup ── */
-.sets {
+/* ── Settabell ── */
+.table {
   display: flex;
   flex-direction: column;
-}
-
-.warmupLabel {
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  color: var(--text-3);
-  padding: 6px 14px 2px;
-}
-
-.warmupDivider {
-  height: 0;
-}
-
-/* ── Footer ── */
-.footer {
-  display: flex;
-  align-items: center;
-  padding: 10px 16px;
-  gap: 4px;
-}
-
-.footerAdd {
-  flex: 1;
-  background: none;
-  border: none;
-  color: var(--text);
-  font-size: 14px;
-  font-weight: 600;
-  font-family: var(--font);
-  padding: 8px 0;
-  cursor: pointer;
-  text-align: left;
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-}
-
-.footerAdd:active { opacity: 0.7; }
-
-.footerReplace {
-  background: none;
-  border: none;
-  color: var(--text);
-  font-size: 14px;
-  font-weight: 600;
-  font-family: var(--font);
-  padding: 8px 12px;
-  cursor: pointer;
-  flex-shrink: 0;
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-}
-
-.footerReplace:active { color: var(--text-2); }
-
-.footerDots {
-  width: 40px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  border-radius: var(--radius-sm);
-  color: var(--text-3);
-  cursor: pointer;
-  padding: 0;
-  flex-shrink: 0;
-}
-
-.footerDots:active,
-.footerDotsActive {
-  background: var(--surface-2);
-  color: var(--text-2);
-}
-
-/* ── Tidigare vikter ── */
-.prevRow {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  width: 100%;
-  padding: 8px 16px;
-  background: #0d0d0d;
-  border: none;
-  border-top: 1px solid #1a1a1a;
-  cursor: pointer;
-  font-family: inherit;
-  text-align: left;
-  -webkit-tap-highlight-color: transparent;
-  transition: opacity 0.12s;
-}
-
-.prevRow:active {
-  opacity: 0.6;
-}
-
-.prevIcon {
-  flex-shrink: 0;
-  color: var(--text-3);
-  display: flex;
-  align-items: center;
-}
-
-.prevText {
-  font-size: 12px;
-  color: var(--text-2);
   font-variant-numeric: tabular-nums;
-  flex: 1;
 }
 
-.prevChevron {
-  color: var(--text-3);
-  flex-shrink: 0;
-}
-
-/* ── Hur kändes det? ── */
-.aiRow {
-  padding: 6px 16px 12px;
-  border-top: 1px solid var(--border);
-}
-
-.aiTextarea {
-  background: none;
-  border: none;
-  border-bottom: 1px solid var(--border);
-  color: var(--text-2);
-  font-size: 16px !important;
-  padding: 8px 0;
-  resize: none;
-  outline: none;
-  overflow: hidden;
-  min-height: 36px;
-  line-height: 1.5;
-  font-family: var(--font);
-  transition: border-color 0.15s;
-  width: 100%;
-}
-
-.aiTextarea:focus {
-  border-bottom-color: var(--accent-border);
-  color: var(--text);
-}
-
-.aiTextarea::placeholder { color: var(--text-3); }
-
-/* ── RIR Picker sheet ── */
-.rirBackdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  z-index: 300;
-}
-
-.rirSheet {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: var(--bg-3);
-  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-  padding: 12px 20px calc(32px + var(--safe-bottom));
-  z-index: 301;
-  box-shadow: var(--shadow-sheet);
-}
-
-.rirHandle {
-  width: 36px;
-  height: 4px;
-  background: var(--border-2);
-  border-radius: var(--radius-full);
-  margin: 0 auto 20px;
-}
-
-.rirTitle {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-2);
-  text-align: center;
-  margin: 0 0 16px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.rirGrid {
+.tr {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-}
-
-.rirOpt {
-  background: var(--surface-2);
-  border: 1.5px solid var(--border-2);
-  border-radius: var(--radius-md);
-  color: var(--text);
-  font-size: 20px;
-  font-weight: 700;
-  padding: 16px 4px;
-  cursor: pointer;
-  font-family: var(--font);
-  font-variant-numeric: tabular-nums;
-  text-align: center;
-}
-
-.rirOpt:active { background: var(--surface-3); }
-
-.rirOptActive {
-  background: var(--accent-dim) !important;
-  border-color: var(--accent-border) !important;
-  color: var(--accent) !important;
-}
-
-/* ── Superset-chip ── */
-.supersetChip {
-  display: inline-flex;
+  grid-template-columns: 36px minmax(0, 1fr) minmax(0, 1.25fr) 44px;
   align-items: center;
-  gap: 4px;
+  column-gap: 6px;
+  padding: 0 0 0 6px;
+  border: 0;
+  border-top: 1px solid var(--d-line);
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  font-size: 15px;
+  width: 100%;
+}
+
+.th {
+  height: 26px;
+  border-top: 0;
   font-size: 10.5px;
   font-weight: 700;
-  color: var(--accent);
-  background: rgba(245, 208, 32, 0.12);
-  border: 1px solid rgba(245, 208, 32, 0.3);
-  border-radius: 9px;
-  padding: 2px 7px;
-  margin-left: 8px;
-  vertical-align: middle;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--d-dim);
+}
+
+.trDone {
+  min-height: 44px;
+  font-size: 14px;
+  color: var(--d-dim);
+}
+
+.trTodo {
+  min-height: 48px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.trTodo:active { background: #0E0E0E; }
+
+.tdLabel {
+  font-weight: 800;
+  font-size: 13px;
+  color: inherit;
+}
+
+.trTodo .tdLabel { color: #C9C9C9; font-size: 15px; }
+.tdPrev { color: var(--d-muted); }
+.tdToday { font-weight: 700; }
+
+.rirNote {
+  font-size: 12px;
   white-space: nowrap;
 }
 
-.prevRowEmpty {
-  font-size: 12.5px;
-  color: var(--text-3);
-  padding: 6px 2px 2px;
+.statusBtn {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.statusDone { color: var(--d-ok); }
+
+.statusPb .pbLabel {
+  min-width: 30px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 11px;
+  background: var(--accent);
+  color: #141414;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.statusTodo {
+  justify-self: center;
+  width: 20px;
+  height: 20px;
+  box-sizing: border-box;
+  border-radius: 10px;
+  border: 2px solid #4A4A4A;
+}
+
+.firstTime {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--d-muted);
 }

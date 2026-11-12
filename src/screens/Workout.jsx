@@ -5,7 +5,7 @@ import { useWorkout } from '../hooks/useWorkout'
 import { useTimer } from '../hooks/useTimer'
 import { buildWorkoutContext, buildMemoryContent, appendUserNote, generateWorkoutIntro } from '../lib/ai'
 import { getWorkouts, getAiMemory, upsertAiMemory, getEquipmentMap, updateProgram, saveProgram, setActiveProgram, getDeloadStatus, startDeloadWeek, getExercises } from '../lib/db'
-import TimerBar from '../components/workout/TimerBar'
+import RestDock from '../components/workout/RestDock'
 import TimerExpanded from '../components/workout/TimerExpanded'
 import ExerciseBlock from '../components/workout/ExerciseBlock'
 import ExercisePicker from '../components/workout/ExercisePicker'
@@ -430,6 +430,25 @@ export default function Workout({ session }) {
 
   // ── Render ──────────────────────────────────────────────────
 
+  // Aktiv ovning = forsta som inte ar helt klar, om inte anvandaren (eller
+  // ett superset) pekat ut en annan ovning som har set kvar.
+  const isExDone = ex => {
+    const ws = ex.sets.filter(st => st.type === 'work')
+    return ws.length > 0 && ws.every(st => st.done)
+  }
+  const focusEx = focusExId ? workout.exercises.find(e => e.localId === focusExId) : null
+  const focusValid = !!focusEx && focusEx.sets.some(st => st.type === 'work' && !st.done)
+  const activeExId = focusValid
+    ? focusExId
+    : (workout.exercises.find(ex => !isExDone(ex))?.localId ?? null)
+  const progress = (() => {
+    const doneIds = new Set(workout.exercises.filter(isExDone).map(ex => ex.localId))
+    const activeIdx = workout.exercises.findIndex(ex => ex.localId === activeExId)
+    const total = workout.exercises.length
+    const label = activeIdx >= 0 ? `övning ${activeIdx + 1} av ${total}` : `${doneIds.size} av ${total} klara`
+    return { doneIds, done: doneIds.size, label }
+  })()
+
   // Visa laddningsspinner tills all övningsdata är förinläst
   if (workout.loading) {
     return (
@@ -459,94 +478,67 @@ export default function Workout({ session }) {
       <div className={styles.header}>
         <div className={styles.headerLeft}>
           <span className={styles.sessionBtn}>{sessionName}</span>
-          <div className={styles.headerSubRow}>
-            <span className={styles.elapsed}>{elapsed}</span>
-            {workout.exercises.length > 0 && (
-              <div className={styles.exerciseDots}>
-                {workout.exercises.map(ex => {
-                  const workSets = ex.sets.filter(s => s.type === 'work')
-                  const done = workSets.length > 0 && workSets.every(s => s.done)
-                  return (
-                    <span
-                      key={ex.localId}
-                      className={`${styles.exerciseDot} ${done ? styles.exerciseDotDone : ''}`}
-                    />
-                  )
-                })}
-              </div>
-            )}
-          </div>
+          <span className={styles.elapsed}>
+            {elapsed}
+            {workout.exercises.length > 0 && ` · ${progress.label}`}
+          </span>
         </div>
         <div className={styles.headerRight}>
-          {/* Timer-pill – visas bara när timern är aktiv */}
-          {timer.active && (() => {
-            const ratio = timer.totalSeconds > 0 ? timer.secondsLeft / timer.totalSeconds : 0
-            const color = ratio > 0.6 ? 'var(--timer-safe)' : ratio > 0.3 ? 'var(--timer-warn)' : 'var(--timer-danger)'
-            return (
-              <button
-                className={styles.timerPill}
-                onClick={() => setTimerExpandedOpen(true)}
-                type="button"
-                aria-label="Öppna timer"
-                style={{ color }}
-              >
-                {`${Math.floor(timer.secondsLeft / 60)}:${String(timer.secondsLeft % 60).padStart(2, '0')}`}
-              </button>
-            )
-          })()}
-          {/* Vila-timer – öppnar expanded, startar 60s om ingen timer aktiv */}
-          <button
-            className={styles.timerIconBtn}
-            onClick={() => { if (!timer.active) timer.start('Vila', 60); setTimerExpandedOpen(true) }}
-            type="button"
-            aria-label="Öppna timer"
-          >
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <circle cx="12" cy="12" r="10.5" stroke="currentColor" strokeWidth="2" />
-              <path d="M12 6.5V12L15.5 14.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          </button>
-          {/* PT-knapp */}
-          <button
-            className={`${styles.chatIconBtn} ${aiChatOpen ? styles.chatIconBtnActive : ''}`}
-            onClick={() => setAiChatOpen(true)}
-            type="button"
-            aria-label="Öppna PT-chat"
-          >
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>
-            </svg>
-          </button>
           {/* Anpassa passet (lätt dag / sjuk / deload) - snabbval utan chatt */}
           <button
-            className={`${styles.chatIconBtn} ${adjustOpen ? styles.chatIconBtnActive : ''}`}
+            className={`${styles.headIconBtn} ${adjustOpen ? styles.headIconBtnActive : ''}`}
             onClick={() => { setAdjustChoice(null); setAdjustOpen(true) }}
             type="button"
             aria-label="Anpassa passet"
           >
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/>
-              <line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/>
-              <line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/>
-              <line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+              <path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>
+            </svg>
+          </button>
+          {/* PT-knapp */}
+          <button
+            className={`${styles.headIconBtn} ${aiChatOpen ? styles.headIconBtnActive : ''}`}
+            onClick={() => setAiChatOpen(true)}
+            type="button"
+            aria-label="Öppna PT-chat"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>
             </svg>
           </button>
           {/* ··· meny */}
           <button
-            className={`${styles.dotsIconBtn} ${headerMenuOpen ? styles.dotsBtnActive : ''}`}
+            className={`${styles.headIconBtn} ${headerMenuOpen ? styles.headIconBtnActive : ''}`}
             onClick={e => { e.stopPropagation(); setHeaderMenuOpen(v => !v) }}
             type="button"
             aria-label="Passalternativ"
           >
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="10"/>
-              <path d="M17 12h.01"/>
-              <path d="M12 12h.01"/>
-              <path d="M7 12h.01"/>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/>
             </svg>
           </button>
         </div>
       </div>
+
+      {/* Framsteg: ett segment per ovning (gron = klar, gul = pagar) */}
+      {workout.exercises.length > 0 && (
+        <div
+          className={styles.progress}
+          style={{ gridTemplateColumns: `repeat(${workout.exercises.length}, minmax(0, 1fr))` }}
+          role="img"
+          aria-label={`${progress.done} av ${workout.exercises.length} övningar klara`}
+        >
+          {workout.exercises.map(ex => (
+            <span
+              key={ex.localId}
+              className={`${styles.progressSeg} ${
+                progress.doneIds.has(ex.localId) ? styles.progressSegDone
+                  : ex.localId === activeExId ? styles.progressSegActive : ''
+              }`}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Header-dropdown */}
       <AnimatePresence>
@@ -559,6 +551,9 @@ export default function Workout({ session }) {
             transition={{ duration: 0.15 }}
             onPointerDown={e => e.stopPropagation()}
           >
+            <button className={styles.hMenuItem} onClick={() => { if (!timer.active) timer.start('Vila', 60); setTimerExpandedOpen(true); setHeaderMenuOpen(false) }}>
+              Vilotimer
+            </button>
             <button className={styles.hMenuItem} onClick={() => { setWorkoutHistoryOpen(true); setHeaderMenuOpen(false) }}>
               Historik
             </button>
@@ -573,11 +568,8 @@ export default function Workout({ session }) {
         )}
       </AnimatePresence>
 
-      {/* ── TimerBar DIREKT under header ── */}
-      <TimerBar timer={timer} />
-
       {/* ── Scroll-area ── */}
-      <div className={styles.scroll}>
+      <div className={`${styles.scroll} ${timer.active ? styles.scrollWithDock : ''}`}>
 
         {isReordering && (
           <div className={styles.reorderBanner}>
@@ -644,17 +636,7 @@ export default function Workout({ session }) {
               </div>
             )}
             {workout.exercises.map((ex, idx) => {
-              // Active = first exercise that isn't fully done - om inte ett
-              // superset-fokus pekar pa en annan ovning med set kvar.
-              const workSets = ex.sets.filter(s => s.type === 'work')
-              const allDone = workSets.length > 0 && workSets.every(s => s.done)
-              const focusEx = focusExId ? workout.exercises.find(e => e.localId === focusExId) : null
-              const focusValid = focusEx && focusEx.sets.some(s => s.type === 'work' && !s.done)
-              const derivedActive = !allDone && workout.exercises.slice(0, idx).every(prev => {
-                const ws = prev.sets.filter(s => s.type === 'work')
-                return ws.length > 0 && ws.every(s => s.done)
-              })
-              const isActive = focusValid ? ex.localId === focusExId : derivedActive
+              const isActive = ex.localId === activeExId
               // Superset-partner: annan ovning med samma supersetId
               const supersetPartner = ex.supersetId
                 ? workout.exercises.find(o => o.supersetId === ex.supersetId && o.localId !== ex.localId) ?? null
@@ -677,7 +659,6 @@ export default function Workout({ session }) {
                 onRemoveSet={workout.removeSet}
                 onDuplicateSet={workout.duplicateSet}
                 onCompleteSet={workout.completeSet}
-                onUpdateExercise={workout.updateExercise}
                 onUpdateExerciseReps={workout.updateExerciseReps}
                 onRemoveExercise={workout.removeExercise}
                 onReplaceExercise={ex => setPickerTarget(ex)}
@@ -689,6 +670,7 @@ export default function Workout({ session }) {
                 supersetPartner={supersetPartner}
                 supersetFirstId={supersetFirstId}
                 onSupersetJump={handleSupersetJump}
+                onActivate={handleSupersetJump}
                 onSupersetLinkStart={ex => setSupersetPickFor(ex)}
                 onSupersetUnlink={ex => workout.clearSuperset(ex.localId)}
                 onShowDetail={id => setDetailExerciseId(id)}
@@ -729,12 +711,19 @@ export default function Workout({ session }) {
         )}
       </div>
 
+      {/* ── Vilodocka: flyter langst ner medan vilan gar ── */}
+      <AnimatePresence>
+        {timer.active && !timerExpandedOpen && (
+          <RestDock timer={timer} onOpen={() => setTimerExpandedOpen(true)} />
+        )}
+      </AnimatePresence>
+
       {/* ── Reps-updated toast ── */}
       <AnimatePresence>
         {showRepsToast && (
           <motion.div
             className={styles.toast}
-            style={{ bottom: 'calc(var(--safe-bottom, 0px) + 90px)' }}
+            style={{ bottom: 'calc(var(--safe-bottom, 0px) + 160px)' }}
             initial={{ y: 80, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 80, opacity: 0 }}
@@ -749,7 +738,7 @@ export default function Workout({ session }) {
       <AnimatePresence>
         {undoToast && (
           <motion.div
-            className={styles.toast}
+            className={`${styles.toast} ${timer.active ? styles.toastAboveDock : ''}`}
             initial={{ y: 80, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 80, opacity: 0 }}

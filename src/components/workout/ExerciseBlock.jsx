@@ -1,31 +1,57 @@
-import { useState, useRef, useEffect, Fragment } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import SetRow from './SetRow'
+import SetHero from './SetHero'
 import { getPreviousSetsForExercise, getExerciseByName } from '../../lib/db'
 import { displayWeightStr, defaultWeightIncrement } from '../../lib/weightUtils'
 import styles from './ExerciseBlock.module.css'
 
-const REST_PRESETS = [30, 60, 90, 120, 180]
-
-
-function getSetLabel(set, allSets) {
-  if (set.subtype === 'backoff') {
-    let bIdx = 0
-    for (const s of allSets) {
-      if (s.subtype === 'backoff') bIdx++
-      if (s.id === set.id) break
-    }
-    return `B${bIdx}`
-  }
-  let wIdx = 0, kIdx = 0
-  for (const s of allSets) {
-    if (s.type === 'warmup') wIdx++
-    else if (s.type === 'work' && s.subtype !== 'backoff') kIdx++
-    if (s.id === set.id) break
-  }
-  return set.type === 'warmup' ? `V${wIdx}` : `S${kIdx}`
+// Tre slags set: uppvarmning (w), arbetsset (k) och backoff (b). Samma
+// indelning anvands for etiketter och for att para ihop med forra passet.
+function setKind(s) {
+  if (s.type === 'warmup') return 'w'
+  return s.subtype === 'backoff' ? 'b' : 'k'
 }
 
+function kindIndex(set, allSets) {
+  const kind = setKind(set)
+  let i = 0
+  for (const s of allSets) {
+    if (setKind(s) === kind) i++
+    if (s.id === set.id) break
+  }
+  return i
+}
+
+function shortLabel(set, allSets) {
+  const i = kindIndex(set, allSets)
+  const kind = setKind(set)
+  return kind === 'w' ? `V${i}` : kind === 'b' ? `B${i}` : String(i)
+}
+
+function longLabel(set, allSets) {
+  const i = kindIndex(set, allSets)
+  const kind = setKind(set)
+  if (kind === 'w') return `Uppvärmning ${i}`
+  if (kind === 'b') return `Backoff ${i}`
+  const total = allSets.filter(s => setKind(s) === 'k').length
+  return `Set ${i} av ${total}`
+}
+
+const CheckIcon = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M5 12.5l4.5 4.5L19 7.5" />
+  </svg>
+)
+
+const SupersetChip = () => (
+  <span className={styles.supersetChip}>
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+    </svg>
+    Superset
+  </span>
+)
 
 export default function ExerciseBlock({
   exercise,
@@ -39,7 +65,6 @@ export default function ExerciseBlock({
   onRemoveSet,
   onDuplicateSet,
   onCompleteSet,
-  onUpdateExercise,
   onUpdateExerciseReps,
   onRemoveExercise,
   onReplaceExercise,
@@ -47,6 +72,7 @@ export default function ExerciseBlock({
   onShowInstructions,
   onLongPressStart,
   onTimerStart,
+  onActivate,
   supersetPartner,
   supersetFirstId,
   onSupersetJump,
@@ -56,7 +82,6 @@ export default function ExerciseBlock({
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [menuPos, setMenuPos] = useState({ top: 0, right: 0 })
-  const [rirSetId, setRirSetId] = useState(null)
   const [editingReps, setEditingReps] = useState(false)
   const [repsEditMin, setRepsEditMin] = useState('')
   const [repsEditMax, setRepsEditMax] = useState('')
@@ -66,16 +91,12 @@ export default function ExerciseBlock({
   // lag de i lokal state som aldrig nollstalldes, sa efter "Byt ovning"
   // kunde den gamla ovningens "Förra passet" sta kvar.
   const [fetched, setFetched] = useState(null) // { name, prevSets, equipment }
-  const [exNotes, setExNotes] = useState(exercise.exNotes ?? null)
-  const [collapsed, setCollapsed] = useState(false)
-  const [manuallyExpanded, setManuallyExpanded] = useState(false)
+  // Klar ovning som anvandaren sjalv fallt ut igen.
+  const [reopened, setReopened] = useState(false)
+  // Set som anvandaren tryckt pa for att andra (annars oppnas nasta ej klara).
+  const [editSetId, setEditSetId] = useState(null)
   const longRef = useRef(null)
   const menuBtnRef = useRef(null)
-
-  // Synka exNotes när förälder uppdaterar (t.ex. efter ExerciseDetailSheet-spara)
-  useEffect(() => {
-    if (exercise.exNotes !== undefined) setExNotes(exercise.exNotes)
-  }, [exercise.exNotes])
 
   // Stäng meny vid klick utanför
   useEffect(() => {
@@ -111,6 +132,12 @@ export default function ExerciseBlock({
     }, 500)
   }
   function cancelLong() { clearTimeout(longRef.current) }
+  const longPress = {
+    onPointerDown: handlePointerDown,
+    onPointerUp: cancelLong,
+    onPointerLeave: cancelLong,
+    onPointerCancel: cancelLong,
+  }
 
   async function handleComplete(setId) {
     const set = exercise.sets.find(s => s.id === setId)
@@ -122,7 +149,7 @@ export default function ExerciseBlock({
       const hasReps = set.reps !== '' && set.reps !== null && set.reps !== undefined
       if (!hasReps) {
         try { navigator.vibrate?.(20) } catch { /* ignored */ }
-        // Focus reps-faltet (andra number-inputen i raden)
+        // Focus reps-faltet (andra number-inputen i kortet)
         const rowEl = document.querySelector(`[data-set-id="${setId}"]`)
         const inputs = rowEl?.querySelectorAll('input[type="number"]')
         const target = inputs?.[1] ?? inputs?.[0]
@@ -136,6 +163,7 @@ export default function ExerciseBlock({
       exercise.sets.filter(s => s.type === 'work' && !s.done).length === 1
     const isLastSetOfWorkout = isLastExercise && isLastWorkSetOfExercise
 
+    setEditSetId(null)
     // (Nasta sets vikt/reps fylls i av completeSet i useWorkout.)
     await onCompleteSet(exercise.localId, setId)
     if (!wasCompleted && set?.type === 'work') {
@@ -170,39 +198,43 @@ export default function ExerciseBlock({
 
   const workSets = exercise.sets.filter(s => s.type === 'work')
   const doneSets = workSets.filter(s => s.done)
-  const allWorkDone = workSets.length > 0 && doneSets.length === workSets.length
-  const isInProgress = isActive && !allWorkDone && !collapsed
+  const setsLeft = workSets.length - doneSets.length
+  const allWorkDone = workSets.length > 0 && setsLeft === 0
 
-  // Auto-collapse when all work sets complete
+  // En ovning som blir klar falls ihop igen (aven om den varit utfalld).
   useEffect(() => {
-    if (allWorkDone) {
-      setCollapsed(true)
-      setManuallyExpanded(false)
-    }
+    if (allWorkDone) setReopened(false)
   }, [allWorkDone])
 
-  const rirPickerSet = exercise.sets.find(s => s.id === rirSetId)
+  const isTimeBased = exercise.isTimeBased === true
+  const isCardio = exercise.isCardio === true
+  const weightUnit = isCardio ? 'km' : 'kg'
+  const repsUnit = isCardio ? 'min' : isTimeBased ? 'sek' : 'reps'
 
-  const prevStr = prevSets
-    ? prevSets
-        .filter(s => s.type === 'work' && parseInt(s.reps) > 0)
-        .map(s => {
-          const w = parseFloat(s.weight) || 0
-          if (exercise.isCardio) {
-            return w > 0 ? `${w} km × ${s.reps} min` : `${s.reps} min`
-          }
-          if (exercise.isTimeBased) {
-            return w > 0 ? `${displayWeightStr(s.weight, exEquipment)}kg×${s.reps}s` : `${s.reps}s`
-          }
-          return w > 0 ? `${displayWeightStr(s.weight, exEquipment)}kg×${s.reps}` : `${s.reps} reps`
-        })
-        .join(' / ') || null
-    : null
+  // "22 kg × 8", "8 reps" (kroppsvikt), "5 km × 30 min"
+  function fmtSet(s) {
+    if (!s) return '–'
+    const reps = parseInt(s.reps)
+    const w = parseFloat(s.weight) || 0
+    if (!reps && !w) return '–'
+    const wStr = isCardio ? String(w) : displayWeightStr(s.weight, exEquipment)
+    if (isCardio) return w > 0 ? `${wStr} km × ${reps || '–'} min` : `${reps} min`
+    const unit = isTimeBased ? ' s' : ''
+    if (w > 0) return `${wStr} kg × ${reps || '–'}${unit}`
+    return isTimeBased ? `${reps} s` : `${reps} reps`
+  }
 
-  // Beräkna 1RM från förra passet för rep-kalkylatorn i SetRow
+  // Forra passets motsvarande set (samma sort, samma ordningsnummer).
+  function prevFor(set) {
+    if (!prevSets) return null
+    const kind = setKind(set)
+    const same = prevSets.filter(s => setKind(s) === kind && parseInt(s.reps) > 0)
+    return same[kindIndex(set, exercise.sets) - 1] ?? null
+  }
+
+  // Beräkna 1RM från förra passet för rep-förslaget i setkortet
   const prev1RM = (() => {
     const work = (prevSets ?? []).filter(s => s.type === 'work' && s.weight && s.reps)
-    if (!work.length) return null
     let best = 0
     for (const s of work) {
       const w = parseFloat(s.weight), r = parseInt(s.reps)
@@ -215,262 +247,175 @@ export default function ExerciseBlock({
     ? exercise.exerciseId
     : encodeURIComponent('__builtin__' + exercise.name)
 
-  const hasWarmups = exercise.sets.some(s => s.type === 'warmup')
   // +/- pa vikten foljer ovningens eget viktsteg (hantel 2, maskin 5,
   // annars 2,5 - eller det som ar satt pa ovningen). Kardio stegar 0,5 km.
-  const weightStep = exercise.isCardio === true
+  const weightStep = isCardio
     ? 0.5
     : (Number(exercise.weightIncrement) || defaultWeightIncrement(exEquipment))
-  const isTimeBased = exercise.isTimeBased === true
-  const isCardio = exercise.isCardio === true
-  const colLabels = isCardio
-    ? ['SET', 'KM', 'MIN', 'KLAR']
-    : ['SET', 'KG', isTimeBased ? 'SEK' : 'REPS', 'KLAR']
 
-  // Collapsed summary
-  const bestWeight = doneSets.length > 0
-    ? Math.max(...doneSets.map(s => parseFloat(s.weight) || 0))
-    : 0
-  const collapsedMeta = `${doneSets.length} set · ${bestWeight > 0 ? displayWeightStr(bestWeight, exEquipment) + ' kg' : '–'}`
+  const hasTarget = exercise.defaultRepsMin != null || exercise.defaultRepsMax != null
+  const targetStr = hasTarget
+    ? `${exercise.defaultRepsMin ?? ''}–${exercise.defaultRepsMax ?? ''} ${isTimeBased ? 'sek' : 'reps'}`
+    : null
 
-  return (
-    <div className={styles.blockWrapper} data-exid={exercise.localId}>
-      {isInProgress && <div className={styles.progressBar} />}
-      {allWorkDone && <div className={styles.doneBar} />}
-    <div className={styles.block}>
+  const mode = allWorkDone && !reopened ? 'done' : (isActive || reopened) ? 'open' : 'upcoming'
 
-      {/* ── Collapsed view ── */}
-      <AnimatePresence initial={false}>
-        {collapsed && (
-          <motion.div
-            key="collapsed"
-            className={styles.collapsedRow}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            onClick={() => { setCollapsed(false); setManuallyExpanded(true) }}
-            role="button"
-            tabIndex={0}
-          >
-            <div className={styles.collapsedLeft}>
-              <div className={styles.collapsedCheck}>
-                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                  <path d="M2.5 8L6.5 12L13.5 4" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </div>
-              <div className={styles.collapsedInfo}>
-                <div className={styles.collapsedName}>{exercise.name}</div>
-                <div className={styles.collapsedMeta}>{collapsedMeta}</div>
-              </div>
-            </div>
-            <div className={styles.expandBtn} aria-hidden="true">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="m6 9 6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+  // Vilket set som visas som stort kort: det anvandaren tryckt pa, annars
+  // nasta ej klara set i den aktiva ovningen.
+  const editSet = exercise.sets.find(s => s.id === editSetId && !s.done)
+  const openSetId = editSet?.id ?? (isActive ? exercise.sets.find(s => !s.done)?.id ?? null : null)
 
-      {/* ── Full content (hidden when collapsed) ── */}
-      <AnimatePresence initial={false}>
-        {!collapsed && (
-          <motion.div
-            key="expanded"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
-            style={{ overflow: 'hidden' }}
-          >
+  function startRepsEdit(e) {
+    e.stopPropagation()
+    setRepsEditMin(exercise.defaultRepsMin != null ? String(exercise.defaultRepsMin) : '')
+    setRepsEditMax(exercise.defaultRepsMax != null ? String(exercise.defaultRepsMax) : '')
+    setEditingReps(true)
+  }
+  function commitRepsEdit() {
+    repsBlurTimer.current = setTimeout(() => {
+      setEditingReps(false)
+      onUpdateExerciseReps?.(
+        exercise.localId,
+        repsEditMin !== '' ? parseInt(repsEditMin) : null,
+        repsEditMax !== '' ? parseInt(repsEditMax) : null,
+      )
+    }, 80)
+  }
 
-      {/* ── Header ── */}
-      <div
-        className={styles.header}
-        onPointerDown={handlePointerDown}
-        onPointerUp={cancelLong}
-        onPointerLeave={cancelLong}
-        onPointerCancel={cancelLong}
-      >
-        <div className={styles.headerInfo}>
-          <div className={styles.nameRow}>
-            <button
-              className={styles.nameLink}
-              onClick={() => onShowDetail?.(detailId)}
-              onPointerDown={e => e.stopPropagation()}
-              type="button"
-            >
+  // ── Klar ovning: en rad ──
+  if (mode === 'done') {
+    const bestWeight = Math.max(0, ...doneSets.map(s => parseFloat(s.weight) || 0))
+    const pbs = doneSets.filter(s => s.isPB).length
+    const meta = [
+      `${doneSets.length} set`,
+      bestWeight > 0 ? `${displayWeightStr(bestWeight, exEquipment)} kg` : null,
+      pbs ? `${pbs} PB` : null,
+    ].filter(Boolean).join(' · ')
+    return (
+      <div className={styles.blockWrapper} data-exid={exercise.localId}>
+        <button className={styles.compact} onClick={() => setReopened(true)} type="button" {...longPress}>
+          <span className={styles.compactCheck}><CheckIcon size={14} /></span>
+          <span className={styles.compactText}>
+            <span className={styles.compactNameDone}>{exercise.name}</span>
+            <span className={styles.compactMeta}>{meta}</span>
+          </span>
+        </button>
+      </div>
+    )
+  }
+
+  // ── Kommande ovning: en rad, tryck for att kora den nu ──
+  if (mode === 'upcoming') {
+    const meta = [
+      `${workSets.length} set`,
+      targetStr,
+      doneSets.length > 0 ? `${doneSets.length} klara` : null,
+    ].filter(Boolean).join(' · ')
+    return (
+      <div className={styles.blockWrapper} data-exid={exercise.localId}>
+        <button className={styles.compact} onClick={() => onActivate?.(exercise.localId)} type="button" {...longPress}>
+          <span className={styles.compactRing} />
+          <span className={styles.compactText}>
+            <span className={styles.compactName}>
               {exercise.name}
-            </button>
-            {supersetPartner && (
-              <span className={styles.supersetChip}>
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-                </svg>
-                Superset
-              </span>
-            )}
-            {editingReps ? (
-              <div className={styles.repsRangeEdit} onPointerDown={e => e.stopPropagation()}>
-                <input
-                  className={styles.repsRangeInput}
-                  type="text"
-                  inputMode="numeric"
-                  value={repsEditMin}
-                  placeholder="–"
-                  onChange={e => setRepsEditMin(e.target.value.replace(/\D/g, ''))}
-                  onFocus={e => { clearTimeout(repsBlurTimer.current); e.target.select() }}
-                  onBlur={() => {
-                    repsBlurTimer.current = setTimeout(() => {
-                      setEditingReps(false)
-                      onUpdateExerciseReps?.(
-                        exercise.localId,
-                        repsEditMin !== '' ? parseInt(repsEditMin) : null,
-                        repsEditMax !== '' ? parseInt(repsEditMax) : null,
-                      )
-                    }, 80)
-                  }}
-                  autoFocus
-                />
-                <span className={styles.repsRangeDash}>–</span>
-                <input
-                  className={styles.repsRangeInput}
-                  type="text"
-                  inputMode="numeric"
-                  value={repsEditMax}
-                  placeholder="–"
-                  onChange={e => setRepsEditMax(e.target.value.replace(/\D/g, ''))}
-                  onFocus={e => { clearTimeout(repsBlurTimer.current); e.target.select() }}
-                  onBlur={() => {
-                    repsBlurTimer.current = setTimeout(() => {
-                      setEditingReps(false)
-                      onUpdateExerciseReps?.(
-                        exercise.localId,
-                        repsEditMin !== '' ? parseInt(repsEditMin) : null,
-                        repsEditMax !== '' ? parseInt(repsEditMax) : null,
-                      )
-                    }, 80)
-                  }}
-                />
-              </div>
-            ) : (
-              (exercise.defaultRepsMin != null || exercise.defaultRepsMax != null) ? (
-                <span
-                  className={styles.repsRange}
-                  onClick={e => {
-                    e.stopPropagation()
-                    setRepsEditMin(exercise.defaultRepsMin != null ? String(exercise.defaultRepsMin) : '')
-                    setRepsEditMax(exercise.defaultRepsMax != null ? String(exercise.defaultRepsMax) : '')
-                    setEditingReps(true)
-                  }}
-                >
-                  {`${exercise.defaultRepsMin ?? ''}–${exercise.defaultRepsMax ?? ''} ${isTimeBased ? 'sek' : 'reps'}`}
-                </span>
-              ) : (
-                <span
-                  className={styles.repsRangeEmpty}
-                  onClick={e => {
-                    e.stopPropagation()
-                    setRepsEditMin('')
-                    setRepsEditMax('')
-                    setEditingReps(true)
-                  }}
-                >
-                  + Sätt mål
-                </span>
-              )
-            )}
-          </div>
-          {exercise.progressionHint && (
-            <div className={`${styles.progressionHint} ${
-              exercise.progressionAction === 'increase_weight' ? styles.progressionUp :
-              exercise.progressionAction === 'too_heavy_flag' ? styles.progressionWarn :
-              exercise.progressionAction === 'repeat_weight' ? styles.progressionCaution :
-              exercise.progressionAction === 'gap_adjustment' ? styles.progressionGap :
-              ''
-            }`}>{exercise.progressionHint}</div>
-          )}
-          {/* Varning vid saknat rep-mal pa aktiv ovning - utan mal kan vi inte
-              gora progression (vet inte nar vi ska oka vikt vs reps). Visas
-              bara nar ovningen ar igang sa det inte storre alla rader pa en gang. */}
-          {isActive
-            && exercise.defaultRepsMin == null
-            && exercise.defaultRepsMax == null
-            && !editingReps
-            && (
-              <div className={styles.repsWarning}>
-                Inget rep-mål är satt — progression kommer inte fungera. Tryck
-                {' '}
-                <button
-                  type="button"
-                  className={styles.repsWarningLink}
-                  onClick={e => {
-                    e.stopPropagation()
-                    setRepsEditMin('')
-                    setRepsEditMax('')
-                    setEditingReps(true)
-                  }}
-                >
-                  + Sätt mål
-                </button>
-                {' '}
-                för att aktivera.
-              </div>
-            )}
-          {exercise.muscleGroup && (
-            <div className={styles.metaRow}>
-              <span className={styles.muscleTag}>{exercise.muscleGroup}</span>
-            </div>
-          )}
+              {supersetPartner && <SupersetChip />}
+            </span>
+            <span className={styles.compactMeta}>{meta}</span>
+          </span>
+        </button>
+      </div>
+    )
+  }
+
+  // ── Oppen ovning: rubrik + settabell med aktivt set som kort ──
+  return (
+    <div className={`${styles.blockWrapper} ${styles.open}`} data-exid={exercise.localId}>
+      <div className={styles.header} {...longPress}>
+        <div className={styles.titleRow}>
           <button
-            className={styles.exNotesBtn}
+            className={styles.nameLink}
             onClick={() => onShowDetail?.(detailId)}
             onPointerDown={e => e.stopPropagation()}
             type="button"
           >
-            {exNotes
-              ? <span className={styles.exNotes}>{exNotes}</span>
-              : <span className={styles.exNotesEmpty}>+ Notering</span>
-            }
+            {exercise.name}
           </button>
-        </div>
-
-        <div className={styles.headerActions}>
-          <button
-            ref={menuBtnRef}
-            className={`${styles.iconBtn} ${menuOpen ? styles.iconBtnActive : ''}`}
-            onPointerDown={e => e.stopPropagation()}
-            onClick={e => {
-              e.stopPropagation()
-              const rect = menuBtnRef.current?.getBoundingClientRect()
-              if (rect) setMenuPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right })
-              setMenuOpen(v => !v)
-            }}
-            aria-label="Fler alternativ"
-            type="button"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <circle cx="5" cy="12" r="1.5" fill="currentColor" />
-              <circle cx="12" cy="12" r="1.5" fill="currentColor" />
-              <circle cx="19" cy="12" r="1.5" fill="currentColor" />
-            </svg>
-          </button>
-          {allWorkDone && (
+          <div className={styles.titleActions}>
+            <span className={`${styles.leftChip} ${allWorkDone ? styles.leftChipDone : ''}`}>
+              {allWorkDone ? 'Klar' : `${setsLeft} set kvar`}
+            </span>
             <button
-              className={styles.expandBtn}
-              onPointerDown={e => { e.stopPropagation(); cancelLong() }}
-              onClick={e => { e.stopPropagation(); setCollapsed(true); setManuallyExpanded(false) }}
+              ref={menuBtnRef}
+              className={`${styles.iconBtn} ${menuOpen ? styles.iconBtnActive : ''}`}
+              onPointerDown={e => e.stopPropagation()}
+              onClick={e => {
+                e.stopPropagation()
+                const rect = menuBtnRef.current?.getBoundingClientRect()
+                if (rect) setMenuPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right })
+                setMenuOpen(v => !v)
+              }}
+              aria-label="Fler alternativ"
               type="button"
-              aria-label="Kollapsa övning"
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="m18 15-6-6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <circle cx="5" cy="12" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="19" cy="12" r="1.8" />
               </svg>
             </button>
-          )}
+          </div>
         </div>
+
+        <div className={styles.metaRow} onPointerDown={e => e.stopPropagation()}>
+          {exercise.muscleGroup && <span>{exercise.muscleGroup}</span>}
+          {editingReps ? (
+            <span className={styles.repsRangeEdit}>
+              <input
+                className={styles.repsRangeInput}
+                type="text"
+                inputMode="numeric"
+                value={repsEditMin}
+                placeholder="–"
+                aria-label="Lägsta reps"
+                onChange={e => setRepsEditMin(e.target.value.replace(/\D/g, ''))}
+                onFocus={e => { clearTimeout(repsBlurTimer.current); e.target.select() }}
+                onBlur={commitRepsEdit}
+                autoFocus
+              />
+              <span>–</span>
+              <input
+                className={styles.repsRangeInput}
+                type="text"
+                inputMode="numeric"
+                value={repsEditMax}
+                placeholder="–"
+                aria-label="Högsta reps"
+                onChange={e => setRepsEditMax(e.target.value.replace(/\D/g, ''))}
+                onFocus={e => { clearTimeout(repsBlurTimer.current); e.target.select() }}
+                onBlur={commitRepsEdit}
+              />
+            </span>
+          ) : (
+            <button className={styles.metaBtn} onClick={startRepsEdit} type="button">
+              {hasTarget ? `mål ${targetStr}` : '+ Sätt mål'}
+            </button>
+          )}
+          <button className={styles.metaBtn} onClick={() => onShowDetail?.(detailId)} type="button">
+            {exercise.exNotes || '+ Notering'}
+          </button>
+          {supersetPartner && <SupersetChip />}
+        </div>
+
+        {exercise.progressionHint && (
+          <div className={`${styles.progressionHint} ${
+            exercise.progressionAction === 'too_heavy_flag' ? styles.progressionWarn : ''
+          }`}>{exercise.progressionHint}</div>
+        )}
+        {/* Utan rep-mal kan vi inte gora progression (vet inte nar vi ska
+            oka vikt vs reps). */}
+        {isActive && !hasTarget && !editingReps && (
+          <div className={styles.repsWarning}>
+            Inget rep-mål är satt, så progressionen fungerar inte. Tryck på "+ Sätt mål" ovan.
+          </div>
+        )}
       </div>
 
       {/* ── ··· dropdown ── */}
@@ -494,6 +439,16 @@ export default function ExerciseBlock({
             <button className={styles.menuItem} onClick={() => { onAddBackoffSet?.(exercise.localId); setMenuOpen(false) }}>
               + Back-off set
             </button>
+            {openSetId && (
+              <>
+                <button className={styles.menuItem} onClick={() => { onDuplicateSet?.(exercise.localId, openSetId); setMenuOpen(false) }}>
+                  Dubblera det öppna setet
+                </button>
+                <button className={styles.menuItem} onClick={() => { onRemoveSet(exercise.localId, openSetId); setEditSetId(null); setMenuOpen(false) }}>
+                  Ta bort det öppna setet
+                </button>
+              </>
+            )}
             <div className={styles.menuDivider} />
             <button className={styles.menuItem} onClick={() => { onReplaceExercise?.(exercise); setMenuOpen(false) }}>
               Byt övning
@@ -509,6 +464,11 @@ export default function ExerciseBlock({
             )}
             <button className={styles.menuItem} onClick={() => { onShowHistory?.(exercise); setMenuOpen(false) }}>Historik</button>
             <button className={styles.menuItem} onClick={() => { onShowInstructions?.(exercise); setMenuOpen(false) }}>Övningsinstruktioner</button>
+            {allWorkDone && (
+              <button className={styles.menuItem} onClick={() => { setReopened(false); setMenuOpen(false) }}>
+                Fäll ihop
+              </button>
+            )}
             <div className={styles.menuDivider} />
             <button
               className={`${styles.menuItem} ${styles.menuItemDanger}`}
@@ -520,123 +480,73 @@ export default function ExerciseBlock({
         )}
       </AnimatePresence>
 
-      {/* ── Kolumnrubriker ── */}
-      <div className={styles.colHeaders}>
-        {colLabels.map((l, i) => (
-          <span
-            key={l}
-            className={`${styles.colLabel} ${i === 2 ? styles.colLabelReps : ''}`}
-          >{l}</span>
-        ))}
-      </div>
-
-      {/* ── Set-rader med uppvärmningsseparator ── */}
-      <div className={styles.sets}>
-        {(() => {
-          // Gult "nasta set" bara pa den aktiva ovningen (den med gul linje)
-          const nextSetId = isActive ? (exercise.sets.find(s => !s.done)?.id ?? null) : null
-          return exercise.sets.map((set, index) => {
-            const isFirstWork = set.type === 'work' && hasWarmups && (index === 0 || exercise.sets[index - 1]?.type === 'warmup')
-            return (
-              <Fragment key={set.id}>
-                {isFirstWork && (
-                  <div className={styles.warmupDivider} />
-                )}
-                <SetRow
-                  set={set}
-                  displayLabel={getSetLabel(set, exercise.sets)}
-                  isWarmup={set.type === 'warmup'}
-                  isNext={set.id === nextSetId}
-                  allSets={exercise.sets}
-                  prev1RM={prev1RM}
-                  weightStep={weightStep}
-                  prefilled={!!set.prefilled}
-                  isTimeBased={isTimeBased}
-                  isCardio={isCardio}
-                  onUpdate={(field, value) => onUpdateSet(exercise.localId, set.id, field, value)}
-                  onRemove={() => onRemoveSet(exercise.localId, set.id)}
-                  onDuplicate={() => onDuplicateSet?.(exercise.localId, set.id)}
-                  onComplete={() => handleComplete(set.id)}
-                  onOpenRIR={() => setRirSetId(set.id)}
-                />
-              </Fragment>
-            )
-          })
-        })()}
-      </div>
-
-      {/* ── Tidigare vikter ── */}
-      {prevStr && (
-        <button
-          className={styles.prevRow}
-          onClick={() => onShowHistory?.(exercise)}
-          type="button"
-          aria-label="Visa historik för övningen"
-        >
-          <span className={styles.prevIcon}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-            </svg>
-          </span>
-          <span className={styles.prevText}>
-            Förra passet{exercise.prevDate ? ` (${new Date(exercise.prevDate).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' })})` : ''}: {prevStr}
-          </span>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true" className={styles.prevChevron}>
-            <path d="M9 6L15 12L9 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
-      )}
-      {!prevStr && exercise.dataLoaded && (
-        <div className={styles.prevRowEmpty}>
-          Första gången – ingen tidigare data för övningen
+      {/* ── Settabell: Set / Förra / Idag ── */}
+      <div className={styles.table}>
+        <div className={`${styles.tr} ${styles.th}`}>
+          <span>Set</span><span>Förra</span><span>Idag</span><span />
         </div>
-      )}
-
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ── RIR-picker (bottom sheet) ── */}
-      <AnimatePresence>
-        {rirSetId && rirPickerSet && (
-          <>
-            <motion.div
-              className={styles.rirBackdrop}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setRirSetId(null)}
-            />
-            <motion.div
-              className={styles.rirSheet}
-              initial={{ y: 200 }}
-              animate={{ y: 0 }}
-              exit={{ y: 200 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 36 }}
-              onClick={e => e.stopPropagation()}
-            >
-              <div className={styles.rirHandle} />
-              <p className={styles.rirTitle}>RIR – reps kvar i tanken</p>
-              <div className={styles.rirGrid}>
-                {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
-                  <button
-                    key={n}
-                    className={`${styles.rirOpt} ${rirPickerSet.rir === n ? styles.rirOptActive : ''}`}
-                    onClick={() => {
-                      onUpdateSet(exercise.localId, rirSetId, 'rir', n)
-                      setRirSetId(null)
-                    }}
-                    type="button"
-                  >
-                    {n}
-                  </button>
-                ))}
+        {exercise.sets.map(set => {
+          const prev = prevFor(set)
+          if (set.id === openSetId) {
+            return (
+              <SetHero
+                key={set.id}
+                set={set}
+                label={longLabel(set, exercise.sets)}
+                prevText={prev ? fmtSet(prev) : null}
+                allSets={exercise.sets}
+                prev1RM={prev1RM}
+                weightStep={weightStep}
+                weightUnit={weightUnit}
+                repsUnit={repsUnit}
+                showRir={set.type !== 'warmup' && !isCardio && !isTimeBased}
+                onUpdate={(field, value) => onUpdateSet(exercise.localId, set.id, field, value)}
+                onComplete={() => handleComplete(set.id)}
+              />
+            )
+          }
+          const label = shortLabel(set, exercise.sets)
+          if (set.done) {
+            return (
+              <div key={set.id} className={`${styles.tr} ${styles.trDone}`} data-set-id={set.id}>
+                <span className={styles.tdLabel}>{label}</span>
+                <span>{prev ? fmtSet(prev) : '–'}</span>
+                <span>
+                  {fmtSet(set)}
+                  {set.rir != null && set.rir !== '' && <span className={styles.rirNote}> · RIR {set.rir}</span>}
+                </span>
+                <button
+                  className={`${styles.statusBtn} ${set.isPB ? styles.statusPb : styles.statusDone}`}
+                  onClick={() => handleComplete(set.id)}
+                  type="button"
+                  aria-label={set.isPB ? `Personbästa! Ångra set ${label}` : `Ångra set ${label}`}
+                >
+                  {set.isPB ? <span className={styles.pbLabel}>PB</span> : <CheckIcon />}
+                </button>
               </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-    </div>
+            )
+          }
+          return (
+            <button
+              key={set.id}
+              className={`${styles.tr} ${styles.trTodo}`}
+              data-set-id={set.id}
+              onClick={() => setEditSetId(set.id)}
+              type="button"
+              aria-label={`Öppna set ${label}`}
+            >
+              <span className={styles.tdLabel}>{label}</span>
+              <span className={styles.tdPrev}>{prev ? fmtSet(prev) : '–'}</span>
+              <span className={styles.tdToday}>{fmtSet(set)}</span>
+              <span className={styles.statusTodo} />
+            </button>
+          )
+        })}
+      </div>
+
+      {!prevSets?.length && exercise.dataLoaded && (
+        <div className={styles.firstTime}>Första gången du kör övningen, så det finns inget att jämföra med.</div>
+      )}
     </div>
   )
 }

@@ -1,0 +1,183 @@
+/* Det oppna setet: kort med stora siffror (designsprak 2026-11). */
+
+.card {
+  margin: 8px 0;
+  background: var(--d-card);
+  border: 1px solid var(--d-card-border);
+  border-radius: 22px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.prev {
+  font-size: 13px;
+  color: #B5B5B5;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.prev b {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+}
+
+.num {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #fff;
+  font-family: var(--font-num);
+  /* !important: index.css tvingar 16px pa alla input (mot iOS-zoom) */
+  font-size: clamp(48px, 17vw, 68px) !important;
+  line-height: 1;
+  font-weight: 700;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield;
+  appearance: textfield;
+  caret-color: var(--accent);
+}
+
+.num::-webkit-outer-spin-button,
+.num::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.num::placeholder { color: #4A4A4A; }
+
+.num:focus {
+  outline: none;
+  background: #1A1A1A;
+}
+
+.unit {
+  margin: 2px 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--d-muted);
+}
+
+.steppers {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 60px));
+  gap: 8px;
+  justify-content: center;
+  width: 100%;
+}
+
+.step {
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--d-raised-border);
+  background: var(--d-raised);
+  color: var(--text);
+  font-size: 22px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.step:active { background: #2A2A2A; }
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.rir {
+  width: 76px;
+  height: 54px;
+  flex-shrink: 0;
+  border-radius: 16px;
+  border: 1px solid var(--d-raised-border);
+  background: var(--d-raised);
+  color: var(--d-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.rir:active { background: #2A2A2A; }
+
+.rirSet {
+  border-color: var(--accent-border);
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+
+.rirLabel {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.rirValue {
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.doneBtn {
+  flex: 1;
+  height: 54px;
+  border-radius: 16px;
+  border: 0;
+  background: var(--accent);
+  color: #141414;
+  font-size: 17px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: transform 0.12s var(--ease), filter 0.12s var(--ease);
+}
+
+.doneBtn:active {
+  transform: scale(0.98);
+  filter: brightness(0.92);
+}
