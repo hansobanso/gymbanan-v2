@@ -337,19 +337,18 @@ export function analyzeWorkoutContext(recentWorkouts, currentExercises, currentP
   const intensity = buildIntensityProfile(recentWorkouts)
   if (intensity) insights.push(intensity)
 
-  // 0) FRÅNVARO-DETEKTION: hur länge sedan senaste pass?
-  // Hoppa över anpassade pass (sjuk/deload) - de räknas inte som "tränat normalt"
-  const lastNormalWorkout = recentWorkouts.find(w => !w.adjusted)
-  if (lastNormalWorkout) {
-    const daysSinceLast = DAYS(NOW - new Date(lastNormalWorkout.finished_at).getTime())
-    if (daysSinceLast >= 7 && daysSinceLast <= 10) {
-      insights.push(`ÅTERKOMST EFTER PAUS: ${daysSinceLast} dagar sedan senaste normala pass. Föreslå att köra samma vikter som tidigare - kort paus ger ingen detraining. Säg "välkommen tillbaka" och håll vikterna oförändrade.`)
-    } else if (daysSinceLast >= 11 && daysSinceLast <= 14) {
-      insights.push(`ÅTERKOMST EFTER PAUS: ${daysSinceLast} dagar sedan senaste normala pass (1-2 veckor). Rekommendera att SÄNKA vikten 10% första passet, sedan ramp:a upp över 1-2 pass. Använd <adjustment> med weightMultiplier 0.9 för alla övningar.`)
+  // 0) FRÅNVARO-DETEKTION: hur länge sedan senaste pass (oavsett typ)?
+  // Samma trösklar som appens automatik (detectGapAdjustment i progression.js):
+  // appen har REDAN fyllt i vikterna, PT:n ska bara förklara - inte sänka mer.
+  const lastAnyWorkout = recentWorkouts.find(w => w.finished_at)
+  if (lastAnyWorkout) {
+    const daysSinceLast = DAYS(NOW - new Date(lastAnyWorkout.finished_at).getTime())
+    if (daysSinceLast >= 8 && daysSinceLast <= 14) {
+      insights.push(`ÅTERKOMST EFTER PAUS: ${daysSinceLast} dagar sedan senaste pass. Appen har förifyllt SAMMA vikter och reps som förra passet - kort paus ger ingen detraining. Säg "välkommen tillbaka", nämn att vikterna är samma som sist och föreslå INTE någon sänkning.`)
     } else if (daysSinceLast >= 15 && daysSinceLast <= 28) {
-      insights.push(`LÅNG FRÅNVARO: ${daysSinceLast} dagar sedan senaste normala pass (2-4 veckor). Sänk vikten 15-20% första passet och ramp:a upp över 2-3 pass. Använd <adjustment> med weightMultiplier 0.8 för alla övningar.`)
+      insights.push(`LÅNG FRÅNVARO: ${daysSinceLast} dagar sedan senaste pass (2-4 veckor). Appen har redan sänkt vikterna ca 10% automatiskt. Nämn det kort och att man rampar upp över 1-2 pass. Föreslå INTE ytterligare sänkning.`)
     } else if (daysSinceLast > 28) {
-      insights.push(`MYCKET LÅNG FRÅNVARO: ${daysSinceLast} dagar sedan senaste normala pass (1+ månad). Sänk vikten 20-30% och ramp:a upp över 2-3 veckor. Använd <adjustment> med weightMultiplier 0.75.`)
+      insights.push(`MYCKET LÅNG FRÅNVARO: ${daysSinceLast} dagar sedan senaste pass (1+ månad). Appen har redan sänkt vikterna ca 20% automatiskt. Nämn det kort och att man rampar upp över 2-3 veckor. Föreslå INTE ytterligare sänkning.`)
     }
   }
 
@@ -498,48 +497,6 @@ export function analyzeWorkoutContext(recentWorkouts, currentExercises, currentP
     insights.push('Inga särskilda flaggor i datan - ge en generell, kort genomgång.')
   }
   return insights.join('\n')
-}
-
-/**
- * Detekterar traninsuppehall och returnerar en adjustment som kan
- * appliceras direkt — ingen AI-parsning behovs.
- * Returnerar null om inget uppehall detekteras (< 8 dagar).
- */
-export function detectGapAdjustment(recentWorkouts, exerciseNames) {
-  if (!recentWorkouts?.length || !exerciseNames?.length) return null
-  const lastNormal = recentWorkouts.find(w => !w.adjusted)
-  if (!lastNormal?.finished_at) return null
-
-  const daysSince = Math.round((Date.now() - new Date(lastNormal.finished_at).getTime()) / 86400000)
-
-  let weightMult = null
-  let repsMult = null
-  let summary = null
-
-  if (daysSince >= 8 && daysSince <= 14) {
-    weightMult = 0.9
-    repsMult = 0.85
-    summary = `${daysSince} dagar sedan senaste passet — vikter sänkta 10%`
-  } else if (daysSince >= 15 && daysSince <= 28) {
-    weightMult = 0.8
-    repsMult = 0.75
-    summary = `${daysSince} dagar sedan senaste passet — vikter sänkta 20%`
-  } else if (daysSince > 28) {
-    weightMult = 0.75
-    repsMult = 0.7
-    summary = `${daysSince} dagar sedan senaste passet — vikter sänkta 25%`
-  }
-
-  if (!weightMult) return null
-
-  return {
-    summary,
-    changes: exerciseNames.map(name => ({
-      exerciseName: name,
-      weightMultiplier: weightMult,
-      repsMultiplier: repsMult,
-    })),
-  }
 }
 
 /**

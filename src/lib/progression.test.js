@@ -320,9 +320,19 @@ describe('detectGapAdjustment', () => {
     expect(detectGapAdjustment([{ finished_at: daysAgo(2), adjusted: false }], ['Bänkpress'])).toBeNull()
   })
 
-  it('10 dagars uppehall ger -10%', () => {
-    const adj = detectGapAdjustment([{ finished_at: daysAgo(10), adjusted: false }], ['Bänkpress'])
-    expect(adj.changes[0].weightMultiplier).toBe(0.9)
+  it('8-14 dagars uppehall: samma som sist (ingen sankning)', () => {
+    const adj = detectGapAdjustment([{ finished_at: daysAgo(9), adjusted: false }], ['Bänkpress'])
+    expect(adj.hold).toBe(true)
+    expect(adj.changes).toEqual([])
+    expect(adj.days).toBe(9)
+  })
+
+  it('15-28 dagar ger -10%, over 28 dagar -20%', () => {
+    const a = detectGapAdjustment([{ finished_at: daysAgo(20), adjusted: false }], ['Bänkpress'])
+    expect(a.hold).toBe(false)
+    expect(a.changes[0].weightMultiplier).toBe(0.9)
+    const b = detectGapAdjustment([{ finished_at: daysAgo(40), adjusted: false }], ['Bänkpress'])
+    expect(b.changes[0].weightMultiplier).toBe(0.8)
   })
 
   it('deload-/sjukpass raknas som traning (ingen comeback-sankning efter deload-vecka)', () => {

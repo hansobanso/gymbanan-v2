@@ -367,28 +367,38 @@ export function detectGapAdjustment(recentWorkouts, exerciseNames) {
 
   const daysSince = Math.round((Date.now() - new Date(last.finished_at).getTime()) / 86400000)
 
+  // Kort uppehall (8-14 dagar) ger ingen matbar styrkeforlust: da foreslas
+  // SAMMA vikter och reps som forra passet (ingen okning, ingen sankning).
+  // Forst vid langre franvaro sanks vikterna, och mildare an forut
+  // (forut -10 % redan efter 8 dagar, -20 % efter 15 och -25 % efter 28).
+  if (daysSince >= 8 && daysSince <= 14) {
+    return {
+      summary: `${daysSince} dagar sedan senaste passet - samma som sist`,
+      days: daysSince,
+      hold: true,
+      changes: [],
+    }
+  }
+
   let weightMult = null
   let repsMult = null
   let summary = null
-
-  if (daysSince >= 8 && daysSince <= 14) {
+  if (daysSince >= 15 && daysSince <= 28) {
     weightMult = 0.9
-    repsMult = 0.85
+    repsMult = 0.9
     summary = `${daysSince} dagar sedan senaste passet - vikter sankta 10%`
-  } else if (daysSince >= 15 && daysSince <= 28) {
-    weightMult = 0.8
-    repsMult = 0.75
-    summary = `${daysSince} dagar sedan senaste passet - vikter sankta 20%`
   } else if (daysSince > 28) {
-    weightMult = 0.75
-    repsMult = 0.7
-    summary = `${daysSince} dagar sedan senaste passet - vikter sankta 25%`
+    weightMult = 0.8
+    repsMult = 0.8
+    summary = `${daysSince} dagar sedan senaste passet - vikter sankta 20%`
   }
 
   if (!weightMult) return null
 
   return {
     summary,
+    days: daysSince,
+    hold: false,
     changes: exerciseNames.map(name => ({
       exerciseName: name,
       weightMultiplier: weightMult,

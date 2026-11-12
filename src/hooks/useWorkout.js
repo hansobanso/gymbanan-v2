@@ -54,6 +54,44 @@ function isPbSet(histMap, name, weight, reps, earlierDoneSets) {
   return false
 }
 
+// Kort uppehall (8-14 dagar): fyll i SAMMA vikter och reps som forra passet
+// istallet for progressionens okning. Ror inte ovningar dar progressionen
+// redan foreslar sankning/upprepning, eller tids-/kardioovningar.
+function holdAtLastSession(ex, days) {
+  if (ex.isTimeBased || ex.isCardio) return ex
+  if (!['increase_weight', 'keep_weight_add_reps'].includes(ex.progressionAction)) return ex
+  const prevWork = (ex.prevSets ?? []).filter(s => s.type === 'work' && s.subtype !== 'backoff' && s.done)
+  if (prevWork.length === 0) return ex
+  const inc = ex.weightIncrement ?? defaultWeightIncrement(ex.exEquipment)
+  const bestPrevW = Math.max(...prevWork.map(s => parseFloat(s.weight) || 0))
+  let i = 0
+  const sets = ex.sets.map(s => {
+    if (s.done || s.type !== 'work') return s
+    if (s.subtype === 'backoff') {
+      // Backoff raknades pa den hojda vikten - rakna om pa forra passets vikt
+      if (ex.progressionAction !== 'increase_weight' || !s.prefilled || bestPrevW <= 0) return s
+      const bw = Math.round(bestPrevW * 0.85 / inc) * inc
+      return { ...s, weight: String(bw), _baseWeight: bw }
+    }
+    const p = prevWork[Math.min(i, prevWork.length - 1)]
+    i++
+    const w = parseFloat(p.weight) || 0
+    return {
+      ...s,
+      weight: w > 0 ? String(w) : '',
+      reps: parseInt(p.reps) > 0 ? String(parseInt(p.reps)) : s.reps,
+      prefilled: true,
+      _baseWeight: w > 0 ? w : undefined,
+    }
+  })
+  return {
+    ...ex,
+    sets,
+    progressionHint: `PT: ${days} dagar sedan senaste pass. Samma vikter och reps som sist.`,
+    progressionAction: 'gap_adjustment',
+  }
+}
+
 // uid + makeSet hjalp-funktioner
 
 function uid() {
@@ -352,7 +390,9 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
           let updated = results[i] ? { ...results[i], localId: ex.localId } : ex
 
           // Steg 2: applicera gap-justering pa RESULTATET fran steg 1
-          if (gapAdj) {
+          if (gapAdj?.hold) {
+            updated = holdAtLastSession(updated, gapAdj.days)
+          } else if (gapAdj) {
             const change = gapAdj.changes.find(c => c.exerciseName === updated.name)
             if (change) {
               let adjustedWeight = false
@@ -365,7 +405,8 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
                 const r = parseInt(s.reps) || 0
 
                 if (w > 0 && change.weightMultiplier) {
-                  const newW = Math.floor(w * change.weightMultiplier / inc) * inc
+                  // Narmaste viktsteg (inte golv) - golvet gjorde -10 % till -13 %
+                  const newW = Math.round(w * change.weightMultiplier / inc) * inc
                   // Om avrundningen gor att vikten inte andras (t.ex. 10*0.9=9→10)
                   // sank reps istallet som fallback
                   if (newW >= w && r > 0 && change.repsMultiplier) {
@@ -385,7 +426,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
               })
 
               // Kort per-ovning hint baserat pa vad som faktiskt justerades
-              const days = gapAdj.summary.match(/\d+/)?.[0] ?? '?'
+              const days = gapAdj.days ?? '?'
               let hint
               if (adjustedWeight) {
                 hint = `PT: ${days} dagar sedan senaste pass. Sänkt vikt.`
