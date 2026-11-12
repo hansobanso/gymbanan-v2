@@ -451,3 +451,20 @@
   transition: opacity 0.1s;
 }
 .createBtn:active { opacity: 0.7; }
+
+/* ═══ Designsprak 2026-11: skriver over reglerna ovan ═══ */
+.header { align-items: flex-end; }
+.headText { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: var(--accent); }
+.title { font-size: 22px; line-height: 1.15; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.tabs { border-radius: 14px; }
+.tab { min-height: 40px; border-radius: 11px; }
+.programCard { background: var(--d-card); border: 1px solid var(--d-card-border); border-radius: 18px; min-height: 64px; }
+.programCardActive { border-color: var(--accent); }
+.programCardName { font-size: 16px; font-weight: 700; }
+.programCardMeta { font-size: 12px; color: var(--d-muted); }
+.createBtn { min-height: 54px; border-radius: 16px; border: 1px dashed #4A4A4A; background: transparent; }
+.previewSheet { background: var(--d-card); border-radius: 28px 28px 0 0; box-shadow: 0 0 0 1px var(--d-card-border); }
+.previewTitle { font-family: var(--font-num); font-size: 40px; line-height: 0.95; font-weight: 700; color: #fff; }
+.previewPrimaryBtn { min-height: 54px; border-radius: 16px; color: #141414; font-size: 17px; font-weight: 800; }
+.previewSecondaryBtn, .previewCancelBtn { min-height: 48px; border-radius: 16px; }

@@ -54,3 +54,8 @@
   letter-spacing: 0.15px;
   color: inherit;
 }
+
+/* ═══ Designsprak 2026-11: skriver over reglerna ovan ═══ */
+.nav { background: #0A0A0A; border-top: 1px solid var(--d-line); }
+.label { font-weight: 600; }
+.active .label { font-weight: 700; }

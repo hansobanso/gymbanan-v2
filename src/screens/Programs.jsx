@@ -163,7 +163,12 @@ export default function Programs({ session, programs, setPrograms, activeProgram
   return (
     <div className={styles.screen}>
       <header className={styles.header}>
-        <h1 className={styles.title}>Program</h1>
+        <div className={styles.headText}>
+          <span className={styles.eyebrow}>PROGRAM</span>
+          <h1 className={styles.title}>
+            {(programs ?? []).find(p => p.id === activeProgramId)?.name ?? 'Välj ett program'}
+          </h1>
+        </div>
       </header>
 
       <div className={styles.body}>

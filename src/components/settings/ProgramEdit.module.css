@@ -416,3 +416,20 @@
   padding: 12px;
 }
 .copyBtn:active { opacity: 0.7; }
+
+/* ═══ Designsprak 2026-11: skriver over reglerna ovan ═══ */
+.topBar { border-bottom: 0; padding-bottom: 4px; }
+.backBtn { width: 44px; height: 44px; margin-left: -12px; background: transparent; border-radius: 22px; color: #C9C9C9; }
+.backBtn:active { background: #1C1C1C; }
+.topBarTitle { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+.label { letter-spacing: 0.1em; color: var(--d-muted); }
+.nameInput {
+  padding: 2px 0; background: transparent; border: 0; border-bottom: 1px solid transparent; border-radius: 0;
+  color: #fff; font-family: var(--font-num); font-size: 40px !important; line-height: 1; font-weight: 700;
+}
+.nameInput:focus { border-bottom-color: var(--accent); }
+.sessionItem { background: var(--d-card); border: 1px solid var(--d-card-border); border-radius: 16px; min-height: 60px; }
+.sessionName { font-size: 15px; font-weight: 700; }
+.sessionMeta { font-size: 12px; color: var(--d-muted); }
+.saveBtn { min-height: 54px; border-radius: 16px; color: #141414; font-size: 17px; font-weight: 800; }
+.setActiveBtn, .setActiveBtnActive, .copyBtn { min-height: 48px; border-radius: 16px; }

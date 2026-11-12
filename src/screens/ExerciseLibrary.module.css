@@ -241,3 +241,13 @@
   color: var(--accent);
   border-color: var(--accent);
 }
+
+/* ═══ Designsprak 2026-11: skriver over reglerna ovan ═══ */
+.backBtn { width: 44px; height: 44px; margin-left: -12px; background: transparent; border-radius: 22px; color: #C9C9C9; }
+.backBtn:active { background: #1C1C1C; }
+.title { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+.card { background: transparent; border: 0; border-radius: 0; border-top: 1px solid var(--d-line); border-bottom: 1px solid var(--d-line); }
+.exRow { min-height: 52px; }
+.exName { font-size: 15px; font-weight: 700; }
+.exGroup, .exMeta { color: var(--d-muted); }
+.chip, .subChip { min-height: 36px; }

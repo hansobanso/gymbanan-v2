@@ -216,3 +216,13 @@
   padding: 9px 12px;
   cursor: pointer;
 }
+
+/* ═══ Designsprak 2026-11: skriver over reglerna ovan ═══ */
+.headText { display: flex; flex-direction: column; gap: 2px; }
+.eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: var(--accent); }
+.title { font-size: 22px; line-height: 1.15; letter-spacing: -0.01em; }
+.sectionLabel { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: var(--d-muted); }
+.rowCard, .signOutCard { background: var(--d-card); border: 1px solid var(--d-card-border); border-radius: 16px; }
+.rowLabel { font-size: 15px; font-weight: 700; }
+.rowValue { color: var(--d-muted); font-variant-numeric: tabular-nums; }
+.chevron { color: #6A6A6A; }

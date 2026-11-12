@@ -167,3 +167,11 @@
   color: var(--text-3);
   padding-right: 16px;
 }
+
+/* ═══ Designsprak 2026-11: skriver over reglerna ovan ═══ */
+.title { font-size: 22px; line-height: 1.15; font-weight: 800; letter-spacing: -0.01em; }
+.weight { font-family: var(--font-num); font-size: 26px; line-height: 1; font-weight: 700; font-variant-numeric: tabular-nums; }
+.row { min-height: 56px; border-bottom: 1px solid var(--d-line); }
+.date { color: var(--d-muted); }
+.sheet { background: var(--d-card); border-radius: 28px 28px 0 0; box-shadow: 0 0 0 1px var(--d-card-border); }
+.saveBtn { min-height: 54px; border-radius: 16px; color: #141414; font-size: 17px; font-weight: 800; }
