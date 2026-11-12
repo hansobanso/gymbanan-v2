@@ -23,6 +23,19 @@
   --accent-dim: rgba(245, 208, 32, 0.12);
   --accent-border: rgba(245, 208, 32, 0.3);
 
+  /* ── Designsprak 2026-11 (passvy D + startsida E) ── */
+  --d-card: #121212;          /* kortyta */
+  --d-card-border: #2A2A2A;
+  --d-raised: #1B1B1B;        /* knappar pa kort */
+  --d-raised-border: #2E2E2E;
+  --d-line: #1C1C1C;          /* radavdelare */
+  --d-muted: #9A9A9A;         /* sekundar text */
+  --d-dim: #8F8F8F;           /* etiketter, klara rader */
+  --d-hint: #A9BDD6;          /* PT-besked */
+  --d-ok: #3DBB4C;            /* klart / redo */
+  --d-ok-dim: #153A1B;
+  --font-num: 'Barlow Condensed', var(--font); /* stora siffror */
+
   /* ── Semantiska färger ── */
   --danger: #FF3B30;
   --danger-dim: rgba(255, 59, 48, 0.15);
