@@ -34,6 +34,7 @@ export default function SetRow({
   isNext,
   allSets,
   prev1RM,
+  weightStep = 2.5,
   prefilled,
   isTimeBased,
   isCardio,
@@ -174,7 +175,7 @@ export default function SetRow({
         <div className={`${styles.stepper} ${set.done ? styles.stepperDone : ''}`}>
           <button
             className={styles.stepBtn}
-            onClick={e => { e.stopPropagation(); adjustWeight(isCardio ? -0.5 : -2.5) }}
+            onClick={e => { e.stopPropagation(); adjustWeight(-weightStep) }}
             onPointerDown={e => e.stopPropagation()}
             type="button"
             disabled={set.done}
@@ -193,7 +194,7 @@ export default function SetRow({
           />
           <button
             className={styles.stepBtn}
-            onClick={e => { e.stopPropagation(); adjustWeight(isCardio ? 0.5 : 2.5) }}
+            onClick={e => { e.stopPropagation(); adjustWeight(weightStep) }}
             onPointerDown={e => e.stopPropagation()}
             type="button"
             disabled={set.done}

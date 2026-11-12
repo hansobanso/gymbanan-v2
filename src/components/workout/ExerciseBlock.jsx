@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, Fragment } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import SetRow from './SetRow'
 import { getPreviousSetsForExercise, getExerciseByName } from '../../lib/db'
-import { displayWeightStr } from '../../lib/weightUtils'
+import { displayWeightStr, defaultWeightIncrement } from '../../lib/weightUtils'
 import styles from './ExerciseBlock.module.css'
 
 const REST_PRESETS = [30, 60, 90, 120, 180]
@@ -224,6 +224,11 @@ export default function ExerciseBlock({
     : encodeURIComponent('__builtin__' + exercise.name)
 
   const hasWarmups = exercise.sets.some(s => s.type === 'warmup')
+  // +/- pa vikten foljer ovningens eget viktsteg (hantel 2, maskin 5,
+  // annars 2,5 - eller det som ar satt pa ovningen). Kardio stegar 0,5 km.
+  const weightStep = exercise.isCardio === true
+    ? 0.5
+    : (Number(exercise.weightIncrement) || defaultWeightIncrement(exEquipment))
   const isTimeBased = exercise.isTimeBased === true
   const isCardio = exercise.isCardio === true
   const colLabels = isCardio
@@ -552,6 +557,7 @@ export default function ExerciseBlock({
                   isNext={set.id === nextSetId}
                   allSets={exercise.sets}
                   prev1RM={prev1RM}
+                  weightStep={weightStep}
                   prefilled={!!set.prefilled}
                   isTimeBased={isTimeBased}
                   isCardio={isCardio}

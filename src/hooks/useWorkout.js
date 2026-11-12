@@ -3,17 +3,7 @@ import { createWorkout, updateWorkout, deleteUnfinishedWorkout, getTwoPreviousSe
 import { computeProgression, deriveCategory, epleyAdjustedReps, detectGapAdjustment } from '../lib/progression'
 import { sortSupersetsAdjacent } from '../lib/superset.js'
 import { namesMatching } from '../lib/exerciseAliases.js'
-
-// Smart default viktsteg baserat pa equipment. Anvands nar exercises.weight_increment ar null.
-function defaultWeightIncrement(equipment) {
-  const eq = (equipment ?? '').toLowerCase()
-  if (eq === 'hantel') return 2
-  if (eq === 'skivstång') return 2.5
-  if (eq === 'maskin') return 5
-  if (eq === 'kabel') return 2.5
-  if (eq === 'kroppsvikt') return 2.5
-  return 2.5
-}
+import { defaultWeightIncrement } from '../lib/weightUtils'
 
 // ── Personbasta (PB) ────────────────────────────────────────────
 // Bygger per ovning: tyngsta vikt nagonsin + flest reps per vikt, fran
@@ -174,9 +164,12 @@ async function loadExerciseData(ex, userId, restOverrides, caches = {}) {
   // Berika med muskelgrupp fran biblioteket - programmets pass lagrar den
   // inte, sa utan detta loggas passet med muscle_group: null.
   const muscleGroup = ex.muscleGroup ?? exData?.muscle_group ?? null
+  // Viktsteg: explicit fran DB, annars default utifran redskap. Satts alltid
+  // (aven utan historik) sa +/- i passet stegar ratt fran forsta gangen.
+  const weightIncrement = Number(exData?.weight_increment) || defaultWeightIncrement(exData?.equipment ?? null)
 
   if (!prevSets?.length) {
-    return { ...ex, muscleGroup, restSeconds, exInstructions, exNotes, exEquipment, isTimeBased, isCardio, prevSets: null, prevDate: null, progressionHint: null, progressionAction: null, dataLoaded: true }
+    return { ...ex, muscleGroup, weightIncrement, restSeconds, exInstructions, exNotes, exEquipment, isTimeBased, isCardio, prevSets: null, prevDate: null, progressionHint: null, progressionAction: null, dataLoaded: true }
   }
 
   // Tidsbaserade ovningar (planka etc): ingen vikt/tid-progression.
@@ -194,17 +187,13 @@ async function loadExerciseData(ex, userId, restOverrides, caches = {}) {
         prefilled: !!(lastSet?.reps),
       }
     })
-    return { ...ex, muscleGroup, sets: prefSets, restSeconds, exInstructions, exNotes, exEquipment, isTimeBased, isCardio, prevSets, prevDate, progressionHint: null, progressionAction: null, dataLoaded: true }
+    return { ...ex, muscleGroup, weightIncrement, sets: prefSets, restSeconds, exInstructions, exNotes, exEquipment, isTimeBased, isCardio, prevSets, prevDate, progressionHint: null, progressionAction: null, dataLoaded: true }
   }
 
   // Harleda ovningskategori fran equipment + movement_pattern
   const equipment = exData?.equipment ?? null
   const movementPattern = exData?.movement_pattern ?? null
   const category = deriveCategory(equipment, movementPattern)
-
-  // Viktsteg: explicit fran DB, annars smart default baserat pa equipment
-  const weightIncrement = exData?.weight_increment
-    ?? defaultWeightIncrement(equipment)
 
   const repsMin = ex.defaultRepsMin ?? null
   const repsMax = ex.defaultRepsMax ?? null
