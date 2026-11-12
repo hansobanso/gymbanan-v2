@@ -401,6 +401,11 @@ export default function Workout({ session }) {
     closeAdjust()
   }
 
+  // Ar passet anpassat just nu (automatiskt eller manuellt)? Da erbjuds
+  // "Ingen anpassning" i arket.
+  const sessionIsAdjusted = workout.isAdjustedSession
+    || workout.exercises.some(ex => ex.progressionAction === 'gap_adjustment')
+
   // Stanger Anpassa-arket och nollstaller valet.
   function closeAdjust() {
     setAdjustOpen(false)
@@ -928,10 +933,22 @@ export default function Workout({ session }) {
           <div className={styles.ssPickSheet}>
             <p className={styles.ssPickTitle}>Anpassa passet</p>
             <p className={styles.adjustHint}>
-              Sänker vikten på alla övningar i passet (reps på kroppsviktsövningar).
-              Räknas som tillfälligt, så det påverkar inte din vanliga progression nästa gång.
+              {sessionIsAdjusted
+                ? 'Passet är anpassat just nu. Välj "Ingen anpassning" för att få tillbaka de vanliga förslagen, eller byt nivå.'
+                : 'Sänker vikten på alla övningar i passet (reps på kroppsviktsövningar). Räknas som tillfälligt, så det påverkar inte din vanliga progression nästa gång.'}
             </p>
             <div className={styles.ssPickList}>
+              {sessionIsAdjusted && (
+                <button
+                  className={`${styles.ssPickItem} ${adjustChoice === 'none' ? styles.ssPickItemActive : ''}`}
+                  type="button"
+                  aria-pressed={adjustChoice === 'none'}
+                  onClick={() => setAdjustChoice('none')}
+                >
+                  <span>Ingen anpassning</span>
+                  <span className={styles.ssPickNote}>vanliga vikter</span>
+                </button>
+              )}
               {ADJUST_OPTIONS.map(opt => (
                 <button
                   key={opt.key}
@@ -950,6 +967,13 @@ export default function Workout({ session }) {
               type="button"
               disabled={!adjustChoice}
               onClick={() => {
+                if (adjustChoice === 'none') {
+                  // Aterstall till progressionens vanliga forslag
+                  deloadAppliedRef.current = true
+                  workout.resetAdjustments()
+                  closeAdjust()
+                  return
+                }
                 const opt = ADJUST_OPTIONS.find(o => o.key === adjustChoice)
                 if (opt) applyManualAdjustment(opt.apply)
               }}

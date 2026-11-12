@@ -92,6 +92,13 @@ function holdAtLastSession(ex, days) {
   }
 }
 
+// Markerar varje set med progressionens ursprungliga forslag (_planWeight/
+// _planReps) sa "Ingen anpassning" kan aterstalla passet efter en automatisk
+// eller manuell sankning (uppehall, deload, sjuk, latt dag).
+function withPlan(sets) {
+  return sets.map(s => ({ ...s, _planWeight: s.weight, _planReps: s.reps }))
+}
+
 // uid + makeSet hjalp-funktioner
 
 function uid() {
@@ -225,7 +232,7 @@ async function loadExerciseData(ex, userId, restOverrides, caches = {}) {
         prefilled: !!(lastSet?.reps),
       }
     })
-    return { ...ex, muscleGroup, weightIncrement, sets: prefSets, restSeconds, exInstructions, exNotes, exEquipment, isTimeBased, isCardio, prevSets, prevDate, progressionHint: null, progressionAction: null, dataLoaded: true }
+    return { ...ex, muscleGroup, weightIncrement, sets: withPlan(prefSets), restSeconds, exInstructions, exNotes, exEquipment, isTimeBased, isCardio, prevSets, prevDate, progressionHint: null, progressionAction: null, _planHint: null, _planAction: null, dataLoaded: true }
   }
 
   // Harleda ovningskategori fran equipment + movement_pattern
@@ -301,11 +308,14 @@ async function loadExerciseData(ex, userId, restOverrides, caches = {}) {
     ...ex,
     muscleGroup,
     restSeconds,
-    sets,
+    sets: withPlan(sets),
     prevDate,
     isCardio,
     progressionHint,
     progressionAction: progression.action,
+    // Ursprungligt tips - aterstalls av "Ingen anpassning"
+    _planHint: progressionHint,
+    _planAction: progression.action,
     progressionReason: progression.reason,
     prevSets,
     exInstructions,
@@ -1118,6 +1128,38 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
     return true
   }, [])
 
+  // "Ingen anpassning": aterstall alla ej klara set till progressionens
+  // vanliga forslag och rakna passet som ett normalt pass igen. Angrar bade
+  // automatiska andringar (uppehall, deload-vecka) och manuella snabbval.
+  const resetAdjustments = useCallback(() => {
+    setIsAdjustedSession(false)
+    setExercises(prev => prev.map(ex => {
+      let changed = false
+      const sets = ex.sets.map(s => {
+        if (s.done || s._planWeight === undefined) return s
+        changed = true
+        const w = parseFloat(s._planWeight) || 0
+        return {
+          ...s,
+          weight: s._planWeight,
+          reps: s._planReps ?? s.reps,
+          prefilled: w > 0 || !!s._planReps,
+          _baseWeight: w > 0 ? w : undefined,
+          _originWeight: undefined,
+          _originReps: undefined,
+          epleyAdjusted: false,
+        }
+      })
+      if (!changed && ex.progressionAction !== 'gap_adjustment') return ex
+      return {
+        ...ex,
+        sets,
+        progressionHint: ex._planHint !== undefined ? ex._planHint : null,
+        progressionAction: ex._planAction !== undefined ? ex._planAction : null,
+      }
+    }))
+  }, [])
+
   return {
     workoutId,
     loading,
@@ -1143,6 +1185,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
     ensureWorkout,
     applyDeload,
     applyAdjustment,
+    resetAdjustments,
     programChanged,
     isAdjustedSession,
     repsUpdatedAt,
