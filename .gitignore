@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Lokalt arbetsmaterial (traningsdata hor inte hemma i repot)
+traningsarkiv.html
