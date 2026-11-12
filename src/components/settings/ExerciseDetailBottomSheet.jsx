@@ -12,19 +12,21 @@ const REST_OPTIONS = [
 
 function Stepper({ label, value, min = 0, onChange }) {
   return (
-    <div className={styles.stepperRow}>
-      <span className={styles.stepperLabel}>{label}</span>
+    <div className={styles.stepper}>
+      <span className={styles.stepperCaption}>{label}</span>
+      <span className={styles.stepVal}>{value}</span>
       <div className={styles.stepperControls}>
         <button
           className={styles.stepBtn}
           onClick={() => onChange(Math.max(min, value - 1))}
           type="button"
+          aria-label={`Färre ${label.toLowerCase()}`}
         >−</button>
-        <span className={styles.stepVal}>{value}</span>
         <button
           className={styles.stepBtn}
           onClick={() => onChange(value + 1)}
           type="button"
+          aria-label={`Fler ${label.toLowerCase()}`}
         >+</button>
       </div>
     </div>
@@ -68,6 +70,7 @@ export default function ExerciseDetailBottomSheet({ exercise, onUpdate, onClose,
 
             {/* Content */}
             <div className={styles.content}>
+              <div className={styles.stepGrid}>
               {!isCardio && (
                 <Stepper
                   label="Uppvärmning"
@@ -90,6 +93,7 @@ export default function ExerciseDetailBottomSheet({ exercise, onUpdate, onClose,
                   onChange={v => onUpdate({ backoffSets: v })}
                 />
               )}
+              </div>
 
               {isCardio && (
                 <p className={styles.cardioHint}>Distans (km) och tid (min) fyller du i under passet.</p>

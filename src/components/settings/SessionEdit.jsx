@@ -4,6 +4,7 @@ import ExerciseDetailBottomSheet from './ExerciseDetailBottomSheet'
 import ExercisePicker from '../workout/ExercisePicker'
 import { formatSessionTime } from '../../lib/estimateTime'
 import { sortSupersetsAdjacent } from '../../lib/superset.js'
+import { statusGroupOf } from '../../lib/homeStats'
 import styles from './SessionEdit.module.css'
 
 const DEFAULT_REST = 120
@@ -32,7 +33,7 @@ function newExercise(name = '') {
 const DELETE_WIDTH = 80
 
 // ── ExerciseRow ──────────────────────────────────────────────
-function ExerciseRow({ ex, onTap, onRemove, isLinked, canLink, onToggleLink, isCardio }) {
+function ExerciseRow({ ex, onTap, onRemove, isLinked, canLink, onToggleLink, isCardio, info }) {
   const dragControls = useDragControls()
   const [dragging, setDragging] = useState(false)
   const [swipeX, setSwipeX] = useState(0)
@@ -157,7 +158,7 @@ function ExerciseRow({ ex, onTap, onRemove, isLinked, canLink, onToggleLink, isC
     >
       <div className={styles.swipeWrapper}>
         {/* Delete background */}
-        <div className={styles.deleteBack}>
+        <div className={styles.deleteBack} style={{ visibility: swipeX < 0 ? 'visible' : 'hidden' }}>
           <button className={styles.deleteBackBtn} onClick={onRemove} type="button">Ta bort</button>
         </div>
         {/* Row — slides left to reveal delete */}
@@ -190,25 +191,31 @@ function ExerciseRow({ ex, onTap, onRemove, isLinked, canLink, onToggleLink, isC
             }}
             aria-label="Flytta övning"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="M4 7H20M4 12H20M4 17H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/>
             </svg>
           </span>
 
           <div className={styles.exRowContent}>
             <div className={styles.exRowName}>{ex.name}</div>
-            <div className={styles.exRowBadges}>
-              <span className={styles.badge}>{workSets} {isCardio ? (workSets === 1 ? 'runda' : 'rundor') : 'set'}</span>
-              {!isCardio && (repsMin !== null || repsMax !== null) && (
-                <span className={styles.badge}>{repsMin ?? ''}–{repsMax ?? ''} reps</span>
-              )}
-              <span className={`${styles.badgeVila} ${restCustom ? styles.badgeAccent : ''}`}>
-                {restLabel} vila
-              </span>
-              {isLinked && <span className={styles.badgeSuperset}>Superset</span>}
+            <div className={styles.exRowMeta}>
+              {[
+                info?.muscle_group,
+                info?.equipment ? info.equipment.toLowerCase() : null,
+                <span key="rest" className={restCustom ? styles.metaAccent : undefined}>vila {restLabel}</span>,
+                isLinked ? <span key="ss" className={styles.metaAccent}>superset</span> : null,
+              ].filter(Boolean).map((part, i) => (
+                <span key={i}>{i > 0 && ' · '}{part}</span>
+              ))}
             </div>
           </div>
           <div className={styles.exRowRight}>
+            <span className={styles.exRowPlan}>
+              {workSets}
+              {isCardio
+                ? (workSets === 1 ? ' runda' : ' rundor')
+                : (repsMin !== null || repsMax !== null) ? ` × ${repsMin ?? ''}–${repsMax ?? ''}` : ' set'}
+            </span>
             {(isLinked || canLink) && (
               <button
                 className={`${styles.linkBtn} ${isLinked ? styles.linkBtnActive : ''}`}
@@ -222,7 +229,6 @@ function ExerciseRow({ ex, onTap, onRemove, isLinked, canLink, onToggleLink, isC
                 </svg>
               </button>
             )}
-            <span className={styles.chevron}>›</span>
           </div>
         </div>
       </div>
@@ -244,6 +250,18 @@ export default function SessionEdit({ session, allExercises, onSave, onDelete, o
   const [headerMenuOpen, setHeaderMenuOpen] = useState(false)
 
   const selectedEx = exercises.find(e => e._id === selectedExId) ?? null
+
+  // Slar upp muskelgrupp och redskap per ovningsnamn (for radernas
+  // undertext och summeringen "set per muskelgrupp").
+  const infoByName = {}
+  for (const e of allExercises ?? []) infoByName[e.name] = e
+  const totalSets = exercises.reduce((sum, e) => sum + (Number(e.workSets) || 0), 0)
+  const setsByGroup = {}
+  for (const e of exercises) {
+    const g = statusGroupOf(infoByName[e.name]?.muscle_group)
+    if (g) setsByGroup[g] = (setsByGroup[g] ?? 0) + (Number(e.workSets) || 0)
+  }
+  const groupChips = Object.entries(setsByGroup).sort((a, b) => b[1] - a[1])
 
   // Slap upp ovningen som ska bytas (om swap-lage) - skickas till ExercisePicker
   // som "replacingExercise" sa "Liknande ovningar"-grupp kan visas.
@@ -314,7 +332,6 @@ export default function SessionEdit({ session, allExercises, onSave, onDelete, o
             <path d="m15 18-6-6 6-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
-        <span className={styles.topBarTitle}>Redigera pass</span>
         <div className={styles.topBarRight}>
           <button
             className={styles.topBarSaveBtn}
@@ -359,65 +376,68 @@ export default function SessionEdit({ session, allExercises, onSave, onDelete, o
 
       <div className={styles.scroll}>
         {/* Passnamn */}
-        <div className={styles.section}>
-          <label className={styles.label}>Passnamn</label>
+        <div className={styles.head}>
+          <label className={styles.eyebrow} htmlFor="session-name">PASS</label>
           <input
+            id="session-name"
             className={styles.nameInput}
             value={name}
             onChange={e => setName(e.target.value)}
             placeholder="T.ex. Bröst & rygg"
           />
+          {exercises.length > 0 && (
+            <span className={styles.summary}>
+              {exercises.length} övningar · {totalSets} set · {formatSessionTime({ exercises })}
+            </span>
+          )}
         </div>
+
+        {groupChips.length > 0 && (
+          <div className={styles.section}>
+            <span className={styles.label}>Set per muskelgrupp</span>
+            <div className={styles.chips}>
+              {groupChips.map(([g, n]) => (
+                <span key={g} className={styles.chip}>{g} <b>{n}</b></span>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Övningar */}
         <div className={styles.exercisesSection}>
-          <div className={styles.sectionHeader}>
-            <span className={styles.label}>
-              Övningar
-              {exercises.length > 0 && (
-                <span className={styles.labelCount}>{exercises.length}</span>
-              )}
-              {exercises.length > 0 && (
-                <span className={styles.timeEstimate}>{formatSessionTime({ exercises })}</span>
-              )}
-            </span>
-            <button
-              className={styles.addBtn}
-              onClick={() => setShowSearch(true)}
-              type="button"
-            >
-              + Lägg till
-            </button>
-          </div>
-
           {exercises.length > 0 && (
-            <div className={styles.exListScroll}>
-              <Reorder.Group
-                axis="y"
-                values={exercises}
-                onReorder={(order) => setExercises(sortSupersetsAdjacent(order))}
-                as="div"
-                style={{ touchAction: 'pan-y' }}
-              >
-                {exercises.map((ex, exIdx) => (
-                  <ExerciseRow
-                    key={ex._id}
-                    ex={ex}
-                    onTap={() => setSelectedExId(ex._id)}
-                    isLinked={!!ex.supersetId}
-                    canLink={!ex.supersetId && exIdx < exercises.length - 1 && !exercises[exIdx + 1]?.supersetId}
-                    onToggleLink={() => toggleSuperset(ex._id)}
-                    onRemove={() => removeExercise(ex._id)}
-                    isCardio={cardioNames.has(ex.name)}
-                  />
-                ))}
-              </Reorder.Group>
-            </div>
+            <Reorder.Group
+              axis="y"
+              values={exercises}
+              onReorder={(order) => setExercises(sortSupersetsAdjacent(order))}
+              as="div"
+              className={styles.exList}
+              style={{ touchAction: 'pan-y' }}
+            >
+              {exercises.map((ex, exIdx) => (
+                <ExerciseRow
+                  key={ex._id}
+                  ex={ex}
+                  info={infoByName[ex.name]}
+                  onTap={() => setSelectedExId(ex._id)}
+                  isLinked={!!ex.supersetId}
+                  canLink={!ex.supersetId && exIdx < exercises.length - 1 && !exercises[exIdx + 1]?.supersetId}
+                  onToggleLink={() => toggleSuperset(ex._id)}
+                  onRemove={() => removeExercise(ex._id)}
+                  isCardio={cardioNames.has(ex.name)}
+                />
+              ))}
+            </Reorder.Group>
           )}
 
           {exercises.length === 0 && !showSearch && (
-            <p className={styles.emptyHint}>Inga övningar ännu – tryck "+ Lägg till"</p>
+            <p className={styles.emptyHint}>Inga övningar ännu. Lägg till den första nedan.</p>
           )}
+
+          <button className={styles.addBtn} onClick={() => setShowSearch(true)} type="button">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            Lägg till övning
+          </button>
         </div>
       </div>
 
