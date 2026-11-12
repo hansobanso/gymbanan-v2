@@ -8,7 +8,8 @@
     "build": "rm -rf dist node_modules/.vite && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "crash-lint": "node scripts/crash-lint.mjs"
+    "crash-lint": "node scripts/crash-lint.mjs",
+    "test": "vitest run"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

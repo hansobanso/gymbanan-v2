@@ -112,7 +112,9 @@ export default function SetRow({
   function adjustWeight(delta) {
     if (set.done) return
     const cur = parseFloat(set.weight) || 0
-    const next = Math.max(0, Math.round((cur + delta) * 2) / 2)
+    // Avrunda bara bort flyttalsbrus. Forut avrundades till narmaste 0,5,
+    // sa 13,75 + 2,5 blev 16,5 istallet for 16,25.
+    const next = Math.max(0, Math.round((cur + delta) * 100) / 100)
     onUpdate('weight', String(next))
   }
 

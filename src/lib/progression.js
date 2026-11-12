@@ -78,6 +78,20 @@ function allSetsZeroRIR(sets) {
   return rirVals.every(v => v === 0 || v === null)
 }
 
+// Har samma prestation redan upprepats? Sant om passet FORE forra hade
+// samma vikt och minst lika manga totalreps. Anvands sa "befast"-sparrarna
+// (0 RIR) bara haller igen EN gang - annars fastnar den som alltid tranar
+// till failure pa samma vikt och reps for evigt.
+function alreadyRepeated(workSets, prevPrevSets) {
+  const pp = (prevPrevSets ?? []).filter(s =>
+    s.type === 'work' && s.subtype !== 'backoff' && s.done
+  )
+  if (pp.length === 0 || workSets.length === 0) return false
+  const w = parseFloat(workSets[0].weight) || 0
+  const ppw = parseFloat(pp[0].weight) || 0
+  return ppw === w && totalReps(pp) >= totalReps(workSets)
+}
+
 // Berakna viktstegets procentuella storlek
 function weightJumpPercent(currentWeight, nextWeight) {
   if (!currentWeight || currentWeight <= 0) return 0
@@ -164,8 +178,19 @@ export function computeProgression({
 
   const prevWeight = parseFloat(workSets[0].weight) || 0
   const prevTotal = totalReps(workSets)
+  // Om antalet set andrats sedan forra passet (t.ex. 3 -> 4 set, eller en
+  // ovning som laggs till med 1 set) skalas totalen om till dagens antal
+  // set. Annars fordelas forra passets total fel (21 reps pa 1 set).
+  const basisTotal = workSets.length === numWorkSets || numWorkSets <= 0
+    ? prevTotal
+    : Math.round(prevTotal * numWorkSets / workSets.length)
+  const repeatedOnce = alreadyRepeated(workSets, prevPrevSets)
   const isBodyweight = prevWeight <= 0
   const currentWeight = prevWeight
+  // Kroppsviktsovningar (chins, dips ...) har ingen vikt att "behalla" -
+  // forut stod det "Behåll 0 kg" i tipset.
+  const keepStr = isBodyweight ? 'Kör på kroppsvikt' : `Behåll ${currentWeight} kg`
+  const atStr = isBodyweight ? 'kroppsvikt' : `${currentWeight} kg`
   const nextWeight = isBodyweight
     ? weightIncrement
     : roundToIncrement(currentWeight + weightIncrement, weightIncrement)
@@ -187,7 +212,9 @@ export function computeProgression({
         nextWeight: Math.max(0, lowerWeight),
         nextTargetTotalReps: repsMin * numWorkSets,
         nextTargetRepsPerSet: Array(numWorkSets).fill(repsMin),
-        messageToUser: `Du har hamnat under ${repsMin} reps i två pass i rad. Vikten kan vara för tung — prova att sänka till ${Math.max(0, lowerWeight)} kg.`,
+        messageToUser: isBodyweight
+          ? `Du har hamnat under ${repsMin} reps i två pass i rad — sikta på ${repsMin} per set, eller sänk rep-målet.`
+          : `Du har hamnat under ${repsMin} reps i två pass i rad. Vikten kan vara för tung — prova att sänka till ${Math.max(0, lowerWeight)} kg.`,
         reason: 'under_rep_min_two_sessions',
       }
     }
@@ -198,7 +225,7 @@ export function computeProgression({
       nextWeight: currentWeight,
       nextTargetTotalReps: repsMin * numWorkSets,
       nextTargetRepsPerSet: Array(numWorkSets).fill(repsMin),
-      messageToUser: `Något set hamnade under ${repsMin} reps. Behåll ${currentWeight} kg och sikta på minst ${repsMin} per set.`,
+      messageToUser: `Något set hamnade under ${repsMin} reps. ${keepStr} och sikta på minst ${repsMin} per set.`,
       reason: 'under_rep_min_once',
     }
   }
@@ -208,13 +235,14 @@ export function computeProgression({
 
     // ── Punkt 4: 0 RIR på alla set (alla övningstyper) → upprepa en gång ──
     // Nådde taket men till total failure: befäst vikten innan höjning.
-    if (allSetsZeroRIR(workSets)) {
+    // Bara EN gang: klarade du samma sak passet innan ocksa gar vi vidare.
+    if (allSetsZeroRIR(workSets) && !repeatedOnce) {
       return {
         action: 'repeat_weight',
         nextWeight: currentWeight,
         nextTargetTotalReps: repsMax * numWorkSets,
         nextTargetRepsPerSet: Array(numWorkSets).fill(repsMax),
-        messageToUser: `Alla set på ${repsMax} reps men 0 RIR — upprepa ${currentWeight} kg. Klarar du samma igen med marginal höjer vi nästa gång.`,
+        messageToUser: `Alla set på ${repsMax} reps men 0 RIR — upprepa ${isBodyweight ? 'samma' : atStr}. Klarar du samma igen höjer vi nästa gång.`,
         reason: 'zero_rir_caution',
       }
     }
@@ -224,7 +252,7 @@ export function computeProgression({
       const avgRir = averageRIR(workSets)
       if (avgRir === null) {
         const bufferedTarget = repsMax * numWorkSets + 1
-        if (prevTotal < bufferedTarget) {
+        if (basisTotal < bufferedTarget) {
           return {
             action: 'keep_weight_add_reps',
             nextWeight: currentWeight,
@@ -251,13 +279,13 @@ export function computeProgression({
 
     if (extraReps > 0) {
       const requiredTotal = repsMax * numWorkSets + extraReps
-      if (prevTotal < requiredTotal) {
+      if (basisTotal < requiredTotal) {
         return {
           action: 'keep_weight_add_reps',
           nextWeight: currentWeight,
           nextTargetTotalReps: requiredTotal,
           nextTargetRepsPerSet: distributeReps(requiredTotal, numWorkSets, repsMin, repsMax + Math.ceil(extraReps / numWorkSets)),
-          messageToUser: `Stort viktsteg till ${nextWeight} kg — tryck lite fler reps på ${currentWeight} kg först.`,
+          messageToUser: `Stort viktsteg till ${nextWeight} kg — tryck lite fler reps på ${atStr} först.`,
           reason: 'large_weight_jump_extra_reps',
         }
       }
@@ -281,25 +309,26 @@ export function computeProgression({
   const avgRir = averageRIR(workSets)
   let repStep = 1
   if (avgRir != null && avgRir >= 3) repStep = 2
-  else if (avgRir != null && avgRir < 0.5) repStep = 0
+  // Befast bara en gang - har samma resultat redan upprepats gar vi vidare (+1).
+  else if (avgRir != null && avgRir < 0.5 && !repeatedOnce) repStep = 0
 
-  const perSetTarget = distributeReps(prevTotal + repStep, numWorkSets, repsMin, repsMax)
+  const perSetTarget = distributeReps(basisTotal + repStep, numWorkSets, repsMin, repsMax)
   // Hall totalen konsekvent med per-set efter min/max-klampning.
   const nextTargetTotal = perSetTarget.reduce((a, b) => a + b, 0)
   const perSetStr = perSetTarget.join(' + ')
   const msg = repStep === 0
-    ? `Du körde till failure — behåll ${currentWeight} kg och samma mål (${perSetStr}) tills det känns lättare.`
+    ? `Du körde till failure — ${isBodyweight ? 'kör' : `behåll ${currentWeight} kg och`} samma mål (${perSetStr}) en gång till.`
     : repStep === 2
-      ? `Bra marginal kvar! Behåll ${currentWeight} kg — sikta på ${perSetStr} reps.`
-      : `Behåll ${currentWeight} kg — sikta på ${perSetStr} reps.`
+      ? `Bra marginal kvar! ${keepStr} — sikta på ${perSetStr} reps.`
+      : `${keepStr} — sikta på ${perSetStr} reps.`
   return {
     action: 'keep_weight_add_reps',
     nextWeight: currentWeight,
     nextTargetTotalReps: nextTargetTotal,
     nextTargetRepsPerSet: perSetTarget,
     messageToUser: msg,
-    reason: avgRir != null && avgRir >= 3 ? 'reps_progressing_high_rir'
-      : avgRir != null && avgRir < 0.5 ? 'reps_hold_zero_rir'
+    reason: repStep === 2 ? 'reps_progressing_high_rir'
+      : repStep === 0 ? 'reps_hold_zero_rir'
       : 'total_reps_progressing',
   }
 }
@@ -330,10 +359,13 @@ function distributeReps(totalTarget, numSets, repsMin, repsMax) {
  */
 export function detectGapAdjustment(recentWorkouts, exerciseNames) {
   if (!recentWorkouts?.length || !exerciseNames?.length) return null
-  const lastNormal = recentWorkouts.find(w => !w.adjusted)
-  if (!lastNormal?.finished_at) return null
+  // Senaste passet oavsett typ: aven ett sjuk-/deloadpass ar traning. Annars
+  // tolkas en deload-vecka som 8+ dagars franvaro och vikterna sanks en
+  // gang till pa forsta vanliga passet efterat.
+  const last = recentWorkouts.find(w => w.finished_at)
+  if (!last?.finished_at) return null
 
-  const daysSince = Math.round((Date.now() - new Date(lastNormal.finished_at).getTime()) / 86400000)
+  const daysSince = Math.round((Date.now() - new Date(last.finished_at).getTime()) / 86400000)
 
   let weightMult = null
   let repsMult = null

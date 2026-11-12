@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, Suspense } from 'react'
 import { lazyWithRetry } from './lib/lazyWithRetry'
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from './lib/supabase'
-import { getPrograms, setActiveProgram, getProfile, cacheInvalidate } from './lib/db'
+import { getPrograms, setActiveProgram, getProfile, cacheInvalidate, deleteUnfinishedWorkout } from './lib/db'
 import Auth from './screens/Auth'
 import Home from './screens/Home'
 import BottomNav from './components/shared/BottomNav'
@@ -155,6 +155,16 @@ function AppRoutes({ session }) {
     }
   })
 
+  // Hamnar man pa en flik medan ett pass ligger sparat lokalt (t.ex. efter
+  // ett bakat-svep ut ur passet) ska fragan komma direkt - annars lag passet
+  // osynligt kvar och skrevs over nasta gang man startade ett pass.
+  useEffect(() => {
+    if (!isTab || resumedWorkout) return
+    const raw = localStorage.getItem(ACTIVE_WORKOUT_KEY)
+    if (!raw) return
+    try { setResumedWorkout(JSON.parse(raw)) } catch { localStorage.removeItem(ACTIVE_WORKOUT_KEY) }
+  }, [p]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const tabStyle = (path) => ({
     display: p === path ? 'flex' : 'none',
     flexDirection: 'column',
@@ -188,7 +198,13 @@ function AppRoutes({ session }) {
               onClick={() => {
                 const w = resumedWorkout
                 setResumedWorkout(null)
-                navigate('/workout', { state: { sessionName: w.sessionName ?? 'Pass', sessionExercises: [], programId: null, resumed: w } })
+                // Skicka med programmet sa "spara andringar i programmet"-fragan
+                // fungerar aven for ett aterupptaget pass.
+                const prog = w.programId ? programs.find(pr => pr.id === w.programId) ?? null : null
+                navigate('/workout', {
+                  replace: p === '/workout',
+                  state: { sessionName: w.sessionName ?? 'Pass', sessionExercises: [], programId: w.programId ?? null, program: prog, resumed: w },
+                })
               }}
               type="button"
             >
@@ -196,7 +212,13 @@ function AppRoutes({ session }) {
             </button>
             <button
               style={{ background: 'none', border: 'none', color: '#888', fontSize: 14, padding: '8px', cursor: 'pointer', fontFamily: 'inherit' }}
-              onClick={() => { localStorage.removeItem(ACTIVE_WORKOUT_KEY); setResumedWorkout(null) }}
+              onClick={() => {
+                localStorage.removeItem(ACTIVE_WORKOUT_KEY)
+                // Stada bort den tomma pass-raden i databasen ocksa
+                if (resumedWorkout.workoutId) deleteUnfinishedWorkout(resumedWorkout.workoutId).catch(() => {})
+                setResumedWorkout(null)
+                if (p === '/workout') navigate('/', { replace: true })
+              }}
               type="button"
             >
               Avsluta utan att spara
@@ -213,9 +235,14 @@ function AppRoutes({ session }) {
         <div style={tabStyle('/settings')}><Settings session={session} /></div>
 
         {/* Deep screens — normal route mounting */}
-        {!isTab && (
+        {/* Sa lange "Pagaende pass"-fragan ar obesvarad renderas inga
+            djupskarmar. Annars kunde en omladdning mitt i passet (t.ex. efter
+            en ny deploy) montera ett NYTT tomt pass under dialogen som skrev
+            over det sparade passet. key={location.key} gor att Workout
+            monteras om nar man valjer "Fortsatt passet" fran /workout. */}
+        {!isTab && !resumedWorkout && (
           <Routes>
-            <Route path="/workout" element={<Workout session={session} />} />
+            <Route path="/workout" element={<Workout key={location.key} session={session} />} />
             <Route path="/exercises" element={<ExerciseLibrary />} />
             <Route path="/exercises/:id" element={<ExerciseDetail />} />
             <Route path="/body-weight" element={<BodyWeight session={session} />} />

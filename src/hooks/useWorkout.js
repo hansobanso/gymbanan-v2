@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { createWorkout, updateWorkout, getTwoPreviousSetsForExercise, getExerciseByName, getRestOverrides, getUserExerciseNote, getWorkouts, getExercises, getAllUserExerciseNotes } from '../lib/db'
+import { createWorkout, updateWorkout, deleteUnfinishedWorkout, getTwoPreviousSetsForExercise, getExerciseByName, getRestOverrides, getUserExerciseNote, getWorkouts, getExercises, getAllUserExerciseNotes, cacheInvalidate } from '../lib/db'
 import { computeProgression, deriveCategory, epleyAdjustedReps, detectGapAdjustment } from '../lib/progression'
 import { sortSupersetsAdjacent } from '../lib/superset.js'
 import { namesMatching } from '../lib/exerciseAliases.js'
@@ -40,28 +40,28 @@ function buildPbMap(workouts) {
   return map
 }
 
-// Ar detta set ett PB? historySet = ovningar som hade historik INNAN passet
-// (forsta gangen en ovning kors flaggas inget - det blir baslinjen).
-function detectPBIn(map, historySet, name, weight, reps) {
-  if (!historySet || !historySet.has(name)) return false
-  const e = map[name]
-  if (!e) return false
+// Ar detta set ett PB? REN funktion av historiken + de set som redan ar
+// klara TIDIGARE i ovningen under passet. Inget muteras, sa att angra och
+// bocka av igen ger samma svar (forut tappades PB-markeringen da).
+// Forsta gangen en ovning kors (ingen historik) flaggas inget - baslinje.
+function isPbSet(histMap, name, weight, reps, earlierDoneSets) {
+  const hist = histMap[name]
+  if (!hist) return false
   if (Number.isNaN(reps) || reps <= 0) return false
   const wv = Number.isNaN(weight) ? 0 : weight
-  if (e.maxWeight != null && wv > e.maxWeight) return true   // ny tyngsta vikt
-  if (e.reps[wv] != null && reps > e.reps[wv]) return true    // fler reps pa vikten
+  let maxWeight = hist.maxWeight
+  let bestAtWeight = hist.reps[wv] ?? null
+  for (const s of earlierDoneSets ?? []) {
+    const r = parseInt(s.reps)
+    if (Number.isNaN(r) || r <= 0) continue
+    const wf = parseFloat(s.weight)
+    const w = Number.isNaN(wf) ? 0 : wf
+    if (maxWeight == null || w > maxWeight) maxWeight = w
+    if (w === wv && (bestAtWeight == null || r > bestAtWeight)) bestAtWeight = r
+  }
+  if (maxWeight != null && wv > maxWeight) return true           // ny tyngsta vikt
+  if (bestAtWeight != null && reps > bestAtWeight) return true    // fler reps pa vikten
   return false
-}
-
-// Uppdaterar PB-kartan efter ett klarat set sa senare set i samma pass
-// jamfors mot det nya basta.
-function recordPBIn(map, name, weight, reps) {
-  if (Number.isNaN(reps) || reps <= 0) return
-  let e = map[name]
-  if (!e) e = map[name] = { maxWeight: null, reps: {} }
-  const wv = Number.isNaN(weight) ? 0 : weight
-  if (e.maxWeight == null || wv > e.maxWeight) e.maxWeight = wv
-  if (e.reps[wv] == null || reps > e.reps[wv]) e.reps[wv] = reps
 }
 
 // uid + makeSet hjalp-funktioner
@@ -304,18 +304,15 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
   const [loading, setLoading] = useState(!resumed)
 
   // PB-data: tyngsta vikt + flest reps per vikt, per ovning. Byggs fran
-  // historiken vid passets start (aven vid resume) sa PB kan flaggas direkt
-  // nar ett set bockas av. pbHistoryRef = ovningar som fanns INNAN passet.
+  // historiken (avslutade pass) vid passets start, aven vid resume, sa PB
+  // kan flaggas direkt nar ett set bockas av. Kartan andras aldrig under passet.
   const pbMapRef = useRef({})
-  const pbHistoryRef = useRef(new Set())
   useEffect(() => {
     if (!userId) return
     let cancelled = false
     getWorkouts(userId, 100).then(ws => {
       if (cancelled) return
-      const map = buildPbMap(ws)
-      pbMapRef.current = map
-      pbHistoryRef.current = new Set(Object.keys(map))
+      pbMapRef.current = buildPbMap(ws)
     }).catch(() => {})
     return () => { cancelled = true }
   }, [userId])
@@ -433,65 +430,110 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
     return () => { cancelled = true }
   }, [userId]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const [programChanged, setProgramChanged] = useState(false)
+  const [programChanged, setProgramChanged] = useState(!!resumed?.programChanged)
   // True när passet har anpassats av PT (sjukpass, deload, etc) - vid spara
   // ska vi INTE fråga om programmet ska uppdateras, eftersom anpassningen
   // bara gäller det här specifika passet, inte programmet i stort.
-  const [isAdjustedSession, setIsAdjustedSession] = useState(false)
+  // Aterstalls vid resume - annars raknades ett aterupptaget sjuk-/deloadpass
+  // som ett vanligt pass (sankta vikter blev ny baslinje).
+  const [isAdjustedSession, setIsAdjustedSession] = useState(!!resumed?.adjusted)
   const [workoutId, setWorkoutId] = useState(resumed?.workoutId ?? null)
   const workoutIdRef = useRef(resumed?.workoutId ?? null)
   const ensurePromiseRef = useRef(null)
   const startedAt = useRef(resumed ? new Date(resumed.startedAt) : new Date())
 
-  // Spara passets tillstand till localStorage vid VARJE andring av
-  // exercises (vikt, reps, avbockning, ovningar, superset...) sa inget
-  // arbete tappas om appen/telefonen dor mitt i passet. Kraver att passet
-  // har ett id (annars finns inget att ateruppta an).
-  // Sparar hela passets tillstand till localStorage sa det kan aterupptas
-  // om appen/telefonen dor. Anropas vid VARJE andring (vikt, reps, set,
-  // ovningar) - inte bara vid avbockade set - sa inget arbete tappas.
+  // Sparar hela passets tillstand till localStorage vid VARJE andring (vikt,
+  // reps, avbockning, ovningar, superset ...) sa inget arbete tappas om
+  // appen/telefonen dor mitt i passet. Fungerar aven UTAN workout-id (t.ex.
+  // nar passet startats utan uppkoppling) - raden skapas da vid avslut.
   // MASTE definieras FORE effekten nedan som anvander den i sin dep-array,
   // annars TDZ-krash ("Cannot access 'S' before initialization") vid mount.
+  const flagsRef = useRef({ adjusted: !!resumed?.adjusted, programChanged: !!resumed?.programChanged })
+  const closedRef = useRef(false) // passet ar sparat/kasserat - skriv inte tillbaka nagot
   const persistWorkout = useCallback((exercisesToSave) => {
-    const wId = workoutIdRef.current
-    if (!wId) return
+    if (closedRef.current) return
     try {
       localStorage.setItem(ACTIVE_WORKOUT_KEY, JSON.stringify({
-        workoutId: wId,
+        workoutId: workoutIdRef.current ?? null,
         exercises: exercisesToSave,
         startedAt: startedAt.current.toISOString(),
         sessionName,
+        programId: programId ?? null,
+        adjusted: flagsRef.current.adjusted,
+        programChanged: flagsRef.current.programChanged,
       }))
     } catch { /* localStorage full/nekad - ignorera */ }
-  }, [sessionName])
+  }, [sessionName, programId])
 
   useEffect(() => {
-    if (!workoutId) return
+    flagsRef.current = { adjusted: isAdjustedSession, programChanged }
+    // Inget att ateruppta an: ingen rad skapad och inget set avbockat.
+    if (!workoutId && !exercises.some(ex => ex.sets.some(s => s.done))) return
     persistWorkout(exercises)
-  }, [exercises, workoutId, persistWorkout])
+  }, [exercises, workoutId, persistWorkout, isAdjustedSession, programChanged])
 
-  // Skapa workout-raden i Supabase direkt vid start (inte lazily)
+  // Spegel av senaste exercises for asynkron kod (hydrateExercises).
+  const exercisesRef = useRef(exercises)
+  useEffect(() => { exercisesRef.current = exercises }, [exercises])
+
+  // Skapa workout-raden i Supabase direkt vid start (inte lazily). Misslyckas
+  // det (offline) fortsatter passet lokalt och raden skapas vid avslut.
   useEffect(() => {
-    if (!resumed) ensureWorkout()
+    if (!resumed) ensureWorkout().catch(() => {})
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  async function ensureWorkout() {
-    if (workoutIdRef.current) return workoutIdRef.current
+  function ensureWorkout() {
+    if (workoutIdRef.current) return Promise.resolve(workoutIdRef.current)
     if (ensurePromiseRef.current) return ensurePromiseRef.current
 
-    ensurePromiseRef.current = createWorkout({
+    const p = createWorkout({
       user_id: userId,
       program_id: programId ?? null,
       session_name: sessionName,
+      started_at: startedAt.current.toISOString(),
     }).then(rec => {
       workoutIdRef.current = rec.id
       setWorkoutId(rec.id)
-      ensurePromiseRef.current = null
       return rec.id
+    }).finally(() => {
+      // Nollstall alltid - annars aterkom ett misslyckat forsok for evigt.
+      ensurePromiseRef.current = null
     })
-
-    return ensurePromiseRef.current
+    ensurePromiseRef.current = p
+    return p
   }
+
+  // Hamtar historik + metadata for ovningar som lagts till/bytts mitt i
+  // passet och fyller i progressionens forslag (vikt/reps), precis som for
+  // programmets ovningar vid start. Forut fick tillagda ovningar ingen
+  // forifyllning alls.
+  const hydrateExercises = useCallback((localIds) => {
+    if (!userId || !localIds?.length) return
+    Promise.all([
+      getRestOverrides(userId).catch(() => ({})),
+      getExercises().catch(() => []),
+      new Promise(r => setTimeout(r, 0)), // lat state + exercisesRef hinna uppdateras
+    ]).then(([restOverrides, allExercises]) => {
+      const exerciseMap = {}
+      for (const e of allExercises) if (!exerciseMap[e.name]) exerciseMap[e.name] = e
+      for (const id of localIds) {
+        const target = exercisesRef.current.find(e => e.localId === id)
+        if (!target) continue
+        loadExerciseData(target, userId, restOverrides, { exerciseMap }).then(updated => {
+          setExercises(c => c.map(e => {
+            if (e.localId !== id || e.name !== updated.name) return e
+            // Hann anvandaren fylla i/bocka av nagot under laddningen:
+            // behall deras set och fyll bara pa metadata.
+            const touched = e.sets.length !== target.sets.length
+              || e.sets.some(st => st.done || st.weight || st.reps)
+            return touched
+              ? { ...updated, sets: e.sets, localId: e.localId }
+              : { ...updated, localId: e.localId }
+          }))
+        }).catch(() => {})
+      }
+    })
+  }, [userId])
 
   const updateSet = useCallback((exId, setId, field, value) => {
     setExercises(prev => {
@@ -627,9 +669,10 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
   }, [])
 
   const addExercise = useCallback((ex) => {
+    const localId = uid()
     setProgramChanged(true)
     setExercises(prev => [...prev, {
-      localId: uid(),
+      localId,
       exerciseId: ex.id ?? null,
       name: ex.name,
       muscleGroup: ex.muscle_group ?? null,
@@ -643,10 +686,11 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
       exEquipment: ex.equipment ?? null,
       isTimeBased: ex.is_time_based === true,
       isCardio: ex.is_cardio === true,
-      dataLoaded: false,  // triggers fetch of previous sets
+      dataLoaded: false,
       sets: [makeSet('work')],
     }])
-  }, [defaultRest])
+    hydrateExercises([localId])
+  }, [defaultRest, hydrateExercises])
 
   // Lagger till flera ovningar fran ett PT-genererat pass pa en gang.
   // plan: [{ name, sets, repsMin, repsMax }]. Slar upp varje namn i
@@ -654,7 +698,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
   const addGeneratedWorkout = useCallback((plan, exerciseList) => {
     if (!Array.isArray(plan) || plan.length === 0) return
     setProgramChanged(true)
-    setExercises(prev => {
+    {
       const additions = plan.map(item => {
         // Hitta riktig ovning i databasen (case-insensitivt)
         const match = (exerciseList ?? []).find(
@@ -682,9 +726,10 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
           sets: workSets,
         }
       }).filter(Boolean)
-      return [...prev, ...additions]
-    })
-  }, [defaultRest])
+      setExercises(prev => [...prev, ...additions])
+      hydrateExercises(additions.map(a => a.localId))
+    }
+  }, [defaultRest, hydrateExercises])
 
   // Superset mitt i passet: lanka tva ovningar (ev. gamla par bryts),
   // eller bryt ett befintligt par. Raknas som programandring sa
@@ -755,22 +800,9 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
         ],
       }
     }))
-    // Hamta nya ovningens senaste historik och sla ihop in i state.
-    // Vi maste lasa ut den uppdaterade ovningen ur state via en fresh
-    // setExercises-callback eftersom prev-variabeln ovan har gamla namnet.
-    if (userId) {
-      getRestOverrides(userId).then(restOverrides => {
-        setExercises(curr => {
-          const target = curr.find(e => e.localId === exId)
-          if (!target) return curr
-          loadExerciseData(target, userId, restOverrides).then(updated => {
-            setExercises(c => c.map(e => e.localId === exId ? { ...updated, localId: e.localId } : e))
-          }).catch(() => {})
-          return curr
-        })
-      }).catch(() => {})
-    }
-  }, [userId])
+    // Hamta nya ovningens historik + progression och sla ihop in i state.
+    hydrateExercises([exId])
+  }, [hydrateExercises])
 
   const [repsUpdatedAt, setRepsUpdatedAt] = useState(null)
 
@@ -831,7 +863,10 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
   }, [])
 
   const completeSet = useCallback(async (exId, setId) => {
-    await ensureWorkout()
+    // Vanta INTE pa natverket: forut hangde avbockningen pa att workout-raden
+    // skapats, sa med dalig tackning hande inget nar man tryckte. Raden
+    // skapas i bakgrunden (eller vid avslut) och setet loggas lokalt direkt.
+    ensureWorkout().catch(() => {})
     setExercises(prev => {
       const next = prev.map(ex => {
         if (ex.localId !== exId) return ex
@@ -841,10 +876,11 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
         const willBeDone = !wasCompleted
         let isPB = false
         if (willBeDone && completingSet?.type === 'work' && completingSet.subtype !== 'backoff') {
-          const W = parseFloat(completingSet.weight)
-          const R = parseInt(completingSet.reps)
-          isPB = detectPBIn(pbMapRef.current, pbHistoryRef.current, ex.name, W, R)
-          recordPBIn(pbMapRef.current, ex.name, W, R)
+          const idx = ex.sets.findIndex(s => s.id === setId)
+          const earlierDone = ex.sets.slice(0, idx).filter(s =>
+            s.done && s.type === 'work' && s.subtype !== 'backoff'
+          )
+          isPB = isPbSet(pbMapRef.current, ex.name, parseFloat(completingSet.weight), parseInt(completingSet.reps), earlierDone)
         }
         // Toggle set (nollstall PB-flaggan vid angra)
         let sets = ex.sets.map(s => s.id !== setId ? s : { ...s, done: willBeDone, isPB: willBeDone ? isPB : false })
@@ -894,11 +930,12 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
       persistWorkout(next)
       return next
     })
-  }, [sessionName])
+  }, [persistWorkout]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Sparar passet. KASTAR om det inte gick (offline, utgangen session) -
+  // den lokala kopian tas bort forst NAR databasen bekraftat, sa man kan
+  // forsoka igen utan att tappa passet.
   async function finishWorkout() {
-    localStorage.removeItem(ACTIVE_WORKOUT_KEY)
-    const id = await ensureWorkout()
     const payload = exercises.map(ex => ({
       exercise_id: ex.exerciseId,
       name: ex.name,
@@ -906,12 +943,43 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
       ai_comment: ex.aiComment,
       sets: ex.sets,
     }))
-    await updateWorkout(id, {
+    const fields = {
       finished_at: new Date().toISOString(),
       exercises: payload,
       adjusted: isAdjustedSession,
-    })
+    }
+    let id = await ensureWorkout()
+    try {
+      await updateWorkout(id, fields)
+    } catch (err) {
+      // Bara om raden bevisligen SAKNAS (PGRST116 = 0 rader, t.ex. borttagen
+      // fran en annan enhet) skrivs passet som en ny rad. Vid natverksfel
+      // kastar vi vidare - uppdateringen kan ha gatt fram trots uteblivet
+      // svar, och en ny rad skulle da ge ett dubblettpass.
+      if (err?.code !== 'PGRST116') throw err
+      const rec = await createWorkout({
+        user_id: userId,
+        program_id: programId ?? null,
+        session_name: sessionName,
+        started_at: startedAt.current.toISOString(),
+        ...fields,
+      })
+      id = rec.id
+      workoutIdRef.current = id
+      cacheInvalidate('workouts:')
+    }
+    closedRef.current = true
+    localStorage.removeItem(ACTIVE_WORKOUT_KEY)
     return id
+  }
+
+  // Avsluta utan att spara: ta bort lokal kopia OCH den tomma raden i
+  // databasen (annars blir det en skrap-rad kvar for varje kasserat pass).
+  function discardWorkout() {
+    closedRef.current = true
+    localStorage.removeItem(ACTIVE_WORKOUT_KEY)
+    const id = workoutIdRef.current
+    if (id) deleteUnfinishedWorkout(id).catch(() => {})
   }
 
   const applyDeload = useCallback(() => {
@@ -1009,8 +1077,10 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
       }
 
       const next = { ...ex, sets }
-      if (typeof change.repsMin === 'number') next.repsMin = change.repsMin
-      if (typeof change.repsMax === 'number') next.repsMax = change.repsMax
+      // Ratt faltnamn - forut skrevs repsMin/repsMax som ingen laser, sa
+      // PT:ns andrade rep-mal fick aldrig effekt.
+      if (typeof change.repsMin === 'number') next.defaultRepsMin = change.repsMin
+      if (typeof change.repsMax === 'number') next.defaultRepsMax = change.repsMax
       next.progressionHint = `PT: ${adjustment.summary}`
       next.progressionAction = 'gap_adjustment'
       return next
@@ -1039,6 +1109,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
     updateExerciseReps,
     completeSet,
     finishWorkout,
+    discardWorkout,
     ensureWorkout,
     applyDeload,
     applyAdjustment,

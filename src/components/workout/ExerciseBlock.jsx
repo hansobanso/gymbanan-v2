@@ -61,9 +61,12 @@ export default function ExerciseBlock({
   const [repsEditMin, setRepsEditMin] = useState('')
   const [repsEditMax, setRepsEditMax] = useState('')
   const repsBlurTimer = useRef(null)
-  const [prevSets, setPrevSets] = useState(exercise.prevSets ?? null)
+  // Reservhamtning (namn-markt) for ovningar vars data inte hunnit laddas.
+  // Forra passets set och redskap HARLEDS fran ovningen i forsta hand - forut
+  // lag de i lokal state som aldrig nollstalldes, sa efter "Byt ovning"
+  // kunde den gamla ovningens "Förra passet" sta kvar.
+  const [fetched, setFetched] = useState(null) // { name, prevSets, equipment }
   const [exNotes, setExNotes] = useState(exercise.exNotes ?? null)
-  const [exEquipment, setExEquipment] = useState(exercise.exEquipment ?? null)
   const [collapsed, setCollapsed] = useState(false)
   const [manuallyExpanded, setManuallyExpanded] = useState(false)
   const longRef = useRef(null)
@@ -82,19 +85,24 @@ export default function ExerciseBlock({
     return () => { clearTimeout(t); document.removeEventListener('pointerdown', handler) }
   }, [menuOpen])
 
-  // Hämta föregående sets + övningens notes om inte förinläst
+  // Hämta föregående sets + redskap om övningen inte är förinläst
   useEffect(() => {
     if (!userId || exercise.dataLoaded) return
+    let cancelled = false
+    const name = exercise.name
     Promise.all([
-      getPreviousSetsForExercise(userId, exercise.name),
-      getExerciseByName(exercise.name),
+      getPreviousSetsForExercise(userId, name),
+      getExerciseByName(name),
     ]).then(([sets, exData]) => {
-      if (sets) setPrevSets(sets)
-      const notes = exData?.notes || exData?.instructions
-      if (notes?.trim()) setExNotes(notes.trim())
-      if (exData?.equipment) setExEquipment(exData.equipment)
+      if (cancelled) return
+      setFetched({ name, prevSets: sets ?? null, equipment: exData?.equipment ?? null })
     }).catch(() => {})
+    return () => { cancelled = true }
   }, [userId, exercise.name, exercise.dataLoaded])
+
+  const fetchedForThis = fetched?.name === exercise.name ? fetched : null
+  const prevSets = exercise.prevSets ?? fetchedForThis?.prevSets ?? null
+  const exEquipment = exercise.exEquipment ?? fetchedForThis?.equipment ?? null
 
   function handlePointerDown() {
     longRef.current = setTimeout(() => {

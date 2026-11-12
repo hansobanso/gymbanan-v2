@@ -24,6 +24,11 @@ jobs:
       - name: Krasch-lint (TDZ + dubbletter)
         run: node scripts/crash-lint.mjs
 
+      # Enhetstester for progressionsmotorn (vikt/reps-forslag). Ett fel har
+      # ger fel vikter i passet utan att nagot kraschar, sa det maste stoppas.
+      - name: Tester
+        run: npx vitest run
+
       - name: Build
         run: npm run build
         env:

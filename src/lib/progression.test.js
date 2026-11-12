@@ -4,6 +4,7 @@ import {
   deriveCategory,
   epley1RM,
   epleyAdjustedReps,
+  detectGapAdjustment,
 } from './progression'
 
 // Hjalpfunktion: bygg ett work set
@@ -122,7 +123,7 @@ describe('computeProgression', () => {
     })
     expect(result.action).toBe('repeat_weight')
     expect(result.nextWeight).toBe(80)
-    expect(result.messageToUser).toContain('Upprepa')
+    expect(result.messageToUser).toMatch(/upprepa/i)
   })
 
   // ── Punkt 4b: heavy_compound utan RIR → buffert ──
@@ -263,5 +264,72 @@ describe('computeProgression', () => {
     })
     expect(result.action).toBe('keep_weight_add_reps')
     expect(result.nextTargetTotalReps).toBe(20) // 19 + 1 (bara work, ej warmup/backoff)
+  })
+})
+
+// ─── Rep-fordelning, RIR-skalning och sparrar ──────────────────
+
+describe('progression: fordelning och RIR', () => {
+  const base = { repsMin: 6, repsMax: 8, category: 'isolation_or_machine', weightIncrement: 2.5, numWorkSets: 3 }
+  const sets = (w, reps, rir) => reps.map(r => workSet(w, r, rir))
+
+  it('rep-okningen laggs pa sista setet (7+7+7 -> 7+7+8)', () => {
+    const r = computeProgression({ ...base, prevSets: sets(100, [7, 7, 7], 1) })
+    expect(r.nextTargetRepsPerSet).toEqual([7, 7, 8])
+  })
+
+  it('snitt-RIR >= 3 ger +2 reps', () => {
+    const r = computeProgression({ ...base, prevSets: sets(100, [7, 7, 7], 3) })
+    expect(r.nextTargetRepsPerSet).toEqual([7, 8, 8])
+  })
+
+  it('0 RIR under taket: befast samma mal EN gang', () => {
+    const prev = sets(100, [7, 7, 7], 0)
+    const first = computeProgression({ ...base, prevSets: prev })
+    expect(first.nextTargetRepsPerSet).toEqual([7, 7, 7])
+    expect(first.reason).toBe('reps_hold_zero_rir')
+    // Samma resultat tva pass i rad -> ga vidare, fastna inte
+    const second = computeProgression({ ...base, prevSets: prev, prevPrevSets: prev })
+    expect(second.nextTargetRepsPerSet).toEqual([7, 7, 8])
+  })
+
+  it('0 RIR pa taket: upprepa vikten EN gang, hoj sedan', () => {
+    const prev = sets(100, [8, 8, 8], 0)
+    const first = computeProgression({ ...base, prevSets: prev })
+    expect(first.action).toBe('repeat_weight')
+    const second = computeProgression({ ...base, prevSets: prev, prevPrevSets: prev })
+    expect(second.action).toBe('increase_weight')
+    expect(second.nextWeight).toBe(102.5)
+  })
+
+  it('andrat antal set skalar om totalen (3 set forra gangen, 1 set nu)', () => {
+    const r = computeProgression({ ...base, numWorkSets: 1, repsMin: null, repsMax: null, prevSets: sets(100, [8, 8, 8], 1) })
+    expect(r.nextTargetRepsPerSet).toEqual([9]) // inte 25 reps pa ett set
+  })
+
+  it('andrat antal set: 3 -> 4 set ger rimliga reps per set', () => {
+    const r = computeProgression({ ...base, numWorkSets: 4, prevSets: sets(100, [7, 7, 7], 1) })
+    expect(r.nextTargetRepsPerSet).toEqual([7, 7, 7, 8])
+  })
+})
+
+describe('detectGapAdjustment', () => {
+  const daysAgo = d => new Date(Date.now() - d * 86400000).toISOString()
+
+  it('ingen sankning nar man tranat nyligen', () => {
+    expect(detectGapAdjustment([{ finished_at: daysAgo(2), adjusted: false }], ['Bänkpress'])).toBeNull()
+  })
+
+  it('10 dagars uppehall ger -10%', () => {
+    const adj = detectGapAdjustment([{ finished_at: daysAgo(10), adjusted: false }], ['Bänkpress'])
+    expect(adj.changes[0].weightMultiplier).toBe(0.9)
+  })
+
+  it('deload-/sjukpass raknas som traning (ingen comeback-sankning efter deload-vecka)', () => {
+    const recent = [
+      { finished_at: daysAgo(2), adjusted: true },
+      { finished_at: daysAgo(10), adjusted: false },
+    ]
+    expect(detectGapAdjustment(recent, ['Bänkpress'])).toBeNull()
   })
 })

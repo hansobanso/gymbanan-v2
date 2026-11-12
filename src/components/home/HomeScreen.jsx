@@ -29,8 +29,10 @@ function relativeDate(iso) {
 }
 
 function fmtDuration(workout) {
-  if (!workout.finished_at || !workout.created_at) return null
-  const mins = Math.round((new Date(workout.finished_at) - new Date(workout.created_at)) / 60000)
+  // workouts-tabellen har started_at (inte created_at) - med fel kolumn
+  // visades passtiden aldrig pa hemskarmen.
+  if (!workout.finished_at || !workout.started_at) return null
+  const mins = Math.round((new Date(workout.finished_at) - new Date(workout.started_at)) / 60000)
   if (mins < 1) return null
   if (mins < 60) return `${mins} min`
   const h = Math.floor(mins / 60), m = mins % 60
@@ -51,13 +53,17 @@ function fmtExSummary(ex) {
   return null
 }
 
-function getNextSession(program, lastWorkout) {
+// Nasta pass = passet efter det senast korda passet SOM HOR TILL PROGRAMMET.
+// Ett fritt pass (eller ett pass fran ett annat program) emellan ska inte
+// nollstalla rotationen till forsta passet.
+function getNextSession(program, recentWorkouts) {
   const sessions = program?.sessions ?? []
   if (!sessions.length) return null
-  if (!lastWorkout?.session_name) return sessions[0]
-  const idx = sessions.findIndex(s => s.name === lastWorkout.session_name)
-  if (idx === -1) return sessions[0]
-  return sessions[(idx + 1) % sessions.length]
+  for (const w of recentWorkouts ?? []) {
+    const idx = sessions.findIndex(s => s.name === w.session_name)
+    if (idx !== -1) return sessions[(idx + 1) % sessions.length]
+  }
+  return sessions[0]
 }
 
 export default function HomeScreen({ session, programs = [], programsLoaded = false, programsError = false, onRetryPrograms, activeProgramId = null, onSetActive, onReady }) {
@@ -214,7 +220,7 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
     )
   }
 
-  const nextSession = getNextSession(activeProgram, lastWorkout)
+  const nextSession = getNextSession(activeProgram, recentWorkouts)
   const lastSetCount = lastWorkout ? workSetCount(lastWorkout) : 0
   const duration = lastWorkout ? fmtDuration(lastWorkout) : null
   const lastExercises = lastWorkout?.exercises ?? []

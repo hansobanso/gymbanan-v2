@@ -3,8 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { Reorder, AnimatePresence, motion } from 'framer-motion'
 import { useWorkout } from '../hooks/useWorkout'
 import { useTimer } from '../hooks/useTimer'
-import { buildWorkoutContext, buildMemoryContent, appendUserNote, chatWithAI, generateWorkoutIntro } from '../lib/ai'
-import { updateWorkout, getWorkouts, getAiMemory, upsertAiMemory, getEquipmentMap, updateProgram, saveProgram, setActiveProgram, getDeloadStatus, startDeloadWeek, getExercises } from '../lib/db'
+import { buildWorkoutContext, buildMemoryContent, appendUserNote, generateWorkoutIntro } from '../lib/ai'
+import { getWorkouts, getAiMemory, upsertAiMemory, getEquipmentMap, updateProgram, saveProgram, setActiveProgram, getDeloadStatus, startDeloadWeek, getExercises } from '../lib/db'
 import TimerBar from '../components/workout/TimerBar'
 import TimerExpanded from '../components/workout/TimerExpanded'
 import ExerciseBlock from '../components/workout/ExerciseBlock'
@@ -67,6 +67,7 @@ export default function Workout({ session }) {
   const [undoToast, setUndoToast] = useState(null)
   const [showFinish, setShowFinish] = useState(false)
   const [finishing, setFinishing] = useState(false)
+  const [finishError, setFinishError] = useState(false)
   const finishCooldownRef = useRef(false)
   const [pickerTarget, setPickerTarget] = useState(null) // exercise to replace
   const [historyTarget, setHistoryTarget] = useState(null) // exercise for history
@@ -127,6 +128,26 @@ export default function Workout({ session }) {
       setDeloadStatus(status)
     }).catch(() => {})
   }, [session?.user?.id])
+
+  // Aktiv deload-vecka: sank passet automatiskt (-25 %, samma som snabbvalet)
+  // och flagga det som tillfalligt. Det har foll bort vid en tidigare
+  // omskrivning - hemskarmen lovade "vikter automatiskt sankta" men bara
+  // passet dar veckan startades sanktes. Kors en gang, nar ovningarna laddat
+  // klart (sa progressionens vikter finns att sanka). Inte vid resume (redan
+  // sankt) och inte for fria pass (inga forifyllda vikter).
+  const deloadAppliedRef = useRef(false)
+  useEffect(() => {
+    if (deloadAppliedRef.current) return
+    if (workout.loading || resumed) return
+    if (!deloadStatus.isActive || sessionExercises.length === 0) return
+    deloadAppliedRef.current = true
+    const d = deloadStatus.daysLeft
+    workout.applyAdjustment({
+      summary: `Deload-vecka (${d} ${d === 1 ? 'dag' : 'dagar'} kvar) −25%`,
+      changes: workout.exercises.map(ex => ({ exerciseName: ex.name, weightMultiplier: 0.75, repsMultiplier: 0.75 })),
+      temporary: true,
+    })
+  }, [workout.loading, deloadStatus.isActive]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Ladda AI-minne + generera pass-intro. Allt har kor i BAKGRUNDEN och
   // blockerar aldrig att passet visas - introMessage fylls nar det ar klart.
@@ -254,13 +275,16 @@ export default function Workout({ session }) {
   // ── Avsluta pass ───────────────────────────────────────────
   async function handleFinish() {
     setFinishing(true)
+    setFinishError(false)
     let workoutId = null
 
     try {
       workoutId = await workout.finishWorkout()
     } catch (err) {
+      // Passet ligger kvar lokalt - visa felet sa man kan forsoka igen.
       console.error('finishWorkout error:', err)
       setFinishing(false)
+      setFinishError(true)
       return
     }
 
@@ -369,6 +393,7 @@ export default function Workout({ session }) {
       workout.applyAdjustment({ summary, changes, temporary: true })
     }
     if (deloadWeek) {
+      deloadAppliedRef.current = true
       startDeloadWeek(session.user.id, 7)
         .then(result => setDeloadStatus({ isActive: true, daysLeft: result.daysLeft, deloadUntil: result.deloadUntil }))
         .catch(() => {})
@@ -754,17 +779,23 @@ export default function Workout({ session }) {
             >
               <div className={styles.sheetHandle} />
               <h3 className={styles.confirmTitle}>Avsluta pass?</h3>
+              {finishError && (
+                <p className={styles.confirmError} role="alert">
+                  Kunde inte spara passet. Kolla uppkopplingen och försök igen –
+                  passet ligger kvar på telefonen så inget går förlorat.
+                </p>
+              )}
               <button
                 className={styles.confirmPrimary}
                 onClick={handleFinish}
                 disabled={finishing}
                 type="button"
               >
-                {finishing ? 'Sparar…' : 'Spara pass'}
+                {finishing ? 'Sparar…' : finishError ? 'Försök igen' : 'Spara pass'}
               </button>
               <button
                 className={styles.confirmSecondary}
-                onClick={() => { localStorage.removeItem('gymbanan_active_workout'); setShowFinish(false); navigate('/', { replace: true }) }}
+                onClick={() => { workout.discardWorkout(); setShowFinish(false); navigate('/', { replace: true }) }}
                 disabled={finishing}
                 type="button"
               >
@@ -897,8 +928,8 @@ export default function Workout({ session }) {
           <div className={styles.ssPickSheet}>
             <p className={styles.ssPickTitle}>Anpassa passet</p>
             <p className={styles.adjustHint}>
-              Sänker vikter och reps på alla övningar i passet. Räknas som tillfälligt,
-              så det påverkar inte din vanliga progression nästa gång.
+              Sänker vikten på alla övningar i passet (reps på kroppsviktsövningar).
+              Räknas som tillfälligt, så det påverkar inte din vanliga progression nästa gång.
             </p>
             <div className={styles.ssPickList}>
               {ADJUST_OPTIONS.map(opt => (
@@ -956,18 +987,21 @@ export default function Workout({ session }) {
         onApplyAdjustment={(adjustment) => workout.applyAdjustment(adjustment)}
         onApplyDeload={async (deload) => {
           try {
+            deloadAppliedRef.current = true
             const result = await startDeloadWeek(session.user.id, deload.days || 7)
             setDeloadStatus({ isActive: true, daysLeft: result.daysLeft, deloadUntil: result.deloadUntil })
             // Också applicera på aktuella passet direkt
-            const changes = sessionExercises.map(ex => ({
+            const changes = workout.exercises.map(ex => ({
               exerciseName: ex.name,
               weightMultiplier: deload.weightMultiplier ?? 0.85,
               setMultiplier: deload.setReduction ? 1 - (deload.setReduction / 4) : 0.8,
             }))
             if (changes.length > 0) {
+              // temporary: deloadpasset ska inte bli ny baslinje for progressionen
               workout.applyAdjustment({
                 summary: deload.summary,
                 changes,
+                temporary: true,
               })
             }
             return true

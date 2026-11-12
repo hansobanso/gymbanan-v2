@@ -172,14 +172,14 @@ export async function updateExercise(id, updates) {
   return data
 }
 
+// Slar upp via den cachade ovningslistan (dar egen kopia skuggar den
+// globala). Den gamla .maybeSingle()-fragan gav FEL - och darmed null - sa
+// fort det fanns bade en global ovning och en egen kopia med samma namn,
+// sa redskap/viktsteg/tidsbaserat tappades for anpassade ovningar.
 export async function getExerciseByName(name) {
-  const { data, error } = await supabase
-    .from('exercises')
-    .select('*')
-    .eq('name', name)
-    .maybeSingle()
-  if (error) return null
-  return data
+  if (!name) return null
+  const all = await getExercises()
+  return all.find(e => e.name === name) ?? null
 }
 
 // Insert or update a user's exercise entry (used for editing builtins).
@@ -258,14 +258,25 @@ export async function getWeeklyWorkouts(userId) {
   return data ?? []
 }
 
+// Kastar vid fel (offline, utgangen session ...). Tidigare returnerades []
+// tyst, vilket gjorde att passet sag sparat ut fast inget hamnade i databasen.
 export async function createWorkout(workout) {
   const { data, error } = await supabase
     .from('workouts')
     .insert(workout)
     .select()
     .single()
-  if (error) return []
+  if (error || !data?.id) throw error ?? new Error('createWorkout: ingen rad skapades')
   return data
+}
+
+// Tar bort ett PAGAENDE (ej avslutat) pass - anvands av "Avsluta utan att
+// spara". Villkoret finished_at is null gor att ett sparat pass aldrig kan
+// raka raderas den har vagen.
+export async function deleteUnfinishedWorkout(id) {
+  if (!id) return false
+  const { error } = await supabase.from('workouts').delete().eq('id', id).is('finished_at', null)
+  return !error
 }
 
 export async function deleteWorkout(id) {
@@ -289,7 +300,8 @@ export async function updateWorkout(id, updates) {
     .eq('id', id)
     .select()
     .single()
-  if (error) return []
+  // Kasta vid fel sa anroparen kan behalla passet lokalt och forsoka igen.
+  if (error || !data) throw error ?? new Error('updateWorkout: ingen rad uppdaterades')
   // Invalidate workout cache so History/Home reload fresh data
   if (updates.finished_at) cacheInvalidate('workouts:')
   return data
