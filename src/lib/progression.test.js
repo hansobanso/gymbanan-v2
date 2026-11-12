@@ -5,6 +5,7 @@ import {
   epley1RM,
   epleyAdjustedReps,
   detectGapAdjustment,
+  suggestNextSetReps,
 } from './progression'
 
 // Hjalpfunktion: bygg ett work set
@@ -341,5 +342,30 @@ describe('detectGapAdjustment', () => {
       { finished_at: daysAgo(10), adjusted: false },
     ]
     expect(detectGapAdjustment(recent, ['Bänkpress'])).toBeNull()
+  })
+})
+
+describe('suggestNextSetReps', () => {
+  it('0 RIR: ett rep mindre nasta set (8 reps -> 7)', () => {
+    expect(suggestNextSetReps({ doneReps: 8, doneRir: 0, donePlanReps: 8, nextPlanReps: 8 })).toBe(7)
+    expect(suggestNextSetReps({ doneReps: 8, doneRir: 0, donePlanReps: 8, nextPlanReps: 9 })).toBe(7)
+  })
+  it('1 RIR: inte fler reps an man just gjorde', () => {
+    expect(suggestNextSetReps({ doneReps: 7, doneRir: 1, donePlanReps: 7, nextPlanReps: 8 })).toBe(7)
+  })
+  it('enligt plan med marginal eller utan RIR: planens mal behalls (7 + 7 + 8)', () => {
+    expect(suggestNextSetReps({ doneReps: 7, doneRir: null, donePlanReps: 7, nextPlanReps: 8 })).toBe(8)
+    expect(suggestNextSetReps({ doneReps: 7, doneRir: 3, donePlanReps: 7, nextPlanReps: 8 })).toBe(8)
+  })
+  it('missad plan: forvanta inte mer nasta set', () => {
+    expect(suggestNextSetReps({ doneReps: 5, doneRir: null, donePlanReps: 7, nextPlanReps: 7 })).toBe(5)
+  })
+  it('hogre an plan sanker aldrig nasta mal under planen i onodan', () => {
+    expect(suggestNextSetReps({ doneReps: 9, doneRir: 2, donePlanReps: 7, nextPlanReps: 7 })).toBe(7)
+  })
+  it('utan plan: utga fran gjorda reps, aldrig under 1', () => {
+    expect(suggestNextSetReps({ doneReps: 10, doneRir: null })).toBe(10)
+    expect(suggestNextSetReps({ doneReps: 10, doneRir: 0 })).toBe(9)
+    expect(suggestNextSetReps({ doneReps: 1, doneRir: 0 })).toBe(1)
   })
 })

@@ -136,15 +136,7 @@ export default function ExerciseBlock({
       exercise.sets.filter(s => s.type === 'work' && !s.done).length === 1
     const isLastSetOfWorkout = isLastExercise && isLastWorkSetOfExercise
 
-    // Copy reps to next undone work set if it's empty or prefilled
-    if (!wasCompleted && set?.type === 'work' && set.reps) {
-      const currentIdx = exercise.sets.findIndex(s => s.id === setId)
-      const nextWorkSet = exercise.sets.slice(currentIdx + 1).find(s => s.type === 'work' && !s.done)
-      if (nextWorkSet && (!nextWorkSet.reps || nextWorkSet.prefilled)) {
-        onUpdateSet(exercise.localId, nextWorkSet.id, 'reps', set.reps)
-      }
-    }
-
+    // (Nasta sets vikt/reps fylls i av completeSet i useWorkout.)
     await onCompleteSet(exercise.localId, setId)
     if (!wasCompleted && set?.type === 'work') {
       if (supersetPartner) {

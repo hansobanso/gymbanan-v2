@@ -406,3 +406,27 @@ export function detectGapAdjustment(recentWorkouts, exerciseNames) {
     })),
   }
 }
+
+
+/**
+ * Repmal for NASTA set i samma ovning, utifran hur setet man just gjorde gick.
+ * Ren funktion - anvands nar ett set bockas av.
+ *
+ *  - 0 RIR (failure): rakna med ett rep mindre nasta set (trotthet).
+ *  - 1 RIR: rakna inte med fler reps an man just gjorde.
+ *  - Missade man planen for setet: forvanta inte mer nasta set.
+ *  - Annars: behall planens mal for nasta set (t.ex. 7 + 7 + 8 - forut skrevs
+ *    sista setets +1 over av forra setets reps).
+ * Utan plan for nasta set (eller om vikten andrats) utgar man fran gjorda reps.
+ */
+export function suggestNextSetReps({ doneReps, doneRir = null, donePlanReps = null, nextPlanReps = null }) {
+  const R = parseInt(doneReps)
+  if (!(R > 0)) return nextPlanReps > 0 ? nextPlanReps : null
+  const base = nextPlanReps > 0 ? nextPlanReps : R
+  let sug
+  if (doneRir === 0) sug = Math.min(base, R - 1)
+  else if (doneRir === 1) sug = Math.min(base, R)
+  else if (donePlanReps > 0 && R < donePlanReps) sug = Math.min(base, R)
+  else sug = base
+  return Math.max(1, sug)
+}

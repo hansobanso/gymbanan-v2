@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { createWorkout, updateWorkout, deleteUnfinishedWorkout, getTwoPreviousSetsForExercise, getExerciseByName, getRestOverrides, getUserExerciseNote, getWorkouts, getExercises, getAllUserExerciseNotes, cacheInvalidate } from '../lib/db'
-import { computeProgression, deriveCategory, epleyAdjustedReps, detectGapAdjustment } from '../lib/progression'
+import { computeProgression, deriveCategory, epleyAdjustedReps, detectGapAdjustment, suggestNextSetReps } from '../lib/progression'
 import { sortSupersetsAdjacent } from '../lib/superset.js'
 import { namesMatching } from '../lib/exerciseAliases.js'
 import { defaultWeightIncrement } from '../lib/weightUtils'
@@ -593,6 +593,9 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
           [field]: value,
           _originWeight: originWeight,
           _originReps: originReps,
+          // Kom ihag appens repmal fore forsta manuella andringen, sa vi vid
+          // avbockning vet om setet gick enligt plan eller inte.
+          _autoReps: s._autoReps ?? (field === 'reps' && s.prefilled ? s.reps : undefined),
           // Nollstall _baseWeight vid manuell viktandring sa nasta PT-justering
           // utgar fran det nya manuella vardet, inte den gamla originalvikten.
           _baseWeight: field === 'weight' ? undefined : s._baseWeight,
@@ -924,20 +927,50 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
         }
         // Toggle set (nollstall PB-flaggan vid angra)
         let sets = ex.sets.map(s => s.id !== setId ? s : { ...s, done: willBeDone, isPB: willBeDone ? isPB : false })
-        // Copy weight to next undone work set when completing a work set
-        if (!wasCompleted && completingSet?.type === 'work' && completingSet.subtype !== 'backoff' && completingSet.weight) {
+        // Nar ett arbetsset bockas av: fyll i NASTA ej klara arbetsset.
+        //  - Vikten foljer med (om nasta set ar tomt eller appens eget forslag).
+        //  - Repmalet anpassas efter hur setet gick: 0 RIR -> ett rep mindre,
+        //    1 RIR -> inte fler an nyss, missad plan -> forvanta inte mer,
+        //    annars behalls planens mal (t.ex. +1 pa sista setet).
+        // Set som anvandaren sjalv fyllt i rors inte.
+        if (!wasCompleted && completingSet?.type === 'work' && completingSet.subtype !== 'backoff') {
           const completedIdx = sets.findIndex(s => s.id === setId)
           const nextWorkIdx = sets.findIndex((s, i) =>
             i > completedIdx && s.type === 'work' && s.subtype !== 'backoff' && !s.done
           )
           if (nextWorkIdx !== -1) {
             const nextSet = sets[nextWorkIdx]
-            if (!nextSet.weight || nextSet.weight === '0' || nextSet.prefilled) {
-              sets = sets.map((s, i) =>
-                i === nextWorkIdx ? { ...s, weight: completingSet.weight, prefilled: false } : s
-              )
+            const patch = {}
+            if (completingSet.weight && (!nextSet.weight || nextSet.weight === '0' || nextSet.prefilled)
+              && String(nextSet.weight) !== String(completingSet.weight)) {
+              patch.weight = completingSet.weight
+              patch._baseWeight = parseFloat(completingSet.weight) || undefined
+            }
+            const doneReps = parseInt(completingSet.reps)
+            if (doneReps > 0 && (!nextSet.reps || nextSet.prefilled)) {
+              // Nasta sets mal galler bara om det ar appens forslag pa SAMMA vikt
+              const nextPlanReps = nextSet.prefilled && !patch.weight ? parseInt(nextSet.reps) : null
+              const donePlanReps = parseInt(completingSet._autoReps ?? (completingSet.prefilled ? completingSet.reps : NaN))
+              const sug = suggestNextSetReps({
+                doneReps,
+                doneRir: completingSet.rir ?? null,
+                donePlanReps: donePlanReps > 0 ? donePlanReps : null,
+                nextPlanReps: nextPlanReps > 0 ? nextPlanReps : null,
+              })
+              if (sug && String(sug) !== String(nextSet.reps)) patch.reps = String(sug)
+            }
+            if (Object.keys(patch).length > 0) {
+              sets = sets.map((s, i) => i !== nextWorkIdx ? s : {
+                ...s,
+                ...patch,
+                prefilled: true,
+                _originWeight: undefined,
+                _originReps: undefined,
+              })
             }
           }
+        }
+        if (!wasCompleted && completingSet?.type === 'work' && completingSet.subtype !== 'backoff' && completingSet.weight) {
 
           // Auto-fill back-off sets when this is the LAST work set being completed
           // Back-off uses ~85% of this work set's weight and +3 reps (more volume at lighter load)
