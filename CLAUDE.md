@@ -118,6 +118,12 @@ och om setState i effekter (befintligt mönster). Titta bara på nya fel.
   rygg och ben, 48 h för övriga, +24 h efter 10 set eller fler. "På länge"
   är 14 dagar.
 
+- Muskelläget går att trycka på (`MuscleSheet`, `muscleDetail`): visar
+  programmets övningar för gruppen och "+ 2 set", som lägger övningen sist
+  i nästa pass man startar, en gång. Extra ligger i `localStorage:
+  gymbanan_next_extras`, töms vid passtart, bär `extra: true` och sparas
+  aldrig till programmet (`buildUpdatedSession` filtrerar bort dem).
+
 **Designspråk** (nov 2026): svart bakgrund, kort `--d-card`, gul accent,
 grönt för klart, blå `--d-hint` för PT-besked, stora siffror i
 `--font-num` (Barlow Condensed). Variablerna `--d-*` ligger i

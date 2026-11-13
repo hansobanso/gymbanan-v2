@@ -260,3 +260,67 @@ export function fmtMinutes(mins) {
   const h = Math.floor(mins / 60), m = mins % 60
   return m ? `${h} h ${m} min` : `${h} h`
 }
+
+// ── Muskellage: detaljer for en grupp ───────────────────────────────────
+
+/** Senaste gangen en ovning kordes: datum + basta arbetsset. */
+function lastPerformance(name, workouts) {
+  let best = null
+  for (const w of workouts ?? []) {
+    if (!w.finished_at) continue
+    const ex = (w.exercises ?? []).find(e => e.name === name)
+    const sets = (ex?.sets ?? []).filter(s => s.done && s.type !== 'warmup')
+    if (!sets.length) continue
+    const at = new Date(w.finished_at)
+    if (best && at <= best.at) continue
+    const top = sets.reduce((a, s) => ((parseFloat(s.weight) || 0) > (parseFloat(a.weight) || 0) ? s : a), sets[0])
+    best = { at, weight: parseFloat(top.weight) || 0, reps: parseInt(top.reps) || 0, sets: sets.length }
+  }
+  return best
+}
+
+/**
+ * Vad som tranar en muskelgrupp (primart): ovningar i programmet, vilka som
+ * redan ligger i nasta pass, och forslag nar programmet saknar gruppen.
+ * Forslagen ar ovningar anvandaren kort forut, sedan biblioteket i bokstavsordning.
+ */
+export function muscleDetail(group, program, nextSession, workouts, exerciseMap, maxSuggestions = 4) {
+  const groupOf = (name, fallback) => statusGroupOf(fallback ?? exerciseMap?.[name]?.muscle_group ?? null)
+  const nextNames = new Set((nextSession?.exercises ?? []).map(e => e.name))
+  const byName = new Map()
+  for (const s of program?.sessions ?? []) {
+    for (const ex of s.exercises ?? []) {
+      if (groupOf(ex.name, ex.muscleGroup ?? ex.muscle_group) !== group) continue
+      const row = byName.get(ex.name) ?? {
+        name: ex.name,
+        sessions: [],
+        inNext: nextNames.has(ex.name),
+        repsMin: ex.repsMin ?? null,
+        repsMax: ex.repsMax ?? null,
+        last: lastPerformance(ex.name, workouts),
+      }
+      if (!row.sessions.includes(s.name)) row.sessions.push(s.name)
+      byName.set(ex.name, row)
+    }
+  }
+  const inProgram = [...byName.values()]
+
+  let suggestions = []
+  if (!inProgram.length) {
+    const lib = Object.entries(exerciseMap ?? {})
+      .filter(([name, info]) => statusGroupOf(info?.muscle_group) === group && !info?.is_cardio && !nextNames.has(name))
+      .map(([name]) => ({ name, sessions: [], inNext: false, repsMin: null, repsMax: null, last: lastPerformance(name, workouts) }))
+    lib.sort((a, b) => (b.last?.at ?? 0) - (a.last?.at ?? 0) || a.name.localeCompare(b.name, 'sv'))
+    suggestions = lib.slice(0, maxSuggestions)
+  }
+  return { inProgram, suggestions, inNextSession: inProgram.some(r => r.inNext) }
+}
+
+/** Lagger extraovningar sist i ett pass, utan dubbletter. */
+export function withExtras(session, extras) {
+  if (!session || !extras?.length) return session
+  const have = new Set((session.exercises ?? []).map(e => e.name))
+  const add = extras.filter(e => !have.has(e.name))
+  if (!add.length) return session
+  return { ...session, exercises: [...(session.exercises ?? []), ...add] }
+}

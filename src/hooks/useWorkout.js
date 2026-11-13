@@ -129,6 +129,8 @@ function sessionExToEx(ex) {
     name: ex.name ?? 'Övning',
     muscleGroup: ex.muscleGroup ?? ex.muscle_group ?? null,
     supersetId: ex.supersetId ?? null,
+    // Engangstillagg fran Muskellaget: sparas aldrig till programmet
+    extra: ex.extra === true,
     restSeconds: ex.restSeconds ?? ex.rest_seconds ?? null,
     notes: ex.notes ?? '',
     defaultRepsMin: ex.repsMin ?? ex.default_reps_min ?? ex.defaultRepsMin ?? null,

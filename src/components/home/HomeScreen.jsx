@@ -5,11 +5,12 @@ import { useNavigate } from 'react-router-dom'
 import { getWorkouts, getDeloadStatus, endDeloadWeek, getProfile, cacheInvalidate, getExercises } from '../../lib/db'
 import { supabase } from '../../lib/supabase'
 import { detectGapAdjustment } from '../../lib/progression'
-import { weekStrips, muscleStatus, sessionSummary, daysLabel, workoutMinutes, pbCount } from '../../lib/homeStats'
+import { weekStrips, muscleStatus, sessionSummary, daysLabel, workoutMinutes, pbCount, muscleDetail, withExtras } from '../../lib/homeStats'
 import { BananaIcon } from '../shared/Icons'
 import AppInfo from '../shared/AppInfo'
 import SessionPreview from './SessionPreview'
 import DaySheet from './DaySheet'
+import MuscleSheet from './MuscleSheet'
 import styles from './HomeScreen.module.css'
 import h from './Home.module.css'
 
@@ -48,11 +49,23 @@ function getNextSession(program, recentWorkouts) {
   return sessions[0]
 }
 
+const EXTRAS_KEY = 'gymbanan_next_extras'
+
 export default function HomeScreen({ session, programs = [], programsLoaded = false, programsError = false, onRetryPrograms, activeProgramId = null, onSetActive, onReady, activeWorkout = null, onResumeWorkout }) {
   const [recentWorkouts, setRecentWorkouts] = useState([])
   const [workoutsLoaded, setWorkoutsLoaded] = useState(false)
   const [previewSession, setPreviewSession] = useState(null) // { session, program }
   const [openDay, setOpenDay] = useState(null) // dag i veckoremsan vars pass visas
+  const [openMuscle, setOpenMuscle] = useState(null) // grupp i Muskellaget vars ark visas
+  // Extraovningar for nasta pass (fran Muskellaget). Ligger i localStorage sa
+  // de overlever en omladdning, och toms nar ett pass startas.
+  const [extras, setExtras] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(EXTRAS_KEY) || '[]') } catch { return [] }
+  })
+  function saveExtras(next) {
+    setExtras(next)
+    try { localStorage.setItem(EXTRAS_KEY, JSON.stringify(next)) } catch { /* privat lage */ }
+  }
   const [weekIdx, setWeekIdx] = useState(null) // synlig vecka i remsan (null = innevarande)
   const weekScrollRef = useRef(null)
   const [deloadStatus, setDeloadStatus] = useState({ isActive: false, daysLeft: 0 })
@@ -125,10 +138,12 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
   }, [workoutsLoaded, programsLoaded, onReady])
 
   function handleStartSession(sessionData, program) {
+    const withExtra = withExtras(sessionData, extras)
+    if (extras.length) saveExtras([])
     navigate('/workout', {
       state: {
         sessionName: sessionData.name,
-        sessionExercises: sessionData.exercises ?? [],
+        sessionExercises: withExtra.exercises ?? [],
         programId: program?.id ?? null,
         program: program ?? null,
       },
@@ -399,6 +414,17 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
               </div>
             )}
 
+            {extras.length > 0 && (
+              <div className={h.extras}>
+                {extras.map(e => (
+                  <button key={e.name} className={h.extra} onClick={() => saveExtras(extras.filter(x => x.name !== e.name))} type="button" aria-label={`Ta bort extra ${e.name}`}>
+                    <span className={h.extraText}>Extra: {e.name} · {e.workSets} set</span>
+                    <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
+                  </button>
+                ))}
+              </div>
+            )}
+
             {ptNote && <span className={h.hint}>{ptNote}</span>}
 
             <button
@@ -536,7 +562,7 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
             </div>
             <div className={h.muscleGrid}>
               {muscles.map(m => (
-                <div key={m.group} className={h.muscle}>
+                <button key={m.group} className={h.muscle} onClick={() => setOpenMuscle(m.group)} type="button">
                   <div className={h.muscleTop}>
                     <span className={h.muscleName}>{m.group}</span>
                     <span className={h.muscleDays}>{daysLabel(m.days)}</span>
@@ -546,7 +572,7 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
                   {m.state === 'neglected' && (
                     <span className={h.stateNeglected}>{m.days == null ? 'Inte tränad' : 'Inte tränad på länge'}</span>
                   )}
-                </div>
+                </button>
               ))}
             </div>
           </section>
@@ -556,10 +582,22 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
 
       {/* ── Pass-förhandsgranskning ── */}
       <DaySheet day={openDay} exerciseMap={exerciseMap} onClose={() => setOpenDay(null)} />
+      <MuscleSheet
+        muscle={muscles.find(m => m.group === openMuscle) ?? null}
+        detail={openMuscle ? muscleDetail(openMuscle, activeProgram, nextSession, recentWorkouts, exerciseMap) : null}
+        exerciseMap={exerciseMap}
+        extras={extras}
+        nextName={nextSession?.name}
+        onAdd={row => saveExtras([...extras.filter(e => e.name !== row.name), {
+          name: row.name, workSets: 2, warmupSets: 0, repsMin: row.repsMin ?? 8, repsMax: row.repsMax ?? 12, extra: true,
+        }])}
+        onRemove={name => saveExtras(extras.filter(e => e.name !== name))}
+        onClose={() => setOpenMuscle(null)}
+      />
 
       <SessionPreview
         open={previewSession !== null}
-        session={previewSession?.session}
+        session={withExtras(previewSession?.session, extras)}
         userId={session.user.id}
         onStart={() => {
           if (previewSession) {

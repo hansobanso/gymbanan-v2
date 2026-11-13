@@ -194,7 +194,8 @@ export default function Workout({ session }) {
   function buildUpdatedSession(originalSession, exercises) {
     return {
       ...originalSession,
-      exercises: exercises.map(ex => ({
+      // Extraovningar fran Muskellaget galler bara det har passet
+      exercises: exercises.filter(ex => !ex.extra).map(ex => ({
         name: ex.name,
         supersetId: ex.supersetId ?? null,
         warmupSets: ex.sets.filter(s => s.type === 'warmup').length,

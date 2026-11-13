@@ -181,3 +181,60 @@ describe('weekStrips', () => {
     expect(weeks[0].count).toBe(0)
   })
 })
+
+import { muscleDetail, withExtras } from './homeStats.js'
+
+describe('muscleDetail', () => {
+  const map = {
+    'Hantelcurl': { muscle_group: 'Biceps' },
+    'Triceps pushdown': { muscle_group: 'Triceps' },
+    'Knäböj': { muscle_group: 'Quads' },
+    'Vadpress': { muscle_group: 'Vader' },
+    'Sittande vadpress': { muscle_group: 'Vader' },
+    'Hammercurl': { muscle_group: 'Biceps' },
+  }
+  const program = { sessions: [
+    { name: 'Pass A', exercises: [{ name: 'Knäböj', workSets: 3 }] },
+    { name: 'Pass B', exercises: [{ name: 'Hantelcurl', workSets: 2, repsMin: 8, repsMax: 12 }, { name: 'Triceps pushdown', workSets: 2 }] },
+  ] }
+  const history = [
+    wo(9, 'Pass B', [{ name: 'Hantelcurl', sets: [...work(1, { weight: 12, reps: 10 }), ...work(1, { weight: 14, reps: 8 })] }]),
+    wo(30, 'Fritt', [{ name: 'Vadpress', sets: work(2, { weight: 80, reps: 10 }) }]),
+  ]
+
+  it('listar programmets ovningar for gruppen med senaste basta set', () => {
+    const d = muscleDetail('Armar', program, program.sessions[0], history, map)
+    expect(d.inProgram.map(r => r.name)).toEqual(['Hantelcurl', 'Triceps pushdown'])
+    expect(d.inProgram[0]).toMatchObject({ sessions: ['Pass B'], inNext: false, repsMin: 8, repsMax: 12 })
+    expect(d.inProgram[0].last).toMatchObject({ weight: 14, reps: 8, sets: 2 })
+    expect(d.inProgram[1].last).toBe(null)
+    expect(d.inNextSession).toBe(false)
+    expect(d.suggestions).toEqual([])
+  })
+  it('markerar det som redan ligger i nasta pass', () => {
+    const d = muscleDetail('Armar', program, program.sessions[1], history, map)
+    expect(d.inProgram.every(r => r.inNext)).toBe(true)
+    expect(d.inNextSession).toBe(true)
+  })
+  it('foreslar ur biblioteket nar programmet saknar gruppen, korda ovningar forst', () => {
+    const d = muscleDetail('Vader', program, program.sessions[0], history, map)
+    expect(d.inProgram).toEqual([])
+    expect(d.suggestions.map(r => r.name)).toEqual(['Vadpress', 'Sittande vadpress'])
+  })
+  it('tal tomt program', () => {
+    expect(muscleDetail('Bål', null, null, [], {})).toEqual({ inProgram: [], suggestions: [], inNextSession: false })
+  })
+})
+
+describe('withExtras', () => {
+  const s = { name: 'Pass A', exercises: [{ name: 'Knäböj' }] }
+  it('lagger till sist utan dubbletter', () => {
+    const out = withExtras(s, [{ name: 'Hantelcurl', extra: true }, { name: 'Knäböj', extra: true }])
+    expect(out.exercises.map(e => e.name)).toEqual(['Knäböj', 'Hantelcurl'])
+    expect(s.exercises).toHaveLength(1)
+  })
+  it('utan extra returneras passet oforandrat', () => {
+    expect(withExtras(s, [])).toBe(s)
+    expect(withExtras(null, [{ name: 'x' }])).toBe(null)
+  })
+})
