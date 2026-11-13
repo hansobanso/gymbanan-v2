@@ -35,6 +35,9 @@ function intensityFromSets(sets) {
 // Sekundarmuskler bidrar mindre an primarmuskeln (de jobbar med, men ar
 // inte huvudfokus). 0.5 = halva set-poangen jamfort med primarmuskeln.
 const SECONDARY_FACTOR = 0.5
+// Tertiara muskler (stabilisatorer och smahjalpare) far en liten andel:
+// ett enstaka set syns knappt, men mycket volym bygger upp farg.
+const TERTIARY_FACTOR = 0.2
 
 // Effort per set utifran RIR (reps in reserve): nara failure = mer
 // stimulans. Utan loggat RIR raknas setet som 1.0.
@@ -91,6 +94,12 @@ function intensitiesFromWorkouts(workouts, exerciseMap, sensitivity = 3) {
         : fromLib?.secondary_muscles) ?? []
       for (const sm of secondary) {
         if (sm && sm !== mg) addScore(sm, baseScore * SECONDARY_FACTOR)
+      }
+
+      // Tertiara muskler finns bara i biblioteket (inte i passloggen).
+      const tertiary = (aliasName ? (fromLib ?? exerciseMap?.[aliasName]) : fromLib)?.tertiary_muscles ?? []
+      for (const tm of tertiary) {
+        if (tm && tm !== mg && !secondary.includes(tm)) addScore(tm, baseScore * TERTIARY_FACTOR)
       }
     }
   }

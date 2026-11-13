@@ -142,7 +142,8 @@ efter passet är borttagna med flit. Kostnaden är några dollar per år.
 - `exercises.tertiary_muscles` (text[]) lades till 2026-11-13. Ifylld
   för 213 av 236 övningar med regler per muskelgrupp och övningstyp (högst
   tre per övning, aldrig dubblett av primär/sekundär). Redigeras på
-  övningens sida i biblioteket. Räknas inte in i muskelvolymen.
+  övningens sida i biblioteket. I muskelgubben ger de 0,2 poäng per set
+  (primär 1, sekundär 0,5). Muskelläget på startsidan räknar bara primär.
 - Supabase gratisnivå pausar efter 7 dagars inaktivitet → svart app.
   Bara Hannes kan väcka den i Supabase-panelen.
 
