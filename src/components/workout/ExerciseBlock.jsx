@@ -73,6 +73,7 @@ export default function ExerciseBlock({
   onLongPressStart,
   onTimerStart,
   onActivate,
+  autoCenter,
   supersetPartner,
   supersetFirstId,
   onSupersetJump,
@@ -97,6 +98,7 @@ export default function ExerciseBlock({
   const [editSetId, setEditSetId] = useState(null)
   const longRef = useRef(null)
   const menuBtnRef = useRef(null)
+  const blockRef = useRef(null)
 
   // Stäng meny vid klick utanför
   useEffect(() => {
@@ -265,6 +267,19 @@ export default function ExerciseBlock({
   const editSet = exercise.sets.find(s => s.id === editSetId && !s.done)
   const openSetId = editSet?.id ?? (isActive ? exercise.sets.find(s => !s.done)?.id ?? null : null)
 
+  // Hall det oppna setet mitt pa skarmen. Med manga set skulle kortet
+  // annars glida ner mot kanten for varje set man bockar av.
+  // (autoCenter ar av tills forsta setet i passet ar gjort, sa vyn inte
+  // hoppar nar passet startar.)
+  useEffect(() => {
+    if (!openSetId || !autoCenter) return
+    const raf = requestAnimationFrame(() => {
+      const el = blockRef.current?.querySelector(`[data-set-id="${openSetId}"]`)
+      el?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    })
+    return () => cancelAnimationFrame(raf)
+  }, [openSetId, autoCenter])
+
   function startRepsEdit(e) {
     e.stopPropagation()
     setRepsEditMin(exercise.defaultRepsMin != null ? String(exercise.defaultRepsMin) : '')
@@ -329,7 +344,7 @@ export default function ExerciseBlock({
 
   // ── Oppen ovning: rubrik + settabell med aktivt set som kort ──
   return (
-    <div className={`${styles.blockWrapper} ${styles.open}`} data-exid={exercise.localId}>
+    <div className={`${styles.blockWrapper} ${styles.open}`} data-exid={exercise.localId} ref={blockRef}>
       <div className={styles.header} {...longPress}>
         <div className={styles.titleRow}>
           <button

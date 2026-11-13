@@ -441,6 +441,7 @@ export default function Workout({ session }) {
   const activeExId = focusValid
     ? focusExId
     : (workout.exercises.find(ex => !isExDone(ex))?.localId ?? null)
+  const anySetDone = workout.exercises.some(ex => ex.sets.some(st => st.done))
   const progress = (() => {
     const doneIds = new Set(workout.exercises.filter(isExDone).map(ex => ex.localId))
     const activeIdx = workout.exercises.findIndex(ex => ex.localId === activeExId)
@@ -671,6 +672,7 @@ export default function Workout({ session }) {
                 supersetFirstId={supersetFirstId}
                 onSupersetJump={handleSupersetJump}
                 onActivate={handleSupersetJump}
+                autoCenter={anySetDone}
                 onSupersetLinkStart={ex => setSupersetPickFor(ex)}
                 onSupersetUnlink={ex => workout.clearSuperset(ex.localId)}
                 onShowDetail={id => setDetailExerciseId(id)}
