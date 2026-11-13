@@ -30,7 +30,7 @@ function Splash() {
     <div className="loading-screen">
       <div className="splash">
         <BananaLogo className="splashBananaLogo" />
-        <span className="splashTitle">Gymbanan</span>
+        <span className="splashTitle">GYMBANAN</span>
         <div className="splashBar">
           <div className="splashBarFill" />
         </div>
@@ -38,6 +38,10 @@ function Splash() {
     </div>
   )
 }
+
+// Loggan ritas upp pa drygt en halv sekund. Lat den hinna klart aven nar
+// appen laddar snabbare an sa.
+const SPLASH_MIN_MS = 850
 
 function fmtElapsedSince(isoString) {
   const mins = Math.round((Date.now() - new Date(isoString)) / 60000)
@@ -61,6 +65,8 @@ function AppRoutes({ session }) {
   const [homeReady, setHomeReady] = useState(false)
   const [showWhatsNew, setShowWhatsNew] = useState(false)
   const [splashGone, setSplashGone] = useState(false)
+  const [splashLeaving, setSplashLeaving] = useState(false)
+  const [splashShownAt] = useState(() => Date.now())
 
   // Nar ett pass sparats som kopia (och blivit aktivt) meddelar Workout
   // via event - synka programlistan och aktivt program utan omladdning.
@@ -90,8 +96,11 @@ function AppRoutes({ session }) {
   // synas fylld, ta sen bort splash-overlayn.
   useEffect(() => {
     if (!homeReady) return
-    const t = setTimeout(() => setSplashGone(true), 280)
-    return () => clearTimeout(t)
+    // Forst tonas startskarmen ut (260 ms), sedan tas den bort.
+    const hold = Math.max(0, SPLASH_MIN_MS - (Date.now() - splashShownAt))
+    const t1 = setTimeout(() => setSplashLeaving(true), hold)
+    const t2 = setTimeout(() => setSplashGone(true), hold + 260)
+    return () => { clearTimeout(t1); clearTimeout(t2) }
   }, [homeReady])
 
   const loadPrograms = useCallback(() => {
@@ -201,7 +210,7 @@ function AppRoutes({ session }) {
           sa anvandaren ser en clean loader istallet for skelett som blinkar.
           sa anvandaren ser en clean loader istallet for skelett som blinkar. */}
       {!splashGone && (
-        <div className="splash-overlay">
+        <div className={`splash-overlay ${splashLeaving ? 'splash-overlay-out' : ''}`}>
           <Splash />
         </div>
       )}
@@ -233,10 +242,10 @@ function AppRoutes({ session }) {
 
       {/* Always-mounted tab screens — shown/hidden via CSS */}
       <Suspense fallback={<div style={{display:'flex',alignItems:'center',justifyContent:'center',flex:1}}><div className="spinner"/></div>}>
-        <div style={tabStyle('/')}><Home session={session} programs={programs} programsLoaded={programsLoaded} programsError={programsError} onRetryPrograms={loadPrograms} activeProgramId={activeProgramId} onSetActive={id => { setActiveProgramId(id); setActiveProgram(session.user.id, id).catch(() => {}) }} onReady={() => setHomeReady(true)} activeWorkout={minimized} onResumeWorkout={() => minimized && resumeWorkout(minimized)} /></div>
-        <div style={tabStyle('/programs')}><Programs session={session} programs={programs} setPrograms={setPrograms} activeProgramId={activeProgramId} onSetActive={id => { setActiveProgramId(id); setActiveProgram(session.user.id, id).catch(() => {}) }} /></div>
-        <div style={tabStyle('/history')}><History session={session} /></div>
-        <div style={tabStyle('/settings')}><Settings session={session} /></div>
+        <div className="tab-screen" style={tabStyle('/')}><Home session={session} programs={programs} programsLoaded={programsLoaded} programsError={programsError} onRetryPrograms={loadPrograms} activeProgramId={activeProgramId} onSetActive={id => { setActiveProgramId(id); setActiveProgram(session.user.id, id).catch(() => {}) }} onReady={() => setHomeReady(true)} activeWorkout={minimized} onResumeWorkout={() => minimized && resumeWorkout(minimized)} /></div>
+        <div className="tab-screen" style={tabStyle('/programs')}><Programs session={session} programs={programs} setPrograms={setPrograms} activeProgramId={activeProgramId} onSetActive={id => { setActiveProgramId(id); setActiveProgram(session.user.id, id).catch(() => {}) }} /></div>
+        <div className="tab-screen" style={tabStyle('/history')}><History session={session} /></div>
+        <div className="tab-screen" style={tabStyle('/settings')}><Settings session={session} /></div>
 
         {/* Deep screens — normal route mounting */}
         {/* Sa lange "Pagaende pass"-fragan ar obesvarad renderas inga

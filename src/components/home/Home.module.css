@@ -425,3 +425,7 @@
 .stateReady { color: var(--d-ok); }
 .stateResting { color: var(--accent); }
 .stateNeglected { color: var(--d-hint); }
+
+/* ── Rorelse ── */
+.dotDone svg { animation: popIn 0.28s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.dot { transition: transform 0.12s var(--ease); }

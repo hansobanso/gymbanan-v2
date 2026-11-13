@@ -62,7 +62,7 @@ export default function Auth() {
     <div className={styles.container}>
       <div className={styles.logo}>
         <BananaLogo className={styles.logoIcon} />
-        <span className={styles.logoText}>Gymbanan</span>
+        <span className={styles.logoText}>GYMBANAN</span>
       </div>
 
       <form className={styles.form} onSubmit={handleSubmit}>

@@ -81,3 +81,10 @@
 
 .add:active { background: #3A3A3A; }
 .skip:active { background: #D0D0D0; }
+
+/* Sista tio sekunderna pulserar tiden lugnt */
+.timeLow { animation: lowPulse 1s ease-in-out infinite; }
+
+@keyframes lowPulse {
+  50% { opacity: 0.55; }
+}

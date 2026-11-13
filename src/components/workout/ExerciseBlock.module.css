@@ -373,3 +373,23 @@
   font-size: 13px;
   color: var(--d-muted);
 }
+
+/* ── Rorelse ── */
+.statusDone svg,
+.compactCheck svg,
+.compactPb,
+.statusPb .pbLabel {
+  animation: popIn 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Ett nytt PB far en kort gul blink over raden */
+.trDone:has(.statusPb) {
+  animation: pbFlash 0.9s ease-out;
+}
+
+@keyframes pbFlash {
+  0% { background: rgba(245, 208, 32, 0.22); }
+  100% { background: transparent; }
+}
+
+.open .header { animation: riseIn 0.2s ease-out; }

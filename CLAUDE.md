@@ -8,8 +8,7 @@ Senast uppdaterad: 2026-11-12.
 
 ## Vad det är
 
-Svensk gym-app (PWA) för styrketräning med automatisk progression och en
-AI-PT. Hannes är ensam utvecklare och i praktiken enda användare. Han testar
+Svensk gym-app (PWA) för styrketräning med automatisk progression. Hannes är ensam utvecklare och i praktiken enda användare. Han testar
 i den riktiga appen på sin iPhone och ger feedback på svenska, ofta mitt i
 ett pass.
 
@@ -61,7 +60,6 @@ och om setState i effekter (befintligt mönster). Titta bara på nya fel.
 | `src/components/home/HomeScreen.jsx`, `src/lib/homeStats.js` | Startsidan + ren logik (veckoremsa, muskelläge). Har tester |
 | `src/lib/db.js` | Alla Supabase-anrop + liten cache |
 | `src/App.jsx` | Routing, "Pågående pass"-dialogen, programlista |
-| `src/lib/ai.js`, `src/hooks/useAI.js` | PT-intro och PT-chatt via `opta-proxy.gymbanan.workers.dev` |
 | `src/components/shared/MuscleMap.jsx` | Muskelgubben (grön veckovy hemma, röd i passet) |
 | `src/lib/restSound.js` | Pling när vilan är slut (bara Web Audio) |
 | `scripts/crash-lint.mjs` | Krasch-grinden |
@@ -117,8 +115,13 @@ grönt för klart, blå `--d-hint` för PT-besked, stora siffror i
 **Viktknapparna** följer övningens `weight_increment`, annars hantel 2,
 maskin 5, övrigt 2,5.
 
-**AI**: behåll PT-intro och PT-chatt i passet. PT-fliken och AI-feedback
-efter passet är borttagna med flit. Kostnaden är några dollar per år.
+**AI-coachen är borttagen** (2026-11-13, Hannes: "den tillför inget"). PT-chatt,
+PT-intro, `ai.js`, `useAI.js` och `AiChat` finns inte längre. Bygg inte
+tillbaka något AI utan att fråga. "Anpassa passet" är kvar och är manuell.
+
+**Rörelse**: korta och likadana överallt. Gemensamma keyframes `riseIn`,
+`popIn`, `fadeIn` i `index.css`. Allt stängs av med
+`prefers-reduced-motion`.
 
 **Musik får aldrig pausas.** Använd inte `<audio>`-element för ljud. Priset
 är att plinget kan utebli med helt släckt skärm.
@@ -187,8 +190,8 @@ Tester och bygge räcker inte för passflödet. Två metoder som fungerat:
 - Flera sekundära muskler per övning + flytta inbyggda övningar till
   databasen. Görs tillsammans, i egen session, med backup först.
 - GitHub Actions kör Node 20. Fungerar, men bör uppdateras någon gång.
-- Admin-sidan (`src/screens/Admin.jsx`, 2 400 rader) och PT-chattens
-  tolkning av svar (`ai.js`) är inte genomlysta på buggar.
+- Admin-sidan (`src/screens/Admin.jsx`, 2 400 rader) är inte genomlyst på
+  buggar.
 - Ungefär hälften av övningarna saknar eget `weight_increment`.
 
 ## Hemligheter

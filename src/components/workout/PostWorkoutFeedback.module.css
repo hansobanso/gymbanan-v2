@@ -296,3 +296,5 @@
 .statLabel { font-size: 10.5px; font-weight: 700; letter-spacing: 0.1em; color: var(--d-muted); }
 .prCard { background: var(--d-card); border: 1px solid var(--accent-border); border-radius: 18px; }
 .doneBtn { min-height: 56px; border-radius: 16px; color: #141414; font-size: 17px; font-weight: 800; }
+
+.heroIcon { animation: popIn 0.45s 0.15s cubic-bezier(0.2, 0.8, 0.2, 1) backwards; }

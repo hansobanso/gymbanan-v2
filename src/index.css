@@ -232,36 +232,50 @@ input, textarea, select {
   background: var(--bg);
 }
 
-/* ── Branded splash med banan + gul progressbar ── */
+/* ── Startskarm: loggan ritas upp, ordmarket tonas in ── */
+.splash-overlay {
+  transition: opacity 0.26s ease-out;
+}
+.splash-overlay-out {
+  opacity: 0;
+  pointer-events: none;
+}
 .splash {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
-}
-.splashLogo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  gap: 18px;
 }
 .splashBananaLogo {
-  width: 84px;
+  width: 148px;
   height: auto;
 }
-.splashLogo svg {
-  width: 34px;
-  height: 34px;
+/* pathLength="1" pa loggans linjer gor att strecken kan ritas upp */
+.splashBananaLogo path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: logoDraw 0.5s cubic-bezier(0.6, 0, 0.3, 1) forwards;
+}
+.splashBananaLogo path:nth-child(2) { animation-delay: 0.1s; }
+.splashBananaLogo path:nth-child(3) { animation-delay: 0.2s; }
+@keyframes logoDraw {
+  to { stroke-dashoffset: 0; }
 }
 .splashTitle {
-  font-size: 26px;
-  font-weight: 800;
+  font-family: var(--font-num);
+  font-size: 44px;
+  line-height: 1;
+  font-weight: 700;
   color: #fff;
-  letter-spacing: -0.4px;
+  letter-spacing: 0.06em;
+  opacity: 0;
+  animation: riseIn 0.35s 0.3s ease-out forwards;
 }
 .splashBar {
-  width: 160px;
-  height: 4px;
-  background: #1a1a1a;
+  width: 148px;
+  height: 3px;
+  margin-top: 6px;
+  background: #1c1c1c;
   border-radius: 2px;
   overflow: hidden;
   position: relative;
@@ -458,4 +472,33 @@ input, textarea, select {
   color: var(--d-muted);
   font-family: var(--font);
   font-size: 14px;
+}
+
+/* ═══ Rorelse: korta, likadana overallt ═══ */
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes popIn {
+  0% { transform: scale(0.4); opacity: 0; }
+  60% { transform: scale(1.18); opacity: 1; }
+  100% { transform: scale(1); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Flikbyte: innehallet tonas in (display none -> flex startar om animationen) */
+.tab-screen {
+  animation: fadeIn 0.16s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
