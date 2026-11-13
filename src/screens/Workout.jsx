@@ -15,6 +15,7 @@ import ExerciseDetailSheet from './ExerciseDetailSheet'
 import MuscleMap from '../components/shared/MuscleMap'
 import { colorForIntensityRed } from '../lib/muscleColor'
 import PostWorkoutFeedback from '../components/workout/PostWorkoutFeedback'
+import { BananaIcon } from '../components/shared/Icons'
 import styles from './Workout.module.css'
 
 // Val i "Anpassa passet"-arket. Valet markeras forst (gult), applas vid Tillämpa.
@@ -407,6 +408,8 @@ export default function Workout({ session }) {
         equipmentMap={postEquipmentMap}
         durationMin={postDurationMin}
         prs={sessionPrs}
+        muscleWorkout={muscleSessionWorkout}
+        exerciseMap={muscleExMap}
       />
     )
   }
@@ -540,6 +543,7 @@ export default function Workout({ session }) {
           <>
             {workout.exercises.length === 0 && (
               <div className={styles.emptyChoice}>
+                <span className="empty-banana"><BananaIcon /></span>
                 <p className={styles.emptyChoiceTitle}>Fritt pass</p>
                 <p className={styles.emptyChoiceText}>
                   Lägg till de övningar du vill köra idag.

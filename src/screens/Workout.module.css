@@ -146,16 +146,6 @@
 /* Toasts lyfts ovanfor vilodockan */
 .toastAboveDock { bottom: calc(var(--safe-bottom, 0px) + 86px); }
 
-.empty {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 24px;
-  color: var(--text-3);
-  font-size: 14px;
-  text-align: center;
-}
-
 /* ── Tomt fritt pass: val mellan PT och egen ── */
 .emptyChoice {
   display: flex;
@@ -179,24 +169,6 @@
   margin: 0 0 12px;
   max-width: 280px;
 }
-.emptyPtBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  max-width: 300px;
-  padding: 14px;
-  background: var(--accent);
-  color: #000;
-  border: none;
-  border-radius: var(--radius-md, 12px);
-  font-size: 15px;
-  font-weight: 700;
-  font-family: var(--font);
-  cursor: pointer;
-}
-.emptyPtBtn:active { opacity: 0.8; }
 .emptyAddBtn {
   width: 100%;
   max-width: 300px;
@@ -211,8 +183,6 @@
   cursor: pointer;
 }
 .emptyAddBtn:active { background: var(--surface-3); }
-
-/* ── Avsluta pass-knapp (ej fast) ── */
 /* ── Tränade muskelgrupper (muskelgubbe langst ner i passet) ── */
 .muscleSummary {
   display: flex;
@@ -351,13 +321,6 @@
   flex-shrink: 0;
 }
 
-/* Gul indikatorlinje – visas av framer-motion layout-transition */
-.reorderIndicator {
-  height: 2px;
-  background: transparent;
-  transition: background 0.2s;
-}
-
 /* ── Undo toast ── */
 .toast {
   position: fixed;
@@ -436,13 +399,6 @@
 .confirmTitle {
   font-size: 20px;
   font-weight: 700;
-  text-align: center;
-  margin: 0;
-}
-
-.confirmDesc {
-  font-size: 14px;
-  color: var(--text-2);
   text-align: center;
   margin: 0;
 }
@@ -620,4 +576,20 @@
   color: var(--text-3);
   line-height: 1.45;
   margin: 0 2px 4px;
+}
+
+/* ── Tomt fritt pass (designsprak 2026-11) ── */
+.emptyChoiceTitle { font-family: var(--font-num); font-size: 40px; line-height: 0.95; font-weight: 700; color: #fff; }
+.emptyChoiceText { color: var(--d-muted); }
+.emptyAddBtn {
+  width: 100%;
+  max-width: 320px;
+  min-height: 56px;
+  margin-top: 10px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--accent);
+  color: #141414;
+  font-size: 17px;
+  font-weight: 800;
 }

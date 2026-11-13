@@ -85,10 +85,6 @@
   background: rgba(255, 255, 255, 0.04);
 }
 
-.rowBorder {
-  border-bottom: 0.5px solid #1a1a1a;
-}
-
 .rowLabel {
   flex: 1;
   color: var(--text);

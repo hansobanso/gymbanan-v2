@@ -4,7 +4,7 @@ import { getWorkouts, getEquipmentMap, deleteWorkout, restoreWorkout } from '../
 import { displayWeight } from '../lib/weightUtils'
 import WorkoutCard from '../components/history/WorkoutCard'
 import ProgressView from '../components/history/ProgressView'
-import { DumbbellIcon } from '../components/shared/Icons'
+import { BananaIcon } from '../components/shared/Icons'
 import { groupByWeek, monthStats } from '../lib/homeStats'
 import styles from './History.module.css'
 
@@ -112,9 +112,9 @@ export default function History({ session }) {
 
         {!loading && workouts.length === 0 && (
           <div className={styles.empty}>
-            <DumbbellIcon className={styles.emptyIcon} />
+            <span className="empty-banana"><BananaIcon /></span>
             <p className={styles.emptyTitle}>Inga pass ännu</p>
-            <p className={styles.emptyText}>Dina genomförda pass dyker upp här.</p>
+            <p className={styles.emptyText}>Kör ditt första pass så dyker det upp här, med tider, set och personbästa.</p>
           </div>
         )}
 

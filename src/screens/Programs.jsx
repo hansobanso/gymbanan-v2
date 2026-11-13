@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { saveProgram, updateProgram, deleteProgram, getExercises } from '../lib/db'
 import ProgramEdit from '../components/settings/ProgramEdit'
 import SessionEdit from '../components/settings/SessionEdit'
+import { BananaIcon } from '../components/shared/Icons'
 import styles from './Programs.module.css'
 
 const ADMIN_EMAIL = 'hannes@hannesisaksson.com'
@@ -197,6 +198,7 @@ export default function Programs({ session, programs, setPrograms, activeProgram
             {/* Tomt lage i Egna */}
             {activeTab === 'egna' && ownPrograms.length === 0 && (
               <div className={styles.emptyTab}>
+                <span className="empty-banana"><BananaIcon /></span>
                 <p className={styles.emptyTabText}>Du har inga egna program än</p>
                 <p className={styles.emptyTabSub}>Skapa ett eller kopiera en mall</p>
                 <button

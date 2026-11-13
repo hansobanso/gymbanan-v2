@@ -502,3 +502,23 @@ input, textarea, select {
     scroll-behavior: auto !important;
   }
 }
+
+/* ── Tomma lagen: bananen i en mjuk cirkel ── */
+.empty-banana {
+  width: 96px;
+  height: 96px;
+  border-radius: 48px;
+  background: var(--d-card);
+  border: 1px solid var(--d-card-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+  animation: popIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+.empty-banana svg {
+  width: 44px;
+  height: auto;
+  transform: rotate(-8deg);
+}
