@@ -1,17 +1,19 @@
+/* "Pass klart" (designsprak 2026-11). */
+
 .screen {
   height: 100dvh;
   max-height: 100dvh;
+  box-sizing: border-box;
   background: var(--bg);
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
-  padding: calc(env(safe-area-inset-top, 44px) + 16px) 20px calc(env(safe-area-inset-bottom, 34px) + 16px);
+  padding: calc(env(safe-area-inset-top, 44px) + 24px) 16px 0;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 22px;
 }
 
-/* ── Hero ── */
 .hero {
   display: flex;
   flex-direction: column;
@@ -21,280 +23,211 @@
 }
 
 .heroIcon {
-  line-height: 1;
-  margin-bottom: 4px;
-  display: block;
+  display: flex;
+  color: var(--accent);
+  margin-bottom: 6px;
+  animation: popIn 0.45s 0.1s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+
+.eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
 }
 
 .heroTitle {
-  font-size: 24px;
-  font-weight: 800;
-  letter-spacing: -0.5px;
   margin: 0;
+  font-family: var(--font-num);
+  font-size: 56px;
+  line-height: 0.95;
+  font-weight: 700;
+  color: #fff;
+  animation: riseIn 0.3s 0.15s ease-out backwards;
 }
 
-.heroName {
-  font-size: 14px;
-  color: var(--text-2);
-  margin: 0;
-}
-
-/* ── Stats ── */
 .stats {
-  display: flex;
-  background: var(--surface);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  grid-auto-flow: column;
+  gap: 8px;
+  animation: riseIn 0.3s 0.22s ease-out backwards;
 }
 
 .stat {
-  flex: 1;
+  background: var(--d-card);
+  border: 1px solid var(--d-card-border);
+  border-radius: 16px;
+  padding: 12px 6px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 18px 8px;
   gap: 4px;
   min-width: 0;
 }
 
 .statValue {
-  font-size: 22px;
+  font-family: var(--font-num);
+  font-size: 27px;
+  line-height: 1;
   font-weight: 700;
-  color: var(--accent);
+  color: #fff;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.3px;
-  line-height: 1.1;
+  white-space: nowrap;
 }
 
 .statLabel {
   font-size: 11px;
-  color: var(--text-3);
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
+  color: var(--d-muted);
+  text-align: center;
 }
 
-.statDivider {
-  width: 1px;
-  background: var(--border);
-  align-self: stretch;
-  margin: 8px 0;
+/* ── Personbasta ── */
+.pbCard {
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  border-radius: 22px;
+  padding: 14px 14px 6px;
+  display: flex;
+  flex-direction: column;
+  animation: riseIn 0.3s 0.3s ease-out backwards;
 }
 
-/* ── PT-feedback ── */
-.feedbackCard {
-  background: var(--surface);
-  border-radius: var(--radius-lg);
-  overflow: clip;
-}
-
-.feedbackHeader {
+.pbHeader {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 14px 16px 10px;
-  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
 }
 
-.ptBadge {
-  flex-shrink: 0;
-  display: block;
-}
-
-.feedbackTitle {
-  font-size: 13px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--text-2);
-}
-
-.loading {
+.pbBadge {
+  height: 24px;
+  padding: 0 9px;
+  border-radius: 12px;
+  background: var(--accent);
+  color: #141414;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 28px 16px;
 }
 
-.loadingDots {
-  display: flex;
-  gap: 6px;
-}
-
-.loadingDots span {
-  width: 8px;
-  height: 8px;
-  background: var(--text-3);
-  border-radius: 50%;
-  animation: bounce 1.2s ease infinite;
-}
-
-.loadingDots span:nth-child(2) { animation-delay: 0.15s; }
-.loadingDots span:nth-child(3) { animation-delay: 0.3s; }
-
-@keyframes bounce {
-  0%, 60%, 100% { transform: translateY(0); opacity: 0.35; }
-  30% { transform: translateY(-6px); opacity: 1; }
-}
-
-.loadingText {
-  font-size: 13px;
-  color: var(--text-3);
-  margin: 0;
-}
-
-.feedbackText {
+.pbTitle {
   font-size: 15px;
-  color: var(--text);
-  line-height: 1.65;
-  padding: 16px;
-  margin: 0;
-  white-space: pre-wrap;
+  font-weight: 800;
+  color: var(--accent);
 }
 
-.feedbackNone {
-  font-size: 14px;
-  color: var(--text-3);
-  padding: 20px 16px;
-  margin: 0;
-  text-align: center;
-  line-height: 1.5;
-}
-
-/* ── Övningslista ── */
-.exerciseList {
-  background: var(--surface);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-}
-
-.exRow {
-  display: flex;
+.pbRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 12px;
   align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border);
-  gap: 12px;
-}
-
-.exRow:last-child {
-  border-bottom: none;
-}
-
-.exName {
+  min-height: 40px;
+  border-top: 1px solid rgba(245, 208, 32, 0.18);
   font-size: 14px;
-  font-weight: 500;
-  color: var(--text);
-  flex: 1;
-  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  animation: riseIn 0.25s ease-out backwards;
+}
+
+.pbName {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
 }
 
-.exMeta {
-  font-size: 12px;
-  color: var(--text-3);
-  flex-shrink: 0;
+.pbValue {
+  font-weight: 800;
+  color: var(--accent);
+}
+
+/* ── Sektioner ── */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: riseIn 0.3s 0.38s ease-out backwards;
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--d-muted);
+}
+
+.figure {
+  display: flex;
+  justify-content: center;
+  padding: 4px 0;
+}
+
+.exerciseList {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid var(--d-line);
+  font-size: 14px;
   font-variant-numeric: tabular-nums;
 }
 
-/* ── Footer (sticky) ── */
+.exRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 12px;
+  align-items: center;
+  min-height: 40px;
+  padding: 4px 0;
+  border-top: 1px solid var(--d-line);
+}
+
+.exName {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
+}
+
+.exMeta {
+  color: #B5B5B5;
+  text-align: right;
+  max-width: 190px;
+}
+
+.pbSet {
+  font-weight: 800;
+  color: var(--accent);
+}
+
+/* ── Knapp ── */
 .footer {
   position: sticky;
-  bottom: env(safe-area-inset-bottom, 16px);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding-top: 4px;
+  bottom: 0;
   margin-top: auto;
+  padding: 12px 0 calc(env(safe-area-inset-bottom, 16px) + 12px);
+  background: linear-gradient(to top, var(--bg) 70%, transparent);
 }
 
 .doneBtn {
-  background: var(--accent);
-  color: #000;
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: 16px;
-  font-weight: 700;
-  padding: 16px;
-  cursor: pointer;
-  transition: opacity 0.15s;
-  font-family: var(--font);
   width: 100%;
-}
-
-.doneBtn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.skipBtn {
-  background: none;
-  border: none;
-  color: var(--text-3);
-  font-size: 14px;
-  cursor: pointer;
-  text-align: center;
-  padding: 4px;
-  font-family: var(--font);
-  transition: color 0.15s;
-}
-
-.skipBtn:hover {
-  color: var(--text-2);
-}
-
-/* ── PR-firande ── */
-.prCard {
-  background: linear-gradient(135deg, rgba(245, 208, 32, 0.16), rgba(245, 208, 32, 0.05));
-  border: 1px solid rgba(245, 208, 32, 0.35);
+  min-height: 56px;
+  border: 0;
   border-radius: 16px;
-  padding: 16px;
-  margin: 0 16px 14px;
-}
-.prHeader {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--accent);
-  margin-bottom: 10px;
-}
-.prTitle {
+  background: var(--accent);
+  color: #141414;
+  font-family: var(--font);
   font-size: 17px;
   font-weight: 800;
-  letter-spacing: -0.3px;
-}
-.prRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 6px 0;
-}
-.prName {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text);
-}
-.prValue {
-  font-size: 15px;
-  font-weight: 800;
-  color: var(--accent);
-}
-.prSub {
-  font-size: 12.5px;
-  color: var(--text-2);
-  margin: 8px 0 0;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.12s var(--ease), filter 0.12s var(--ease);
 }
 
-/* ═══ Designsprak 2026-11: skriver over reglerna ovan ═══ */
-.heroTitle { font-family: var(--font-num); font-size: 48px; line-height: 0.95; font-weight: 700; }
-.heroName { color: var(--d-muted); }
-.stats { background: var(--d-card); border: 1px solid var(--d-card-border); border-radius: 18px; }
-.statValue { font-family: var(--font-num); font-size: 32px; line-height: 1; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; }
-.statLabel { font-size: 10.5px; font-weight: 700; letter-spacing: 0.1em; color: var(--d-muted); }
-.prCard { background: var(--d-card); border: 1px solid var(--accent-border); border-radius: 18px; }
-.doneBtn { min-height: 56px; border-radius: 16px; color: #141414; font-size: 17px; font-weight: 800; }
-
-.heroIcon { animation: popIn 0.45s 0.15s cubic-bezier(0.2, 0.8, 0.2, 1) backwards; }
+.doneBtn:active {
+  transform: scale(0.98);
+  filter: brightness(0.92);
+}

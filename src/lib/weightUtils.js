@@ -22,5 +22,6 @@ export function displayWeightStr(weight, equipment) {
   // Upp till tva decimaler utan avslutande nollor. toFixed(1) visade 6.25
   // som "6.3" och 13.75 som "13.8" - fel vikt for 1,25-kilossteg.
   const w = displayWeight(weight, equipment)
-  return String(Math.round(w * 100) / 100)
+  // Svenskt decimalkomma i all visning (inmatningsfalten ar egna).
+  return String(Math.round(w * 100) / 100).replace('.', ',')
 }
