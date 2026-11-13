@@ -5,6 +5,8 @@ import ExercisePicker from '../workout/ExercisePicker'
 import { formatSessionTime } from '../../lib/estimateTime'
 import { sortSupersetsAdjacent } from '../../lib/superset.js'
 import { statusGroupOf } from '../../lib/homeStats'
+import MuscleMap from '../shared/MuscleMap'
+import { colorForIntensityRed } from '../../lib/muscleColor'
 import styles from './SessionEdit.module.css'
 
 const DEFAULT_REST = 120
@@ -262,6 +264,17 @@ export default function SessionEdit({ session, allExercises, onSave, onDelete, o
     if (g) setsByGroup[g] = (setsByGroup[g] ?? 0) + (Number(e.workSets) || 0)
   }
   const groupChips = Object.entries(setsByGroup).sort((a, b) => b[1] - a[1])
+  // Passet som om det vore kort: later muskelgubben lysa upp i takt med
+  // att ovningar och set laggs till.
+  const plannedWorkout = [{
+    finished_at: null,
+    exercises: exercises
+      .filter(e => !cardioNames.has(e.name))
+      .map(e => ({
+        name: e.name,
+        sets: Array.from({ length: Number(e.workSets) || 0 }, () => ({ type: 'work', done: true })),
+      })),
+  }]
 
   // Slap upp ovningen som ska bytas (om swap-lage) - skickas till ExercisePicker
   // som "replacingExercise" sa "Liknande ovningar"-grupp kan visas.
@@ -439,6 +452,16 @@ export default function SessionEdit({ session, allExercises, onSave, onDelete, o
             Lägg till övning
           </button>
         </div>
+
+        {exercises.length > 0 && (
+          <div className={styles.figureSection}>
+            <span className={styles.label}>Det här tränar passet</span>
+            <div className={styles.figure}>
+              <MuscleMap workouts={plannedWorkout} exerciseMap={infoByName} colorFn={colorForIntensityRed} sensitivity={6} size={130} />
+            </div>
+            <span className={styles.figureHint}>Starkare färg betyder fler set. Grått tränas inte i passet.</span>
+          </div>
+        )}
       </div>
 
       <div style={{ height: 'env(safe-area-inset-bottom, 0px)', background: 'var(--bg)', flexShrink: 0 }} />
