@@ -85,6 +85,13 @@ och om setState i effekter (befintligt mönster). Titta bara på nya fel.
   förvänta inte mer. Annars behålls planens mål.
 - Set som användaren själv fyllt i rörs inte.
 
+**Uppvärmningsset** (`warmupPlan`)
+- Fylls i från dagens arbetsvikt: 1 set 60 % × 8, 2 set 50 % × 8 och
+  75 % × 4, 3 set 40/60/80 % × 8/5/3. Rundas till övningens viktsteg.
+- Loggade Hannes uppvärmning förra passet behålls hans egen andel av
+  arbetsvikten och hans reps, så förslaget följer med när vikten höjs.
+- Kroppsviktsövningar får samma som förra passet.
+
 **Uppehåll** (`detectGapAdjustment`)
 - 8–14 dagar: samma vikter och reps som sist.
 - 15–28 dagar: −10 %. Över 28 dagar: −20 %.

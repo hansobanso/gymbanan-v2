@@ -369,3 +369,38 @@ describe('suggestNextSetReps', () => {
     expect(suggestNextSetReps({ doneReps: 1, doneRir: 0 })).toBe(1)
   })
 })
+
+import { warmupPlan } from './progression.js'
+
+describe('warmupPlan', () => {
+  it('standardsteg for 1, 2 och 3 set', () => {
+    expect(warmupPlan({ workWeight: 100, count: 1 })).toEqual([{ weight: 60, reps: 8 }])
+    expect(warmupPlan({ workWeight: 100, count: 2 })).toEqual([{ weight: 50, reps: 8 }, { weight: 75, reps: 4 }])
+    expect(warmupPlan({ workWeight: 100, count: 3 }).map(s => s.weight)).toEqual([40, 60, 80])
+  })
+  it('rundar till viktsteget', () => {
+    expect(warmupPlan({ workWeight: 22, count: 2, increment: 2 })).toEqual([{ weight: 12, reps: 8 }, { weight: 16, reps: 4 }])
+    expect(warmupPlan({ workWeight: 55, count: 1, increment: 5 })[0].weight).toBe(35)
+  })
+  it('alltid lagre an arbetsvikten, annars inget forslag', () => {
+    expect(warmupPlan({ workWeight: 4, count: 2, increment: 2 })).toEqual([{ weight: 2, reps: 8 }, { weight: 2, reps: 4 }])
+    expect(warmupPlan({ workWeight: 2, count: 1, increment: 2 })).toEqual([null])
+    expect(warmupPlan({ workWeight: 0, count: 2 })).toEqual([null, null])
+    expect(warmupPlan({ workWeight: 100, count: 0 })).toEqual([])
+  })
+  it('behaller egen andel och reps fran forra passet', () => {
+    const prev = [{ weight: '40', reps: '10', done: true }]
+    expect(warmupPlan({ workWeight: 80, count: 1, prevWarmups: prev, prevWorkWeight: 80 })).toEqual([{ weight: 40, reps: 10 }])
+    expect(warmupPlan({ workWeight: 90, count: 1, prevWarmups: prev, prevWorkWeight: 80 })).toEqual([{ weight: 45, reps: 10 }])
+  })
+  it('ogjord eller tom uppvarmning forra gangen ger standardsteg', () => {
+    const prev = [{ weight: '40', reps: '10', done: false }, { weight: '', reps: '', done: true }]
+    expect(warmupPlan({ workWeight: 80, count: 2, prevWarmups: prev, prevWorkWeight: 80 })).toEqual([{ weight: 40, reps: 8 }, { weight: 60, reps: 4 }])
+  })
+  it('fler an tre set gar fran 40 till 80 procent', () => {
+    const p = warmupPlan({ workWeight: 100, count: 4 })
+    expect(p[0].weight).toBe(40)
+    expect(p[3].weight).toBe(80)
+    expect(p[3].reps).toBe(2)
+  })
+})

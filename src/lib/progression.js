@@ -430,3 +430,51 @@ export function suggestNextSetReps({ doneReps, doneRir = null, donePlanReps = nu
   else sug = base
   return Math.max(1, sug)
 }
+
+// ── Uppvarmningsset ─────────────────────────────────────────────────────
+// Andel av dagens arbetsvikt och reps, per antal uppvarmningsset.
+const WARMUP_STEPS = {
+  1: [[0.6, 8]],
+  2: [[0.5, 8], [0.75, 4]],
+  3: [[0.4, 8], [0.6, 5], [0.8, 3]],
+}
+
+function warmupSteps(count) {
+  if (WARMUP_STEPS[count]) return WARMUP_STEPS[count]
+  // Fler an tre: jamna steg fran 40 % till 80 %, farre reps ju tyngre
+  return Array.from({ length: count }, (_, i) => {
+    const t = i / (count - 1)
+    return [0.4 + 0.4 * t, Math.max(2, Math.round(8 - 6 * t))]
+  })
+}
+
+/**
+ * Forslag pa uppvarmningsset utifran dagens arbetsvikt.
+ *
+ * Har anvandaren loggat uppvarmning forra passet behalls hens egen andel av
+ * arbetsvikten (t.ex. 40 av 80 kg = 50 %) och reps, sa forslaget foljer med
+ * nar arbetsvikten hojs. Annars anvands standardstegen ovan.
+ * Vikten rundas till ovningens viktsteg och ar alltid lagre an arbetsvikten.
+ *
+ * @returns {Array<{weight: number, reps: number}|null>} en post per set,
+ *   null nar inget vettigt forslag finns (t.ex. kroppsviktsovning).
+ */
+export function warmupPlan({ workWeight, count, increment = 2.5, prevWarmups = [], prevWorkWeight = 0 }) {
+  if (!count || count < 1) return []
+  const work = parseFloat(workWeight) || 0
+  const inc = increment > 0 ? increment : 2.5
+  const steps = warmupSteps(count)
+  return steps.map(([pct, reps], i) => {
+    if (work <= 0) return null
+    const prev = prevWarmups[i]
+    const prevW = parseFloat(prev?.weight) || 0
+    const prevR = parseInt(prev?.reps) || 0
+    const prevTop = parseFloat(prevWorkWeight) || 0
+    const own = prev?.done && prevW > 0 && prevTop > 0 && prevW < prevTop
+    const ratio = own ? prevW / prevTop : pct
+    let w = Math.round(work * ratio / inc) * inc
+    if (w >= work) w = work - inc
+    if (w <= 0) return null
+    return { weight: Math.round(w * 100) / 100, reps: own && prevR > 0 ? prevR : reps }
+  })
+}

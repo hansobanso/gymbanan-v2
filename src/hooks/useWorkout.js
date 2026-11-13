@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { createWorkout, updateWorkout, deleteUnfinishedWorkout, getTwoPreviousSetsForExercise, getExerciseByName, getRestOverrides, getUserExerciseNote, getWorkouts, getExercises, getAllUserExerciseNotes, cacheInvalidate } from '../lib/db'
-import { computeProgression, deriveCategory, epleyAdjustedReps, detectGapAdjustment, suggestNextSetReps } from '../lib/progression'
+import { computeProgression, deriveCategory, epleyAdjustedReps, detectGapAdjustment, suggestNextSetReps, warmupPlan } from '../lib/progression'
 import { sortSupersetsAdjacent } from '../lib/superset.js'
 import { namesMatching } from '../lib/exerciseAliases.js'
 import { defaultWeightIncrement } from '../lib/weightUtils'
@@ -265,6 +265,15 @@ async function loadExerciseData(ex, userId, restOverrides, caches = {}) {
   const bestPrevW = prevWork.length > 0 ? Math.max(...prevWork.map(s => parseFloat(s.weight) || 0)) : 0
   const backoffWeight = bestPrevW > 0 ? Math.round(bestPrevW * 0.85 / weightIncrement) * weightIncrement : 0
 
+  const prevWarmupSets = prevSets.filter(s => s.type === 'warmup')
+  const warmups = warmupPlan({
+    workWeight: progression.nextWeight,
+    count: ex.sets.filter(s => s.type === 'warmup').length,
+    increment: weightIncrement,
+    prevWarmups: prevWarmupSets,
+    prevWorkWeight: bestPrevW,
+  })
+
   const sets = ex.sets.map(set => {
     if (set.subtype === 'backoff') {
       const prevBo = prevBackoffSets[0]
@@ -282,7 +291,13 @@ async function loadExerciseData(ex, userId, restOverrides, caches = {}) {
       }
     }
     if (set.type === 'warmup') {
-      const prev = prevSets.filter(s => s.type === 'warmup')[warmupIdx++]
+      const i = warmupIdx++
+      const plan = warmups[i]
+      // Forslag utifran dagens arbetsvikt. _baseWeight gor att "Anpassa
+      // passet" och uppehallssankning raknar pa ratt grundvikt.
+      if (plan) return { ...set, weight: String(plan.weight), reps: String(plan.reps), prefilled: true, _baseWeight: plan.weight }
+      // Kroppsvikt eller okand arbetsvikt: samma som forra passet
+      const prev = prevWarmupSets[i]
       if (!prev) return set
       return { ...set, weight: prev.weight ?? set.weight, reps: prev.reps ?? set.reps }
     }
@@ -671,7 +686,17 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
       if (type === 'warmup') {
         // Insert after the last warmup set, before the first work set
         const lastWarmupIdx = ex.sets.reduce((last, s, i) => s.type === 'warmup' ? i : last, -1)
-        const newSet = makeSet('warmup', ex.sets)
+        // Nytt uppvarmningsset far ett forslag utifran arbetsvikten, som ovriga
+        const count = lastWarmupIdx + 2
+        const workW = ex.sets.find(s => s.type === 'work' && s.subtype !== 'backoff' && parseFloat(s.weight) > 0)?.weight
+        const plan = (ex.isTimeBased || ex.isCardio) ? null : warmupPlan({
+          workWeight: workW,
+          count,
+          increment: ex.weightIncrement ?? defaultWeightIncrement(ex.exEquipment),
+        })[count - 1]
+        const newSet = plan
+          ? { ...makeSet('warmup'), weight: String(plan.weight), reps: String(plan.reps), prefilled: true, _baseWeight: plan.weight }
+          : makeSet('warmup', ex.sets)
         const sets = [...ex.sets]
         sets.splice(lastWarmupIdx + 1, 0, newSet)
         return { ...ex, sets }
