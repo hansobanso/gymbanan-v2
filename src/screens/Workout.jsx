@@ -647,6 +647,7 @@ export default function Workout({ session }) {
                 onSupersetLinkStart={ex => setSupersetPickFor(ex)}
                 onSupersetUnlink={ex => workout.clearSuperset(ex.localId)}
                 onShowDetail={id => setDetailExerciseId(id)}
+                onResolvePlateau={workout.resolvePlateau}
               />
               )
             })}

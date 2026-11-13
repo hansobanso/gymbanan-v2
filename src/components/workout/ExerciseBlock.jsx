@@ -54,6 +54,12 @@ const SupersetChip = () => (
   </span>
 )
 
+const MONTHS_SHORT = ['jan', 'feb', 'mars', 'april', 'maj', 'juni', 'juli', 'aug', 'sep', 'okt', 'nov', 'dec']
+function plateauDate(iso) {
+  const d = new Date(iso)
+  return Number.isNaN(d.getTime()) ? '' : `${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}`
+}
+
 export default function ExerciseBlock({
   exercise,
   isActive,
@@ -81,6 +87,7 @@ export default function ExerciseBlock({
   onSupersetLinkStart,
   onSupersetUnlink,
   onShowDetail,
+  onResolvePlateau,
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [menuPos, setMenuPos] = useState({ top: 0, right: 0 })
@@ -446,6 +453,29 @@ export default function ExerciseBlock({
         </div>
         )}
 
+        {mode === 'open' && exercise.plateau && (
+          <div className={styles.plateau}>
+            <button className={styles.plateauSkip} onClick={() => onResolvePlateau?.(exercise.localId, false)} type="button" aria-label="Inte nu">
+              <svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            </button>
+            <p className={styles.plateauText}>
+              <b>Samma nivå i {exercise.plateau.sessions} pass.</b>{' '}
+              {exercise.plateau.weight > 0
+                ? `${displayWeightStr(exercise.plateau.weight, exercise.exEquipment)} kg`
+                : 'Samma reps'}
+              {exercise.plateau.since ? ` sedan ${plateauDate(exercise.plateau.since)}` : ''}. Vill du prova något annat?
+            </p>
+            <div className={styles.plateauActions}>
+              {exercise.plateau.weight > 0 && (
+                <button className={styles.plateauBtn} onClick={() => onResolvePlateau?.(exercise.localId, true)} type="button">Sänk 10 %</button>
+              )}
+              <button className={styles.plateauBtn} onClick={e => { onResolvePlateau?.(exercise.localId, false); startRepsEdit(e) }} type="button">Byt rep-mål</button>
+              <button className={styles.plateauBtn} onClick={() => { onResolvePlateau?.(exercise.localId, false); onReplaceExercise?.(exercise) }} type="button">Byt övning</button>
+            </div>
+          </div>
+        )}
         {showHint && (
           <div className={`${styles.progressionHint} ${
             exercise.progressionAction === 'too_heavy_flag' ? styles.progressionWarn : ''

@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { createWorkout, updateWorkout, deleteUnfinishedWorkout, getTwoPreviousSetsForExercise, getExerciseByName, getRestOverrides, getUserExerciseNote, getWorkouts, getExercises, getAllUserExerciseNotes, cacheInvalidate } from '../lib/db'
-import { computeProgression, deriveCategory, epleyAdjustedReps, detectGapAdjustment, suggestNextSetReps, warmupPlan } from '../lib/progression'
+import { computeProgression, deriveCategory, epleyAdjustedReps, detectGapAdjustment, suggestNextSetReps, warmupPlan, detectPlateau } from '../lib/progression'
 import { sortSupersetsAdjacent } from '../lib/superset.js'
 import { namesMatching } from '../lib/exerciseAliases.js'
 import { defaultWeightIncrement } from '../lib/weightUtils'
@@ -150,6 +150,9 @@ function sessionExToEx(ex) {
 
 const ACTIVE_WORKOUT_KEY = 'gymbanan_active_workout'
 
+// Sa manga pass i rad pa samma niva kravs for platavarningen
+const PLATEAU_SESSIONS = 4
+
 // Extraherar prev/prevPrev-set for en ovning fran redan hamtade workouts.
 // Undviker att traffa databasen en gang per ovning (stor prestandavinst).
 function extractPrevSets(recentWorkouts, exerciseName) {
@@ -165,14 +168,35 @@ function extractPrevSets(recentWorkouts, exerciseName) {
     const allSets = (ex.sets ?? []).filter(s => s.done && s.weight !== undefined && s.weight !== null)
     if (allSets.length > 0) {
       found.push({ sets: allSets, date: workout.finished_at ?? null })
-      if (found.length >= 2) break
+      if (found.length >= PLATEAU_SESSIONS) break
     }
   }
   return {
     prev: found[0]?.sets ?? null,
     prevPrev: found[1]?.sets ?? null,
     prevDate: found[0]?.date ?? null,
+    history: found,
   }
+}
+
+// Platavarning: fyra pass i rad pa samma niva. Valjer man nagot (eller
+// "Inte nu") tiger varningen for den ovningen i tre veckor.
+const PLATEAU_SNOOZE_KEY = 'gymbanan_plateau_snooze'
+const PLATEAU_SNOOZE_MS = 21 * 24 * 60 * 60 * 1000
+
+function plateauSnoozed(name) {
+  try {
+    const at = JSON.parse(localStorage.getItem(PLATEAU_SNOOZE_KEY) || '{}')[name]
+    return !!at && Date.now() - new Date(at).getTime() < PLATEAU_SNOOZE_MS
+  } catch { return false }
+}
+
+function snoozePlateau(name) {
+  try {
+    const all = JSON.parse(localStorage.getItem(PLATEAU_SNOOZE_KEY) || '{}')
+    all[name] = new Date().toISOString()
+    localStorage.setItem(PLATEAU_SNOOZE_KEY, JSON.stringify(all))
+  } catch { /* privat lage: varningen kommer tillbaka nasta pass */ }
 }
 
 // Hamtar prev-historik + ovningsmetadata for en ovning och returnerar
@@ -197,7 +221,7 @@ async function loadExerciseData(ex, userId, restOverrides, caches = {}) {
     ? Promise.resolve(notesMap[name] ?? null)
     : getUserExerciseNote(userId, name)
 
-  const [{ prev: prevSets, prevPrev: prevPrevSets, prevDate }, exData, userNote] = await Promise.all([
+  const [{ prev: prevSets, prevPrev: prevPrevSets, prevDate, history = null }, exData, userNote] = await Promise.all([
     prevPromise, exDataPromise, notePromise,
   ])
   const exInstructions = exData?.instructions || null
@@ -332,6 +356,7 @@ async function loadExerciseData(ex, userId, restOverrides, caches = {}) {
     _planHint: progressionHint,
     _planAction: progression.action,
     progressionReason: progression.reason,
+    plateau: history && !plateauSnoozed(name) ? detectPlateau(history, PLATEAU_SESSIONS) : null,
     prevSets,
     exInstructions,
     exNotes,
@@ -1186,6 +1211,33 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
     return true
   }, [])
 
+  // Platavarningen: anvandaren valde nagot (eller "Inte nu"). Varningen
+  // tas bort och tiger i tre veckor. lower = sank ej klara set 10 % och
+  // bygg upp igen. Det ar en riktig nivaandring, inget "anpassat pass".
+  const resolvePlateau = useCallback((exId, lower = false) => {
+    setExercises(prev => prev.map(ex => {
+      if (ex.localId !== exId) return ex
+      snoozePlateau(ex.name)
+      if (!lower) return { ...ex, plateau: null }
+      const inc = ex.weightIncrement ?? defaultWeightIncrement(ex.exEquipment)
+      const sets = ex.sets.map(s => {
+        const w = parseFloat(s.weight) || 0
+        if (s.done || w <= 0) return s
+        const newW = Math.max(inc, Math.floor(w * 0.9 / inc) * inc)
+        return { ...s, weight: String(newW), _baseWeight: newW, _planWeight: String(newW), prefilled: true }
+      })
+      return {
+        ...ex,
+        sets,
+        plateau: null,
+        progressionHint: 'Sänkt 10 % för att bygga upp igen. Fyll på reps som vanligt.',
+        progressionAction: 'plateau_reset',
+        _planHint: 'Sänkt 10 % för att bygga upp igen. Fyll på reps som vanligt.',
+        _planAction: 'plateau_reset',
+      }
+    }))
+  }, [])
+
   // "Ingen anpassning": aterstall alla ej klara set till progressionens
   // vanliga forslag och rakna passet som ett normalt pass igen. Angrar bade
   // automatiska andringar (uppehall, deload-vecka) och manuella snabbval.
@@ -1243,6 +1295,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
     ensureWorkout,
     applyDeload,
     applyAdjustment,
+    resolvePlateau,
     resetAdjustments,
     programChanged,
     isAdjustedSession,

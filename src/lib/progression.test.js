@@ -404,3 +404,36 @@ describe('warmupPlan', () => {
     expect(p[3].reps).toBe(2)
   })
 })
+
+import { detectPlateau } from './progression.js'
+
+describe('detectPlateau', () => {
+  const ses = (weight, reps, date = '2026-11-01', extra = []) => ({
+    date,
+    sets: [...reps.map(r => ({ type: 'work', done: true, weight: String(weight), reps: String(r) })), ...extra],
+  })
+  it('fyra pass pa samma vikt utan fler reps ar en plata', () => {
+    const h = [ses(16, [8, 8, 7]), ses(16, [8, 7, 7]), ses(16, [8, 8, 7]), ses(16, [8, 8, 7], '2026-10-14')]
+    expect(detectPlateau(h)).toEqual({ sessions: 4, weight: 16, since: '2026-10-14' })
+  })
+  it('fler reps i nagot nyare pass ar ingen plata', () => {
+    expect(detectPlateau([ses(16, [8, 8, 8]), ses(16, [8, 8, 7]), ses(16, [8, 8, 7]), ses(16, [8, 8, 7])])).toBe(null)
+    expect(detectPlateau([ses(16, [8, 8, 7]), ses(16, [8, 8, 8]), ses(16, [8, 8, 7]), ses(16, [8, 8, 7])])).toBe(null)
+  })
+  it('andrad vikt bryter raden, at bada hall', () => {
+    expect(detectPlateau([ses(18, [6, 6, 6]), ses(16, [8, 8, 7]), ses(16, [8, 8, 7]), ses(16, [8, 8, 7])])).toBe(null)
+    expect(detectPlateau([ses(14, [8, 8, 8]), ses(14, [8, 8, 8]), ses(14, [8, 8, 8]), ses(16, [8, 8, 7])])).toBe(null)
+  })
+  it('farre an fyra pass eller andrat antal set ger inget', () => {
+    expect(detectPlateau([ses(16, [8, 8]), ses(16, [8, 8]), ses(16, [8, 8])])).toBe(null)
+    expect(detectPlateau([ses(16, [8, 8]), ses(16, [8, 8, 8]), ses(16, [8, 8]), ses(16, [8, 8])])).toBe(null)
+  })
+  it('uppvarmning och back-off raknas inte', () => {
+    const wu = [{ type: 'warmup', done: true, weight: '8', reps: '10' }, { type: 'work', subtype: 'backoff', done: true, weight: '12', reps: '12' }]
+    const h = [ses(16, [8, 8], '2026-11-10', wu), ses(16, [8, 8]), ses(16, [8, 8]), ses(16, [8, 8])]
+    expect(detectPlateau(h)).toMatchObject({ weight: 16 })
+  })
+  it('kroppsvikt: samma reps fyra ganger', () => {
+    expect(detectPlateau([ses(0, [10, 9]), ses(0, [10, 9]), ses(0, [10, 9]), ses(0, [10, 9])])).toMatchObject({ weight: 0 })
+  })
+})

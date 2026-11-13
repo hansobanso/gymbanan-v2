@@ -92,6 +92,14 @@ och om setState i effekter (befintligt mönster). Titta bara på nya fel.
   arbetsvikten och hans reps, så förslaget följer med när vikten höjs.
 - Kroppsviktsövningar får samma som förra passet.
 
+**Platåvarning** (`detectPlateau`)
+- Fyra pass i rad (anpassade pass räknas inte) med samma tyngsta
+  arbetsvikt, samma antal arbetsset och inga fler reps totalt än det äldsta.
+- Visas som blå ruta i den öppna övningen: Sänk 10 %, Byt rep-mål, Byt
+  övning eller kryss. Vilket val som helst tystar varningen för övningen
+  i tre veckor (`localStorage: gymbanan_plateau_snooze`).
+- Sänk 10 % är en riktig nivåändring och flaggar inte passet `adjusted`.
+
 **Uppehåll** (`detectGapAdjustment`)
 - 8–14 dagar: samma vikter och reps som sist.
 - 15–28 dagar: −10 %. Över 28 dagar: −20 %.

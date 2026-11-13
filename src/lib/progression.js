@@ -478,3 +478,33 @@ export function warmupPlan({ workWeight, count, increment = 2.5, prevWarmups = [
     return { weight: Math.round(w * 100) / 100, reps: own && prevR > 0 ? prevR : reps }
   })
 }
+
+// ── Platavarning ────────────────────────────────────────────────────────
+/**
+ * Star ovningen still? Sant nar de senaste `minSessions` passen (anpassade
+ * pass ar redan bortsorterade) har samma tyngsta arbetsvikt, samma antal
+ * arbetsset, och inget av de nyare passen gav fler reps totalt an det aldsta.
+ *
+ * @param {Array<{sets: Array, date: string}>} history nyaste forst
+ * @returns {{sessions: number, weight: number, since: string|null}|null}
+ */
+export function detectPlateau(history, minSessions = 4) {
+  if (!Array.isArray(history) || history.length < minSessions) return null
+  const rows = history.slice(0, minSessions).map(h => {
+    const work = (h.sets ?? []).filter(s => s.type === 'work' && s.subtype !== 'backoff' && s.done)
+    return {
+      date: h.date ?? null,
+      count: work.length,
+      weight: work.reduce((m, s) => Math.max(m, parseFloat(s.weight) || 0), 0),
+      reps: work.reduce((n, s) => n + (parseInt(s.reps) || 0), 0),
+    }
+  })
+  const oldest = rows[rows.length - 1]
+  if (!oldest.count || !oldest.reps) return null
+  for (const r of rows) {
+    if (r.count !== oldest.count) return null
+    if (r.weight !== oldest.weight) return null
+    if (r.reps > oldest.reps) return null
+  }
+  return { sessions: minSessions, weight: oldest.weight, since: oldest.date }
+}
