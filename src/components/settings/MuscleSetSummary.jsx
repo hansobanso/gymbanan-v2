@@ -177,7 +177,7 @@ export function ProgramMuscleSetSummary({ sessions, allExercises, defaultOpen = 
                   return (
                     <div key={muscle} className={styles.volumeItem}>
                       <span className={styles.volumeLabel}>
-                        {showSub ? muscle : group.broad} – {fmt(sets)} set
+                        {showSub ? muscle : group.broad}: {fmt(sets)} set
                       </span>
                       <div className={styles.volumeTrack}>
                         <div

@@ -174,10 +174,19 @@
 .row { min-height: 56px; border-bottom: 1px solid var(--d-line); }
 .date { color: var(--d-muted); }
 .sheet { background: var(--d-card); border-radius: 28px 28px 0 0; box-shadow: 0 0 0 1px var(--d-card-border); }
-.saveBtn { min-height: 54px; border-radius: 16px; color: #141414; font-size: 17px; font-weight: 800; }
+.saveBtn { min-height: var(--btn-h); border-radius: 16px; color: #141414; font-size: var(--btn-fs); font-weight: 800; }
 
 /* ═══ Knappsystem 2026-11: samma hojd, radie och vikt overallt ═══ */
 .backBtn { width: 44px; height: 44px; margin: -4px 0 -4px -12px; padding: 0; border: 0; border-radius: 22px; background: transparent; color: #C9C9C9; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .addBtn { height: 40px; padding: 0 16px; border: 0; border-radius: 20px; background: var(--accent); color: #141414; font-size: 14px; font-weight: 800; }
 .header { padding-left: 16px; padding-right: 16px; }
 .title { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); text-align: center; }
+
+/* ═══ Knappgenomgang 2026-11b: falt och Spara pa samma rad ═══ */
+.sheet { min-height: 0; gap: 16px; padding: 12px 16px calc(env(safe-area-inset-bottom, 0px) + 16px); }
+.sheetTitle { font-family: var(--font-num); font-size: 36px; line-height: 0.95; font-weight: 700; color: #fff; text-align: left; }
+.logRow { display: flex; gap: 10px; }
+.inputRow { flex: 1; min-width: 0; height: var(--btn-h); border: 1px solid var(--d-raised-border); border-radius: var(--btn-r); background: var(--d-raised); }
+.inputRow:focus-within { border-color: var(--accent); }
+.inputField { min-width: 0; font-family: var(--font-num); font-size: 30px !important; line-height: 1; }
+.saveBtn { flex-shrink: 0; padding: 0 24px; }

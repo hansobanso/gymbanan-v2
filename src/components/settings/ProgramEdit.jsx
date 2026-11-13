@@ -1,3 +1,4 @@
+import { nEx } from '../../lib/plural.js'
 import { useState, useRef, useEffect } from 'react'
 import { Reorder, useDragControls } from 'framer-motion'
 import { ProgramMuscleSetSummary } from './MuscleSetSummary'
@@ -47,7 +48,7 @@ function SessionItem({ session, deleteConfirmId, setDeleteConfirmId, handleDelet
       <div className={styles.sessionInfo}>
         <span className={styles.sessionName}>{session.name}</span>
         <span className={styles.sessionMeta}>
-          {(session.exercises ?? []).length} övningar{formatSessionTime(session) ? ` · ${formatSessionTime(session)}` : ''}
+          {nEx((session.exercises ?? []).length)}{formatSessionTime(session) ? ` · ${formatSessionTime(session)}` : ''}
         </span>
       </div>
       {isConfirming ? (
@@ -202,7 +203,7 @@ export default function ProgramEdit({ program, allExercises, onSave, onDelete, o
           </div>
 
           {sessions.length === 0 && (
-            <p className={styles.empty}>Inga pass – lägg till ett pass för att komma igång.</p>
+            <p className={styles.empty}>Inga pass än. Lägg till ett för att komma igång.</p>
           )}
 
           <Reorder.Group
@@ -231,6 +232,59 @@ export default function ProgramEdit({ program, allExercises, onSave, onDelete, o
             <ProgramMuscleSetSummary sessions={sessions} allExercises={allExercises} />
           </div>
         )}
+
+        {!program._isNew && (
+          <div className={styles.programActions}>
+            <div className={styles.programActionsRow}>
+            {(
+              <button
+                className={activeProgramId === program.id ? styles.setActiveBtnActive : styles.setActiveBtn}
+                onClick={() => onSetActive(program.id)}
+                type="button"
+                disabled={activeProgramId === program.id}
+              >
+                {activeProgramId === program.id ? '✓ Aktivt' : 'Sätt som aktivt'}
+              </button>
+            )}
+            {onCopy && (
+              <button
+                className={styles.copyBtn}
+                onClick={() => onCopy(program)}
+                type="button"
+              >
+                Kopiera
+              </button>
+            )}
+            </div>
+            {showDeleteConfirm ? (
+              <div className={styles.deleteProgramConfirm}>
+                <p className={styles.deleteProgramConfirmText}>
+                  Är du säker på att du vill ta bort <strong>{name || 'programmet'}</strong>? Det går inte att ångra.
+                </p>
+                <div className={styles.deleteProgramConfirmBtns}>
+                  <button
+                    className={styles.deleteProgramConfirmYes}
+                    onClick={() => onDelete(program)}
+                    type="button"
+                  >Ta bort</button>
+                  <button
+                    className={styles.deleteProgramConfirmNo}
+                    onClick={() => setShowDeleteConfirm(false)}
+                    type="button"
+                  >Avbryt</button>
+                </div>
+              </div>
+            ) : (
+              <button
+                className={styles.deleteBtn}
+                onClick={() => setShowDeleteConfirm(true)}
+                type="button"
+              >
+                Ta bort program
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       <div className={styles.footer}>
@@ -247,54 +301,6 @@ export default function ProgramEdit({ program, allExercises, onSave, onDelete, o
         >
           {saving ? 'Sparar…' : 'Spara program'}
         </button>
-        {!program._isNew && (
-          <button
-            className={activeProgramId === program.id ? styles.setActiveBtnActive : styles.setActiveBtn}
-            onClick={() => onSetActive(program.id)}
-            type="button"
-            disabled={activeProgramId === program.id}
-          >
-            {activeProgramId === program.id ? '✓ Aktivt program' : 'Sätt som aktivt program'}
-          </button>
-        )}
-        {!program._isNew && onCopy && (
-          <button
-            className={styles.copyBtn}
-            onClick={() => onCopy(program)}
-            type="button"
-          >
-            Kopiera & anpassa
-          </button>
-        )}
-        {!program._isNew && (
-          showDeleteConfirm ? (
-            <div className={styles.deleteProgramConfirm}>
-              <p className={styles.deleteProgramConfirmText}>
-                Är du säker på att du vill ta bort <strong>{name || 'programmet'}</strong>? Det går inte att ångra.
-              </p>
-              <div className={styles.deleteProgramConfirmBtns}>
-                <button
-                  className={styles.deleteProgramConfirmYes}
-                  onClick={() => onDelete(program)}
-                  type="button"
-                >Ta bort</button>
-                <button
-                  className={styles.deleteProgramConfirmNo}
-                  onClick={() => setShowDeleteConfirm(false)}
-                  type="button"
-                >Avbryt</button>
-              </div>
-            </div>
-          ) : (
-            <button
-              className={styles.deleteBtn}
-              onClick={() => setShowDeleteConfirm(true)}
-              type="button"
-            >
-              Ta bort program
-            </button>
-          )
-        )}
       </div>
     </div>
   )

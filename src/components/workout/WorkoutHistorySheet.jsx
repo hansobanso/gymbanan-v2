@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { calendarDaysAgo } from '../../lib/dates'
 import { AnimatePresence, motion } from 'framer-motion'
 import { getWorkouts } from '../../lib/db'
+import { SetSummary } from '../history/WorkoutCard'
+import { fmtMinutes } from '../../lib/homeStats'
 import styles from './ExerciseHistory.module.css'
 import wStyles from './WorkoutHistorySheet.module.css'
 
@@ -16,10 +18,7 @@ function fmtDate(iso) {
 
 function fmtDuration(startedAt, finishedAt) {
   if (!startedAt || !finishedAt) return null
-  const mins = Math.round((new Date(finishedAt) - new Date(startedAt)) / 60_000)
-  if (mins < 1) return null
-  if (mins < 60) return `${mins} min`
-  return `${Math.floor(mins / 60)}h ${mins % 60}m`
+  return fmtMinutes(Math.round((new Date(finishedAt) - new Date(startedAt)) / 60_000))
 }
 
 function hasContent(w) {
@@ -97,17 +96,12 @@ export default function WorkoutHistorySheet({ open, userId, onClose }) {
                             (parseFloat(s.weight) > 0 || parseInt(s.reps) > 0)
                         )
                         if (!workSets.length) return null
-                        const summary = workSets
-                          .map(s => {
-                            const w = parseFloat(s.weight) > 0 ? `${s.weight}kg` : null
-                            const r = parseInt(s.reps) > 0 ? `×${s.reps}` : null
-                            return [w, r].filter(Boolean).join('')
-                          })
-                          .join('  ')
                         return (
                           <div key={i} className={wStyles.exRow}>
                             <span className={wStyles.exName}>{ex.name}</span>
-                            <span className={wStyles.exSets}>{summary}</span>
+                            <span className={wStyles.exSets}>
+                              <SetSummary sets={workSets} className={wStyles.pbSet} />
+                            </span>
                           </div>
                         )
                       })}

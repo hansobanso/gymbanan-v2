@@ -1,3 +1,4 @@
+import { exWord, minWord } from '../../lib/plural.js'
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import MuscleMap from '../shared/MuscleMap'
@@ -108,8 +109,8 @@ export default function PostWorkoutFeedback({
       </div>
 
       <div className={styles.stats}>
-        {durationMin != null && <Stat value={durationMin} label="minuter" />}
-        <Stat value={exCount} label="övningar" />
+        {durationMin != null && <Stat value={durationMin} label={minWord(durationMin)} />}
+        <Stat value={exCount} label={exWord(exCount)} />
         <Stat value={sets} label="set" />
         <Stat value={volume} label="lyft totalt" format={fmtVolume} />
       </div>

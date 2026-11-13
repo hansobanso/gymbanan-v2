@@ -298,7 +298,7 @@ export default function ProgressView({ open, onClose, workouts, equipmentMap = {
 
               <p className={styles.explainer}>
                 {data.mode === 'weight'
-                  ? <>Estimerat 1RM beräknas från vikt och reps (Epley) – ett mått på din maxstyrka även när du inte kör singlar. Fler reps på samma vikt räknas som framsteg.{data.isDouble && ' Hantelvikt visas som total (×2).'}</>
+                  ? <>Estimerat 1RM beräknas från vikt och reps (Epley), ett mått på din maxstyrka även när du inte kör singlar. Fler reps på samma vikt räknas som framsteg.{data.isDouble && ' Hantelvikt visas som total (×2).'}</>
                   : 'Den här övningen loggas utan vikt, så vi visar ditt bästa set (flest reps) över tid. Fler reps = starkare.'}
               </p>
             </>

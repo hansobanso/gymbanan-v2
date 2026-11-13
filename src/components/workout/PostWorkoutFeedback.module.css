@@ -215,13 +215,13 @@
 
 .doneBtn {
   width: 100%;
-  min-height: 56px;
+  min-height: var(--btn-h);
   border: 0;
   border-radius: 16px;
   background: var(--accent);
   color: #141414;
   font-family: var(--font);
-  font-size: 17px;
+  font-size: var(--btn-fs);
   font-weight: 800;
   -webkit-tap-highlight-color: transparent;
   transition: transform 0.12s var(--ease), filter 0.12s var(--ease);

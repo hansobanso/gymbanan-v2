@@ -319,7 +319,8 @@ function AppRoutes({ session }) {
       </Suspense>
 
       {/* Minimerat pass: en rad ovanfor menyn som tar en tillbaka */}
-      {(isTab || peeking) && shownActive && !askWorkout && (
+      {/* Inte pa startsidan: dar visar kortet "Pågående pass" samma sak */}
+      {isTab && p !== '/' && shownActive && !askWorkout && (
         <button className="active-workout-bar" onClick={() => minimized && resumeWorkout(minimized)} type="button">
           <span className="active-workout-dot" aria-hidden="true" />
           <span className="active-workout-text">

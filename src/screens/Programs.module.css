@@ -404,10 +404,10 @@
 .programCardActive { border-color: var(--accent); }
 .programCardName { font-size: 16px; font-weight: 700; }
 .programCardMeta { font-size: 12px; color: var(--d-muted); }
-.createBtn { min-height: 54px; border-radius: 16px; border: 1px dashed #4A4A4A; background: transparent; }
+.createBtn { min-height: var(--btn-h); border-radius: 16px; border: 1px dashed #4A4A4A; background: transparent; }
 .previewSheet { background: var(--d-card); border-radius: 28px 28px 0 0; box-shadow: 0 0 0 1px var(--d-card-border); }
 .previewTitle { font-family: var(--font-num); font-size: 40px; line-height: 0.95; font-weight: 700; color: #fff; }
-.previewPrimaryBtn { min-height: 54px; border-radius: 16px; color: #141414; font-size: 17px; font-weight: 800; }
+.previewPrimaryBtn { min-height: var(--btn-h); border-radius: 16px; color: #141414; font-size: var(--btn-fs); font-weight: 800; }
 .previewSecondaryBtn, .previewCancelBtn { min-height: 48px; border-radius: 16px; }
 
 .emptyTab { background: transparent; padding: 40px 20px 24px; }
@@ -416,4 +416,12 @@
 
 /* ═══ Knappsystem 2026-11: samma hojd, radie och vikt overallt ═══ */
 .previewActiveBtn { min-height: 48px; border-radius: 16px; }
-.emptyTabBtn { min-height: 54px; border: 0; border-radius: 16px; background: var(--accent); color: #141414; font-size: 17px; font-weight: 800; padding: 0 24px; margin-top: 10px; }
+.emptyTabBtn { min-height: var(--btn-h); border: 0; border-radius: 16px; background: var(--accent); color: #141414; font-size: var(--btn-fs); font-weight: 800; padding: 0 24px; margin-top: 10px; }
+
+/* ═══ Knappgenomgang 2026-11b: matten kommer fran --btn-* i index.css ═══ */
+.createBtn { min-height: var(--btn-h-sm); border-radius: var(--btn-r-sm); font-size: var(--btn-fs-sm); font-weight: 700; }
+.previewSecondaryBtn, .previewActiveBtn {
+  min-height: var(--btn-h); border: 1px solid var(--d-raised-border); border-radius: var(--btn-r);
+  background: var(--d-raised); color: var(--text); font-size: var(--btn-fs); font-weight: 700;
+}
+.previewCancelBtn { min-height: 44px; border: 0; background: transparent; color: var(--d-muted); font-size: 15px; font-weight: 600; }

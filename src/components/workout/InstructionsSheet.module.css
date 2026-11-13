@@ -213,6 +213,12 @@
 /* ═══ Knappsystem 2026-11: samma hojd, radie och vikt overallt ═══ */
 .closeBtn { width: 44px; height: 44px; margin: -7px -8px -7px 0; padding: 0; border: 0; border-radius: 22px; background: transparent; color: #C9C9C9; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .editBtn { width: 44px; height: 44px; margin: -7px 0; padding: 0; border: 0; border-radius: 22px; background: transparent; color: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.saveBtn { min-height: 54px; border: 0; border-radius: 16px; background: var(--accent); color: #141414; font-size: 17px; font-weight: 800; }
-.cancelBtn { min-height: 54px; border: 1px solid var(--d-raised-border); border-radius: 16px; background: var(--d-raised); color: var(--text); font-size: 15px; font-weight: 700; }
+.saveBtn { min-height: var(--btn-h); border: 0; border-radius: 16px; background: var(--accent); color: #141414; font-size: var(--btn-fs); font-weight: 800; }
+.cancelBtn { min-height: var(--btn-h); border: 1px solid var(--d-raised-border); border-radius: 16px; background: var(--d-raised); color: var(--text); font-size: var(--btn-fs); font-weight: 700; }
 .sheet { background: var(--d-card); border-radius: 28px 28px 0 0; box-shadow: 0 0 0 1px var(--d-card-border); }
+
+/* ═══ Knappgenomgang 2026-11b: matten kommer fran --btn-* i index.css ═══ */
+.emptyAdd {
+  min-height: var(--btn-h-sm); padding: 0 18px; border: 1px solid var(--d-raised-border); border-radius: var(--btn-r-sm);
+  background: var(--d-raised); color: var(--text); font-size: var(--btn-fs-sm); font-weight: 700;
+}

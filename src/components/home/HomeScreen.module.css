@@ -360,7 +360,7 @@
 .errorRetryBtn:active { opacity: 0.7; }
 
 /* ═══ Knappsystem 2026-11: samma hojd, radie och vikt overallt ═══ */
-.freeWorkoutBtn { min-height: 54px; border: 1px solid var(--d-raised-border); border-radius: 16px; background: var(--d-raised); color: var(--text); font-size: 15px; font-weight: 700; }
-.welcomeCreateBtn { min-height: 54px; border: 0; border-radius: 16px; background: var(--accent); color: #141414; font-size: 17px; font-weight: 800; }
+.freeWorkoutBtn { min-height: var(--btn-h); border: 1px solid var(--d-raised-border); border-radius: 16px; background: var(--d-raised); color: var(--text); font-size: var(--btn-fs); font-weight: 700; }
+.welcomeCreateBtn { min-height: var(--btn-h); border: 0; border-radius: 16px; background: var(--accent); color: #141414; font-size: var(--btn-fs); font-weight: 800; }
 .introDismissBtn { min-height: 44px; border: 1px solid var(--d-raised-border); border-radius: 16px; background: var(--d-raised); color: var(--text); font-size: 15px; font-weight: 700; }
 .errorRetryBtn { min-height: 44px; padding-left: 18px; padding-right: 18px; border: 0; border-radius: 14px; background: var(--accent); color: #141414; font-size: 15px; font-weight: 800; }

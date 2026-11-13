@@ -336,8 +336,8 @@
 }
 
 .addBtn {
-  height: 54px;
-  border-radius: 16px;
+  height: var(--btn-h-sm);
+  border-radius: var(--btn-r-sm);
   border: 1px dashed #4A4A4A;
   background: transparent;
   color: var(--text);

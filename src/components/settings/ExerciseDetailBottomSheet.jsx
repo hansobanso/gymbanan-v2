@@ -1,14 +1,8 @@
+import { fmtRest } from '../../lib/plural.js'
 import { AnimatePresence, motion } from 'framer-motion'
 import styles from './ExerciseDetailBottomSheet.module.css'
 
-const REST_OPTIONS = [
-  { label: 'Auto',  value: null },
-  { label: '30s',   value: 30 },
-  { label: '1m',    value: 60 },
-  { label: '1m30s', value: 90 },
-  { label: '2m',    value: 120 },
-  { label: '3m',    value: 180 },
-]
+const REST_OPTIONS = [null, 30, 60, 90, 120, 180].map(value => ({ label: fmtRest(value), value }))
 
 function Stepper({ label, value, min = 0, onChange }) {
   return (

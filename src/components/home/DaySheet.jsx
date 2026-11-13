@@ -1,3 +1,4 @@
+import { nEx } from '../../lib/plural.js'
 import { AnimatePresence, motion } from 'framer-motion'
 import { SetSummary } from '../history/WorkoutCard'
 import { workoutMinutes, pbCount, fmtMinutes } from '../../lib/homeStats'
@@ -45,7 +46,7 @@ export default function DaySheet({ day, exerciseMap, onClose }) {
                 const meta = [
                   w.adjusted ? 'Anpassat pass' : null,
                   fmtMinutes(workoutMinutes(w)),
-                  `${exercises.length} övningar`,
+                  nEx(exercises.length),
                   `${sets} set`,
                 ].filter(Boolean).join(' · ')
                 return (

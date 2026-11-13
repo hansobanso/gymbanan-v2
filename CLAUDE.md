@@ -4,7 +4,7 @@ Läs den här filen först. Den ersätter att läsa gamla chattar. Kör sedan
 `git log --oneline -20` för att se exakt var arbetet står: commit-meddelandena
 är den mest pålitliga "var slutade vi"-källan.
 
-Senast uppdaterad: 2026-11-12.
+Senast uppdaterad: 2026-11-13.
 
 ## Vad det är
 
@@ -119,10 +119,15 @@ maskin 5, övrigt 2,5.
 PT-intro, `ai.js`, `useAI.js` och `AiChat` finns inte längre. Bygg inte
 tillbaka något AI utan att fråga. "Anpassa passet" är kvar och är manuell.
 
-**Knappsystem**: primär = gul, 54 px hög, radie 16, 17 px/800, text
-`#141414`. Sekundär = `--d-raised` med kant, samma höjd och radie, 15 px/700.
-Ikonknapp = 44 px rund, genomskinlig. Liten gul pill = 40 px. Ark = `--d-card`
-med radie 28 upptill. Nya knappar ska följa detta.
+**Knappsystem**: måtten ligger som variabler i `src/index.css`
+(`--btn-h` 52 px, `--btn-h-sm` 44 px, `--btn-r`, `--btn-fs` 16 px,
+`--field-h`, `--chip-h`). Primär = gul, `--btn-h`, 16 px/800, text `#141414`.
+Sekundär = `--d-raised` med kant, 16 px/700. Knappar i par har alltid samma
+höjd och textstorlek. Sidoval i sidflödet använder `--btn-h-sm`. Textlänk
+= 15 px/600, 44 px tryckyta. Ikonknapp = 44 px rund. Liten gul pill = 40 px.
+Chip = `--chip-h`. Ark = `--d-card` med radie 28 upptill. Spara-knappar
+visas först när något ändrats. Använd `nEx()`/`fmtRest()` i
+`src/lib/plural.js` för "1 övning" och vilotider.
 
 **Rörelse**: korta och likadana överallt. Gemensamma keyframes `riseIn`,
 `popIn`, `fadeIn` i `index.css`. Allt stängs av med
@@ -148,6 +153,9 @@ med radie 28 upptill. Nya knappar ska följa detta.
   "Pågående pass"-dialogen är obesvarad (se `App.jsx`).
 - **`useState` initieras en gång**: härled från props eller synka på
   namn/id när en komponent återanvänds.
+- **"Vad är nytt?"**: dev och live delar databas. Höj `WHATSNEW_VERSION`
+  först i samma commit som släpps till `main`, annars visas rutan om och om
+  igen i den miljö som har den andra versionen.
 - **Grep-verifiera skriptade ändringar**. Flera incidenter kom av
   ersättningar som inte träffade. Använd `assert old in s` i Python-patchar.
 - **Kod-fix lagar inte gammal data**. Kolla om databasen också behöver

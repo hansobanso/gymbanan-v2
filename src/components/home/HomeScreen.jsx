@@ -1,3 +1,4 @@
+import { nEx, exWord } from '../../lib/plural.js'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { calendarDaysAgo } from '../../lib/dates'
 import { useNavigate } from 'react-router-dom'
@@ -364,7 +365,7 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
                 {nextCount > 0 && (
                   <div className={h.stat}>
                     <span className={h.statNum}>{nextCount}</span>
-                    <span className={h.statLabel}>övningar</span>
+                    <span className={h.statLabel}>{exWord(nextCount)}</span>
                   </div>
                 )}
                 {next.estMin && (
@@ -428,7 +429,7 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
                 const count = (s.exercises ?? []).length
                 const meta = sum.last
                   ? [`Senast ${relativeAgo(sum.last.finished_at)}`, mins ? `${mins} min` : null, pbs ? `${pbs} PB` : null]
-                  : [count ? `${count} övningar` : null, 'inte kört än']
+                  : [count ? nEx(count) : null, 'inte kört än']
                 return (
                   <button
                     key={s._id ?? s.id ?? i}
@@ -466,7 +467,7 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
                     onClick={dismissIntro}
                     type="button"
                   >
-                    Förstått – dölj introt
+                    Förstått, dölj introt
                   </button>
                   <p className={styles.introDismissHint}>
                     Du hittar det igen under Inställningar → Så funkar appen

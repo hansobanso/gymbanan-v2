@@ -387,3 +387,11 @@
 }
 
 .open .header { animation: riseIn 0.2s ease-out; }
+
+/* Menyn far aldrig ga utanfor skarmen pa sma telefoner: rulla i stallet */
+.dropdownFixed {
+  max-height: calc(100vh - 180px);
+  max-height: calc(100dvh - 180px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}

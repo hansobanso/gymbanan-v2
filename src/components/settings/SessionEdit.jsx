@@ -1,3 +1,4 @@
+import { nEx } from '../../lib/plural.js'
 import { useState, useRef } from 'react'
 import { Reorder, useDragControls } from 'framer-motion'
 import ExerciseDetailBottomSheet from './ExerciseDetailBottomSheet'
@@ -400,7 +401,7 @@ export default function SessionEdit({ session, allExercises, onSave, onDelete, o
           />
           {exercises.length > 0 && (
             <span className={styles.summary}>
-              {exercises.length} övningar · {totalSets} set · {formatSessionTime({ exercises })}
+              {nEx(exercises.length)} · {totalSets} set · {formatSessionTime({ exercises })}
             </span>
           )}
         </div>

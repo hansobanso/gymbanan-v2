@@ -1,3 +1,4 @@
+import { nEx } from '../../lib/plural.js'
 import { useState, useRef } from 'react'
 import { workoutMinutes, pbCount, fmtMinutes } from '../../lib/homeStats'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -60,7 +61,7 @@ export default function WorkoutCard({ workout, onDelete, equipmentMap = {} }) {
   const meta = [
     workout.adjusted ? 'Anpassat pass' : null,
     fmtMinutes(workoutMinutes(workout)),
-    `${exCount} övningar`,
+    nEx(exCount),
     `${sets} set`,
   ].filter(Boolean).join(' · ')
 

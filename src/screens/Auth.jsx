@@ -11,7 +11,7 @@ function getErrorMessage(error) {
   if (msg.includes('email not confirmed'))
     return 'E-postadressen är inte verifierad'
   if (msg.includes('too many requests'))
-    return 'För många försök – vänta en stund'
+    return 'För många försök. Vänta en stund'
   return 'Något gick fel, försök igen'
 }
 

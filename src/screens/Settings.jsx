@@ -1,3 +1,4 @@
+import { nEx, fmtRest } from '../lib/plural.js'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
@@ -8,12 +9,6 @@ import styles from './Settings.module.css'
 const REST_PRESETS = [30, 60, 90, 120, 180]
 const DEFAULT_REST_KEY = 'gymbanan_default_rest'
 
-function fmtRest(s) {
-  if (s < 60) return `${s} s`
-  const m = Math.floor(s / 60)
-  const rem = s % 60
-  return rem ? `${m} min ${rem} s` : `${m} min`
-}
 
 function Chevron({ rotated }) {
   return (
@@ -103,7 +98,7 @@ export default function Settings({ session }) {
             <button className={styles.row} onClick={() => navigate('/exercises')} type="button">
               <span className={styles.rowLabel}>Övningsbibliotek</span>
               <div className={styles.rowRight}>
-                {!loading && <span className={styles.rowValue}>{allExercises.length} övningar</span>}
+                {!loading && <span className={styles.rowValue}>{nEx(allExercises.length)}</span>}
                 <Chevron />
               </div>
             </button>

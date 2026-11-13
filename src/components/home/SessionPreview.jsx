@@ -1,3 +1,4 @@
+import { nEx } from '../../lib/plural.js'
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { getPreviousSetsForExercise } from '../../lib/db'
@@ -71,7 +72,7 @@ export default function SessionPreview({ open, session, userId, onStart, onClose
             <div className={styles.header}>
               <div className={styles.headText}>
                 <h2 className={styles.title}>{session.name}</h2>
-                <p className={styles.subtitle}>{exercises.length} övningar · {totalSets} set</p>
+                <p className={styles.subtitle}>{nEx(exercises.length)} · {totalSets} set</p>
               </div>
               <button className={styles.closeBtn} onClick={onClose} type="button" aria-label="Stäng">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>

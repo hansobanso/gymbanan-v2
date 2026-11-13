@@ -748,8 +748,8 @@ export default function Workout({ session }) {
               <h3 className={styles.confirmTitle}>Avsluta pass?</h3>
               {finishError && (
                 <p className={styles.confirmError} role="alert">
-                  Kunde inte spara passet. Kolla uppkopplingen och försök igen –
-                  passet ligger kvar på telefonen så inget går förlorat.
+                  Kunde inte spara passet. Kolla uppkopplingen och försök igen.
+                  Passet ligger kvar på telefonen så inget går förlorat.
                 </p>
               )}
               <button
@@ -762,14 +762,6 @@ export default function Workout({ session }) {
               </button>
               <button
                 className={styles.confirmSecondary}
-                onClick={() => { workout.discardWorkout(); setShowFinish(false); navigate('/', { replace: true }) }}
-                disabled={finishing}
-                type="button"
-              >
-                Avsluta utan att spara
-              </button>
-              <button
-                className={styles.confirmLink}
                 onClick={() => {
                   finishCooldownRef.current = true
                   setTimeout(() => { finishCooldownRef.current = false }, 1000)
@@ -779,6 +771,14 @@ export default function Workout({ session }) {
                 type="button"
               >
                 Fortsätt träna
+              </button>
+              <button
+                className={styles.confirmDanger}
+                onClick={() => { workout.discardWorkout(); setShowFinish(false); navigate('/', { replace: true }) }}
+                disabled={finishing}
+                type="button"
+              >
+                Avsluta utan att spara
               </button>
             </motion.div>
           </>
@@ -877,7 +877,7 @@ export default function Workout({ session }) {
                     }}
                   >
                     <span>{e.name}</span>
-                    {e.supersetId && <span className={styles.ssPickNote}>i superset – byts</span>}
+                    {e.supersetId && <span className={styles.ssPickNote}>i superset, byts</span>}
                   </button>
                 ))}
             </div>
@@ -924,27 +924,29 @@ export default function Workout({ session }) {
                 </button>
               ))}
             </div>
-            <button
-              className={styles.ssPickApply}
-              type="button"
-              disabled={!adjustChoice}
-              onClick={() => {
-                if (adjustChoice === 'none') {
-                  // Aterstall till progressionens vanliga forslag
-                  deloadAppliedRef.current = true
-                  workout.resetAdjustments()
-                  closeAdjust()
-                  return
-                }
-                const opt = ADJUST_OPTIONS.find(o => o.key === adjustChoice)
-                if (opt) applyManualAdjustment(opt.apply)
-              }}
-            >
-              Tillämpa
-            </button>
-            <button className={styles.ssPickCancel} onClick={() => closeAdjust()} type="button">
-              Avbryt
-            </button>
+            <div className={styles.ssPickActions}>
+              <button className={styles.ssPickCancel} onClick={() => closeAdjust()} type="button">
+                Avbryt
+              </button>
+              <button
+                className={styles.ssPickApply}
+                type="button"
+                disabled={!adjustChoice}
+                onClick={() => {
+                  if (adjustChoice === 'none') {
+                    // Aterstall till progressionens vanliga forslag
+                    deloadAppliedRef.current = true
+                    workout.resetAdjustments()
+                    closeAdjust()
+                    return
+                  }
+                  const opt = ADJUST_OPTIONS.find(o => o.key === adjustChoice)
+                  if (opt) applyManualAdjustment(opt.apply)
+                }}
+              >
+                Tillämpa
+              </button>
+            </div>
           </div>
         </>
       )}

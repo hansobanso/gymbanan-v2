@@ -46,7 +46,7 @@ export default function BodyWeight({ session }) {
   return (
     <div className={styles.screen}>
       <div className={styles.header}>
-        <button className={styles.backBtn} onClick={() => navigate(-1)} type="button">
+        <button className={styles.backBtn} onClick={() => navigate(-1)} type="button" aria-label="Tillbaka">
           <svg width="10" height="16" viewBox="0 0 10 16" fill="none" aria-hidden="true">
             <path d="M8.5 1.5L1.5 8L8.5 14.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
@@ -91,27 +91,30 @@ export default function BodyWeight({ session }) {
             >
               <div className={styles.handle} />
               <p className={styles.sheetTitle}>Logga kroppsvikt</p>
-              <button
-                className={styles.saveBtn}
-                onClick={handleSave}
-                disabled={!input || saving}
-                type="button"
-              >
-                {saving ? 'Sparar…' : 'Spara'}
-              </button>
-              <div className={styles.inputRow}>
-                <input
-                  className={styles.inputField}
-                  type="text"
-                  inputMode="decimal"
-                  placeholder="0.0"
-                  value={input}
-                  onChange={e => setInput(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleSave()}
-                  // eslint-disable-next-line jsx-a11y/no-autofocus
-                  autoFocus
-                />
-                <span className={styles.unit}>kg</span>
+              <div className={styles.logRow}>
+                <div className={styles.inputRow}>
+                  <input
+                    className={styles.inputField}
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="0,0"
+                    aria-label="Kroppsvikt i kg"
+                    value={input}
+                    onChange={e => setInput(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleSave()}
+                    // eslint-disable-next-line jsx-a11y/no-autofocus
+                    autoFocus
+                  />
+                  <span className={styles.unit}>kg</span>
+                </div>
+                <button
+                  className={styles.saveBtn}
+                  onClick={handleSave}
+                  disabled={!input || saving}
+                  type="button"
+                >
+                  {saving ? 'Sparar…' : 'Spara'}
+                </button>
               </div>
             </motion.div>
           </>

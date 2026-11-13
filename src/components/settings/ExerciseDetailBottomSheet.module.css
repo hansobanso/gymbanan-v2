@@ -262,4 +262,11 @@
 
 /* ═══ Knappsystem 2026-11: samma hojd, radie och vikt overallt ═══ */
 .closeBtn { width: 44px; height: 44px; margin: -7px -8px -7px 0; padding: 0; border: 0; border-radius: 22px; background: transparent; color: #C9C9C9; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.swapBtn { min-height: 54px; border: 1px solid var(--d-raised-border); border-radius: 16px; background: var(--d-raised); color: var(--text); font-size: 15px; font-weight: 700; }
+.swapBtn { min-height: var(--btn-h); border: 1px solid var(--d-raised-border); border-radius: 16px; background: var(--d-raised); color: var(--text); font-size: var(--btn-fs); font-weight: 700; }
+
+/* ═══ Knappgenomgang 2026-11b: matten kommer fran --btn-* i index.css ═══ */
+.swapBtn { min-height: var(--btn-h-sm); border-radius: var(--btn-r-sm); font-size: var(--btn-fs-sm); }
+.chips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.chip { min-height: var(--chip-h); padding: 0 14px; border: 1px solid var(--d-raised-border); border-radius: 18px; background: var(--d-raised); color: #C9C9C9; font-size: 13px; font-weight: 600; padding: 0 4px; }
+.chipActive { border-color: var(--accent); background: var(--accent); color: #141414; font-weight: 700; }
+.repsInput { width: 64px; height: 44px; padding: 0 4px; border: 1px solid var(--d-raised-border); border-radius: 12px; background: var(--d-raised); }

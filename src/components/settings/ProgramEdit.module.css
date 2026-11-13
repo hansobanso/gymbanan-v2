@@ -431,8 +431,25 @@
 .sessionItem { background: var(--d-card); border: 1px solid var(--d-card-border); border-radius: 16px; min-height: 60px; }
 .sessionName { font-size: 15px; font-weight: 700; }
 .sessionMeta { font-size: 12px; color: var(--d-muted); }
-.saveBtn { min-height: 54px; border-radius: 16px; color: #141414; font-size: 17px; font-weight: 800; }
+.saveBtn { min-height: var(--btn-h); border-radius: 16px; color: #141414; font-size: var(--btn-fs); font-weight: 800; }
 .setActiveBtn, .setActiveBtnActive, .copyBtn { min-height: 48px; border-radius: 16px; }
 
 /* ═══ Knappsystem 2026-11: samma hojd, radie och vikt overallt ═══ */
 .editBtn { min-height: 36px; padding: 0 12px; border: 1px solid var(--d-raised-border); border-radius: 12px; background: var(--d-raised); color: var(--text); font-size: 13px; font-weight: 700; }
+
+/* ═══ Knappgenomgang 2026-11b: matten kommer fran --btn-* i index.css ═══ */
+.footer { padding-top: 12px; padding-bottom: calc(var(--safe-bottom, 0px) + 12px); }
+.programActions { display: flex; flex-direction: column; gap: 10px; margin: 20px 0 24px; }
+.programActionsRow { display: flex; gap: 10px; }
+.programActionsRow > * { flex: 1; min-width: 0; }
+.setActiveBtn, .setActiveBtnActive, .copyBtn {
+  min-height: var(--btn-h-sm); padding: 0 12px; border: 1px solid var(--d-raised-border); border-radius: var(--btn-r-sm);
+  background: var(--d-raised); color: var(--text); font-size: var(--btn-fs-sm); font-weight: 700;
+}
+.setActiveBtnActive { background: transparent; border-color: var(--accent-border); color: var(--accent); opacity: 1; }
+.deleteBtn { min-height: 44px; font-size: 15px; font-weight: 600; }
+.addBtn { min-height: 44px; margin: -14px 0; padding: 0 0 0 16px; }
+.sessionDeleteBtn { width: 44px; height: 44px; margin: 0 -8px 0 -4px; padding: 0; border-radius: 22px; }
+.editBtn { min-height: 40px; }
+.deleteProgramConfirmYes, .deleteProgramConfirmNo { min-height: var(--btn-h-sm); border-radius: var(--btn-r-sm); font-size: var(--btn-fs-sm); font-weight: 700; }
+.nameInput { font-size: clamp(30px, 10vw, 40px) !important; }

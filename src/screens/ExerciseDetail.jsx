@@ -1,3 +1,5 @@
+import { colorForIntensityRed } from '../lib/muscleColor'
+import { fmtRest } from '../lib/plural.js'
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
@@ -11,11 +13,6 @@ const EQUIPMENT = ['Skivstång', 'Hantel', 'Maskin', 'Kabel', 'Kroppsvikt', 'Öv
 const MOVEMENT  = ['Press', 'Drag', 'Squat', 'Hinge', 'Carry', 'Övrigt']
 const REST_PRESETS = [30, 60, 90, 120, 180]
 
-function fmtRest(s) {
-  if (s < 60) return `${s}s`
-  const m = Math.floor(s / 60), rem = s % 60
-  return rem ? `${m}m${rem}s` : `${m}m`
-}
 
 // Sakerstaller att secondary_muscles (array) ar ifylld. Om den saknas/ar tom
 // men gamla singular-faltet finns, skapa array fran den (bakatkompatibelt).
@@ -118,6 +115,9 @@ export default function ExerciseDetail() {
   const [personalNote, setPersonalNote] = useState('')
   const [noteSaving, setNoteSaving] = useState(false)
   const [noteSaved, setNoteSaved] = useState(false)
+  // Spara-knapparna visas forst nar nagot faktiskt har andrats
+  const [noteDirty, setNoteDirty] = useState(false)
+  const [restDirty, setRestDirty] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -323,7 +323,7 @@ export default function ExerciseDetail() {
       <div className={styles.body}>
         {/* ── Muscle hero section ── */}
         <div className={styles.heroSection}>
-          <MuscleMap intensities={muscleIntensities} size={140} />
+          <MuscleMap intensities={muscleIntensities} colorFn={colorForIntensityRed} size={140} />
         </div>
 
         {/* ── Info card ── */}
@@ -494,7 +494,7 @@ export default function ExerciseDetail() {
                 onClick={() => set('is_cardio', !form.is_cardio)}
                 style={{ cursor: 'pointer', color: form.is_cardio ? 'var(--accent)' : 'var(--text-2)' }}
               >
-                {form.is_cardio ? 'Ja – loggas i km och minuter' : 'Nej – vanlig styrkeövning'}
+                {form.is_cardio ? 'Ja, loggas i km och minuter' : 'Nej, vanlig styrkeövning'}
               </button>
             ) : (
               <span className={styles.infoValue}>{form.is_cardio ? 'Ja' : 'Nej'}</span>
@@ -508,16 +508,16 @@ export default function ExerciseDetail() {
             <span className={styles.restLabel}>Standardvila</span>
             <RestDropdown
               value={form.default_rest}
-              onChange={val => set('default_rest', val)}
+              onChange={val => { set('default_rest', val); setRestDirty(true) }}
             />
-            {isGlobal && (
+            {isGlobal && (restDirty || saving) && (
               <button
                 className={styles.saveRestBtn}
-                onClick={handleSave}
+                onClick={async () => { await handleSave(); setRestDirty(false) }}
                 disabled={saving}
                 type="button"
               >
-                {saving ? '…' : saved ? '✓' : 'Spara'}
+                {saving ? '…' : 'Spara'}
               </button>
             )}
           </div>
@@ -567,13 +567,13 @@ export default function ExerciseDetail() {
             <textarea
               className={styles.textarea}
               value={personalNote}
-              onChange={e => { setPersonalNote(e.target.value); setNoteSaved(false) }}
+              onChange={e => { setPersonalNote(e.target.value); setNoteSaved(false); setNoteDirty(true) }}
               placeholder="Personliga noteringar om övningen…"
               rows={3}
             />
           </div>
         )}
-        {userId && (
+        {userId && (noteDirty || noteSaving || noteSaved) && (
           <button
             className={styles.saveNoteBtn}
             onClick={async () => {
@@ -582,10 +582,11 @@ export default function ExerciseDetail() {
               try {
                 await upsertUserExerciseNote(userId, form.name, personalNote)
                 setNoteSaved(true)
+                setNoteDirty(false)
               } catch { /* ignore */ }
               setNoteSaving(false)
             }}
-            disabled={noteSaving}
+            disabled={noteSaving || noteSaved}
             type="button"
           >
             {noteSaving ? 'Sparar…' : noteSaved ? 'Sparat ✓' : 'Spara anteckning'}

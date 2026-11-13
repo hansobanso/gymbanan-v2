@@ -119,7 +119,7 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
       onSelect(ex)
       onClose()
     } catch (err) {
-      setCreateError(err?.message || 'Något gick fel – övningen sparades inte. Försök igen.')
+      setCreateError(err?.message || 'Något gick fel. Övningen sparades inte. Försök igen.')
     }
     setSaving(false)
   }

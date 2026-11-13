@@ -64,28 +64,28 @@ export default function TimerExpanded({ open, timer, onClose }) {
                   onClick={() => addSeconds(-30)}
                   type="button"
                 >
-                  −30s
+                  −30 s
                 </button>
                 <button
                   className={styles.ctrlBtn}
                   onClick={() => addSeconds(-15)}
                   type="button"
                 >
-                  −15s
+                  −15 s
                 </button>
                 <button
                   className={styles.ctrlBtn}
                   onClick={() => addSeconds(15)}
                   type="button"
                 >
-                  +15s
+                  +15 s
                 </button>
                 <button
                   className={styles.ctrlBtn}
                   onClick={() => addSeconds(30)}
                   type="button"
                 >
-                  +30s
+                  +30 s
                 </button>
                 <button
                   className={styles.ctrlBtn}

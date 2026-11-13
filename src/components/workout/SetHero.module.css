@@ -124,7 +124,7 @@
 
 .rir {
   width: 76px;
-  height: 54px;
+  height: var(--btn-h);
   flex-shrink: 0;
   border-radius: 16px;
   border: 1px solid var(--d-raised-border);
@@ -162,12 +162,12 @@
 
 .doneBtn {
   flex: 1;
-  height: 54px;
+  height: var(--btn-h);
   border-radius: 16px;
   border: 0;
   background: var(--accent);
   color: #141414;
-  font-size: 17px;
+  font-size: var(--btn-fs);
   font-weight: 800;
   display: flex;
   align-items: center;

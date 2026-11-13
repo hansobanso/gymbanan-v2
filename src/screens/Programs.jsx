@@ -1,3 +1,4 @@
+import { nEx } from '../lib/plural.js'
 import { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { saveProgram, updateProgram, deleteProgram, getExercises } from '../lib/db'
@@ -317,7 +318,7 @@ export default function Programs({ session, programs, setPrograms, activeProgram
               <h3 className={styles.previewTitle}>{previewGlobal.name}</h3>
               <p className={styles.previewSub}>
                 {(previewGlobal.sessions ?? []).length} pass ·{' '}
-                {(previewGlobal.sessions ?? []).reduce((n, s) => n + (s.exercises ?? []).length, 0)} övningar
+                {nEx((previewGlobal.sessions ?? []).reduce((n, s) => n + (s.exercises ?? []).length, 0))}
               </p>
               <div className={styles.previewSessions}>
                 {(previewGlobal.sessions ?? []).map((s, i) => {
@@ -331,7 +332,7 @@ export default function Programs({ session, programs, setPrograms, activeProgram
                       <div className={styles.previewSessionHeader}>
                         <span className={styles.previewSessionName}>{s.name}</span>
                         <span className={styles.previewSessionMeta}>
-                          {exercises.length} övningar · {totalWorkSets} set
+                          {nEx(exercises.length)} · {totalWorkSets} set
                         </span>
                       </div>
                       {exercises.length > 0 && (

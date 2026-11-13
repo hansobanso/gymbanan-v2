@@ -121,6 +121,9 @@
 .bigTime { font-family: var(--font-num); font-weight: 700; font-size: 96px; line-height: 1; font-variant-numeric: tabular-nums; }
 .exName { font-size: 13px; color: var(--d-muted); }
 .ctrlBtn { min-height: 44px; border-radius: 12px; background: var(--d-raised); border: 1px solid var(--d-raised-border); font-weight: 700; }
-.stopBtn { min-height: 54px; border-radius: 16px; background: var(--d-raised); border: 1px solid var(--d-raised-border); }
+.stopBtn { min-height: var(--btn-h); border-radius: 16px; background: var(--d-raised); border: 1px solid var(--d-raised-border); }
 .closeBtn { min-height: 44px; }
 .stopBtn { color: var(--text); }
+
+/* ═══ Knappgenomgang 2026-11b: matten kommer fran --btn-* i index.css ═══ */
+.closeBtn { font-size: 15px; font-weight: 600; color: var(--d-muted); }

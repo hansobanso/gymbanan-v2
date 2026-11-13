@@ -36,6 +36,18 @@
   --d-ok-dim: #153A1B;
   --font-num: 'Barlow Condensed', var(--font); /* stora siffror */
 
+  /* Knappar och falt: en uppsattning matt for hela appen.
+     Stor = huvudknapp/arkknapp, liten = sidoval och knappar i par. */
+  --btn-h: 52px;
+  --btn-h-sm: 44px;
+  --btn-r: 16px;
+  --btn-r-sm: 14px;
+  --btn-fs: 16px;
+  --btn-fs-sm: 15px;
+  --field-h: 46px;
+  --field-r: 14px;
+  --chip-h: 36px;
+
   /* ── Semantiska färger ── */
   --danger: #FF3B30;
   --danger-dim: rgba(255, 59, 48, 0.15);
@@ -455,13 +467,13 @@ input, textarea, select {
 }
 
 .ask-primary {
-  min-height: 54px;
+  min-height: var(--btn-h);
   border: 0;
   border-radius: 16px;
   background: var(--accent);
   color: #141414;
   font-family: var(--font);
-  font-size: 17px;
+  font-size: var(--btn-fs);
   font-weight: 800;
 }
 
@@ -471,7 +483,8 @@ input, textarea, select {
   background: transparent;
   color: var(--d-muted);
   font-family: var(--font);
-  font-size: 14px;
+  font-size: 15px;
+  font-weight: 600;
 }
 
 /* ═══ Rorelse: korta, likadana overallt ═══ */
