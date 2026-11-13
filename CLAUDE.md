@@ -144,6 +144,10 @@ efter passet är borttagna med flit. Kostnaden är några dollar per år.
   tre per övning, aldrig dubblett av primär/sekundär). Redigeras på
   övningens sida i biblioteket. I muskelgubben ger de 0,2 poäng per set
   (primär 1, sekundär 0,5). Muskelläget på startsidan räknar bara primär.
+- 2026-11-13 flyttades småmuskler (underarmar, rotatorkuff, vader m.fl.)
+  från `secondary_muscles` till `tertiary_muscles` på 90 övningar. Läget
+  före finns i tabellen `exercises_muscle_backup_20261113` (RLS på, inga
+  policys). Ta bort den när Hannes är nöjd.
 - Supabase gratisnivå pausar efter 7 dagars inaktivitet → svart app.
   Bara Hannes kan väcka den i Supabase-panelen.
 
