@@ -522,3 +522,39 @@ input, textarea, select {
   height: auto;
   transform: rotate(-8deg);
 }
+
+/* ── Panelen som foljer fingret nar man sveper tillbaka till passet ── */
+.resume-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  transform: translateX(100%);
+  background: #000;
+  box-shadow: -1px 0 0 var(--d-card-border), -24px 0 48px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  pointer-events: none;
+}
+.resume-panel-eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+}
+.resume-panel-title {
+  font-family: var(--font-num);
+  font-size: 56px;
+  line-height: 0.95;
+  font-weight: 700;
+  color: #fff;
+  padding: 0 24px;
+  text-align: center;
+}
+.resume-panel-sub {
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--d-muted);
+}

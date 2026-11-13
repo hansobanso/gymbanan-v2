@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, Suspense } from 'react'
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { lazyWithRetry } from './lib/lazyWithRetry'
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from './lib/supabase'
@@ -196,8 +196,61 @@ function AppRoutes({ session }) {
   const startConflict = !!minimized && p === '/workout' && !location.state?.resumed
   const askWorkout = resumedWorkout ?? (startConflict ? minimized : null)
 
+  // ── Svep mellan pass och startsida ──
+  // Passvyn sager till nar man borjar dra den at sidan, sa startsidan kan
+  // visas UNDER den medan man drar (annars blinkar det svart).
+  const [peekWorkout, setPeekWorkout] = useState(null)
+  useEffect(() => {
+    function onPeek(e) {
+      if (!e.detail) { setPeekWorkout(null); return }
+      try { setPeekWorkout(JSON.parse(localStorage.getItem(ACTIVE_WORKOUT_KEY)) ?? {}) } catch { setPeekWorkout({}) }
+    }
+    window.addEventListener('gymbanan:peek-home', onPeek)
+    return () => window.removeEventListener('gymbanan:peek-home', onPeek)
+  }, [])
+  useEffect(() => { if (isTab) setPeekWorkout(null) }, [isTab])
+  const peeking = !!peekWorkout && p === '/workout'
+  const shownActive = minimized ?? (peeking ? peekWorkout : null)
+
+  // Andra hallet: dra fran hogerkanten pa en flik for att ga tillbaka till
+  // det minimerade passet. En panel med passets namn foljer fingret.
+  const resumePanelRef = useRef(null)
+  const backSwipeRef = useRef(null)
+  const canSwipeBack = isTab && !!minimized && !askWorkout
+  function onAppTouchStart(e) {
+    if (!canSwipeBack) { backSwipeRef.current = null; return }
+    const t = e.touches[0]
+    backSwipeRef.current = t.clientX >= window.innerWidth - 32 ? { x: t.clientX, y: t.clientY, dx: 0, active: false } : null
+  }
+  function onAppTouchMove(e) {
+    const g = backSwipeRef.current
+    if (!g) return
+    const t = e.touches[0]
+    const dx = t.clientX - g.x, dy = t.clientY - g.y
+    if (!g.active) {
+      if (Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx)) { backSwipeRef.current = null; return }
+      if (dx < -10) g.active = true
+    }
+    const el = resumePanelRef.current
+    if (g.active && el) {
+      g.dx = Math.min(0, dx)
+      el.style.transition = 'none'
+      el.style.transform = `translateX(calc(100% + ${g.dx}px))`
+    }
+  }
+  function onAppTouchEnd() {
+    const g = backSwipeRef.current
+    backSwipeRef.current = null
+    const el = resumePanelRef.current
+    if (!g?.active || !el) return
+    const go = -g.dx > Math.min(140, window.innerWidth / 3)
+    el.style.transition = 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)'
+    el.style.transform = go ? 'translateX(0)' : 'translateX(100%)'
+    if (go && minimized) setTimeout(() => resumeWorkout(minimized), 170)
+  }
+
   const tabStyle = (path) => ({
-    display: p === path ? 'flex' : 'none',
+    display: (p === path || (peeking && path === '/')) ? 'flex' : 'none',
     flexDirection: 'column',
     flex: '1',
     overflow: 'hidden',
@@ -205,7 +258,7 @@ function AppRoutes({ session }) {
   })
 
   return (
-    <div className="app">
+    <div className="app" onTouchStart={onAppTouchStart} onTouchMove={onAppTouchMove} onTouchEnd={onAppTouchEnd} onTouchCancel={onAppTouchEnd}>
       {/* Splash ligger som overlay tills hemskarmen har laddat all sin data,
           sa anvandaren ser en clean loader istallet for skelett som blinkar.
           sa anvandaren ser en clean loader istallet for skelett som blinkar. */}
@@ -242,7 +295,7 @@ function AppRoutes({ session }) {
 
       {/* Always-mounted tab screens — shown/hidden via CSS */}
       <Suspense fallback={<div style={{display:'flex',alignItems:'center',justifyContent:'center',flex:1}}><div className="spinner"/></div>}>
-        <div className="tab-screen" style={tabStyle('/')}><Home session={session} programs={programs} programsLoaded={programsLoaded} programsError={programsError} onRetryPrograms={loadPrograms} activeProgramId={activeProgramId} onSetActive={id => { setActiveProgramId(id); setActiveProgram(session.user.id, id).catch(() => {}) }} onReady={() => setHomeReady(true)} activeWorkout={minimized} onResumeWorkout={() => minimized && resumeWorkout(minimized)} /></div>
+        <div className="tab-screen" style={tabStyle('/')}><Home session={session} programs={programs} programsLoaded={programsLoaded} programsError={programsError} onRetryPrograms={loadPrograms} activeProgramId={activeProgramId} onSetActive={id => { setActiveProgramId(id); setActiveProgram(session.user.id, id).catch(() => {}) }} onReady={() => setHomeReady(true)} activeWorkout={shownActive} onResumeWorkout={() => minimized && resumeWorkout(minimized)} /></div>
         <div className="tab-screen" style={tabStyle('/programs')}><Programs session={session} programs={programs} setPrograms={setPrograms} activeProgramId={activeProgramId} onSetActive={id => { setActiveProgramId(id); setActiveProgram(session.user.id, id).catch(() => {}) }} /></div>
         <div className="tab-screen" style={tabStyle('/history')}><History session={session} /></div>
         <div className="tab-screen" style={tabStyle('/settings')}><Settings session={session} /></div>
@@ -266,17 +319,26 @@ function AppRoutes({ session }) {
       </Suspense>
 
       {/* Minimerat pass: en rad ovanfor menyn som tar en tillbaka */}
-      {isTab && minimized && !askWorkout && (
-        <button className="active-workout-bar" onClick={() => resumeWorkout(minimized)} type="button">
+      {(isTab || peeking) && shownActive && !askWorkout && (
+        <button className="active-workout-bar" onClick={() => minimized && resumeWorkout(minimized)} type="button">
           <span className="active-workout-dot" aria-hidden="true" />
           <span className="active-workout-text">
-            <span className="active-workout-title">Pågående pass · {minimized.sessionName ?? 'Pass'}</span>
-            <span className="active-workout-sub">Startade {fmtElapsedSince(minimized.startedAt)}</span>
+            <span className="active-workout-title">Pågående pass · {shownActive.sessionName ?? 'Pass'}</span>
+            <span className="active-workout-sub">Startade {fmtElapsedSince(shownActive.startedAt)}</span>
           </span>
           <span className="active-workout-cta">Fortsätt</span>
         </button>
       )}
-      {isTab && <BottomNav />}
+      {(isTab || peeking) && <BottomNav />}
+
+      {/* Panelen som dras in fran hoger nar man sveper tillbaka till passet */}
+      {canSwipeBack && (
+        <div className="resume-panel" ref={resumePanelRef} aria-hidden="true">
+          <span className="resume-panel-eyebrow">PÅGÅENDE PASS</span>
+          <span className="resume-panel-title">{minimized.sessionName ?? 'Pass'}</span>
+          <span className="resume-panel-sub">Släpp för att fortsätta</span>
+        </div>
+      )}
       <WhatsNew
         open={showWhatsNew}
         onClose={() => {

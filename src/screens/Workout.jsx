@@ -385,12 +385,17 @@ export default function Workout({ session }) {
     const dx = t.clientX - g.x, dy = t.clientY - g.y
     if (!g.active) {
       if (Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx)) { edgeRef.current = null; return }
-      if (dx > 10) g.active = true
+      if (dx > 10) {
+        g.active = true
+        // Visa startsidan under passvyn medan man drar
+        window.dispatchEvent(new CustomEvent('gymbanan:peek-home', { detail: true }))
+      }
     }
     if (g.active && screenRef.current) {
       g.dx = Math.max(0, dx)
       screenRef.current.style.transition = 'none'
       screenRef.current.style.transform = `translateX(${g.dx}px)`
+      screenRef.current.style.boxShadow = '-24px 0 48px rgba(0, 0, 0, 0.6)'
     }
   }
   function onEdgeTouchEnd() {
@@ -402,6 +407,7 @@ export default function Workout({ session }) {
     el.style.transition = 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)'
     el.style.transform = goHome ? 'translateX(100%)' : ''
     if (goHome) setTimeout(() => navigate('/'), 160)
+    else setTimeout(() => window.dispatchEvent(new CustomEvent('gymbanan:peek-home', { detail: false })), 220)
   }
 
   // ── Render ──────────────────────────────────────────────────
