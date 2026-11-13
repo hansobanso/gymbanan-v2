@@ -47,7 +47,7 @@ function getNextSession(program, recentWorkouts) {
   return sessions[0]
 }
 
-export default function HomeScreen({ session, programs = [], programsLoaded = false, programsError = false, onRetryPrograms, activeProgramId = null, onSetActive, onReady }) {
+export default function HomeScreen({ session, programs = [], programsLoaded = false, programsError = false, onRetryPrograms, activeProgramId = null, onSetActive, onReady, activeWorkout = null, onResumeWorkout }) {
   const [recentWorkouts, setRecentWorkouts] = useState([])
   const [workoutsLoaded, setWorkoutsLoaded] = useState(false)
   const [previewSession, setPreviewSession] = useState(null) // { session, program }
@@ -221,9 +221,12 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
   }
 
   const dayName = today ? today.name.charAt(0).toUpperCase() + today.name.slice(1) : ''
-  const headline = trainedToday ? 'Bra jobbat idag'
+  // Ett pagaende (minimerat) pass tar over kortet "Nasta pass".
+  const ongoing = activeWorkout && nextSession && activeWorkout.sessionName === nextSession.name
+  const headline = activeWorkout ? `${activeWorkout.sessionName ?? 'Passet'} pågår`
+    : trainedToday ? 'Bra jobbat idag'
     : nextSession ? `${dayName}, dags för ${nextSession.name}`
-    : 'Gymbanan'
+    : 'Kom igång'
 
   return (
     <div className={styles.screen}>
@@ -351,7 +354,7 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
           <section className={h.hero}>
             <div className={h.heroTop}>
               <div className={h.heroTitleCol}>
-                <span className={h.eyebrow}>NÄSTA PASS</span>
+                <span className={h.eyebrow}>{ongoing ? 'PÅGÅENDE PASS' : 'NÄSTA PASS'}</span>
                 <span className={h.heroName}>{nextSession.name}</span>
                 {next.muscles.length > 0 && (
                   <span className={h.sub}>{next.muscles.slice(0, 3).join(' · ')}</span>
@@ -399,11 +402,11 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
 
             <button
               className={h.startBtn}
-              onClick={() => handleStartSession(nextSession, activeProgram)}
+              onClick={() => ongoing ? onResumeWorkout?.() : handleStartSession(nextSession, activeProgram)}
               type="button"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5Z"/></svg>
-              Starta {nextSession.name}
+              {ongoing ? 'Fortsätt' : 'Starta'} {nextSession.name}
             </button>
           </section>
         )}

@@ -207,33 +207,24 @@ function AppRoutes({ session }) {
       )}
       {/* Resume active workout modal */}
       {askWorkout && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-          <div style={{ background: '#1a1a1a', borderRadius: 16, padding: 24, maxWidth: 320, width: '100%', display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="ask-backdrop">
+          <div className="ask-card" role="dialog" aria-label="Pågående pass">
             <div>
-              <p style={{ color: '#f0f0f0', fontSize: 17, fontWeight: 700, margin: '0 0 6px' }}>Pågående pass</p>
-              <p style={{ color: '#888', fontSize: 14, margin: 0 }}>
-                Du har ett pågående pass ({askWorkout.sessionName ?? 'Pass'}) från {fmtElapsedSince(askWorkout.startedAt)}. Vill du fortsätta?
-              </p>
+              <p className="ask-eyebrow">PÅGÅENDE PASS</p>
+              <p className="ask-title">{askWorkout.sessionName ?? 'Pass'}</p>
+              <p className="ask-text">Startade {fmtElapsedSince(askWorkout.startedAt)}. Vill du fortsätta där du var?</p>
             </div>
-            <button
-              style={{ background: '#F5D020', border: 'none', borderRadius: 12, color: '#000', fontSize: 15, fontWeight: 700, padding: '14px', cursor: 'pointer', fontFamily: 'inherit' }}
-              onClick={() => resumeWorkout(askWorkout)}
-              type="button"
-            >
+            <button className="ask-primary" onClick={() => resumeWorkout(askWorkout)} type="button">
               Fortsätt passet
             </button>
-            <button
-              style={{ background: 'none', border: 'none', color: '#888', fontSize: 14, padding: '8px', cursor: 'pointer', fontFamily: 'inherit' }}
-              onClick={() => {
+            <button className="ask-secondary" onClick={() => {
                 localStorage.removeItem(ACTIVE_WORKOUT_KEY)
                 // Stada bort den tomma pass-raden i databasen ocksa
                 if (askWorkout.workoutId) deleteUnfinishedWorkout(askWorkout.workoutId).catch(() => {})
                 setResumedWorkout(null)
                 setMinimized(null)
                 if (p === '/workout') navigate('/', { replace: true })
-              }}
-              type="button"
-            >
+              }} type="button">
               Avsluta utan att spara
             </button>
           </div>
@@ -242,7 +233,7 @@ function AppRoutes({ session }) {
 
       {/* Always-mounted tab screens — shown/hidden via CSS */}
       <Suspense fallback={<div style={{display:'flex',alignItems:'center',justifyContent:'center',flex:1}}><div className="spinner"/></div>}>
-        <div style={tabStyle('/')}><Home session={session} programs={programs} programsLoaded={programsLoaded} programsError={programsError} onRetryPrograms={loadPrograms} activeProgramId={activeProgramId} onSetActive={id => { setActiveProgramId(id); setActiveProgram(session.user.id, id).catch(() => {}) }} onReady={() => setHomeReady(true)} /></div>
+        <div style={tabStyle('/')}><Home session={session} programs={programs} programsLoaded={programsLoaded} programsError={programsError} onRetryPrograms={loadPrograms} activeProgramId={activeProgramId} onSetActive={id => { setActiveProgramId(id); setActiveProgram(session.user.id, id).catch(() => {}) }} onReady={() => setHomeReady(true)} activeWorkout={minimized} onResumeWorkout={() => minimized && resumeWorkout(minimized)} /></div>
         <div style={tabStyle('/programs')}><Programs session={session} programs={programs} setPrograms={setPrograms} activeProgramId={activeProgramId} onSetActive={id => { setActiveProgramId(id); setActiveProgram(session.user.id, id).catch(() => {}) }} /></div>
         <div style={tabStyle('/history')}><History session={session} /></div>
         <div style={tabStyle('/settings')}><Settings session={session} /></div>

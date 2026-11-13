@@ -390,3 +390,72 @@ input, textarea, select {
   display: flex;
   align-items: center;
 }
+
+/* ── Fragan "Pagaende pass" ── */
+.ask-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.ask-card {
+  width: 100%;
+  max-width: 340px;
+  background: var(--d-card);
+  border: 1px solid var(--d-card-border);
+  border-radius: 22px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ask-eyebrow {
+  margin: 0 0 4px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+}
+
+.ask-title {
+  margin: 0 0 6px;
+  font-family: var(--font-num);
+  font-size: 40px;
+  line-height: 0.95;
+  font-weight: 700;
+  color: #fff;
+  overflow-wrap: anywhere;
+}
+
+.ask-text {
+  margin: 0 0 4px;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--d-muted);
+}
+
+.ask-primary {
+  min-height: 54px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--accent);
+  color: #141414;
+  font-family: var(--font);
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.ask-secondary {
+  min-height: 44px;
+  border: 0;
+  background: transparent;
+  color: var(--d-muted);
+  font-family: var(--font);
+  font-size: 14px;
+}
