@@ -226,6 +226,8 @@ export default function ExerciseBlock({
     return isTimeBased ? `${reps} s` : `${reps} reps`
   }
 
+  const hasValues = s => (parseInt(s.reps) || 0) > 0 || (parseFloat(s.weight) || 0) > 0
+
   // Forra passets motsvarande set (samma sort, samma ordningsnummer).
   function prevFor(set) {
     if (!prevSets) return null
@@ -259,6 +261,13 @@ export default function ExerciseBlock({
   const targetStr = hasTarget
     ? `${exercise.defaultRepsMin ?? ''}–${exercise.defaultRepsMax ?? ''} ${isTimeBased ? 'sek' : 'reps'}`
     : null
+
+  // PT-raden visas bara nar nagot avviker fran "samma vikt, fyll pa reps"
+  // (hojd vikt, uppehall, deload, for tungt ...). Vanliga dagar star malet
+  // redan ifyllt i seten.
+  const showHint = !!exercise.progressionHint && !(
+    exercise.progressionAction === 'keep_weight_add_reps' && /^(Behåll|Kör på)/.test(exercise.progressionHint)
+  )
 
   const mode = allWorkDone && !reopened ? 'done' : (isActive || reopened) ? 'open' : 'upcoming'
 
@@ -360,9 +369,7 @@ export default function ExerciseBlock({
             {exercise.name}
           </button>
           <div className={styles.titleActions}>
-            <span className={`${styles.leftChip} ${allWorkDone ? styles.leftChipDone : ''}`}>
-              {allWorkDone ? 'Klar' : `${setsLeft} set kvar`}
-            </span>
+            {allWorkDone && <span className={`${styles.leftChip} ${styles.leftChipDone}`}>Klar</span>}
             <button
               ref={menuBtnRef}
               className={`${styles.iconBtn} ${menuOpen ? styles.iconBtnActive : ''}`}
@@ -383,7 +390,11 @@ export default function ExerciseBlock({
           </div>
         </div>
 
-        <div className={styles.metaRow} onPointerDown={e => e.stopPropagation()}>
+        {/* Raden under namnet visas bara nar den tillfor nagot: en egen
+            notering, superset, eller nar rep-malet saknas/redigeras.
+            (Malet andras annars via menyn.) */}
+        {(editingReps || !hasTarget || exercise.exNotes || supersetPartner) && (
+          <div className={styles.metaRow} onPointerDown={e => e.stopPropagation()}>
           {editingReps ? (
             <span className={styles.repsRangeEdit}>
               <input
@@ -412,9 +423,9 @@ export default function ExerciseBlock({
               />
             </span>
           ) : (
-            <button className={styles.metaBtn} onClick={startRepsEdit} type="button">
-              {hasTarget ? `mål ${targetStr}` : '+ Sätt mål'}
-            </button>
+            !hasTarget && (
+              <button className={styles.metaBtn} onClick={startRepsEdit} type="button">+ Sätt mål</button>
+            )
           )}
           {exercise.exNotes && (
             <button className={styles.metaBtn} onClick={() => onShowDetail?.(detailId)} type="button">
@@ -423,8 +434,9 @@ export default function ExerciseBlock({
           )}
           {supersetPartner && <SupersetChip />}
         </div>
+        )}
 
-        {exercise.progressionHint && (
+        {showHint && (
           <div className={`${styles.progressionHint} ${
             exercise.progressionAction === 'too_heavy_flag' ? styles.progressionWarn : ''
           }`}>{exercise.progressionHint}</div>
@@ -470,6 +482,9 @@ export default function ExerciseBlock({
               </>
             )}
             <div className={styles.menuDivider} />
+            <button className={styles.menuItem} onClick={e => { setMenuOpen(false); startRepsEdit(e) }}>
+              {hasTarget ? `Ändra rep-mål (${targetStr})` : 'Sätt rep-mål'}
+            </button>
             <button className={styles.menuItem} onClick={() => { onReplaceExercise?.(exercise); setMenuOpen(false) }}>
               Byt övning
             </button>
@@ -502,9 +517,6 @@ export default function ExerciseBlock({
 
       {/* ── Settabell: Set / Förra / Idag ── */}
       <div className={styles.table}>
-        <div className={`${styles.tr} ${styles.th}`}>
-          <span>Set</span><span>Förra</span><span>Idag</span><span />
-        </div>
         {exercise.sets.map(set => {
           const prev = prevFor(set)
           if (set.id === openSetId) {
@@ -530,9 +542,9 @@ export default function ExerciseBlock({
             return (
               <div key={set.id} className={`${styles.tr} ${styles.trDone}`} data-set-id={set.id}>
                 <span className={styles.tdLabel}>{label}</span>
-                <span>{prev ? fmtSet(prev) : '–'}</span>
+                <span>{prev ? fmtSet(prev) : ''}</span>
                 <span>
-                  {fmtSet(set)}
+                  {hasValues(set) ? fmtSet(set) : (set.type === 'warmup' ? 'Uppvärmning' : 'Klar')}
                   {set.rir != null && set.rir !== '' && <span className={styles.rirNote}> · RIR {set.rir}</span>}
                 </span>
                 <button
@@ -556,17 +568,16 @@ export default function ExerciseBlock({
               aria-label={`Öppna set ${label}`}
             >
               <span className={styles.tdLabel}>{label}</span>
-              <span className={styles.tdPrev}>{prev ? fmtSet(prev) : '–'}</span>
-              <span className={styles.tdToday}>{fmtSet(set)}</span>
+              <span className={styles.tdPrev}>{prev ? fmtSet(prev) : ''}</span>
+              <span className={styles.tdToday}>
+                {hasValues(set) ? fmtSet(set) : <span className={styles.tdEmpty}>{set.type === 'warmup' ? 'Uppvärmning' : 'Fyll i'}</span>}
+              </span>
               <span className={styles.statusTodo} />
             </button>
           )
         })}
       </div>
 
-      {!prevSets?.length && exercise.dataLoaded && (
-        <div className={styles.firstTime}>Första gången du kör övningen, så det finns inget att jämföra med.</div>
-      )}
     </div>
   )
 }

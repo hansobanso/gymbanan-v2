@@ -155,7 +155,7 @@ export function computeProgression({
       nextWeight: 0,
       nextTargetTotalReps: repsMin != null ? repsMin * numWorkSets : 0,
       nextTargetRepsPerSet: Array(numWorkSets).fill(repsMin ?? 0),
-      messageToUser: 'Första gången — välj en vikt du kan köra kontrollerat.',
+      messageToUser: 'Första gången: välj en vikt du kan köra kontrollerat.',
       reason: 'no_previous_data',
     }
   }
@@ -171,7 +171,7 @@ export function computeProgression({
       nextWeight: 0,
       nextTargetTotalReps: repsMin != null ? repsMin * numWorkSets : 0,
       nextTargetRepsPerSet: Array(numWorkSets).fill(repsMin ?? 0),
-      messageToUser: 'Inga genomförda set hittades — välj en startvikt.',
+      messageToUser: 'Inga genomförda set hittades: välj en startvikt.',
       reason: 'no_completed_work_sets',
     }
   }
@@ -213,8 +213,8 @@ export function computeProgression({
         nextTargetTotalReps: repsMin * numWorkSets,
         nextTargetRepsPerSet: Array(numWorkSets).fill(repsMin),
         messageToUser: isBodyweight
-          ? `Du har hamnat under ${repsMin} reps i två pass i rad — sikta på ${repsMin} per set, eller sänk rep-målet.`
-          : `Du har hamnat under ${repsMin} reps i två pass i rad. Vikten kan vara för tung — prova att sänka till ${Math.max(0, lowerWeight)} kg.`,
+          ? `Du har hamnat under ${repsMin} reps i två pass i rad: sikta på ${repsMin} per set, eller sänk rep-målet.`
+          : `Du har hamnat under ${repsMin} reps i två pass i rad. Vikten kan vara för tung: prova att sänka till ${Math.max(0, lowerWeight)} kg.`,
         reason: 'under_rep_min_two_sessions',
       }
     }
@@ -242,7 +242,7 @@ export function computeProgression({
         nextWeight: currentWeight,
         nextTargetTotalReps: repsMax * numWorkSets,
         nextTargetRepsPerSet: Array(numWorkSets).fill(repsMax),
-        messageToUser: `Alla set på ${repsMax} reps men 0 RIR — upprepa ${isBodyweight ? 'samma' : atStr}. Klarar du samma igen höjer vi nästa gång.`,
+        messageToUser: `Alla set på ${repsMax} reps men 0 RIR: upprepa ${isBodyweight ? 'samma' : atStr}. Klarar du samma igen höjer vi nästa gång.`,
         reason: 'zero_rir_caution',
       }
     }
@@ -258,7 +258,7 @@ export function computeProgression({
             nextWeight: currentWeight,
             nextTargetTotalReps: bufferedTarget,
             nextTargetRepsPerSet: distributeReps(bufferedTarget, numWorkSets, repsMin, repsMax + 1),
-            messageToUser: `Tung basövning utan RIR-data — tryck lite extra reps innan viktökning.`,
+            messageToUser: `Tung basövning utan RIR-data: tryck lite extra reps innan viktökning.`,
             reason: 'heavy_compound_no_rir_buffer',
           }
         }
@@ -271,10 +271,10 @@ export function computeProgression({
     let jumpReason = ''
     if (jumpPct > 20) {
       extraReps = 4
-      jumpReason = `Viktsteget (${jumpPct.toFixed(0)}%) är stort — vi kräver +${extraReps} extra totalreps.`
+      jumpReason = `Viktsteget (${jumpPct.toFixed(0)}%) är stort: vi kräver +${extraReps} extra totalreps.`
     } else if (jumpPct > 10) {
       extraReps = 2
-      jumpReason = `Viktsteget (${jumpPct.toFixed(0)}%) är medel — vi kräver +${extraReps} extra totalreps.`
+      jumpReason = `Viktsteget (${jumpPct.toFixed(0)}%) är medel: vi kräver +${extraReps} extra totalreps.`
     }
 
     if (extraReps > 0) {
@@ -285,7 +285,7 @@ export function computeProgression({
           nextWeight: currentWeight,
           nextTargetTotalReps: requiredTotal,
           nextTargetRepsPerSet: distributeReps(requiredTotal, numWorkSets, repsMin, repsMax + Math.ceil(extraReps / numWorkSets)),
-          messageToUser: `Stort viktsteg till ${nextWeight} kg — tryck lite fler reps på ${atStr} först.`,
+          messageToUser: `Stort viktsteg till ${nextWeight} kg: tryck lite fler reps på ${atStr} först.`,
           reason: 'large_weight_jump_extra_reps',
         }
       }
@@ -317,10 +317,10 @@ export function computeProgression({
   const nextTargetTotal = perSetTarget.reduce((a, b) => a + b, 0)
   const perSetStr = perSetTarget.join(' + ')
   const msg = repStep === 0
-    ? `Du körde till failure — ${isBodyweight ? 'kör' : `behåll ${currentWeight} kg och`} samma mål (${perSetStr}) en gång till.`
+    ? `Du körde till failure: ${isBodyweight ? 'kör' : `behåll ${currentWeight} kg och`} samma mål (${perSetStr}) en gång till.`
     : repStep === 2
-      ? `Bra marginal kvar! ${keepStr} — sikta på ${perSetStr} reps.`
-      : `${keepStr} — sikta på ${perSetStr} reps.`
+      ? `Bra marginal kvar! ${keepStr}, sikta på ${perSetStr} reps.`
+      : `${keepStr}, sikta på ${perSetStr} reps.`
   return {
     action: 'keep_weight_add_reps',
     nextWeight: currentWeight,

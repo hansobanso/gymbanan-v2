@@ -30,8 +30,8 @@ function fmtElapsed(startedAt) {
   const s = Math.floor((Date.now() - startedAt) / 1000)
   const m = Math.floor(s / 60)
   const h = Math.floor(m / 60)
-  if (h > 0) return `${h}h ${m % 60}m`
-  return `${m}m`
+  if (h > 0) return `${h} h ${m % 60} min`
+  return `${m} min`
 }
 
 export default function Workout({ session }) {
