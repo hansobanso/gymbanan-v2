@@ -65,7 +65,7 @@ export default function BodyWeight({ session }) {
         {entries.map((e, i) => (
           <div key={e.id ?? i} className={styles.row}>
             <span className={styles.date}>{fmtDate(e.logged_at)}</span>
-            <span className={styles.weight}>{parseFloat(e.weight)} kg</span>
+            <span className={styles.weight}>{String(parseFloat(e.weight)).replace('.', ',')} kg</span>
           </div>
         ))}
       </div>

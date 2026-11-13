@@ -236,3 +236,6 @@
 .exName { font-size: 15px; font-weight: 700; }
 .exGroup, .exMeta { color: var(--d-muted); }
 .chip, .subChip { min-height: 36px; }
+
+/* ═══ Knappsystem 2026-11: samma hojd, radie och vikt overallt ═══ */
+.addBtn { width: 40px; height: 40px; border-radius: 20px; color: #141414; }

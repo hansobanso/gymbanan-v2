@@ -625,7 +625,7 @@ export default function Workout({ session }) {
                 onClick={() => { if (!finishCooldownRef.current) setShowFinish(true) }}
                 type="button"
               >
-                AVSLUTA
+                Avsluta passet
               </button>
             </div>
             </>

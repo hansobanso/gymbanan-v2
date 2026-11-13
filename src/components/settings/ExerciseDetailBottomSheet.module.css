@@ -259,3 +259,7 @@
   line-height: 1.45;
   margin: 4px 2px 0;
 }
+
+/* ═══ Knappsystem 2026-11: samma hojd, radie och vikt overallt ═══ */
+.closeBtn { width: 44px; height: 44px; margin: -7px -8px -7px 0; padding: 0; border: 0; border-radius: 22px; background: transparent; color: #C9C9C9; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.swapBtn { min-height: 54px; border: 1px solid var(--d-raised-border); border-radius: 16px; background: var(--d-raised); color: var(--text); font-size: 15px; font-weight: 700; }

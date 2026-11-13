@@ -175,3 +175,9 @@
 .date { color: var(--d-muted); }
 .sheet { background: var(--d-card); border-radius: 28px 28px 0 0; box-shadow: 0 0 0 1px var(--d-card-border); }
 .saveBtn { min-height: 54px; border-radius: 16px; color: #141414; font-size: 17px; font-weight: 800; }
+
+/* ═══ Knappsystem 2026-11: samma hojd, radie och vikt overallt ═══ */
+.backBtn { width: 44px; height: 44px; margin: -4px 0 -4px -12px; padding: 0; border: 0; border-radius: 22px; background: transparent; color: #C9C9C9; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.addBtn { height: 40px; padding: 0 16px; border: 0; border-radius: 20px; background: var(--accent); color: #141414; font-size: 14px; font-weight: 800; }
+.header { padding-left: 16px; padding-right: 16px; }
+.title { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); text-align: center; }

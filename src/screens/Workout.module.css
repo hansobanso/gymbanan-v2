@@ -593,3 +593,20 @@
   font-size: 17px;
   font-weight: 800;
 }
+
+/* ═══ Knappsystem 2026-11: samma hojd, radie och vikt overallt ═══ */
+.addExerciseBtn { min-height: 54px; border: 1px solid var(--d-raised-border); border-radius: 16px; background: var(--d-raised); color: var(--text); font-size: 15px; font-weight: 700; }
+.finishBtn { min-height: 54px; border: 1px solid var(--d-raised-border); border-radius: 16px; background: var(--d-raised); color: var(--danger); font-size: 15px; font-weight: 700; }
+.confirmSheet { background: var(--d-card); border-radius: 28px 28px 0 0; box-shadow: 0 0 0 1px var(--d-card-border); }
+.ssPickSheet { background: var(--d-card); border-radius: 28px 28px 0 0; box-shadow: 0 0 0 1px var(--d-card-border); }
+.confirmPrimary { min-height: 54px; border: 0; border-radius: 16px; background: var(--accent); color: #141414; font-size: 17px; font-weight: 800; }
+.ssPickApply { min-height: 54px; border: 0; border-radius: 16px; background: var(--accent); color: #141414; font-size: 17px; font-weight: 800; }
+.confirmSecondary { min-height: 54px; border: 1px solid var(--d-raised-border); border-radius: 16px; background: var(--d-raised); color: var(--text); font-size: 15px; font-weight: 700; }
+.toast { border-radius: 16px; background: #1A1A1A; box-shadow: 0 0 0 1px var(--d-raised-border), 0 12px 24px rgba(0,0,0,0.5); }
+.confirmTitle { font-family: var(--font-num); font-size: 36px; line-height: 0.95; font-weight: 700; color: #fff; }
+.ssPickTitle { font-family: var(--font-num); font-size: 36px; line-height: 0.95; font-weight: 700; color: #fff; }
+.ssPickItem { min-height: 54px; border-radius: 16px; border: 1px solid var(--d-raised-border); background: var(--d-raised); }
+.ssPickItemActive { border-color: var(--accent); background: var(--accent-dim); }
+.ssPickList { gap: 8px; }
+.ssPickItem { padding-left: 14px; padding-right: 14px; }
+.finishBtn { letter-spacing: 0; text-transform: none; }

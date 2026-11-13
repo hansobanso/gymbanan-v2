@@ -222,3 +222,6 @@
 .rowLabel { font-size: 15px; font-weight: 700; }
 .rowValue { color: var(--d-muted); font-variant-numeric: tabular-nums; }
 .chevron { color: #6A6A6A; }
+
+/* ═══ Knappsystem 2026-11: samma hojd, radie och vikt overallt ═══ */
+.nameSaveBtn { min-height: 44px; padding-left: 18px; padding-right: 18px; border: 0; border-radius: 14px; background: var(--accent); color: #141414; font-size: 15px; font-weight: 800; }

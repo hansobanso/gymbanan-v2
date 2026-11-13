@@ -119,6 +119,11 @@ maskin 5, övrigt 2,5.
 PT-intro, `ai.js`, `useAI.js` och `AiChat` finns inte längre. Bygg inte
 tillbaka något AI utan att fråga. "Anpassa passet" är kvar och är manuell.
 
+**Knappsystem**: primär = gul, 54 px hög, radie 16, 17 px/800, text
+`#141414`. Sekundär = `--d-raised` med kant, samma höjd och radie, 15 px/700.
+Ikonknapp = 44 px rund, genomskinlig. Liten gul pill = 40 px. Ark = `--d-card`
+med radie 28 upptill. Nya knappar ska följa detta.
+
 **Rörelse**: korta och likadana överallt. Gemensamma keyframes `riseIn`,
 `popIn`, `fadeIn` i `index.css`. Allt stängs av med
 `prefers-reduced-motion`.

@@ -433,3 +433,6 @@
 .sessionMeta { font-size: 12px; color: var(--d-muted); }
 .saveBtn { min-height: 54px; border-radius: 16px; color: #141414; font-size: 17px; font-weight: 800; }
 .setActiveBtn, .setActiveBtnActive, .copyBtn { min-height: 48px; border-radius: 16px; }
+
+/* ═══ Knappsystem 2026-11: samma hojd, radie och vikt overallt ═══ */
+.editBtn { min-height: 36px; padding: 0 12px; border: 1px solid var(--d-raised-border); border-radius: 12px; background: var(--d-raised); color: var(--text); font-size: 13px; font-weight: 700; }

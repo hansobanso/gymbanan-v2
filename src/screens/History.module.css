@@ -247,3 +247,6 @@
   cursor: pointer;
   padding: 4px 6px;
 }
+
+/* ═══ Knappsystem 2026-11: samma hojd, radie och vikt overallt ═══ */
+.undoToast { border-radius: 16px; background: #1A1A1A; box-shadow: 0 0 0 1px var(--d-raised-border), 0 12px 24px rgba(0,0,0,0.5); }

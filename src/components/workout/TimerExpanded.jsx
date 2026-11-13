@@ -99,7 +99,7 @@ export default function TimerExpanded({ open, timer, onClose }) {
                   onClick={() => { stop(); onClose() }}
                   type="button"
                 >
-                  Avsluta
+                  Hoppa över vilan
                 </button>
               </div>
             )}

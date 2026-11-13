@@ -123,3 +123,4 @@
 .ctrlBtn { min-height: 44px; border-radius: 12px; background: var(--d-raised); border: 1px solid var(--d-raised-border); font-weight: 700; }
 .stopBtn { min-height: 54px; border-radius: 16px; background: var(--d-raised); border: 1px solid var(--d-raised-border); }
 .closeBtn { min-height: 44px; }
+.stopBtn { color: var(--text); }
