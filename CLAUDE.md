@@ -141,7 +141,9 @@ med radie 28 upptill. Nya knappar ska följa detta.
 - **Minimerat pass**: lämnar man passet (bakåt-svep eller menyn) visas en
   rad "Pågående pass" ovanför bottenmenyn i stället för frågan. Startar
   man ett nytt pass under tiden kommer frågan först (`startConflict` i
-  `App.jsx`). Vilotimern följer inte med ut ur passet.
+  `App.jsx`). Vilotimern följer inte med ut ur passet. Passvyn har en egen
+  kantsvep-gest (dra från vänsterkanten förbi en tredjedel) eftersom iOS
+  bakåt-gest studsar när historiken bara har en sida.
 - **Omladdning mitt i pass**: pass-skärmen får inte monteras medan
   "Pågående pass"-dialogen är obesvarad (se `App.jsx`).
 - **`useState` initieras en gång**: härled från props eller synka på

@@ -367,6 +367,43 @@ export default function Workout({ session }) {
     })),
   }], [workout.exercises])
 
+  // ── Svep fran vansterkanten: till startsidan, passet fortsatter ──
+  // iOS egen bakat-gest fungerar bara nar det finns en sida att ga tillbaka
+  // till (inte efter omladdning eller aterupptaget pass) och studsar annars
+  // tillbaka. Den har gesten fungerar alltid: dra fran kanten, slapp forbi
+  // en tredjedel av skarmen.
+  const screenRef = useRef(null)
+  const edgeRef = useRef(null) // { x, y, dx, active }
+  function onEdgeTouchStart(e) {
+    const t = e.touches[0]
+    edgeRef.current = t.clientX <= 32 ? { x: t.clientX, y: t.clientY, dx: 0, active: false } : null
+  }
+  function onEdgeTouchMove(e) {
+    const g = edgeRef.current
+    if (!g) return
+    const t = e.touches[0]
+    const dx = t.clientX - g.x, dy = t.clientY - g.y
+    if (!g.active) {
+      if (Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx)) { edgeRef.current = null; return }
+      if (dx > 10) g.active = true
+    }
+    if (g.active && screenRef.current) {
+      g.dx = Math.max(0, dx)
+      screenRef.current.style.transition = 'none'
+      screenRef.current.style.transform = `translateX(${g.dx}px)`
+    }
+  }
+  function onEdgeTouchEnd() {
+    const g = edgeRef.current
+    edgeRef.current = null
+    const el = screenRef.current
+    if (!g?.active || !el) return
+    const goHome = g.dx > Math.min(140, window.innerWidth / 3)
+    el.style.transition = 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)'
+    el.style.transform = goHome ? 'translateX(100%)' : ''
+    if (goHome) setTimeout(() => navigate('/'), 160)
+  }
+
   // ── Render ──────────────────────────────────────────────────
 
   // Aktiv ovning = forsta som inte ar helt klar, om inte anvandaren (eller
@@ -415,7 +452,14 @@ export default function Workout({ session }) {
   }
 
   return (
-    <div className={styles.screen}>
+    <div
+      className={styles.screen}
+      ref={screenRef}
+      onTouchStart={onEdgeTouchStart}
+      onTouchMove={onEdgeTouchMove}
+      onTouchEnd={onEdgeTouchEnd}
+      onTouchCancel={onEdgeTouchEnd}
+    >
       {/* ── Header ── */}
       <div className={styles.header}>
         <div className={styles.headerLeft}>
@@ -618,7 +662,7 @@ export default function Workout({ session }) {
                 onClick={() => setPickerTarget({ _add: true })}
                 type="button"
               >
-                + Lägg till övning
+                + Övning
               </button>
               <button
                 className={styles.finishBtn}
