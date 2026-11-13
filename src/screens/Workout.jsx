@@ -479,10 +479,7 @@ export default function Workout({ session }) {
       <div className={styles.header}>
         <div className={styles.headerLeft}>
           <span className={styles.sessionBtn}>{sessionName}</span>
-          <span className={styles.elapsed}>
-            {elapsed}
-            {workout.exercises.length > 0 && ` · ${progress.label}`}
-          </span>
+          <span className={styles.elapsed}>{elapsed}</span>
         </div>
         <div className={styles.headerRight}>
           {/* Anpassa passet (lätt dag / sjuk / deload) - snabbval utan chatt */}
@@ -552,6 +549,9 @@ export default function Workout({ session }) {
             transition={{ duration: 0.15 }}
             onPointerDown={e => e.stopPropagation()}
           >
+            <button className={styles.hMenuItem} onClick={() => { setHeaderMenuOpen(false); navigate('/') }}>
+              Till startsidan (passet fortsätter)
+            </button>
             <button className={styles.hMenuItem} onClick={() => { if (!timer.active) timer.start('Vila', 60); setTimerExpandedOpen(true); setHeaderMenuOpen(false) }}>
               Vilotimer
             </button>

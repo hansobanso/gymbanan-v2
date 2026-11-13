@@ -304,7 +304,6 @@ export default function ExerciseBlock({
     const meta = [
       `${doneSets.length} set`,
       bestWeight > 0 ? `${displayWeightStr(bestWeight, exEquipment)} kg` : null,
-      pbs ? `${pbs} PB` : null,
     ].filter(Boolean).join(' · ')
     return (
       <div className={styles.blockWrapper} data-exid={exercise.localId}>
@@ -314,6 +313,11 @@ export default function ExerciseBlock({
             <span className={styles.compactNameDone}>{exercise.name}</span>
             <span className={styles.compactMeta}>{meta}</span>
           </span>
+          {pbs > 0 && (
+            <span className={styles.compactPb} aria-label={`${pbs} personbästa`}>
+              {pbs > 1 ? `${pbs} PB` : 'PB'}
+            </span>
+          )}
         </button>
       </div>
     )
@@ -380,7 +384,6 @@ export default function ExerciseBlock({
         </div>
 
         <div className={styles.metaRow} onPointerDown={e => e.stopPropagation()}>
-          {exercise.muscleGroup && <span>{exercise.muscleGroup}</span>}
           {editingReps ? (
             <span className={styles.repsRangeEdit}>
               <input
@@ -413,9 +416,11 @@ export default function ExerciseBlock({
               {hasTarget ? `mål ${targetStr}` : '+ Sätt mål'}
             </button>
           )}
-          <button className={styles.metaBtn} onClick={() => onShowDetail?.(detailId)} type="button">
-            {exercise.exNotes || '+ Notering'}
-          </button>
+          {exercise.exNotes && (
+            <button className={styles.metaBtn} onClick={() => onShowDetail?.(detailId)} type="button">
+              {exercise.exNotes}
+            </button>
+          )}
           {supersetPartner && <SupersetChip />}
         </div>
 
