@@ -158,12 +158,34 @@ function AppRoutes({ session }) {
   // Hamnar man pa en flik medan ett pass ligger sparat lokalt (t.ex. efter
   // ett bakat-svep ut ur passet) ska fragan komma direkt - annars lag passet
   // osynligt kvar och skrevs over nasta gang man startade ett pass.
+  //
+  // Passet "minimeras" da: flikarna gar att anvanda som vanligt och en rad
+  // ovanfor menyn tar en tillbaka. (Vid kallstart av appen visas i stallet
+  // fragan "Pagaende pass", se resumedWorkout ovan.)
+  const [minimized, setMinimized] = useState(null)
   useEffect(() => {
     if (!isTab || resumedWorkout) return
     const raw = localStorage.getItem(ACTIVE_WORKOUT_KEY)
-    if (!raw) return
-    try { setResumedWorkout(JSON.parse(raw)) } catch { localStorage.removeItem(ACTIVE_WORKOUT_KEY) }
+    if (!raw) { setMinimized(null); return }
+    try { setMinimized(JSON.parse(raw)) } catch { localStorage.removeItem(ACTIVE_WORKOUT_KEY); setMinimized(null) }
   }, [p]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  function resumeWorkout(w) {
+    setResumedWorkout(null)
+    setMinimized(null)
+    // Skicka med programmet sa "spara andringar i programmet"-fragan
+    // fungerar aven for ett aterupptaget pass.
+    const prog = w.programId ? programs.find(pr => pr.id === w.programId) ?? null : null
+    navigate('/workout', {
+      replace: p === '/workout',
+      state: { sessionName: w.sessionName ?? 'Pass', sessionExercises: [], programId: w.programId ?? null, program: prog, resumed: w },
+    })
+  }
+
+  // Startar man ett NYTT pass medan ett annat ligger minimerat far det nya
+  // inte monteras (det skulle skriva over det sparade). Fraga forst.
+  const startConflict = !!minimized && p === '/workout' && !location.state?.resumed
+  const askWorkout = resumedWorkout ?? (startConflict ? minimized : null)
 
   const tabStyle = (path) => ({
     display: p === path ? 'flex' : 'none',
@@ -184,28 +206,18 @@ function AppRoutes({ session }) {
         </div>
       )}
       {/* Resume active workout modal */}
-      {resumedWorkout && (
+      {askWorkout && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
           <div style={{ background: '#1a1a1a', borderRadius: 16, padding: 24, maxWidth: 320, width: '100%', display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div>
               <p style={{ color: '#f0f0f0', fontSize: 17, fontWeight: 700, margin: '0 0 6px' }}>Pågående pass</p>
               <p style={{ color: '#888', fontSize: 14, margin: 0 }}>
-                Du har ett pågående pass ({resumedWorkout.sessionName ?? 'Pass'}) från {fmtElapsedSince(resumedWorkout.startedAt)}. Vill du fortsätta?
+                Du har ett pågående pass ({askWorkout.sessionName ?? 'Pass'}) från {fmtElapsedSince(askWorkout.startedAt)}. Vill du fortsätta?
               </p>
             </div>
             <button
               style={{ background: '#F5D020', border: 'none', borderRadius: 12, color: '#000', fontSize: 15, fontWeight: 700, padding: '14px', cursor: 'pointer', fontFamily: 'inherit' }}
-              onClick={() => {
-                const w = resumedWorkout
-                setResumedWorkout(null)
-                // Skicka med programmet sa "spara andringar i programmet"-fragan
-                // fungerar aven for ett aterupptaget pass.
-                const prog = w.programId ? programs.find(pr => pr.id === w.programId) ?? null : null
-                navigate('/workout', {
-                  replace: p === '/workout',
-                  state: { sessionName: w.sessionName ?? 'Pass', sessionExercises: [], programId: w.programId ?? null, program: prog, resumed: w },
-                })
-              }}
+              onClick={() => resumeWorkout(askWorkout)}
               type="button"
             >
               Fortsätt passet
@@ -215,8 +227,9 @@ function AppRoutes({ session }) {
               onClick={() => {
                 localStorage.removeItem(ACTIVE_WORKOUT_KEY)
                 // Stada bort den tomma pass-raden i databasen ocksa
-                if (resumedWorkout.workoutId) deleteUnfinishedWorkout(resumedWorkout.workoutId).catch(() => {})
+                if (askWorkout.workoutId) deleteUnfinishedWorkout(askWorkout.workoutId).catch(() => {})
                 setResumedWorkout(null)
+                setMinimized(null)
                 if (p === '/workout') navigate('/', { replace: true })
               }}
               type="button"
@@ -240,7 +253,7 @@ function AppRoutes({ session }) {
             en ny deploy) montera ett NYTT tomt pass under dialogen som skrev
             over det sparade passet. key={location.key} gor att Workout
             monteras om nar man valjer "Fortsatt passet" fran /workout. */}
-        {!isTab && !resumedWorkout && (
+        {!isTab && !askWorkout && (
           <Routes>
             <Route path="/workout" element={<Workout key={location.key} session={session} />} />
             <Route path="/exercises" element={<ExerciseLibrary />} />
@@ -252,6 +265,17 @@ function AppRoutes({ session }) {
         )}
       </Suspense>
 
+      {/* Minimerat pass: en rad ovanfor menyn som tar en tillbaka */}
+      {isTab && minimized && !askWorkout && (
+        <button className="active-workout-bar" onClick={() => resumeWorkout(minimized)} type="button">
+          <span className="active-workout-dot" aria-hidden="true" />
+          <span className="active-workout-text">
+            <span className="active-workout-title">Pågående pass · {minimized.sessionName ?? 'Pass'}</span>
+            <span className="active-workout-sub">Startade {fmtElapsedSince(minimized.startedAt)}</span>
+          </span>
+          <span className="active-workout-cta">Fortsätt</span>
+        </button>
+      )}
       {isTab && <BottomNav />}
       <WhatsNew
         open={showWhatsNew}

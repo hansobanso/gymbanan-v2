@@ -130,6 +130,10 @@ efter passet är borttagna med flit. Kostnaden är några dollar per år.
 - **Tysta databasfel**: `createWorkout` och `updateWorkout` kastar numera.
   Den lokala kopian (`localStorage: gymbanan_active_workout`) raderas först
   när sparningen bekräftats. Bryt aldrig den ordningen.
+- **Minimerat pass**: lämnar man passet (bakåt-svep eller menyn) visas en
+  rad "Pågående pass" ovanför bottenmenyn i stället för frågan. Startar
+  man ett nytt pass under tiden kommer frågan först (`startConflict` i
+  `App.jsx`). Vilotimern följer inte med ut ur passet.
 - **Omladdning mitt i pass**: pass-skärmen får inte monteras medan
   "Pågående pass"-dialogen är obesvarad (se `App.jsx`).
 - **`useState` initieras en gång**: härled från props eller synka på
