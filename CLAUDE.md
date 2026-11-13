@@ -139,6 +139,9 @@ efter passet är borttagna med flit. Kostnaden är några dollar per år.
 - **Kod-fix lagar inte gammal data**. Kolla om databasen också behöver
   repareras, och kör alltid en SELECT före DELETE/UPDATE.
 - `workouts` har `started_at`, inte `created_at`.
+- `exercises.tertiary_muscles` (text[]) lades till 2026-11-13. Kolumnen är
+  tom för alla övningar tills någon fyller i den (övningens sida i
+  biblioteket). Tertiära muskler räknas inte in i muskelvolymen.
 - Supabase gratisnivå pausar efter 7 dagars inaktivitet → svart app.
   Bara Hannes kan väcka den i Supabase-panelen.
 

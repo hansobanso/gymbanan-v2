@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { getExerciseByName, updateExercise, upsertExerciseByName, getUserExerciseNote, upsertUserExerciseNote } from '../lib/db'
 import { EXERCISES } from '../data/exercises'
 import { MUSCLE_GROUPS } from '../data/muscleGroups'
+import ExerciseMuscles from '../components/shared/ExerciseMuscles'
 import detailStyles from './ExerciseDetail.module.css'
 import styles from './ExerciseDetailSheet.module.css'
 
@@ -166,6 +167,17 @@ export default function ExerciseDetailSheet({ id, onClose, onNotesSaved, context
                   placeholder="Övningsnamn"
                 />
               </div>
+
+              {/* Under pass: vilka muskler ovningen tranar */}
+              {isWorkoutContext && (
+                <ExerciseMuscles
+                  primary={form.muscle_group}
+                  secondary={Array.isArray(form.secondary_muscles) && form.secondary_muscles.length
+                    ? form.secondary_muscles
+                    : (form.secondary_muscle ? [form.secondary_muscle] : [])}
+                  tertiary={form.tertiary_muscles}
+                />
+              )}
 
               {/* Teknikfält – döljs under pass */}
               {!isWorkoutContext && (

@@ -195,6 +195,9 @@ export default function ExerciseDetail() {
     for (const m of secondaries) {
       if (m && m !== form.muscle_group) out[m] = 0.5
     }
+    for (const m of form.tertiary_muscles ?? []) {
+      if (m && !(m in out)) out[m] = 0.22
+    }
     return out
   }, [form])
 
@@ -215,6 +218,7 @@ export default function ExerciseDetail() {
           name:              form.name,
           muscle_group:      form.muscle_group     || null,
           secondary_muscles: secArr,
+          tertiary_muscles: (form.tertiary_muscles ?? []).filter(m => m && m !== form.muscle_group && !secArr.includes(m)),
           // Hall gamla singular-faltet i synk (forsta muskeln) tills det fasas ut
           secondary_muscle:  secArr[0] || null,
           equipment:         form.equipment        || null,
@@ -392,6 +396,56 @@ export default function ExerciseDetail() {
               {(form.secondary_muscles ?? []).length ? (
                 <div className={styles.secMuscleChips}>
                   {form.secondary_muscles.map(m => (
+                    <span key={m} className={styles.secMuscleChipView}>{m}</span>
+                  ))}
+                </div>
+              ) : (
+                <span className={styles.infoValue}>–</span>
+              )}
+            </div>
+          )}
+
+          <div className={styles.divider} />
+
+          {canEdit ? (
+            <div className={styles.secMuscleSection}>
+              <span className={styles.infoLabel}>Tertiära muskler</span>
+              <div className={styles.secMuscleChips}>
+                {(form.tertiary_muscles ?? []).map(m => (
+                  <span key={m} className={styles.secMuscleChip}>
+                    {m}
+                    <button
+                      type="button"
+                      className={styles.secMuscleChipRemove}
+                      onClick={() => set('tertiary_muscles', (form.tertiary_muscles ?? []).filter(x => x !== m))}
+                      aria-label={`Ta bort ${m}`}
+                    >×</button>
+                  </span>
+                ))}
+                {(form.tertiary_muscles ?? []).length < 7 && (
+                  <select
+                    className={styles.secMuscleAdd}
+                    value=""
+                    onChange={e => {
+                      if (!e.target.value) return
+                      const v = e.target.value
+                      set('tertiary_muscles', [...(form.tertiary_muscles ?? []).filter(x => x !== v), v])
+                    }}
+                  >
+                    <option value="">+ Lägg till</option>
+                    {MUSCLE_GROUPS
+                      .filter(g => g !== form.muscle_group && !(form.secondary_muscles ?? []).includes(g) && !(form.tertiary_muscles ?? []).includes(g))
+                      .map(g => <option key={g} value={g}>{g}</option>)}
+                  </select>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className={styles.secMuscleSection}>
+              <span className={styles.infoLabel}>Tertiära muskler</span>
+              {(form.tertiary_muscles ?? []).length ? (
+                <div className={styles.secMuscleChips}>
+                  {form.tertiary_muscles.map(m => (
                     <span key={m} className={styles.secMuscleChipView}>{m}</span>
                   ))}
                 </div>
