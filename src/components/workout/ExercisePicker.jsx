@@ -1,11 +1,29 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { getExercises, saveExercise, getProfile } from '../../lib/db'
+import { getExercises, saveExercise, getProfile, getWorkouts } from '../../lib/db'
 import { supabase } from '../../lib/supabase'
 import { MUSCLE_GROUPS, BROAD_MUSCLE_GROUPS, EQUIPMENT_OPTIONS, MOVEMENT_OPTIONS, broadOf, subGroupsOf, matchesSubGroup } from '../../data/muscleGroups'
+import MuscleMap from '../shared/MuscleMap'
+import { colorForIntensityRed } from '../../lib/muscleColor'
+import { exWord } from '../../lib/plural'
 import styles from './ExercisePicker.module.css'
 
-export default function ExercisePicker({ open, onSelect, onClose, replacingExercise = null, startInCreate = false }) {
+// Sa manga av anvandarens senast korda ovningar visas overst
+const MAX_RECENT = 6
+// Nya ovningar i ett pass far tre arbetsset (samma som passbyggaren)
+const DEFAULT_SETS = 3
+
+/**
+ * Valj ovning. Nar man lagger till (inte byter) kan flera bockas i pa en
+ * gang. sessionExercises = passets nuvarande ovningar [{name, workSets}]:
+ * de markeras "I passet" och later muskelgubben visa vad passet tacker.
+ */
+export default function ExercisePicker({ open, onSelect, onClose, replacingExercise = null, startInCreate = false, sessionExercises = null }) {
+  const multi = !replacingExercise && !startInCreate
+  const [picked, setPicked] = useState([]) // valda ovningar, i den ordning de bockades i
+  const [equipment, setEquipment] = useState(null)
+  const [showEquipment, setShowEquipment] = useState(false)
+  const [lastDone, setLastDone] = useState({}) // ovningsnamn -> senast kord (ms)
   const [allExercises, setAllExercises] = useState([])
   const [query, setQuery] = useState('')
   const [selectedGroup, setSelectedGroup] = useState(null)
@@ -44,6 +62,9 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
 
   useEffect(() => {
     if (!open) {
+      setPicked([])
+      setEquipment(null)
+      setShowEquipment(false)
       setQuery('')
       setSelectedGroup(null)
       setSelectedSub(null)
@@ -59,9 +80,24 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
     }
     getExercises().then(setAllExercises).catch(() => {})
     // Hamta admin-status sa vi vet om nya ovningar ska bli globala
-    supabase.auth.getUser().then(({ data }) => {
-      const uid = data?.user?.id
-      if (uid) getProfile(uid).then(p => setIsAdmin(!!p?.is_admin)).catch(() => {})
+    // getSession laser lokalt (inget natverksanrop), sa listan fylls direkt
+    supabase.auth.getSession().then(({ data }) => {
+      const uid = data?.session?.user?.id
+      if (!uid) return
+      getProfile(uid).then(p => setIsAdmin(!!p?.is_admin)).catch(() => {})
+      // "Dina vanliga": nar varje ovning senast kordes (samma cache som startsidan)
+      getWorkouts(uid, 40).then(ws => {
+        const map = {}
+        for (const w of ws ?? []) {
+          const at = new Date(w.finished_at ?? w.started_at).getTime()
+          if (!at) continue
+          for (const ex of w.exercises ?? []) {
+            if (!ex.sets?.some(st => st.done)) continue
+            if (!map[ex.name] || at > map[ex.name]) map[ex.name] = at
+          }
+        }
+        setLastDone(map)
+      }).catch(() => {})
     })
     // Oppna direkt i skapa-laget om den som oppnade vill det (t.ex. + i
     // ovningsbiblioteket - man vill skapa, inte valja).
@@ -116,6 +152,8 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
       const ex = await saveExercise(payload)
       if (!ex?.name) throw new Error('Övningen kunde inte sparas')
       setAllExercises(prev => [...prev, ex])
+      // Redan ibockade ovningar foljer med nar man skapar en ny
+      picked.forEach(p => onSelect(p))
       onSelect(ex)
       onClose()
     } catch (err) {
@@ -138,10 +176,76 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
         matchGroup = matchesSubGroup(e.muscle_group, selectedGroup, selectedSub)
       }
     }
+    const matchEquipment = !equipment || e.equipment === equipment
     // Vid fritextsokning: visa aven kardio bland traffarna
-    if (query.trim()) return matchQuery
-    return matchQuery && matchGroup
+    if (query.trim()) return matchQuery && matchEquipment
+    return matchQuery && matchGroup && matchEquipment
   })
+
+  const inSession = new Set((sessionExercises ?? []).map(e => e.name))
+  const isPicked = ex => picked.some(p => p.name === ex.name)
+
+  function choose(ex) {
+    if (!multi) { onSelect(ex); onClose(); return }
+    if (inSession.has(ex.name)) return
+    setPicked(prev => prev.some(p => p.name === ex.name) ? prev.filter(p => p.name !== ex.name) : [...prev, ex])
+  }
+
+  function confirmPicked() {
+    picked.forEach(ex => onSelect(ex))
+    onClose()
+  }
+
+  // Dina vanliga: ovningar du kort, senaste forst. Inte under sokning.
+  const recent = query.trim() ? [] : filtered
+    .filter(e => lastDone[e.name] && !(multi && inSession.has(e.name)))
+    .sort((a, b) => lastDone[b.name] - lastDone[a.name])
+    .slice(0, MAX_RECENT)
+  const recentIds = new Set(recent.map(e => e.id))
+
+  // Muskelgubben: passet som det ser ut med det som ar ibockat
+  const infoByName = useMemo(() => {
+    const m = {}
+    for (const e of allExercises) m[e.name] = e
+    return m
+  }, [allExercises])
+  const coverage = multi && sessionExercises ? [{
+    finished_at: null,
+    exercises: [
+      ...sessionExercises.map(e => ({ name: e.name, n: Number(e.workSets) || 0 })),
+      ...picked.map(e => ({ name: e.name, n: DEFAULT_SETS })),
+    ].filter(e => !infoByName[e.name]?.is_cardio)
+      .map(e => ({ name: e.name, sets: Array.from({ length: e.n }, () => ({ type: 'work', done: true })) })),
+  }] : null
+  const coverageSets = {}
+  for (const e of coverage?.[0].exercises ?? []) {
+    const g = broadOf(infoByName[e.name]?.muscle_group)
+    if (g && g !== 'Övrigt') coverageSets[g] = (coverageSets[g] ?? 0) + e.sets.length
+  }
+  const coverageLine = Object.entries(coverageSets).sort((a, b) => b[1] - a[1]).map(([g, n]) => `${g} ${n}`).join(' · ')
+
+  const renderItem = ex => {
+    const on = isPicked(ex)
+    const there = multi && inSession.has(ex.name)
+    return (
+      <button
+        key={ex.id}
+        className={`${styles.item} ${on ? styles.itemPicked : ''} ${there ? styles.itemThere : ''}`}
+        onClick={() => choose(ex)}
+        disabled={there}
+        aria-pressed={multi ? on : undefined}
+        type="button"
+      >
+        <span className={styles.itemName}>{ex.name}</span>
+        <span className={styles.itemMeta}>{there ? 'I passet' : ex.equipment ?? ''}</span>
+        {multi && !there && (
+          <span className={`${styles.check} ${on ? styles.checkOn : ''}`} aria-hidden="true">
+            {on && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>}
+          </span>
+        )}
+      </button>
+    )
+  }
 
   const noResults = query.trim() && filtered.length === 0
 
@@ -164,7 +268,7 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
       )
     : []
 
-  const similarIds = new Set(similar.map(e => e.id))
+  const similarIds = new Set([...similar.map(e => e.id), ...recentIds])
 
   // Resten grupperas per muskelgrupp som forr (men exkludera de som redan
   // visas under "Liknande" sa de inte dubbleras).
@@ -199,7 +303,7 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
             <div className={styles.header}>
               <div className={styles.headerText}>
                 <span className={styles.title}>
-                  {createMode ? 'Skapa övning' : (replacingMeta ? 'Byt övning' : 'Välj övning')}
+                  {createMode ? 'Skapa övning' : (replacingMeta ? 'Byt övning' : multi ? 'Välj övningar' : 'Välj övning')}
                 </span>
                 {replacingMeta && !createMode && (
                   <span className={styles.subtitle}>Ersätter {replacingMeta.name}</span>
@@ -213,6 +317,7 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
             </div>
             {!createMode && (
             <>
+            <div className={styles.searchRow}>
             <div className={styles.searchWrap}>
               <input
                 ref={searchRef}
@@ -232,6 +337,24 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
                 </button>
               )}
             </div>
+              <button
+                className={`${styles.filterBtn} ${equipment ? styles.filterBtnOn : ''}`}
+                onClick={() => setShowEquipment(v => !v)}
+                type="button"
+                aria-label={equipment ? `Utrustning: ${equipment}` : 'Filtrera på utrustning'}
+                aria-expanded={showEquipment}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M4 7h16M7 12h10M10 17h4"/></svg>
+              </button>
+            </div>
+            {showEquipment && (
+              <div className={`${styles.chips} ${styles.subChips}`}>
+                <button className={`${styles.chip} ${styles.subChip} ${!equipment ? styles.chipActive : ''}`} onClick={() => setEquipment(null)} type="button">All utrustning</button>
+                {EQUIPMENT_OPTIONS.map(eq => (
+                  <button key={eq} className={`${styles.chip} ${styles.subChip} ${equipment === eq ? styles.chipActive : ''}`} onClick={() => setEquipment(e => e === eq ? null : eq)} type="button">{eq}</button>
+                ))}
+              </div>
+            )}
             {/* Chips doljs under sokning sa traffarna syns direkt under
                 sokfaltet istallet for bakom tangentbordet */}
             {!query.trim() && (
@@ -415,18 +538,24 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
                           <div className={`${styles.groupHeader} ${styles.groupHeaderSimilar}`}>
                             Liknande övningar
                           </div>
-                          {similar
-                            .sort((a, b) => a.name.localeCompare(b.name, 'sv'))
-                            .map(ex => (
-                              <button
-                                key={ex.id}
-                                className={styles.item}
-                                onClick={() => { onSelect(ex); onClose() }}
-                                type="button"
-                              >
-                                {ex.name}
-                              </button>
-                            ))}
+                          {similar.sort((a, b) => a.name.localeCompare(b.name, 'sv')).map(renderItem)}
+                        </div>
+                      )}
+
+                      {coverage && (
+                        <div className={styles.coverage}>
+                          <MuscleMap workouts={coverage} exerciseMap={infoByName} colorFn={colorForIntensityRed} sensitivity={6} size={76} />
+                          <div className={styles.coverageText}>
+                            <span className={styles.coverageLabel}>{picked.length ? 'Passet med dina val' : 'Passet hittills'}</span>
+                            <span className={styles.coverageLine}>{coverageLine ? `Set: ${coverageLine}` : 'Inga övningar än'}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {recent.length > 0 && (
+                        <div>
+                          <div className={styles.groupHeader}>Dina vanliga</div>
+                          {recent.map(renderItem)}
                         </div>
                       )}
 
@@ -436,16 +565,7 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
                         .map(([group, exs]) => (
                           <div key={group}>
                             <div className={styles.groupHeader}>{group}</div>
-                            {exs.sort((a, b) => a.name.localeCompare(b.name, 'sv')).map(ex => (
-                              <button
-                                key={ex.id}
-                                className={styles.item}
-                                onClick={() => { onSelect(ex); onClose() }}
-                                type="button"
-                              >
-                                {ex.name}
-                              </button>
-                            ))}
+                            {exs.sort((a, b) => a.name.localeCompare(b.name, 'sv')).map(renderItem)}
                           </div>
                         ))}
 
@@ -465,6 +585,13 @@ export default function ExercisePicker({ open, onSelect, onClose, replacingExerc
                 </>
               )}
             </div>
+            {multi && !createMode && picked.length > 0 && (
+              <div className={styles.pickBar}>
+                <button className={styles.pickBtn} onClick={confirmPicked} type="button">
+                  Lägg till {picked.length} {exWord(picked.length)}
+                </button>
+              </div>
+            )}
           </motion.div>
         </>
       )}

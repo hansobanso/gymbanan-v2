@@ -486,6 +486,7 @@ export default function SessionEdit({ session, allExercises, onSave, onDelete, o
         open={showSearch}
         replacingExercise={swappingEx}
         onSelect={handlePickerSelect}
+        sessionExercises={exercises}
         onClose={closePicker}
       />
     </div>

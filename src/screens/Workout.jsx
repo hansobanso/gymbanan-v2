@@ -957,6 +957,7 @@ export default function Workout({ session }) {
       <ExercisePicker
         open={pickerTarget !== null}
         replacingExercise={pickerTarget && !pickerTarget._add ? pickerTarget : null}
+        sessionExercises={workout.exercises.map(e => ({ name: e.name, workSets: e.sets.filter(st => st.type === 'work').length }))}
         onSelect={ex => {
           if (pickerTarget?._add) workout.addExercise(ex)
           else if (pickerTarget) workout.replaceExercise(pickerTarget.localId, ex)

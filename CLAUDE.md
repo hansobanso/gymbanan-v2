@@ -124,6 +124,14 @@ och om setState i effekter (befintligt mönster). Titta bara på nya fel.
   gymbanan_next_extras`, töms vid passtart, bär `extra: true` och sparas
   aldrig till programmet (`buildUpdatedSession` filtrerar bort dem).
 
+**Övningsväljaren** (`ExercisePicker`)
+- Lägga till = flerval: bocka i flera, knappen längst ner visar antalet.
+  Byta övning är fortfarande ett tryck.
+- "Dina vanliga" överst: senast körda övningar (högst 6), inte de som
+  redan ligger i passet. Utrustningsfilter bakom filterknappen vid sökfältet.
+- Får väljaren `sessionExercises` visar den muskelgubben för passet med
+  det som är ibockat, och markerar befintliga övningar "I passet".
+
 **Designspråk** (nov 2026): svart bakgrund, kort `--d-card`, gul accent,
 grönt för klart, blå `--d-hint` för PT-besked, stora siffror i
 `--font-num` (Barlow Condensed). Variablerna `--d-*` ligger i
