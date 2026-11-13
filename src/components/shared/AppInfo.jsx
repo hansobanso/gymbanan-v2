@@ -33,19 +33,6 @@ export default function AppInfo() {
 
       <div className={styles.feature}>
         <span className={styles.title}>
-          <ChatIcon className={styles.icon} />
-          Prata med din PT
-        </span>
-        <p className={styles.body}>
-          Starta ett fritt pass och be PT sätta ihop ett helt pass åt dig –
-          t.ex. "ett benpass" eller "helkropp med bara kroppsvikt". Under passet
-          kan du fråga om teknik, be om ett övningsalternativ, eller låta PT
-          justera vikterna om du t.ex. varit sjuk eller känner dig stark.
-        </p>
-      </div>
-
-      <div className={styles.feature}>
-        <span className={styles.title}>
           <BananaIcon className={styles.icon} />
           Muskelkartan
         </span>

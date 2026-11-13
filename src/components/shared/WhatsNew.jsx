@@ -21,10 +21,6 @@ const ITEMS = [
     title: 'Tydligare muskelgubbe',
     body: 'En liten förklaring visar vad färgerna betyder, och gubben räknar nu även sekundärmuskler – så hela bilden av din träning syns.',
   },
-  {
-    title: 'Ny chatt med PT:n',
-    body: 'Börja om konversationen när du vill med nya "Ny chatt"-knappen i PT-fliken.',
-  },
 ]
 
 export default function WhatsNew({ open, onClose }) {

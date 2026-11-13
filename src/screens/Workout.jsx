@@ -3,8 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { Reorder, AnimatePresence, motion } from 'framer-motion'
 import { useWorkout } from '../hooks/useWorkout'
 import { useTimer } from '../hooks/useTimer'
-import { buildWorkoutContext, buildMemoryContent, appendUserNote, generateWorkoutIntro } from '../lib/ai'
-import { getWorkouts, getAiMemory, upsertAiMemory, getEquipmentMap, updateProgram, saveProgram, setActiveProgram, getDeloadStatus, startDeloadWeek, getExercises } from '../lib/db'
+import { getWorkouts, getEquipmentMap, updateProgram, saveProgram, setActiveProgram, getDeloadStatus, startDeloadWeek, getExercises } from '../lib/db'
 import RestDock from '../components/workout/RestDock'
 import TimerExpanded from '../components/workout/TimerExpanded'
 import ExerciseBlock from '../components/workout/ExerciseBlock'
@@ -13,7 +12,6 @@ import ExerciseHistory from '../components/workout/ExerciseHistory'
 import WorkoutHistorySheet from '../components/workout/WorkoutHistorySheet'
 import InstructionsSheet from '../components/workout/InstructionsSheet'
 import ExerciseDetailSheet from './ExerciseDetailSheet'
-import AiChat from '../components/shared/AiChat'
 import MuscleMap from '../components/shared/MuscleMap'
 import { colorForIntensityRed } from '../lib/muscleColor'
 import PostWorkoutFeedback from '../components/workout/PostWorkoutFeedback'
@@ -39,7 +37,6 @@ export default function Workout({ session }) {
   const navigate = useNavigate()
   const { sessionName = 'Pass', sessionExercises = [], programId = null, resumed = null, program = null } = location.state ?? {}
 
-  const [aiMemory, setAiMemory] = useState('')
 
   const defaultRest = (() => {
     const v = localStorage.getItem('gymbanan_default_rest')
@@ -58,10 +55,8 @@ export default function Workout({ session }) {
   const [elapsed, setElapsed] = useState('0m')
   const [headerMenuOpen, setHeaderMenuOpen] = useState(false)
   const [timerExpandedOpen, setTimerExpandedOpen] = useState(false)
-  const [aiChatOpen, setAiChatOpen] = useState(false)
   const [adjustOpen, setAdjustOpen] = useState(false)
   const [adjustChoice, setAdjustChoice] = useState(null)
-  const [workoutNotes, setWorkoutNotes] = useState('')
   const [isReordering, setIsReordering] = useState(false)
   const [reorderSnapshot, setReorderSnapshot] = useState(null)
   const [undoToast, setUndoToast] = useState(null)
@@ -90,8 +85,6 @@ export default function Workout({ session }) {
     }, 100)
   }
   const [postEquipmentMap, setPostEquipmentMap] = useState({})
-  const [introMessage, setIntroMessage] = useState(null)
-  const [introLoading, setIntroLoading] = useState(false)
   const [exerciseList, setExerciseList] = useState([])
 
   useEffect(() => {
@@ -149,55 +142,6 @@ export default function Workout({ session }) {
     })
   }, [workout.loading, deloadStatus.isActive]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Ladda AI-minne + generera pass-intro. Allt har kor i BAKGRUNDEN och
-  // blockerar aldrig att passet visas - introMessage fylls nar det ar klart.
-  useEffect(() => {
-    let cancelled = false
-    if (sessionExercises.length === 0) return
-    setIntroLoading(true)
-
-    ;(async () => {
-      const [mem, recentWorkouts] = await Promise.all([
-        getAiMemory(session.user.id).catch(() => null),
-        getWorkouts(session.user.id, 20).catch(() => []),
-      ])
-      if (cancelled) return
-      const memory = mem?.content || ''
-      if (memory) setAiMemory(memory)
-
-      // Bygg prev-sets-kontext in-memory fran de redan hamtade passen,
-      // istallet for en query per ovning (var en dold flaskhals).
-      const lines = [`Pass: ${sessionName}`, '']
-      sessionExercises.forEach(ex => {
-        let prev = null
-        for (const w of recentWorkouts) {
-          if (w.adjusted || !w.finished_at) continue
-          const found = (w.exercises ?? []).find(e => e.name === ex.name)
-          if (!found) continue
-          const sets = (found.sets ?? []).filter(s => s.done && s.weight != null)
-          if (sets.length) { prev = sets; break }
-        }
-        lines.push(`${ex.name}${ex.muscle_group ? ` (${ex.muscle_group})` : ''}:`)
-        lines.push(prev?.length
-          ? `  Förra passet: ${prev.map(s => `${s.weight}kg×${s.reps}`).join(', ')}`
-          : '  Ingen tidigare data')
-      })
-
-      generateWorkoutIntro({
-        context: lines.join('\n'),
-        memory: memory || null,
-        recentWorkouts,
-        currentExercises: sessionExercises,
-        currentProgram: programId ? { id: programId, name: program?.name ?? null } : null,
-      })
-        .then(intro => { if (!cancelled && intro) setIntroMessage(intro) })
-        .catch(() => {})
-        .finally(() => { if (!cancelled) setIntroLoading(false) })
-    })()
-
-    return () => { cancelled = true }
-  }, [session.user.id]) // eslint-disable-line react-hooks/exhaustive-deps
-
   // Stäng header-meny vid klick utanför
   useEffect(() => {
     if (!headerMenuOpen) return
@@ -207,8 +151,6 @@ export default function Workout({ session }) {
   }, [headerMenuOpen])
 
   // Bygg kontext för AI – alltid färsk snapshot av pågående pass
-  const getContext = useCallback(() => buildWorkoutContext(sessionName, workout.exercises, workoutNotes), [sessionName, workout.exercises, workoutNotes])
-  const getMemory = useCallback(() => aiMemory || null, [aiMemory])
 
   // ── Reorder ────────────────────────────────────────────────
   function handleLongPressStart() {
@@ -317,10 +259,6 @@ export default function Workout({ session }) {
         }
         setSessionPrs(prs)
       } catch { /* PR-detektion far aldrig stoppa flodet */ }
-
-      const newMemory = buildMemoryContent(recent, aiMemory)
-      setAiMemory(newMemory)
-      return upsertAiMemory(session.user.id, newMemory)
     }).catch(() => {})
 
     setShowFinish(false)
@@ -493,17 +431,6 @@ export default function Workout({ session }) {
               <path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>
             </svg>
           </button>
-          {/* PT-knapp */}
-          <button
-            className={`${styles.headIconBtn} ${aiChatOpen ? styles.headIconBtnActive : ''}`}
-            onClick={() => setAiChatOpen(true)}
-            type="button"
-            aria-label="Öppna PT-chat"
-          >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>
-            </svg>
-          </button>
           {/* ··· meny */}
           <button
             className={`${styles.headIconBtn} ${headerMenuOpen ? styles.headIconBtnActive : ''}`}
@@ -615,24 +542,14 @@ export default function Workout({ session }) {
               <div className={styles.emptyChoice}>
                 <p className={styles.emptyChoiceTitle}>Fritt pass</p>
                 <p className={styles.emptyChoiceText}>
-                  Lägg till övningar själv, eller låt PT sätta ihop ett pass åt dig.
+                  Lägg till de övningar du vill köra idag.
                 </p>
-                <button
-                  className={styles.emptyPtBtn}
-                  onClick={() => setAiChatOpen(true)}
-                  type="button"
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/>
-                  </svg>
-                  Be PT skapa ett pass
-                </button>
                 <button
                   className={styles.emptyAddBtn}
                   onClick={() => setPickerTarget({ _add: true })}
                   type="button"
                 >
-                  + Lägg till övning själv
+                  + Lägg till övning
                 </button>
               </div>
             )}
@@ -977,55 +894,6 @@ export default function Workout({ session }) {
           </div>
         </>
       )}
-
-      <AiChat
-        open={aiChatOpen}
-        onClose={() => setAiChatOpen(false)}
-        getContext={getContext}
-        getMemory={getMemory}
-        getDeloadStatus={() => deloadStatus}
-        introMessage={introMessage}
-        introLoading={introLoading}
-        freeWorkoutMode={!programId && workout.exercises.length === 0}
-        getAvailableExercises={() => exerciseList}
-        onApplyWorkoutPlan={(plan) => {
-          workout.addGeneratedWorkout(plan.exercises, exerciseList)
-          return true
-        }}
-        workoutNotes={workoutNotes}
-        onUpdateNotes={setWorkoutNotes}
-        onUpdateMemory={async (note) => {
-          const updated = appendUserNote(aiMemory, note)
-          setAiMemory(updated)
-          await upsertAiMemory(session.user.id, updated)
-        }}
-        onApplyAdjustment={(adjustment) => workout.applyAdjustment(adjustment)}
-        onApplyDeload={async (deload) => {
-          try {
-            deloadAppliedRef.current = true
-            const result = await startDeloadWeek(session.user.id, deload.days || 7)
-            setDeloadStatus({ isActive: true, daysLeft: result.daysLeft, deloadUntil: result.deloadUntil })
-            // Också applicera på aktuella passet direkt
-            const changes = workout.exercises.map(ex => ({
-              exerciseName: ex.name,
-              weightMultiplier: deload.weightMultiplier ?? 0.85,
-              setMultiplier: deload.setReduction ? 1 - (deload.setReduction / 4) : 0.8,
-            }))
-            if (changes.length > 0) {
-              // temporary: deloadpasset ska inte bli ny baslinje for progressionen
-              workout.applyAdjustment({
-                summary: deload.summary,
-                changes,
-                temporary: true,
-              })
-            }
-            return true
-          } catch (err) {
-            console.error('startDeloadWeek error:', err)
-            return false
-          }
-        }}
-      />
 
       {/* ── Byt övning ── */}
       <ExercisePicker

@@ -87,7 +87,7 @@ function holdAtLastSession(ex, days) {
   return {
     ...ex,
     sets,
-    progressionHint: `PT: ${days} dagar sedan senaste pass. Samma vikter och reps som sist.`,
+    progressionHint: `${days} dagar sedan senaste pass. Samma vikter och reps som sist.`,
     progressionAction: 'gap_adjustment',
   }
 }
@@ -439,11 +439,11 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
               const days = gapAdj.days ?? '?'
               let hint
               if (adjustedWeight) {
-                hint = `PT: ${days} dagar sedan senaste pass. Sänkt vikt.`
+                hint = `${days} dagar sedan senaste pass. Sänkt vikt.`
               } else if (adjustedReps) {
-                hint = `PT: ${days} dagar sedan senaste pass. Färre reps.`
+                hint = `${days} dagar sedan senaste pass. Färre reps.`
               } else {
-                hint = `PT: ${days} dagar sedan senaste pass.`
+                hint = `${days} dagar sedan senaste pass.`
               }
 
               updated = { ...updated, sets, progressionHint: hint, progressionAction: 'gap_adjustment' }
@@ -1069,7 +1069,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
         return { ...s, weight: String(Math.floor(w * 0.9 / inc) * inc) }
       })
       const newW = sets.find(s => s.type === 'work' && s.prefilled)?.weight
-      return { ...ex, sets, progressionHint: newW ? `PT: Ta det lugnt idag → ${newW}kg` : ex.progressionHint, progressionAction: 'gap_adjustment' }
+      return { ...ex, sets, progressionHint: newW ? `Ta det lugnt idag → ${newW}kg` : ex.progressionHint, progressionAction: 'gap_adjustment' }
     }))
   }, [])
 
@@ -1154,7 +1154,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
       // PT:ns andrade rep-mal fick aldrig effekt.
       if (typeof change.repsMin === 'number') next.defaultRepsMin = change.repsMin
       if (typeof change.repsMax === 'number') next.defaultRepsMax = change.repsMax
-      next.progressionHint = `PT: ${adjustment.summary}`
+      next.progressionHint = `${adjustment.summary}`
       next.progressionAction = 'gap_adjustment'
       return next
     }))
