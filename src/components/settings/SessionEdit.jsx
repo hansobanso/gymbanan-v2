@@ -202,7 +202,7 @@ function ExerciseRow({ ex, onTap, onRemove, isLinked, canLink, onToggleLink, isC
               {[
                 info?.muscle_group,
                 info?.equipment ? info.equipment.toLowerCase() : null,
-                <span key="rest" className={restCustom ? styles.metaAccent : undefined}>vila {restLabel}</span>,
+                restCustom ? <span key="rest">vila {restLabel}</span> : null,
                 isLinked ? <span key="ss" className={styles.metaAccent}>superset</span> : null,
               ].filter(Boolean).map((part, i) => (
                 <span key={i}>{i > 0 && ' · '}{part}</span>

@@ -9,10 +9,10 @@ const REST_PRESETS = [30, 60, 90, 120, 180]
 const DEFAULT_REST_KEY = 'gymbanan_default_rest'
 
 function fmtRest(s) {
-  if (s < 60) return `${s}s`
+  if (s < 60) return `${s} s`
   const m = Math.floor(s / 60)
   const rem = s % 60
-  return rem ? `${m}m${rem}s` : `${m}m`
+  return rem ? `${m} min ${rem} s` : `${m} min`
 }
 
 function Chevron({ rotated }) {

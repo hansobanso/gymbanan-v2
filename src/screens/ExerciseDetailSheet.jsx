@@ -157,6 +157,7 @@ export default function ExerciseDetailSheet({ id, onClose, onNotesSaved, context
             <div className={detailStyles.body}>
 
               {/* Namn – ej redigerbart under pass */}
+              {!isWorkoutContext && (
               <div className={detailStyles.section}>
                 <label className={detailStyles.label}>Namn</label>
                 <input
@@ -167,6 +168,7 @@ export default function ExerciseDetailSheet({ id, onClose, onNotesSaved, context
                   placeholder="Övningsnamn"
                 />
               </div>
+              )}
 
               {/* Under pass: vilka muskler ovningen tranar */}
               {isWorkoutContext && (

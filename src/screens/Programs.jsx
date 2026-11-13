@@ -329,7 +329,7 @@ export default function Programs({ session, programs, setPrograms, activeProgram
                       <div className={styles.previewSessionHeader}>
                         <span className={styles.previewSessionName}>{s.name}</span>
                         <span className={styles.previewSessionMeta}>
-                          {exercises.length} övn · {totalWorkSets} set
+                          {exercises.length} övningar · {totalWorkSets} set
                         </span>
                       </div>
                       {exercises.length > 0 && (
@@ -339,7 +339,9 @@ export default function Programs({ session, programs, setPrograms, activeProgram
                             return (
                               <li key={j} className={styles.previewExerciseRow}>
                                 <span className={styles.previewExerciseName}>{ex.name}</span>
-                                <span className={styles.previewExerciseSets}>{workSets}×</span>
+                                <span className={styles.previewExerciseSets}>
+                                  {ex.repsMin != null && ex.repsMax != null ? `${workSets} × ${ex.repsMin}–${ex.repsMax}` : `${workSets} set`}
+                                </span>
                               </li>
                             )
                           })}
