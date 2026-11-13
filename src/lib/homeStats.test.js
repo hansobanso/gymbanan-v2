@@ -167,3 +167,17 @@ describe('historik', () => {
     expect(fmtMinutes(0)).toBe(null)
   })
 })
+
+import { weekStrips } from './homeStats.js'
+
+describe('weekStrips', () => {
+  it('ger aldst forst och lagger passen pa ratt dag', () => {
+    const w = [wo(3, 'A', []), wo(9, 'B', []), wo(9, 'C', [])]
+    const weeks = weekStrips(w, NOW, 3)
+    expect(weeks.map(x => x.week)).toEqual([44, 45, 46])
+    expect(weeks[2].isCurrent).toBe(true)
+    expect(weeks[1].days[1].workouts.map(x => x.session_name)).toEqual(['B', 'C'])
+    expect(weeks[1].count).toBe(1)
+    expect(weeks[0].count).toBe(0)
+  })
+})

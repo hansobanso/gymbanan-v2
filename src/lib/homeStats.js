@@ -23,33 +23,52 @@ const DAY_LETTERS = ['M', 'T', 'O', 'T', 'F', 'L', 'S']
 const DAY_NAMES = ['måndag', 'tisdag', 'onsdag', 'torsdag', 'fredag', 'lördag', 'söndag']
 
 /**
- * Veckans sju dagar (man-son) med vilka som har ett sparat pass.
- * Inget mal och inget "missat": en dag ar tranad, idag, eller tom.
+ * De senaste veckorna (aldst forst, innevarande vecka sist), sju dagar var
+ * (man-son) med dagens sparade pass. Inget mal och inget "missat": en dag ar
+ * tranad, idag, eller tom.
  */
-export function weekStrip(workouts, now = new Date()) {
-  const mon = mondayOf(now)
+export function weekStrips(workouts, now = new Date(), weeks = 8) {
+  const thisMon = mondayOf(now)
   const today = startOfDay(now).getTime()
-  const trained = new Set()
+  const byDay = new Map() // dagens midnatt -> [pass]
   for (const w of workouts ?? []) {
     if (!w.finished_at) continue
     const t = startOfDay(new Date(w.finished_at)).getTime()
-    if (t >= mon.getTime()) trained.add(t)
+    if (!byDay.has(t)) byDay.set(t, [])
+    byDay.get(t).push(w)
   }
-  const days = DAY_LETTERS.map((letter, i) => {
-    const t = mon.getTime() + i * DAY_MS
-    // Sommartid: rakna om via datum sa midnatt alltid traffar ratt dag.
-    const d = new Date(mon); d.setDate(mon.getDate() + i)
-    const key = startOfDay(d).getTime()
-    return {
-      letter,
-      name: DAY_NAMES[i],
-      trained: trained.has(key),
-      isToday: key === today,
-      isFuture: key > today,
-      _t: t,
-    }
-  })
-  return { days, count: days.filter(d => d.trained).length }
+  const out = []
+  for (let k = weeks - 1; k >= 0; k--) {
+    const mon = new Date(thisMon); mon.setDate(thisMon.getDate() - 7 * k)
+    const days = DAY_LETTERS.map((letter, i) => {
+      // Rakna via datum (inte millisekunder) sa sommartid inte flyttar dagen.
+      const d = new Date(mon); d.setDate(mon.getDate() + i)
+      const key = startOfDay(d).getTime()
+      const dayWorkouts = byDay.get(key) ?? []
+      return {
+        letter,
+        name: DAY_NAMES[i],
+        date: d,
+        workouts: dayWorkouts,
+        trained: dayWorkouts.length > 0,
+        isToday: key === today,
+        isFuture: key > today,
+      }
+    })
+    out.push({
+      week: isoWeekOf(mon).week,
+      isCurrent: k === 0,
+      days,
+      count: days.filter(d => d.trained).length,
+    })
+  }
+  return out
+}
+
+/** Innevarande vecka (se weekStrips). */
+export function weekStrip(workouts, now = new Date()) {
+  const cur = weekStrips(workouts, now, 1)[0]
+  return { days: cur.days, count: cur.count }
 }
 
 // Muskelgrupper som visas pa startsidan. Vader bryts ut ur Ben eftersom

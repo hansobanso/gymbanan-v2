@@ -1,13 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { calendarDaysAgo } from '../../lib/dates'
 import { useNavigate } from 'react-router-dom'
 import { getWorkouts, getDeloadStatus, endDeloadWeek, getProfile, cacheInvalidate, getExercises } from '../../lib/db'
 import { supabase } from '../../lib/supabase'
 import { detectGapAdjustment } from '../../lib/progression'
-import { weekStrip, muscleStatus, sessionSummary, daysLabel, workoutMinutes, pbCount, isoWeek } from '../../lib/homeStats'
+import { weekStrips, muscleStatus, sessionSummary, daysLabel, workoutMinutes, pbCount } from '../../lib/homeStats'
 import { BananaIcon } from '../shared/Icons'
 import AppInfo from '../shared/AppInfo'
 import SessionPreview from './SessionPreview'
+import DaySheet from './DaySheet'
 import styles from './HomeScreen.module.css'
 import h from './Home.module.css'
 
@@ -50,15 +51,24 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
   const [recentWorkouts, setRecentWorkouts] = useState([])
   const [workoutsLoaded, setWorkoutsLoaded] = useState(false)
   const [previewSession, setPreviewSession] = useState(null) // { session, program }
+  const [openDay, setOpenDay] = useState(null) // dag i veckoremsan vars pass visas
+  const [weekIdx, setWeekIdx] = useState(null) // synlig vecka i remsan (null = innevarande)
+  const weekScrollRef = useRef(null)
   const [deloadStatus, setDeloadStatus] = useState({ isActive: false, daysLeft: 0 })
   const [displayName, setDisplayName] = useState('')
   const [introDismissed, setIntroDismissed] = useState(true) // antar dolt tills vi laddat (undvik flimmer)
   const [exerciseMap, setExerciseMap] = useState({})
   const navigate = useNavigate()
 
+  // Veckoremsan borjar pa innevarande vecka, som ligger langst till hoger.
+  useLayoutEffect(() => {
+    const el = weekScrollRef.current
+    if (el) el.scrollLeft = el.scrollWidth
+  }, [workoutsLoaded, programsLoaded])
+
   useEffect(() => {
     let cancelled = false
-    getWorkouts(session.user.id, 15).then(ws => {
+    getWorkouts(session.user.id, 40).then(ws => {
       if (cancelled) return
       setRecentWorkouts(ws)
       setWorkoutsLoaded(true)
@@ -86,7 +96,7 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
   // Refetch workouts when returning to the app (e.g. after finishing a workout)
   useEffect(() => {
     function refetch() {
-      getWorkouts(session.user.id, 15).then(ws => {
+      getWorkouts(session.user.id, 40).then(ws => {
         setRecentWorkouts(ws)
       }).catch(() => {})
       getDeloadStatus(session.user.id).then(setDeloadStatus).catch(() => {})
@@ -192,7 +202,9 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
   const nextSession = getNextSession(activeProgram, recentWorkouts)
   const sessions = activeProgram?.sessions ?? []
   const otherSessions = sessions.filter(s => s !== nextSession)
-  const strip = weekStrip(recentWorkouts)
+  const weeks = weekStrips(recentWorkouts)
+  const strip = weeks[weeks.length - 1]
+  const shownWeek = weeks[weekIdx ?? weeks.length - 1] ?? strip
   const today = strip.days.find(d => d.isToday)
   const trainedToday = !!today?.trained
   const next = nextSession ? sessionSummary(nextSession, recentWorkouts, exerciseMap) : null
@@ -283,25 +295,51 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
         {(activeProgram || recentWorkouts.length > 0) && (
           <section className={h.block}>
             <div className={h.labelRow}>
-              <span className={h.label}>Vecka {isoWeek()}</span>
-              <span className={h.labelRight}><b>{strip.count}</b> pass hittills</span>
+              <span className={h.label}>Vecka {shownWeek.week}</span>
+              <span className={h.labelRight}>
+                <b>{shownWeek.count}</b> pass{shownWeek.isCurrent ? ' hittills' : ''}
+              </span>
             </div>
+            {/* Svep at hoger for tidigare veckor. Tryck pa en tranad dag for passet. */}
             <div
-              className={h.week}
-              role="img"
-              aria-label={`Tränat ${strip.days.filter(d => d.trained).map(d => d.name).join(', ') || 'inga dagar'} den här veckan`}
+              className={h.weekScroll}
+              ref={weekScrollRef}
+              onScroll={e => {
+                const el = e.currentTarget
+                const idx = Math.round(el.scrollLeft / el.clientWidth)
+                if (idx !== (weekIdx ?? weeks.length - 1)) setWeekIdx(idx)
+              }}
             >
-              {strip.days.map((d, i) => (
-                <div key={i} className={h.day}>
-                  <span className={d.isToday ? h.dayLetterToday : h.dayLetter}>{d.letter}</span>
-                  <span className={[
-                    h.dot,
-                    d.trained ? h.dotDone : '',
-                    d.isToday ? h.dotToday : '',
-                    d.isFuture ? h.dotFuture : '',
-                  ].join(' ')}>
-                    {d.trained ? <CheckIcon /> : d.isToday ? <span className={h.dotCore} /> : null}
-                  </span>
+              {weeks.map(wk => (
+                <div key={wk.week} className={h.week} role="group" aria-label={`Vecka ${wk.week}`}>
+                  {wk.days.map((d, i) => {
+                    const dotCls = [
+                      h.dot,
+                      d.trained ? h.dotDone : '',
+                      d.isToday ? h.dotToday : '',
+                      d.isFuture ? h.dotFuture : '',
+                    ].join(' ')
+                    return (
+                      <div key={i} className={h.day}>
+                        <span className={d.isToday ? h.dayLetterToday : h.dayLetter}>{d.letter}</span>
+                        {d.trained ? (
+                          <button
+                            className={h.dotBtn}
+                            onClick={() => setOpenDay(d)}
+                            type="button"
+                            aria-label={`Visa passet ${d.name} ${d.date.getDate()}/${d.date.getMonth() + 1}`}
+                          >
+                            <span className={dotCls}><CheckIcon /></span>
+                          </button>
+                        ) : (
+                          <span className={dotCls}>
+                            {d.isToday ? <span className={h.dotCore} /> : null}
+                          </span>
+                        )}
+                        <span className={h.dayNum}>{d.date.getDate()}</span>
+                      </div>
+                    )
+                  })}
                 </div>
               ))}
             </div>
@@ -513,6 +551,8 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
       </div>
 
       {/* ── Pass-förhandsgranskning ── */}
+      <DaySheet day={openDay} exerciseMap={exerciseMap} onClose={() => setOpenDay(null)} />
+
       <SessionPreview
         open={previewSession !== null}
         session={previewSession?.session}

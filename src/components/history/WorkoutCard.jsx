@@ -21,7 +21,7 @@ function calcStats(exercises) {
 
 // Ett pass sets pa en rad: "22 kg × 8 · 8 · 9" nar vikten ar densamma,
 // annars "22 × 8 · 24 × 6". PB-set markeras.
-function SetSummary({ sets, equipment, className }) {
+export function SetSummary({ sets, equipment, className }) {
   const weights = sets.map(s => parseFloat(s.weight) || 0)
   const sameWeight = weights.every(w => w === weights[0])
   const w0 = weights[0] > 0 ? displayWeightStr(sets[0].weight, equipment) : null
