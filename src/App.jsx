@@ -41,7 +41,7 @@ function Splash() {
 
 // Loggan ritas upp pa drygt en halv sekund. Lat den hinna klart aven nar
 // appen laddar snabbare an sa.
-const SPLASH_MIN_MS = 850
+const SPLASH_MIN_MS = 1300
 
 function fmtElapsedSince(isoString) {
   const mins = Math.round((Date.now() - new Date(isoString)) / 60000)
