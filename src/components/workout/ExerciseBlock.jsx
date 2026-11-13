@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import SetHero from './SetHero'
 import { getPreviousSetsForExercise, getExerciseByName } from '../../lib/db'
 import { displayWeightStr, defaultWeightIncrement } from '../../lib/weightUtils'
+import { hapticTick, hapticSuccess, hapticWarn } from '../../lib/haptics'
 import styles from './ExerciseBlock.module.css'
 
 // Tre slags set: uppvarmning (w), arbetsset (k) och backoff (b). Samma
@@ -150,7 +151,7 @@ export default function ExerciseBlock({
     if (!wasCompleted && set?.type === 'work') {
       const hasReps = set.reps !== '' && set.reps !== null && set.reps !== undefined
       if (!hasReps) {
-        try { navigator.vibrate?.(20) } catch { /* ignored */ }
+        hapticWarn()
         // Focus reps-faltet (andra number-inputen i kortet)
         const rowEl = document.querySelector(`[data-set-id="${setId}"]`)
         const inputs = rowEl?.querySelectorAll('input[type="number"]')
@@ -165,6 +166,7 @@ export default function ExerciseBlock({
       exercise.sets.filter(s => s.type === 'work' && !s.done).length === 1
     const isLastSetOfWorkout = isLastExercise && isLastWorkSetOfExercise
 
+    if (!wasCompleted) hapticTick()
     setEditSetId(null)
     // (Nasta sets vikt/reps fylls i av completeSet i useWorkout.)
     await onCompleteSet(exercise.localId, setId)
@@ -219,7 +221,7 @@ export default function ExerciseBlock({
     const reps = parseInt(s.reps)
     const w = parseFloat(s.weight) || 0
     if (!reps && !w) return '–'
-    const wStr = isCardio ? String(w) : displayWeightStr(s.weight, exEquipment)
+    const wStr = isCardio ? String(w).replace('.', ',') : displayWeightStr(s.weight, exEquipment)
     if (isCardio) return w > 0 ? `${wStr} km × ${reps || '–'} min` : `${reps} min`
     const unit = isTimeBased ? ' s' : ''
     if (w > 0) return `${wStr} kg × ${reps || '–'}${unit}`
@@ -275,6 +277,14 @@ export default function ExerciseBlock({
   // nasta ej klara set i den aktiva ovningen.
   const editSet = exercise.sets.find(s => s.id === editSetId && !s.done)
   const openSetId = editSet?.id ?? (isActive ? exercise.sets.find(s => !s.done)?.id ?? null : null)
+
+  // Nytt personbasta: dubbel kanselsignal (utover blinken pa raden).
+  const pbTotal = exercise.sets.filter(st => st.done && st.isPB).length
+  const pbSeenRef = useRef(pbTotal)
+  useEffect(() => {
+    if (pbTotal > pbSeenRef.current) hapticSuccess()
+    pbSeenRef.current = pbTotal
+  }, [pbTotal])
 
   // Hall det oppna setet mitt pa skarmen. Med manga set skulle kortet
   // annars glida ner mot kanten for varje set man bockar av.
