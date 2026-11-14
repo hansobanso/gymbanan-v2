@@ -512,3 +512,31 @@
 .copyFullBtn { min-height: var(--btn-h-sm); border-radius: var(--btn-r-sm); }
 .restDropdownTrigger { min-height: 40px; padding: 0 12px; border: 1px solid var(--d-raised-border); border-radius: 12px; background: var(--d-raised); font-weight: 600; }
 .saveRestBtn { min-height: 40px; padding: 0 16px; border-radius: 20px; font-size: 14px; }
+
+/* ── Flikar: Om ovningen / Historik ── */
+.tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  margin: 4px 16px 12px;
+  padding: 4px;
+  border: 1px solid var(--d-card-border);
+  border-radius: 14px;
+  background: var(--d-card);
+}
+.tab {
+  min-height: 36px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--d-muted);
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 700;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s var(--ease), color 0.15s var(--ease);
+}
+.tabOn {
+  background: var(--d-raised);
+  color: #fff;
+}

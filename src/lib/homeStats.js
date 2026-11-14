@@ -324,3 +324,45 @@ export function withExtras(session, extras) {
   if (!add.length) return session
   return { ...session, exercises: [...(session.exercises ?? []), ...add] }
 }
+
+// ── Veckorapport ────────────────────────────────────────────────────────
+/**
+ * Summering av en veckas pass. Inget mal och inga jamforelser som kan kannas
+ * som bakslag: bara vad som blev gjort.
+ *   groups: [{ group, sets }] storst forst (primar muskel, arbetsset)
+ *   rested: grupper utan set den har veckan
+ *   pbs:    [{ name, weight, reps }] ett per ovning (tyngsta)
+ */
+export function weekReport(workouts, exerciseMap) {
+  const done = (workouts ?? []).filter(w => w.finished_at)
+  const setsByGroup = {}
+  const pbByName = new Map()
+  let sets = 0
+  for (const w of done) {
+    for (const ex of w.exercises ?? []) {
+      const work = (ex.sets ?? []).filter(s => s.done && s.type !== 'warmup')
+      if (!work.length) continue
+      sets += work.length
+      const g = statusGroupOf(muscleOf(ex, exerciseMap))
+      if (g) setsByGroup[g] = (setsByGroup[g] ?? 0) + work.length
+      for (const s of work) {
+        if (!s.isPB) continue
+        const cur = pbByName.get(ex.name)
+        const w8 = parseFloat(s.weight) || 0
+        const reps = parseInt(s.reps) || 0
+        if (!cur || w8 > cur.weight || (w8 === cur.weight && reps > cur.reps)) pbByName.set(ex.name, { name: ex.name, weight: w8, reps })
+      }
+    }
+  }
+  const groups = STATUS_GROUPS.filter(g => setsByGroup[g]).map(g => ({ group: g, sets: setsByGroup[g] }))
+    .sort((a, b) => b.sets - a.sets)
+  return {
+    count: done.length,
+    minutes: done.reduce((sum, w) => sum + (workoutMinutes(w) ?? 0), 0),
+    sets,
+    groups,
+    rested: done.length ? STATUS_GROUPS.filter(g => !setsByGroup[g]) : [],
+    pbs: [...pbByName.values()],
+    workouts: [...done].sort((a, b) => new Date(a.finished_at) - new Date(b.finished_at)),
+  }
+}

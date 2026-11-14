@@ -11,6 +11,7 @@ import AppInfo from '../shared/AppInfo'
 import SessionPreview from './SessionPreview'
 import DaySheet from './DaySheet'
 import MuscleSheet from './MuscleSheet'
+import WeekSheet from './WeekSheet'
 import styles from './HomeScreen.module.css'
 import h from './Home.module.css'
 
@@ -56,6 +57,7 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
   const [workoutsLoaded, setWorkoutsLoaded] = useState(false)
   const [previewSession, setPreviewSession] = useState(null) // { session, program }
   const [openDay, setOpenDay] = useState(null) // dag i veckoremsan vars pass visas
+  const [openWeek, setOpenWeek] = useState(null) // vecka vars rapport visas
   const [openMuscle, setOpenMuscle] = useState(null) // grupp i Muskellaget vars ark visas
   // Extraovningar for nasta pass (fran Muskellaget). Ligger i localStorage sa
   // de overlever en omladdning, och toms nar ett pass startas.
@@ -313,12 +315,18 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
         {/* ── Veckan: bara vad som ar gjort, inget mal ── */}
         {(activeProgram || recentWorkouts.length > 0) && (
           <section className={h.block}>
-            <div className={h.labelRow}>
+            <button
+              className={h.weekBtn}
+              onClick={() => setOpenWeek({ week: shownWeek.week, isCurrent: shownWeek.isCurrent, workouts: shownWeek.days.flatMap(d => d.workouts) })}
+              type="button"
+              aria-label={`Veckorapport vecka ${shownWeek.week}`}
+            >
               <span className={h.label}>Vecka {shownWeek.week}</span>
               <span className={h.labelRight}>
                 <b>{shownWeek.count}</b> pass{shownWeek.isCurrent ? ' hittills' : ''}
+                <svg width="7" height="12" viewBox="0 0 7 12" fill="none" aria-hidden="true"><path d="M1 1l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </span>
-            </div>
+            </button>
             {/* Svep at hoger for tidigare veckor. Tryck pa en tranad dag for passet. */}
             <div
               className={h.weekScroll}
@@ -582,6 +590,7 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
 
       {/* ── Pass-förhandsgranskning ── */}
       <DaySheet day={openDay} exerciseMap={exerciseMap} onClose={() => setOpenDay(null)} />
+      <WeekSheet week={openWeek} exerciseMap={exerciseMap} onClose={() => setOpenWeek(null)} />
       <MuscleSheet
         muscle={muscles.find(m => m.group === openMuscle) ?? null}
         detail={openMuscle ? muscleDetail(openMuscle, activeProgram, nextSession, recentWorkouts, exerciseMap) : null}

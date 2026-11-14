@@ -1,3 +1,4 @@
+import WeekSheet from '../components/home/WeekSheet'
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { getWorkouts, getEquipmentMap, deleteWorkout, restoreWorkout } from '../lib/db'
@@ -13,6 +14,7 @@ export default function History({ session }) {
   const [loading, setLoading] = useState(true)
   const [progressOpen, setProgressOpen] = useState(false)
   const [equipmentMap, setEquipmentMap] = useState({})
+  const [openWeek, setOpenWeek] = useState(null) // vecka vars rapport visas
   const [undoState, setUndoState] = useState(null) // { workout }
   const [progressInitial, setProgressInitial] = useState(null)
   const [progressFromLink, setProgressFromLink] = useState(false) // oppnad via 'Se din utveckling'
@@ -158,10 +160,18 @@ export default function History({ session }) {
 
             {weeks.map(g => (
               <section key={g.key} className={styles.week}>
-                <div className={styles.weekHead}>
+                <button
+                  className={styles.weekHead}
+                  onClick={() => setOpenWeek({ week: g.week, isCurrent: false, workouts: g.workouts })}
+                  type="button"
+                  aria-label={`Veckorapport vecka ${g.week}`}
+                >
                   <span className={styles.weekLabel}>Vecka {g.week}</span>
-                  <span className={styles.weekCount}>{g.workouts.length} pass</span>
-                </div>
+                  <span className={styles.weekCount}>
+                    {g.workouts.length} pass
+                    <svg width="7" height="12" viewBox="0 0 7 12" fill="none" aria-hidden="true"><path d="M1 1l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  </span>
+                </button>
                 <div className={styles.weekList}>
             {g.workouts.map(w => (
 
@@ -231,6 +241,7 @@ export default function History({ session }) {
         initialExercise={progressInitial}
         fromLink={progressFromLink}
       />
+      <WeekSheet week={openWeek} onClose={() => setOpenWeek(null)} />
     </div>
   )
 }

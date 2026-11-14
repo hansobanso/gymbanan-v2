@@ -250,3 +250,24 @@
 
 /* ═══ Knappsystem 2026-11: samma hojd, radie och vikt overallt ═══ */
 .undoToast { border-radius: 16px; background: #1A1A1A; box-shadow: 0 0 0 1px var(--d-raised-border), 0 12px 24px rgba(0,0,0,0.5); }
+
+/* Veckorubriken ar en knapp: oppnar veckorapporten */
+.weekHead {
+  width: 100%;
+  height: auto;
+  min-height: 44px;
+  margin: -9px 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-family: var(--font);
+  align-items: center;
+  -webkit-tap-highlight-color: transparent;
+}
+.weekHead:active { opacity: 0.6; }
+.weekCount {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.weekCount svg { color: #6A6A6A; }

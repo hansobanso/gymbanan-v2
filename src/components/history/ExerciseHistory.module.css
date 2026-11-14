@@ -1,0 +1,136 @@
+/* Historik-fliken pa ovningssidan. */
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 16px 24px;
+}
+
+.loading { min-height: 200px; }
+
+.stats {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 8px 0 16px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stat:last-child { align-items: flex-end; }
+
+.num {
+  font-family: var(--font-num);
+  font-size: 34px;
+  line-height: 1;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.unit {
+  font-size: 12px;
+  color: var(--d-muted);
+}
+
+.progressBtn {
+  min-height: var(--btn-h-sm);
+  margin-bottom: 22px;
+  border: 1px solid var(--d-raised-border);
+  border-radius: var(--btn-r-sm);
+  background: var(--d-raised);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: var(--btn-fs-sm);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.progressBtn:active { background: #2A2A2A; }
+
+.label {
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--d-muted);
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid var(--d-line);
+  font-variant-numeric: tabular-nums;
+}
+
+.row {
+  min-height: 56px;
+  padding: 8px 0;
+  border-top: 1px solid var(--d-line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.rowText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.rowDate {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.rowMeta {
+  font-size: 12px;
+  color: var(--d-muted);
+}
+
+.rowSets {
+  min-width: 0;
+  font-size: 14px;
+  color: #C9C9C9;
+  text-align: right;
+}
+
+.pbSet {
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.emptyTitle {
+  margin: 8px 0 0;
+  font-size: 17px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.emptyText {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--d-muted);
+}

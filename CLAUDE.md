@@ -124,6 +124,14 @@ och om setState i effekter (befintligt mönster). Titta bara på nya fel.
   gymbanan_next_extras`, töms vid passtart, bär `extra: true` och sparas
   aldrig till programmet (`buildUpdatedSession` filtrerar bort dem).
 
+- Veckorapport (`WeekSheet`, `weekReport`): tryck på veckoraden på
+  startsidan eller en veckorubrik i historiken. Visar pass, tid, set, PB
+  och tränade muskler. Inga mål och inga jämförelser med andra veckor;
+  grupper utan set står som "Fick vila".
+
+**Övningssidan** har två flikar: "Om övningen" och "Historik"
+(`ExerciseHistory`: bästa set, senaste passen, länk till kurvan).
+
 **Övningsväljaren** (`ExercisePicker`)
 - Lägga till = flerval: bocka i flera, knappen längst ner visar antalet.
   Byta övning är fortfarande ett tryck.

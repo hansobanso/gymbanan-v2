@@ -238,3 +238,27 @@ describe('withExtras', () => {
     expect(withExtras(null, [{ name: 'x' }])).toBe(null)
   })
 })
+
+import { weekReport } from './homeStats.js'
+
+describe('weekReport', () => {
+  const map = { 'Bänk': { muscle_group: 'Bröst' }, 'Rodd': { muscle_group: 'Lats' }, 'Curl': { muscle_group: 'Biceps' } }
+  const week = [
+    wo(1, 'B', [
+      { name: 'Rodd', sets: work(4) },
+      { name: 'Curl', sets: [...work(1, { weight: 12, reps: 10, isPB: true }), ...work(1, { weight: 14, reps: 8, isPB: true })] },
+    ], 50),
+    wo(3, 'A', [{ name: 'Bänk', sets: [{ type: 'warmup', done: true }, ...work(3), { type: 'work', done: false }] }], 70),
+  ]
+  it('summerar pass, tid, set, muskler och PB', () => {
+    const r = weekReport(week, map)
+    expect(r).toMatchObject({ count: 2, minutes: 120, sets: 9 })
+    expect(r.groups).toEqual([{ group: 'Rygg', sets: 4 }, { group: 'Bröst', sets: 3 }, { group: 'Armar', sets: 2 }])
+    expect(r.rested).toEqual(['Axlar', 'Ben', 'Vader', 'Bål'])
+    expect(r.pbs).toEqual([{ name: 'Curl', weight: 14, reps: 8 }])
+    expect(r.workouts.map(w => w.session_name)).toEqual(['A', 'B'])
+  })
+  it('tom vecka', () => {
+    expect(weekReport([], map)).toMatchObject({ count: 0, minutes: 0, sets: 0, groups: [], rested: [], pbs: [] })
+  })
+})
