@@ -132,11 +132,11 @@ function ProgressChart({ points }) {
       {prIdx !== lastIdx && (
         <>
           <circle cx={toX(prIdx)} cy={toY(maxV)} r="4" className={styles.dotPr} />
-          <text x={toX(prIdx)} y={toY(maxV) - 9} className={styles.prLabel} textAnchor="middle">PR</text>
+          <text x={toX(prIdx)} y={toY(maxV) - 9} className={styles.prLabel} textAnchor="middle">PB</text>
         </>
       )}
       {prIdx === lastIdx && (
-        <text x={toX(lastIdx)} y={toY(maxV) - 11} className={styles.prLabel} textAnchor="middle">PR</text>
+        <text x={toX(lastIdx)} y={toY(maxV) - 11} className={styles.prLabel} textAnchor="middle">PB</text>
       )}
 
       {/* Datumetiketter */}
@@ -273,7 +273,7 @@ export default function ProgressView({ open, onClose, workouts, equipmentMap = {
 
               <div className={styles.prRow}>
                 <span className={styles.prStar}>★</span>
-                <span>PR: <strong>{fmtKg(Math.round(data.pr))} {data.mode === 'weight' ? 'kg' : 'reps'}</strong>{data.prDate ? ` · ${fmtDate(data.prDate)}` : ''}</span>
+                <span>PB: <strong>{fmtKg(Math.round(data.pr))} {data.mode === 'weight' ? 'kg' : 'reps'}</strong>{data.prDate ? ` · ${fmtDate(data.prDate)}` : ''}</span>
               </div>
 
               <p className={styles.explainer}>

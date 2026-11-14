@@ -195,6 +195,14 @@ visas först när något ändrats. Använd `nEx()`/`fmtRest()` i
   `App.jsx`). Vilotimern följer inte med ut ur passet. Passvyn har en egen
   kantsvep-gest (dra från vänsterkanten förbi en tredjedel) eftersom iOS
   bakåt-gest studsar när historiken bara har en sida.
+- **iOS kantsvep**: iOS egen bakåt-gest drog fram förra fliken under den
+  man var på. Två skydd: flikarna i bottenmenyn navigerar med `replace`
+  (ingen historik mellan flikar), och `src/lib/edgeGuard.js` gör
+  `preventDefault` på touchar som börjar inom 20 px från en skärmkant och
+  skickar vidare stillastående tryck som klick. Appens egna kantgester
+  påverkas inte. Går inte att testa utan iPhone.
+- **PB heter PB överallt.** Skriv aldrig PR, rekord eller personbästa i
+  synlig text (skärmläsartexter får säga personbästa).
 - **Omladdning mitt i pass**: pass-skärmen får inte monteras medan
   "Pågående pass"-dialogen är obesvarad (se `App.jsx`).
 - **`useState` initieras en gång**: härled från props eller synka på

@@ -116,7 +116,7 @@ export default function History({ session }) {
           <div className={styles.empty}>
             <span className="empty-banana"><BananaIcon /></span>
             <p className={styles.emptyTitle}>Inga pass ännu</p>
-            <p className={styles.emptyText}>Kör ditt första pass så dyker det upp här, med tider, set och personbästa.</p>
+            <p className={styles.emptyText}>Kör ditt första pass så dyker det upp här, med tider, set och PB.</p>
           </div>
         )}
 
@@ -133,7 +133,7 @@ export default function History({ session }) {
               </div>
               <div className={styles.stat}>
                 <span className={`${styles.statNum} ${stats.pbs > 0 ? styles.statNumPb : ''}`}>{stats.pbs}</span>
-                <span className={styles.statLabel}>personbästa</span>
+                <span className={styles.statLabel}>PB</span>
               </div>
             </div>
 
@@ -149,7 +149,7 @@ export default function History({ session }) {
                 <span className={styles.progressTitle}>Framsteg</span>
                 <span className={styles.progressSub}>
                   {latestPr
-                    ? `Senaste rekord: ${latestPr.name} ${Math.round(displayWeight(latestPr.value, equipmentMap[latestPr.name]))} kg`
+                    ? `Senaste PB: ${latestPr.name} ${Math.round(displayWeight(latestPr.value, equipmentMap[latestPr.name]))} kg`
                     : 'Se hur mycket starkare du blivit'}
                 </span>
               </span>

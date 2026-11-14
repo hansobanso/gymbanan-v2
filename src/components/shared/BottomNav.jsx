@@ -65,6 +65,9 @@ export default function BottomNav() {
             key={path}
             to={path}
             end
+            // replace: flikbyten ska inte stapla sidor i historiken. Da finns
+            // ingen "forra sida" for iOS bakat-svep att dra fram.
+            replace
             className={({ isActive }) => isActive ? `${styles.tab} ${styles.active}` : styles.tab}
           >
             {({ isActive }) => (

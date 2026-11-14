@@ -5,6 +5,7 @@ import '@fontsource/barlow-condensed/latin-700.css'
 import './index.css'
 import App from './App.jsx'
 import ErrorBoundary from './components/shared/ErrorBoundary'
+import { installEdgeGuard } from './lib/edgeGuard'
 
 // Registrera INTE service worker pa admin-sidan. SW har root-scope (/),
 // vilket far iOS att knyta admin-PWA:n till huvudappen istallet for att
@@ -22,6 +23,8 @@ if ('serviceWorker' in navigator) {
     })
   }
 }
+
+installEdgeGuard()
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

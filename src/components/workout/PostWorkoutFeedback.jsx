@@ -120,7 +120,7 @@ export default function PostWorkoutFeedback({
           <div className={styles.pbHeader}>
             <span className={styles.pbBadge}>PB</span>
             <span className={styles.pbTitle}>
-              {pbRows.length === 1 ? 'Ett nytt personbästa' : `${pbRows.length} nya personbästa`}
+              {pbRows.length === 1 ? 'Ett nytt PB' : `${pbRows.length} nya PB`}
             </span>
           </div>
           {pbRows.map((r, i) => (
