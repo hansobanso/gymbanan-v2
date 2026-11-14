@@ -29,6 +29,10 @@ export default function WeekSheet({ week, exerciseMap: givenMap, onClose }) {
   }, [week, givenMap, ownMap])
   const exerciseMap = givenMap ?? ownMap ?? {}
   const r = week ? weekReport(week.workouts, exerciseMap) : null
+  // MuscleMap ar byggd for "senaste veckan": den hoppar over pass aldre an
+  // sju dagar och tonar ner aldre. Har ska hela veckan raknas fullt ut
+  // oavsett nar den var, sa datumet plockas bort.
+  const figureWorkouts = r ? r.workouts.map(w => ({ ...w, finished_at: null })) : []
 
   return (
     <AnimatePresence>
@@ -72,7 +76,7 @@ export default function WeekSheet({ week, exerciseMap: givenMap, onClose }) {
                     <>
                       <span className={styles.label}>Tränade muskler</span>
                       <div className={styles.muscles}>
-                        <MuscleMap workouts={r.workouts} exerciseMap={exerciseMap} colorFn={colorForIntensityRed} sensitivity={10} size={92} />
+                        <MuscleMap workouts={figureWorkouts} exerciseMap={exerciseMap} colorFn={colorForIntensityRed} sensitivity={10} size={92} />
                         <div className={styles.groupList}>
                           {r.groups.map(g => (
                             <div key={g.group} className={styles.groupRow}>

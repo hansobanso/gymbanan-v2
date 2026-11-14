@@ -203,6 +203,13 @@ visas först när något ändrats. Använd `nEx()`/`fmtRest()` i
   påverkas inte. Går inte att testa utan iPhone.
 - **PB heter PB överallt.** Skriv aldrig PR, rekord eller personbästa i
   synlig text (skärmläsartexter får säga personbästa).
+- **Försvunna CSS-klasser**: historiken gick inte att rulla i flera dagar
+  för att `.body` (rullytan) föll bort när sidan gjordes om, medan JSX
+  fortfarande använde den. Efter större CSS-ändringar: kontrollera att
+  varje `styles.x` i JSX finns i modulen, och rulla sidan i webbläsartestet.
+- **`MuscleMap` med `workouts`** hoppar över pass äldre än sju dagar och
+  tonar ner äldre. Ska en figur visa en bestämd mängd pass fullt ut
+  (veckorapport, planerat pass) skickas passen in med `finished_at: null`.
 - **Omladdning mitt i pass**: pass-skärmen får inte monteras medan
   "Pågående pass"-dialogen är obesvarad (se `App.jsx`).
 - **`useState` initieras en gång**: härled från props eller synka på

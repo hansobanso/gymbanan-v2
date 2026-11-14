@@ -271,3 +271,13 @@
   gap: 8px;
 }
 .weekCount svg { color: #6A6A6A; }
+
+/* Rullytan. Regeln foll bort nar historiken gjordes om, sa listan gick inte
+   att rulla. */
+.body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 0 16px;
+}
