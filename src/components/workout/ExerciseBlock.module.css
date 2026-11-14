@@ -25,7 +25,7 @@
   touch-action: manipulation;
 }
 
-.compact:active { background: #0E0E0E; }
+.compact:active { background: #1A1713; }
 
 .compactCheck,
 .compactRing {
@@ -45,7 +45,7 @@
 }
 
 .compactRing {
-  border: 2px solid #3A3A3A;
+  border: 2px solid #433E38;
 }
 
 .compactText {
@@ -62,7 +62,7 @@
   padding: 0 9px;
   border-radius: 12px;
   background: var(--accent);
-  color: #141414;
+  color: #1F1C18;
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -106,7 +106,7 @@
   padding: 0;
   border: 0;
   background: transparent;
-  color: #fff;
+  color: #F6F0E5;
   font-size: 24px;
   line-height: 1.15;
   font-weight: 800;
@@ -129,8 +129,8 @@
   height: 26px;
   padding: 0 10px;
   border-radius: 13px;
-  background: #1C1C1C;
-  color: #D6D6D6;
+  background: #26231E;
+  color: #D7D0C5;
   font-size: 12px;
   font-weight: 700;
   display: flex;
@@ -150,7 +150,7 @@
   border: 0;
   border-radius: 22px;
   background: transparent;
-  color: #C9C9C9;
+  color: #CDC6BB;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -158,7 +158,7 @@
 }
 
 .iconBtnActive,
-.iconBtn:active { background: #1C1C1C; }
+.iconBtn:active { background: #26231E; }
 
 .metaRow {
   display: flex;
@@ -173,7 +173,7 @@
 .metaRow > * + *::before {
   content: '·';
   margin-right: 6px;
-  color: #5A5A5A;
+  color: #625D55;
 }
 
 .metaBtn {
@@ -202,7 +202,7 @@
   padding: 0;
   border: 1px solid var(--accent-border);
   border-radius: 8px;
-  background: #1A1A1A;
+  background: #24211D;
   color: var(--text);
   /* 16px sa iOS inte zoomar in vid fokus */
   font-size: 16px;
@@ -312,7 +312,7 @@
   touch-action: manipulation;
 }
 
-.trTodo:active { background: #0E0E0E; }
+.trTodo:active { background: #1A1713; }
 
 .tdLabel {
   font-weight: 800;
@@ -320,7 +320,7 @@
   color: inherit;
 }
 
-.trTodo .tdLabel { color: #C9C9C9; font-size: 15px; }
+.trTodo .tdLabel { color: #CDC6BB; font-size: 15px; }
 .tdPrev { color: var(--d-muted); }
 .tdToday { font-weight: 700; }
 .tdEmpty { font-weight: 500; color: var(--d-muted); }
@@ -350,7 +350,7 @@
   padding: 0 6px;
   border-radius: 11px;
   background: var(--accent);
-  color: #141414;
+  color: #1F1C18;
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -365,7 +365,7 @@
   height: 20px;
   box-sizing: border-box;
   border-radius: 10px;
-  border: 2px solid #4A4A4A;
+  border: 2px solid #524D47;
 }
 
 /* ── Rorelse ── */
@@ -400,9 +400,9 @@
 .plateau {
   margin: 4px 0 8px;
   padding: 12px 14px;
-  border: 1px solid rgba(169, 189, 214, 0.28);
+  border: 1px solid rgba(235, 228, 217, 0.10);
   border-radius: 16px;
-  background: rgba(169, 189, 214, 0.07);
+  background: rgba(235, 228, 217, 0.05);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -420,7 +420,7 @@
 
 .plateauText b {
   font-weight: 700;
-  color: #fff;
+  color: #F6F0E5;
 }
 
 .plateauActions {
@@ -444,7 +444,7 @@
   touch-action: manipulation;
 }
 
-.plateauBtn:active { background: #2A2A2A; }
+.plateauBtn:active { background: #332F2A; }
 
 .plateauSkip {
   position: absolute;

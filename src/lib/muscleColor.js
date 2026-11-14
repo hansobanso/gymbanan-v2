@@ -1,13 +1,13 @@
 // Muskelpalett (skogsgron) - delad logik for MuscleMap och MuscleHeatmap.
 // Synca med --muscle-* i src/index.css om du andrar nyanserna.
 
-export const MUSCLE_UNTRAINED = [26, 46, 16]   // #1A2E10 - mork dov gron, outranad
-export const MUSCLE_RESTED    = [61, 107, 31]  // #3D6B1F - baseline vilad gron, lite ljusare
+export const MUSCLE_UNTRAINED = [46, 42, 36]   // #2E2A24 - varm mork gra, outranad
+export const MUSCLE_RESTED    = [92, 74, 28]   // #5C4A1C - mork bananbrun, lite tranad
 export const MUSCLE_TRAINED   = [245, 208, 32] // #F5D020 - full accent gul
 
 // Hex-strangar for CSS-fallbacks och inline-anvandning
-export const MUSCLE_UNTRAINED_HEX = '#1A2E10'
-export const MUSCLE_RESTED_HEX    = '#3D6B1F'
+export const MUSCLE_UNTRAINED_HEX = '#2E2A24'
+export const MUSCLE_RESTED_HEX    = '#5C4A1C'
 export const MUSCLE_TRAINED_HEX   = '#F5D020'
 
 function lerp(a, b, t) {
@@ -40,9 +40,10 @@ export function colorForIntensity(intensity) {
 
 // ── Rod skala for pass-sammanfattningen (vilka muskler jobbade idag) ──
 // Outranad = dampad gra, jobbad = rod gradient (morkrod -> klarrod).
-const MUSCLE_RED_IDLE = [74, 79, 87]    // #4A4F57 - gra, muskeln jobbade inte
-const MUSCLE_RED_LOW  = [142, 42, 36]   // #8E2A24 - morkrod, lite jobb
-const MUSCLE_RED_HIGH = [245, 64, 58]   // #F5403A - klarrod, mycket jobb
+// 2026-11c: "roda" skalan ar numera gul, appen har bara en signalfarg
+const MUSCLE_RED_IDLE = [62, 57, 50]    // #3E3932 - varm gra, muskeln jobbade inte
+const MUSCLE_RED_LOW  = [110, 88, 30]   // #6E581E - mork banan, lite jobb
+const MUSCLE_RED_HIGH = [245, 208, 32]  // #F5D020 - bananegul, mycket jobb
 
 export function colorForIntensityRed(intensity) {
   if (!intensity || intensity <= 0) {

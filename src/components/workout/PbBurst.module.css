@@ -1,0 +1,51 @@
+.layer {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.banana {
+  position: absolute;
+  bottom: -40px;
+  display: block;
+  animation: bananaUp 1.4s cubic-bezier(0.15, 0.7, 0.3, 1) forwards;
+  opacity: 0;
+}
+
+.banana svg { width: 100%; height: auto; display: block; }
+
+@keyframes bananaUp {
+  0% { opacity: 0; transform: translate(0, 0) rotate(0); }
+  12% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--drift), calc(-1 * var(--rise))) rotate(var(--spin)); }
+}
+
+.label {
+  position: absolute;
+  left: 50%;
+  top: 38%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-num);
+  font-size: 120px;
+  line-height: 1;
+  font-weight: 700;
+  color: var(--accent);
+  text-shadow: 0 6px 30px rgba(0, 0, 0, 0.6);
+  animation: pbPop 1.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes pbPop {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+  20% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+  35% { transform: translate(-50%, -50%) scale(1); }
+  75% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -60%) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .banana { display: none; }
+  .label { animation-duration: 0.01ms; }
+}

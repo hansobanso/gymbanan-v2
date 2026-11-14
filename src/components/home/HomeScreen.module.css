@@ -9,7 +9,7 @@
 /* ── Page header (consistent across tab screens) ── */
 .pageHeader {
   padding: calc(var(--safe-top, 44px) + 8px) 16px 12px;
-  background: #000000;
+  background: #0F0D0A;
   flex-shrink: 0;
 }
 
@@ -17,7 +17,7 @@
   font-size: 28px;
   font-weight: 800;
   letter-spacing: -0.5px;
-  color: #ffffff;
+  color: #F6F0E5;
   margin: 0;
   display: flex;
   align-items: center;
@@ -26,7 +26,7 @@
 }
 
 .pageTitleText {
-  color: #ffffff;
+  color: #F6F0E5;
 }
 
 .pageTitleIcon {
@@ -89,10 +89,10 @@
 }
 
 .freeWorkoutBtn {
-  background: #141414;
+  background: #1F1C18;
   border: none;
   border-radius: 14px;
-  color: #ffffff;
+  color: #F6F0E5;
   font-size: 15px;
   font-weight: 600;
   font-family: var(--font);
@@ -117,13 +117,13 @@
 .skeletonCard {
   background: var(--card-bg);
   border-radius: var(--card-radius);
-  border: 1px solid #1a1a1a;
+  border: 1px solid #24211D;
   padding: 18px 16px;
 }
 
 .skeletonLine {
   border-radius: 6px;
-  background: linear-gradient(90deg, #1a1a1a 25%, #252525 50%, #1a1a1a 75%);
+  background: linear-gradient(90deg, #24211D 25%, #2E2B26 50%, #24211D 75%);
   background-size: 800px 100%;
   animation: shimmer 1.4s ease-in-out infinite;
 }
@@ -136,7 +136,7 @@
   padding: 16px;
   background: var(--card-bg);
   border-radius: var(--card-radius);
-  border: 1px solid #1a1a1a;
+  border: 1px solid #24211D;
 }
 
 /* ── Deload-banner ── */
@@ -146,8 +146,8 @@
   gap: 8px;
   margin: 0 16px 12px;
   padding: 12px 14px;
-  background: linear-gradient(135deg, rgba(58, 87, 119, 0.18), rgba(40, 60, 90, 0.18));
-  border: 1px solid rgba(120, 160, 220, 0.3);
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
   border-radius: var(--card-radius);
 }
 
@@ -165,9 +165,9 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-  background: rgba(120, 160, 220, 0.18);
+  background: var(--accent-dim);
   border-radius: 50%;
-  color: #88aef0;
+  color: var(--accent);
   flex-shrink: 0;
 }
 
@@ -208,7 +208,7 @@
   border-radius: 16px;
   padding: 22px 20px;
   margin-bottom: 16px;
-  border: 1px solid #1f1f1f;
+  border: 1px solid #292521;
 }
 .welcomeTitle {
   display: flex;
@@ -216,7 +216,7 @@
   gap: 8px;
   font-size: 20px;
   font-weight: 800;
-  color: #fff;
+  color: #F6F0E5;
   margin: 0 0 8px;
   letter-spacing: -0.3px;
 }
@@ -230,8 +230,8 @@
   width: 100%;
   margin-top: 18px;
   padding: 11px;
-  background: var(--surface, #1a1a1a);
-  border: 1px solid #2a2a2a;
+  background: var(--surface, #24211D);
+  border: 1px solid #332F2A;
   border-radius: var(--radius-sm, 8px);
   color: var(--text);
   font-size: 14px;
@@ -243,7 +243,7 @@
 .introDismissHint {
   text-align: center;
   font-size: 11px;
-  color: var(--text-3, #555);
+  color: var(--text-3, #5D5851);
   margin: 8px 0 0;
 }
 .welcomeLabel {
@@ -260,7 +260,7 @@
   justify-content: space-between;
   width: 100%;
   background: var(--surface);
-  border: 1px solid #1f1f1f;
+  border: 1px solid #292521;
   border-radius: 14px;
   padding: 16px;
   cursor: pointer;
@@ -277,7 +277,7 @@
 .welcomeProgramName {
   font-size: 16px;
   font-weight: 700;
-  color: #fff;
+  color: #F6F0E5;
 }
 .welcomeProgramMeta {
   font-size: 13px;
@@ -296,10 +296,10 @@
   gap: 8px;
   width: 100%;
   margin-top: 12px;
-  background: #141414;
-  border: 1px solid #1f1f1f;
+  background: #1F1C18;
+  border: 1px solid #292521;
   border-radius: 14px;
-  color: #fff;
+  color: #F6F0E5;
   font-size: 15px;
   font-weight: 600;
   font-family: var(--font);
@@ -349,7 +349,7 @@
   background: var(--accent);
   border: none;
   border-radius: 12px;
-  color: #000000;
+  color: #0F0D0A;
   font-size: 15px;
   font-weight: 700;
   font-family: var(--font);
@@ -361,6 +361,6 @@
 
 /* ═══ Knappsystem 2026-11: samma hojd, radie och vikt overallt ═══ */
 .freeWorkoutBtn { min-height: var(--btn-h); border: 1px solid var(--d-raised-border); border-radius: 16px; background: var(--d-raised); color: var(--text); font-size: var(--btn-fs); font-weight: 700; }
-.welcomeCreateBtn { min-height: var(--btn-h); border: 0; border-radius: 16px; background: var(--accent); color: #141414; font-size: var(--btn-fs); font-weight: 800; }
+.welcomeCreateBtn { min-height: var(--btn-h); border: 0; border-radius: 16px; background: var(--accent); color: #1F1C18; font-size: var(--btn-fs); font-weight: 800; }
 .introDismissBtn { min-height: 44px; border: 1px solid var(--d-raised-border); border-radius: 16px; background: var(--d-raised); color: var(--text); font-size: 15px; font-weight: 700; }
-.errorRetryBtn { min-height: 44px; padding-left: 18px; padding-right: 18px; border: 0; border-radius: 14px; background: var(--accent); color: #141414; font-size: 15px; font-weight: 800; }
+.errorRetryBtn { min-height: 44px; padding-left: 18px; padding-right: 18px; border: 0; border-radius: 14px; background: var(--accent); color: #1F1C18; font-size: 15px; font-weight: 800; }

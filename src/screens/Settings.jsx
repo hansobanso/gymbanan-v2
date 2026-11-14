@@ -17,7 +17,7 @@ function Chevron({ rotated }) {
       className={styles.chevron}
       style={rotated ? { transform: 'rotate(90deg)', transition: 'transform 0.2s' } : { transition: 'transform 0.2s' }}
     >
-      <path d="m9 18 6-6-6-6" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="m9 18 6-6-6-6" stroke="#F6F0E5" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }

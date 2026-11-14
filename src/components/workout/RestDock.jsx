@@ -24,7 +24,7 @@ export default function RestDock({ timer, onOpen }) {
     >
       <button className={styles.main} onClick={onOpen} type="button" aria-label={`Vila, ${fmt(secondsLeft)} kvar. Öppna timern`}>
         <svg width="46" height="46" viewBox="0 0 46 46" fill="none" aria-hidden="true" className={styles.ring}>
-          <circle cx="23" cy="23" r={R} stroke="#2E2E2E" strokeWidth="4" />
+          <circle cx="23" cy="23" r={R} stroke="#37332E" strokeWidth="4" />
           <circle
             cx="23" cy="23" r={R}
             stroke={low ? 'var(--warning)' : 'var(--accent)'}

@@ -29,7 +29,7 @@
   line-height: 1.15;
   font-weight: 800;
   letter-spacing: -0.01em;
-  color: #fff;
+  color: #F6F0E5;
   text-wrap: balance;
 }
 
@@ -70,7 +70,7 @@
 .labelRight {
   flex-shrink: 0;
   font-size: 13px;
-  color: #B5B5B5;
+  color: #BAB3A9;
 }
 
 .labelRight b {
@@ -82,7 +82,7 @@
   flex-shrink: 0;
   border: 0;
   background: transparent;
-  color: #B5B5B5;
+  color: #BAB3A9;
   font-size: 13px;
   font-weight: 600;
   /* Storre tryckyta an texten utan att flytta layouten */
@@ -137,7 +137,7 @@
 
 .dayNum {
   font-size: 11px;
-  color: #6A6A6A;
+  color: #726C64;
   font-variant-numeric: tabular-nums;
 }
 
@@ -170,7 +170,7 @@
 
 .dotFuture {
   background: transparent;
-  border: 1px dashed #3A3A3A;
+  border: 1px dashed #433E38;
 }
 
 .dotToday {
@@ -225,7 +225,7 @@
   font-size: 44px;
   line-height: 0.95;
   font-weight: 700;
-  color: #fff;
+  color: #F6F0E5;
   overflow-wrap: anywhere;
 }
 
@@ -273,7 +273,7 @@
   justify-content: space-between;
   gap: 12px;
   min-height: 32px;
-  border-top: 1px solid #1F1F1F;
+  border-top: 1px solid #292521;
 }
 
 .previewName {
@@ -293,9 +293,9 @@
   min-height: 44px;
   margin-bottom: -10px;
   border: 0;
-  border-top: 1px solid #1F1F1F;
+  border-top: 1px solid #292521;
   background: transparent;
-  color: #B5B5B5;
+  color: #BAB3A9;
   font-size: 13px;
   font-weight: 600;
   text-align: left;
@@ -317,7 +317,7 @@
   border-radius: 16px;
   border: 0;
   background: var(--accent);
-  color: #141414;
+  color: #1F1C18;
   font-size: var(--btn-fs);
   font-weight: 800;
   display: flex;
@@ -357,7 +357,7 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-.row:active { background: #0E0E0E; }
+.row:active { background: #1A1713; }
 
 .rowText {
   display: flex;
@@ -379,7 +379,7 @@
 .rowChevron {
   flex-shrink: 0;
   display: flex;
-  color: #6A6A6A;
+  color: #726C64;
 }
 
 /* ── Muskellage ── */
@@ -455,9 +455,9 @@
   max-width: 100%;
   min-height: var(--chip-h);
   padding: 0 12px 0 14px;
-  border: 1px solid rgba(169, 189, 214, 0.28);
+  border: 1px solid rgba(235, 228, 217, 0.10);
   border-radius: 18px;
-  background: rgba(169, 189, 214, 0.07);
+  background: rgba(235, 228, 217, 0.05);
   color: var(--d-hint);
   font-family: var(--font);
   font-size: 13px;
@@ -498,4 +498,70 @@
   gap: 8px;
 }
 .weekBtn .labelRight b { margin-right: -4px; }
-.weekBtn svg { color: #6A6A6A; }
+.weekBtn svg { color: #726C64; }
+
+/* ═══ Renare startsida (2026-11c): farre ord, ingen kant ═══ */
+.headline {
+  font-family: var(--font-num);
+  font-size: 32px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.hero { border: 0; gap: 16px; }
+.heroTop {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-family: var(--font);
+  text-align: left;
+  align-items: center;
+  -webkit-tap-highlight-color: transparent;
+}
+.heroTop:active .heroName { opacity: 0.7; }
+.heroName { font-size: 52px; }
+.heroChevron { display: flex; color: #5D5851; flex-shrink: 0; }
+.sub { margin-top: 2px; }
+
+/* Muskellage: en prick och ett namn */
+.muscleGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: 12px;
+  row-gap: 4px;
+}
+.muscle {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  margin: 0;
+  padding: 0;
+}
+.muscleName { font-size: 14px; font-weight: 600; }
+.mDot {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  border-radius: 5px;
+  display: inline-block;
+}
+.mDot_ready { background: var(--accent); }
+.mDot_resting { background: #5D5851; }
+.mDot_neglected { border: 1.5px solid #7A746B; }
+.legend {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--d-muted);
+}
+.legend span { display: flex; align-items: center; gap: 5px; }
+.legend .mDot { width: 7px; height: 7px; }
+.legend .mDot_neglected { border-width: 1px; }
+
+/* Veckoremsan: klara dagar i grädvitt, inte gront */
+.dotDone { background: #EBE4D9; color: #0F0D0A; }
+.dotDone.dotToday { background: #EBE4D9; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); border: 0; }

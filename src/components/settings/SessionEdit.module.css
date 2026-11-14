@@ -26,11 +26,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #C9C9C9;
+  color: #CDC6BB;
   -webkit-tap-highlight-color: transparent;
 }
 
-.backBtn:active { background: #1C1C1C; }
+.backBtn:active { background: #26231E; }
 
 .topBarRight {
   display: flex;
@@ -43,7 +43,7 @@
   height: 40px;
   padding: 0 18px;
   background: var(--accent);
-  color: #141414;
+  color: #1F1C18;
   border: none;
   border-radius: 20px;
   font-size: 14px;
@@ -66,12 +66,12 @@
   background: transparent;
   border: none;
   border-radius: 22px;
-  color: #C9C9C9;
+  color: #CDC6BB;
   padding: 0;
   -webkit-tap-highlight-color: transparent;
 }
 
-.topBarMenuBtn:active { background: #1C1C1C; }
+.topBarMenuBtn:active { background: #26231E; }
 
 .menuOverlay {
   position: fixed;
@@ -141,7 +141,7 @@
   border: 0;
   border-bottom: 1px solid transparent;
   border-radius: 0;
-  color: #fff;
+  color: #F6F0E5;
   font-family: var(--font-num);
   /* !important: index.css tvingar 16px pa alla input */
   font-size: 40px !important;
@@ -150,7 +150,7 @@
   outline: none;
 }
 
-.nameInput::placeholder { color: #4A4A4A; }
+.nameInput::placeholder { color: #524D47; }
 .nameInput:focus { border-bottom-color: var(--accent); }
 
 .summary {
@@ -235,7 +235,7 @@
   height: 100%;
   background: none;
   border: none;
-  color: #fff;
+  color: #F6F0E5;
   font-size: 13px;
   font-weight: 700;
   font-family: var(--font);
@@ -261,7 +261,7 @@
   width: 32px;
   height: 44px;
   flex-shrink: 0;
-  color: #5A5A5A;
+  color: #625D55;
   cursor: grab;
   -webkit-tap-highlight-color: transparent;
   touch-action: none;
@@ -320,11 +320,11 @@
   background: transparent;
   border: 0;
   border-radius: 22px;
-  color: #5A5A5A;
+  color: #625D55;
   -webkit-tap-highlight-color: transparent;
 }
 
-.linkBtn:active { background: #1C1C1C; }
+.linkBtn:active { background: #26231E; }
 .linkBtnActive { color: var(--accent); }
 
 .emptyHint {
@@ -338,7 +338,7 @@
 .addBtn {
   height: var(--btn-h-sm);
   border-radius: var(--btn-r-sm);
-  border: 1px dashed #4A4A4A;
+  border: 1px dashed #524D47;
   background: transparent;
   color: var(--text);
   font-size: 15px;
@@ -351,7 +351,7 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-.addBtn:active { background: #0E0E0E; border-color: var(--accent); }
+.addBtn:active { background: #1A1713; border-color: var(--accent); }
 
 /* ── Muskelgubbe: vad passet tranar ── */
 .figureSection {

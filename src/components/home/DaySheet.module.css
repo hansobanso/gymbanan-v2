@@ -23,7 +23,7 @@
 .handle {
   width: 36px;
   height: 4px;
-  background: #3A3A3A;
+  background: #433E38;
   border-radius: 2px;
   margin: 8px auto 0;
   flex-shrink: 0;
@@ -54,14 +54,14 @@
   border: 0;
   border-radius: 22px;
   background: transparent;
-  color: #C9C9C9;
+  color: #CDC6BB;
   display: flex;
   align-items: center;
   justify-content: center;
   -webkit-tap-highlight-color: transparent;
 }
 
-.closeBtn:active { background: #1C1C1C; }
+.closeBtn:active { background: #26231E; }
 
 .body {
   flex: 1;
@@ -85,7 +85,7 @@
   font-size: 40px;
   line-height: 0.95;
   font-weight: 700;
-  color: #fff;
+  color: #F6F0E5;
   margin: 0;
   overflow-wrap: anywhere;
 }
@@ -96,7 +96,7 @@
   padding: 0 9px;
   border-radius: 12px;
   background: var(--accent);
-  color: #141414;
+  color: #1F1C18;
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -127,7 +127,7 @@
   align-items: center;
   min-height: 40px;
   padding: 4px 0;
-  border-top: 1px solid #1F1F1F;
+  border-top: 1px solid #292521;
 }
 
 .exName {
@@ -138,7 +138,7 @@
 }
 
 .exSets {
-  color: #B5B5B5;
+  color: #BAB3A9;
   text-align: right;
   max-width: 190px;
 }

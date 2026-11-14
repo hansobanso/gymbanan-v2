@@ -156,7 +156,7 @@
   background: var(--accent);
   border: none;
   border-radius: var(--radius-md);
-  color: #000;
+  color: #0F0D0A;
   font-size: 16px;
   font-weight: 700;
   font-family: var(--font);
@@ -167,10 +167,10 @@
 .saveBtn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .cancelBtn {
-  background: #1c1c1c;
+  background: #26231E;
   border: none;
   border-radius: var(--radius-md);
-  color: #ffffff;
+  color: #F6F0E5;
   font-size: 16px;
   font-weight: 600;
   font-family: var(--font);
@@ -211,9 +211,9 @@
 }
 
 /* ═══ Knappsystem 2026-11: samma hojd, radie och vikt overallt ═══ */
-.closeBtn { width: 44px; height: 44px; margin: -7px -8px -7px 0; padding: 0; border: 0; border-radius: 22px; background: transparent; color: #C9C9C9; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.closeBtn { width: 44px; height: 44px; margin: -7px -8px -7px 0; padding: 0; border: 0; border-radius: 22px; background: transparent; color: #CDC6BB; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .editBtn { width: 44px; height: 44px; margin: -7px 0; padding: 0; border: 0; border-radius: 22px; background: transparent; color: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.saveBtn { min-height: var(--btn-h); border: 0; border-radius: 16px; background: var(--accent); color: #141414; font-size: var(--btn-fs); font-weight: 800; }
+.saveBtn { min-height: var(--btn-h); border: 0; border-radius: 16px; background: var(--accent); color: #1F1C18; font-size: var(--btn-fs); font-weight: 800; }
 .cancelBtn { min-height: var(--btn-h); border: 1px solid var(--d-raised-border); border-radius: 16px; background: var(--d-raised); color: var(--text); font-size: var(--btn-fs); font-weight: 700; }
 .sheet { background: var(--d-card); border-radius: 28px 28px 0 0; box-shadow: 0 0 0 1px var(--d-card-border); }
 

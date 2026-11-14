@@ -1,6 +1,6 @@
 .nav {
   flex-shrink: 0;
-  background: #111111;
+  background: #1C1915;
   border-top: 1px solid var(--border);
   display: flex;
   flex-direction: column;
@@ -56,6 +56,14 @@
 }
 
 /* ═══ Designsprak 2026-11: skriver over reglerna ovan ═══ */
-.nav { background: #0A0A0A; border-top: 1px solid var(--d-line); }
+.nav { background: #171411; border-top: 1px solid var(--d-line); }
 .label { font-weight: 600; }
 .active .label { font-weight: 700; }
+
+/* ═══ Bara ikoner (2026-11c): menyn smalnar, aktiv flik far en gul prick ═══ */
+.nav { background: var(--bg); border-top: 0; padding-top: 4px; padding-bottom: max(env(safe-area-inset-bottom, 0px), 20px); }
+.tab { min-height: 48px; gap: 5px; padding: 8px 8px 2px; }
+.icon { width: 26px; height: 26px; }
+.icon svg { width: 26px; height: 26px; }
+.activeDot { width: 4px; height: 4px; border-radius: 2px; background: transparent; transition: background 0.15s; }
+.active .activeDot { background: var(--accent); }

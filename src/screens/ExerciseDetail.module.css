@@ -48,7 +48,7 @@
   background: var(--accent);
   border: none;
   border-radius: var(--radius-md);
-  color: #000;
+  color: #0F0D0A;
   font-size: 14px;
   font-weight: 700;
   font-family: var(--font);
@@ -58,7 +58,7 @@
   transition: opacity 0.15s;
 }
 .saveBtn:disabled { opacity: 0.5; cursor: not-allowed; }
-.saveBtnDone { background: #1c1c1c; color: #ffffff; }
+.saveBtnDone { background: #26231E; color: #F6F0E5; }
 
 .editBtn {
   width: 36px;
@@ -227,8 +227,8 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  background: #1c1c1c;
-  border: 1px solid #2a2a2a;
+  background: #26231E;
+  border: 1px solid #332F2A;
   border-radius: var(--radius-sm);
   color: var(--text);
   font-size: 14px;
@@ -239,16 +239,16 @@
   white-space: nowrap;
   transition: border-color 0.1s;
 }
-.restDropdownTrigger:hover { border-color: #3a3a3a; }
-.restDropdownTrigger svg { color: #666; flex-shrink: 0; }
+.restDropdownTrigger:hover { border-color: #433E38; }
+.restDropdownTrigger svg { color: #6E6860; flex-shrink: 0; }
 
 .restDropdownMenu {
   position: absolute;
   top: calc(100% + 4px);
   right: 0;
   z-index: 20;
-  background: #1c1c1c;
-  border: 1px solid #2a2a2a;
+  background: #26231E;
+  border: 1px solid #332F2A;
   border-radius: var(--radius-sm);
   padding: 4px 0;
   min-width: 100%;
@@ -270,7 +270,7 @@
   transition: background 0.1s, color 0.1s;
   white-space: nowrap;
 }
-.restDropdownItem:hover { background: #252525; color: var(--text); }
+.restDropdownItem:hover { background: #2E2B26; color: var(--text); }
 .restDropdownItemActive {
   color: var(--accent);
   font-weight: 700;
@@ -280,7 +280,7 @@
   background: var(--accent);
   border: none;
   border-radius: var(--radius-sm);
-  color: #000;
+  color: #0F0D0A;
   font-size: 13px;
   font-weight: 700;
   font-family: var(--font);
@@ -325,7 +325,7 @@
 .copyFullBtn {
   width: 100%;
   background: transparent;
-  border: 1px solid #2a2a2a;
+  border: 1px solid #332F2A;
   border-radius: var(--radius-md);
   color: var(--text-2);
   font-size: 14px;
@@ -335,7 +335,7 @@
   cursor: pointer;
   transition: opacity 0.15s, border-color 0.15s, color 0.15s;
 }
-.copyFullBtn:hover { border-color: #3a3a3a; color: var(--text); }
+.copyFullBtn:hover { border-color: #433E38; color: var(--text); }
 .copyFullBtn:disabled { opacity: 0.5; cursor: not-allowed; }
 .copyFullBtn:active { opacity: 0.7; }
 
@@ -359,7 +359,7 @@
   background: var(--accent);
   border: 1px solid var(--accent);
   border-radius: var(--radius-md);
-  color: #000;
+  color: #0F0D0A;
   font-size: 14px;
   font-weight: 600;
   font-family: var(--font);
@@ -393,7 +393,7 @@
   font-weight: 600;
   font-family: var(--font);
   background: var(--accent);
-  color: #000;
+  color: #0F0D0A;
 }
 .secMuscleChipRemove {
   background: none;
@@ -409,7 +409,7 @@
 .secMuscleChipRemove:hover { opacity: 1; }
 .secMuscleAdd {
   background: transparent;
-  border: 1px dashed #333;
+  border: 1px dashed #3C3832;
   border-radius: 12px;
   color: var(--text-2);
   font-size: 13px;
@@ -430,7 +430,7 @@
   font-size: 13px;
   font-weight: 500;
   font-family: var(--font);
-  background: var(--surface-3, #222);
+  background: var(--surface-3, #2C2823);
   color: var(--text-2);
 }
 
@@ -440,7 +440,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background: var(--card-bg, #141414);
+  background: var(--card-bg, #1F1C18);
   border: 1px solid rgba(245, 208, 32, 0.25);
   border-radius: var(--card-radius, 14px);
   color: var(--accent);
@@ -477,7 +477,7 @@
 .deleteRow { display: flex; gap: 10px; }
 .deleteCancel {
   flex: 1;
-  background: var(--surface-2, #222);
+  background: var(--surface-2, #2C2823);
   border: none;
   border-radius: var(--radius-md, 12px);
   color: var(--text-2);
@@ -492,7 +492,7 @@
   background: #ff5c5c;
   border: none;
   border-radius: var(--radius-md, 12px);
-  color: #fff;
+  color: #F6F0E5;
   font-size: 14.5px;
   font-weight: 700;
   font-family: var(--font);
@@ -501,11 +501,11 @@
 }
 
 /* ═══ Knappsystem 2026-11: samma hojd, radie och vikt overallt ═══ */
-.backBtn { width: 44px; height: 44px; margin: -4px 0 -4px -12px; padding: 0; border: 0; border-radius: 22px; background: transparent; color: #C9C9C9; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.editBtn { width: 44px; height: 44px; margin: -7px -8px -7px 0; padding: 0; border: 0; border-radius: 22px; background: transparent; color: #C9C9C9; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.saveBtn { height: 40px; padding: 0 16px; border: 0; border-radius: 20px; background: var(--accent); color: #141414; font-size: 14px; font-weight: 800; }
-.saveRestBtn { min-height: 44px; padding-left: 18px; padding-right: 18px; border: 0; border-radius: 14px; background: var(--accent); color: #141414; font-size: 15px; font-weight: 800; }
-.saveNoteBtn { min-height: 44px; padding-left: 18px; padding-right: 18px; border: 0; border-radius: 14px; background: var(--accent); color: #141414; font-size: 15px; font-weight: 800; }
+.backBtn { width: 44px; height: 44px; margin: -4px 0 -4px -12px; padding: 0; border: 0; border-radius: 22px; background: transparent; color: #CDC6BB; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.editBtn { width: 44px; height: 44px; margin: -7px -8px -7px 0; padding: 0; border: 0; border-radius: 22px; background: transparent; color: #CDC6BB; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.saveBtn { height: 40px; padding: 0 16px; border: 0; border-radius: 20px; background: var(--accent); color: #1F1C18; font-size: 14px; font-weight: 800; }
+.saveRestBtn { min-height: 44px; padding-left: 18px; padding-right: 18px; border: 0; border-radius: 14px; background: var(--accent); color: #1F1C18; font-size: 15px; font-weight: 800; }
+.saveNoteBtn { min-height: 44px; padding-left: 18px; padding-right: 18px; border: 0; border-radius: 14px; background: var(--accent); color: #1F1C18; font-size: 15px; font-weight: 800; }
 .copyFullBtn { min-height: 48px; border: 1px solid var(--d-raised-border); border-radius: 16px; background: var(--d-raised); color: var(--text); font-size: 15px; font-weight: 700; }
 
 /* ═══ Knappgenomgang 2026-11b: matten kommer fran --btn-* i index.css ═══ */
@@ -538,5 +538,5 @@
 }
 .tabOn {
   background: var(--d-raised);
-  color: #fff;
+  color: #F6F0E5;
 }

@@ -21,15 +21,15 @@ export default class ErrorBoundary extends Component {
       <div style={{
         minHeight: '100vh', display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center', gap: 16,
-        background: '#000', color: '#fff', padding: 24, textAlign: 'center',
+        background: '#0F0D0A', color: '#F6F0E5', padding: 24, textAlign: 'center',
         fontFamily: 'system-ui, sans-serif',
       }}>
         <p style={{ fontSize: 17, fontWeight: 700, margin: 0 }}>Något gick fel</p>
-        <p style={{ fontSize: 14, color: '#999', margin: 0, lineHeight: 1.5 }}>
+        <p style={{ fontSize: 14, color: '#9F9990', margin: 0, lineHeight: 1.5 }}>
           Ladda om appen så hämtas senaste versionen.
         </p>
         {this.state.errorInfo && (
-          <p style={{ fontSize: 11, color: '#555', margin: 0, maxWidth: 320,
+          <p style={{ fontSize: 11, color: '#5D5851', margin: 0, maxWidth: 320,
                       wordBreak: 'break-word', lineHeight: 1.4, fontFamily: 'monospace' }}>
             {this.state.errorInfo}
           </p>
@@ -37,7 +37,7 @@ export default class ErrorBoundary extends Component {
         <button
           onClick={() => window.location.reload()}
           style={{
-            background: '#F5D020', color: '#000', border: 'none',
+            background: '#F5D020', color: '#0F0D0A', border: 'none',
             borderRadius: 12, padding: '12px 28px', fontSize: 15,
             fontWeight: 700, cursor: 'pointer',
           }}

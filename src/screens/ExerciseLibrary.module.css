@@ -14,7 +14,7 @@
 
 .searchInput {
   width: 100%;
-  background: #1a1a1a;
+  background: #24211D;
   border: none;
   border-radius: 10px;
   color: var(--text);
@@ -90,7 +90,7 @@
 .chipActive {
   background: var(--accent);
   border-color: var(--accent);
-  color: #000;
+  color: #0F0D0A;
   font-weight: 700;
 }
 
@@ -114,7 +114,7 @@
 .subChip.chipActive {
   background: var(--accent);
   border-color: var(--accent);
-  color: #000;
+  color: #0F0D0A;
 }
 
 /* ── Scroll-body ── */
@@ -194,7 +194,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #000;
+  color: #0F0D0A;
   cursor: pointer;
   flex-shrink: 0;
 }
@@ -212,7 +212,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--surface-2, #2a2a2a);
+  background: var(--surface-2, #332F2A);
   border: none;
   border-radius: 50%;
   color: var(--text-2);
@@ -228,8 +228,8 @@
 }
 
 /* ═══ Designsprak 2026-11: skriver over reglerna ovan ═══ */
-.backBtn { width: 44px; height: 44px; margin-left: -12px; background: transparent; border-radius: 22px; color: #C9C9C9; }
-.backBtn:active { background: #1C1C1C; }
+.backBtn { width: 44px; height: 44px; margin-left: -12px; background: transparent; border-radius: 22px; color: #CDC6BB; }
+.backBtn:active { background: #26231E; }
 .title { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
 .card { background: transparent; border: 0; border-radius: 0; border-top: 1px solid var(--d-line); border-bottom: 1px solid var(--d-line); }
 .exRow { min-height: 52px; }
@@ -238,11 +238,11 @@
 .chip, .subChip { min-height: 36px; }
 
 /* ═══ Knappsystem 2026-11: samma hojd, radie och vikt overallt ═══ */
-.addBtn { width: 40px; height: 40px; border-radius: 20px; color: #141414; }
+.addBtn { width: 40px; height: 40px; border-radius: 20px; color: #1F1C18; }
 
 /* ═══ Knappgenomgang 2026-11b: matten kommer fran --btn-* i index.css ═══ */
-.chip, .subChip { min-height: var(--chip-h); padding: 0 14px; border: 1px solid var(--d-raised-border); border-radius: 18px; background: var(--d-raised); color: #C9C9C9; font-size: 13px; font-weight: 600; }
-.chipActive, .subChip.chipActive { border-color: var(--accent); background: var(--accent); color: #141414; font-weight: 700; }
+.chip, .subChip { min-height: var(--chip-h); padding: 0 14px; border: 1px solid var(--d-raised-border); border-radius: 18px; background: var(--d-raised); color: #CDC6BB; font-size: 13px; font-weight: 600; }
+.chipActive, .subChip.chipActive { border-color: var(--accent); background: var(--accent); color: #1F1C18; font-weight: 700; }
 .searchInput { height: var(--field-h); padding: 0 14px; border: 1px solid var(--d-raised-border); border-radius: var(--field-r); background: var(--d-raised); }
 .searchInput:focus { border-color: var(--accent); }
 .subChip { background: transparent; }

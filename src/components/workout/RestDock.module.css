@@ -6,7 +6,7 @@
   z-index: 140;
   min-height: 64px;
   border-radius: 32px;
-  background: #1A1A1A;
+  background: #24211D;
   box-shadow: 0 0 0 1px var(--d-raised-border), 0 16px 32px rgba(0, 0, 0, 0.6);
   padding: 0 8px 0 10px;
   display: flex;
@@ -67,20 +67,20 @@
 
 .add {
   padding: 0 14px;
-  background: #2A2A2A;
+  background: #332F2A;
   color: var(--text);
   font-weight: 700;
 }
 
 .skip {
   padding: 0 16px;
-  background: #F2F2F2;
-  color: #141414;
+  background: #ECE6DB;
+  color: #1F1C18;
   font-weight: 800;
 }
 
-.add:active { background: #3A3A3A; }
-.skip:active { background: #D0D0D0; }
+.add:active { background: #433E38; }
+.skip:active { background: #D2CBC0; }
 
 /* Sista tio sekunderna pulserar tiden lugnt */
 .timeLow { animation: lowPulse 1s ease-in-out infinite; }

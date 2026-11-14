@@ -13,7 +13,7 @@
   margin: 0 auto;
   width: 100%;
   max-width: 480px;
-  background: var(--card-bg, #141414);
+  background: var(--card-bg, #1F1C18);
   border-radius: 20px 20px 0 0;
   z-index: 301;
   padding: 24px 20px calc(20px + env(safe-area-inset-bottom, 0px));
@@ -33,7 +33,7 @@
 .badge {
   align-self: flex-start;
   background: var(--accent);
-  color: #000;
+  color: #0F0D0A;
   font-size: 12px;
   font-weight: 700;
   padding: 3px 10px;
@@ -44,7 +44,7 @@
 .title {
   font-size: 22px;
   font-weight: 800;
-  color: #fff;
+  color: #F6F0E5;
   margin: 0;
   letter-spacing: -0.4px;
 }
@@ -73,14 +73,14 @@
 .itemTitle {
   font-size: 15px;
   font-weight: 700;
-  color: #fff;
+  color: #F6F0E5;
   margin: 0 0 2px;
 }
 
 .itemBody {
   font-size: 14px;
   line-height: 1.45;
-  color: var(--text-2, #aaa);
+  color: var(--text-2, #AFA99F);
   margin: 0;
 }
 
@@ -89,7 +89,7 @@
   background: var(--accent);
   border: none;
   border-radius: var(--radius-md, 12px);
-  color: #000;
+  color: #0F0D0A;
   font-size: 15px;
   font-weight: 700;
   font-family: var(--font);
@@ -101,5 +101,5 @@
 .closeBtn:active { opacity: 0.7; }
 
 /* ═══ Knappsystem 2026-11: samma hojd, radie och vikt overallt ═══ */
-.closeBtn { min-height: var(--btn-h); border: 0; border-radius: 16px; background: var(--accent); color: #141414; font-size: var(--btn-fs); font-weight: 800; }
+.closeBtn { min-height: var(--btn-h); border: 0; border-radius: 16px; background: var(--accent); color: #1F1C18; font-size: var(--btn-fs); font-weight: 800; }
 .sheet { background: var(--d-card); border-radius: 28px 28px 0 0; box-shadow: 0 0 0 1px var(--d-card-border); }

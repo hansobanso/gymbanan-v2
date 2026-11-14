@@ -13,14 +13,14 @@
   justify-content: space-between;
   padding: calc(var(--safe-top, 44px) + 8px) 16px 12px;
   flex-shrink: 0;
-  background: #000000;
+  background: #0F0D0A;
   gap: 12px;
 }
 
 .title {
   font-size: 28px;
   font-weight: 800;
-  color: #ffffff;
+  color: #F6F0E5;
   margin: 0;
   letter-spacing: -0.5px;
 }
@@ -103,7 +103,7 @@
 }
 
 .chevron {
-  color: #ffffff;
+  color: #F6F0E5;
   font-size: 20px;
   font-weight: 600;
   line-height: 1;
@@ -113,7 +113,7 @@
 /* ── Skeleton ── */
 .skeleton {
   height: 76px;
-  background: #141414;
+  background: #1F1C18;
   border-radius: 14px;
   margin-bottom: 8px;
   animation: pulse 1.2s ease-in-out infinite;
@@ -148,7 +148,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: #161616;
+  background: #211E19;
   border-top-left-radius: 18px;
   border-top-right-radius: 18px;
   padding: 12px 20px 24px;
@@ -164,21 +164,21 @@
   width: 40px;
   height: 4px;
   border-radius: 2px;
-  background: #444;
+  background: #4D4841;
   margin: 0 auto 8px;
 }
 
 .previewTitle {
   font-size: 22px;
   font-weight: 700;
-  color: #fff;
+  color: #F6F0E5;
   margin: 0;
   text-align: center;
 }
 
 .previewSub {
   font-size: 13px;
-  color: #888;
+  color: #8F8980;
   text-align: center;
   margin: 0 0 8px;
 }
@@ -195,8 +195,8 @@
   flex-direction: column;
   gap: 6px;
   padding: 10px 14px;
-  background: #1e1e1e;
-  border: 1px solid #2a2a2a;
+  background: #282420;
+  border: 1px solid #332F2A;
   border-radius: 8px;
 }
 
@@ -210,12 +210,12 @@
 .previewSessionName {
   font-size: 14px;
   font-weight: 600;
-  color: #e0e0e0;
+  color: #DED8CD;
 }
 
 .previewSessionMeta {
   font-size: 11px;
-  color: #888;
+  color: #8F8980;
   font-variant-numeric: tabular-nums;
 }
 
@@ -226,7 +226,7 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  border-top: 1px solid #2a2a2a;
+  border-top: 1px solid #332F2A;
   padding-top: 6px;
 }
 
@@ -240,7 +240,7 @@
 }
 
 .previewExerciseName {
-  color: #bbb;
+  color: #C0B9AE;
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -272,29 +272,29 @@
 
 .previewPrimaryBtn {
   background: #F5D020;
-  color: #000;
+  color: #0F0D0A;
 }
 .previewPrimaryBtn:active { opacity: 0.85; }
 
 .previewActiveBtn {
-  background: rgba(120, 200, 120, 0.15);
-  border: 1px solid rgba(120, 200, 120, 0.4);
-  color: #88c888;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  color: var(--accent);
   cursor: default;
 }
 
 .previewSecondaryBtn {
-  background: #1e1e1e;
-  border: 1px solid #2a2a2a;
-  color: #ccc;
+  background: #282420;
+  border: 1px solid #332F2A;
+  color: #CFC8BD;
 }
 .previewSecondaryBtn:active {
-  background: #252525;
+  background: #2E2B26;
 }
 
 .previewCancelBtn {
   background: none;
-  color: #666;
+  color: #6E6860;
   font-weight: 500;
   padding: 10px;
 }
@@ -352,7 +352,7 @@
   background: var(--accent);
   border: none;
   border-radius: 12px;
-  color: #000000;
+  color: #0F0D0A;
   font-size: 15px;
   font-weight: 700;
   font-family: var(--font);
@@ -404,10 +404,10 @@
 .programCardActive { border-color: var(--accent); }
 .programCardName { font-size: 16px; font-weight: 700; }
 .programCardMeta { font-size: 12px; color: var(--d-muted); }
-.createBtn { min-height: var(--btn-h); border-radius: 16px; border: 1px dashed #4A4A4A; background: transparent; }
+.createBtn { min-height: var(--btn-h); border-radius: 16px; border: 1px dashed #524D47; background: transparent; }
 .previewSheet { background: var(--d-card); border-radius: 28px 28px 0 0; box-shadow: 0 0 0 1px var(--d-card-border); }
-.previewTitle { font-family: var(--font-num); font-size: 40px; line-height: 0.95; font-weight: 700; color: #fff; }
-.previewPrimaryBtn { min-height: var(--btn-h); border-radius: 16px; color: #141414; font-size: var(--btn-fs); font-weight: 800; }
+.previewTitle { font-family: var(--font-num); font-size: 40px; line-height: 0.95; font-weight: 700; color: #F6F0E5; }
+.previewPrimaryBtn { min-height: var(--btn-h); border-radius: 16px; color: #1F1C18; font-size: var(--btn-fs); font-weight: 800; }
 .previewSecondaryBtn, .previewCancelBtn { min-height: 48px; border-radius: 16px; }
 
 .emptyTab { background: transparent; padding: 40px 20px 24px; }
@@ -416,7 +416,7 @@
 
 /* ═══ Knappsystem 2026-11: samma hojd, radie och vikt overallt ═══ */
 .previewActiveBtn { min-height: 48px; border-radius: 16px; }
-.emptyTabBtn { min-height: var(--btn-h); border: 0; border-radius: 16px; background: var(--accent); color: #141414; font-size: var(--btn-fs); font-weight: 800; padding: 0 24px; margin-top: 10px; }
+.emptyTabBtn { min-height: var(--btn-h); border: 0; border-radius: 16px; background: var(--accent); color: #1F1C18; font-size: var(--btn-fs); font-weight: 800; padding: 0 24px; margin-top: 10px; }
 
 /* ═══ Knappgenomgang 2026-11b: matten kommer fran --btn-* i index.css ═══ */
 .createBtn { min-height: var(--btn-h-sm); border-radius: var(--btn-r-sm); font-size: var(--btn-fs-sm); font-weight: 700; }
@@ -425,3 +425,6 @@
   background: var(--d-raised); color: var(--text); font-size: var(--btn-fs); font-weight: 700;
 }
 .previewCancelBtn { min-height: 44px; border: 0; background: transparent; color: var(--d-muted); font-size: 15px; font-weight: 600; }
+
+/* Sidrubrik i den smala stilen (2026-11c) */
+.title { font-family: var(--font-num); font-size: 32px; line-height: 1; font-weight: 700; letter-spacing: 0; }

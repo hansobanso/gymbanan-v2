@@ -4,9 +4,9 @@ import { useMemo } from 'react'
 // Generated fran muscle-figure.svg av build-script.
 //
 // Anvandning:
-//   <MuscleFigure colors={{ 'Bröst': '#f5d020', 'Lats': '#aaa', ... }} />
+//   <MuscleFigure colors={{ 'Bröst': '#f5d020', 'Lats': '#AFA99F', ... }} />
 //
-// Fallback-farg ar #2a2a2a (mork gra) for grupper utan farg.
+// Fallback-farg ar #332F2A (mork gra) for grupper utan farg.
 
 const MUSCLE_GROUPS = [
 
@@ -30,7 +30,7 @@ const MUSCLE_GROUPS = [
   "Quads"
 ]
 
-export default function MuscleFigure({ colors = {}, baseColor = '#1A2E10', className, style }) {
+export default function MuscleFigure({ colors = {}, baseColor = '#2E2A24', className, style }) {
   // Default-farg for muskler utan explicit farg = mork skogsgron (outranad).
   // Synca med MUSCLE_UNTRAINED i src/lib/muscleColor.js och --muscle-untrained i index.css.
   const c = useMemo(() => {
@@ -40,7 +40,7 @@ export default function MuscleFigure({ colors = {}, baseColor = '#1A2E10', class
   }, [colors, baseColor])
 
   // Silhuett-farg: helsvart.
-  const silhouetteColor = '#000000'
+  const silhouetteColor = '#0F0D0A'
 
   return (
     <svg

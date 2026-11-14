@@ -28,7 +28,7 @@
   font-size: 34px;
   line-height: 1;
   font-weight: 700;
-  color: #fff;
+  color: #F6F0E5;
   white-space: nowrap;
 }
 
@@ -54,7 +54,7 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-.progressBtn:active { background: #2A2A2A; }
+.progressBtn:active { background: #332F2A; }
 
 .label {
   margin-bottom: 6px;
@@ -103,7 +103,7 @@
 .rowSets {
   min-width: 0;
   font-size: 14px;
-  color: #C9C9C9;
+  color: #CDC6BB;
   text-align: right;
 }
 
@@ -125,7 +125,7 @@
   margin: 8px 0 0;
   font-size: 17px;
   font-weight: 800;
-  color: #fff;
+  color: #F6F0E5;
 }
 
 .emptyText {

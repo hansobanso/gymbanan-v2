@@ -2,7 +2,7 @@
 .screen {
   position: fixed;
   inset: 0;
-  background: #000000;
+  background: #0F0D0A;
   display: flex;
   flex-direction: column;
 }
@@ -61,14 +61,14 @@
   background: transparent;
   border: 0;
   border-radius: 22px;
-  color: #C9C9C9;
+  color: #CDC6BB;
   padding: 0;
   -webkit-tap-highlight-color: transparent;
 }
 
 .headIconBtn:active,
 .headIconBtnActive {
-  background: #1C1C1C;
+  background: #26231E;
   color: var(--accent);
 }
 
@@ -84,7 +84,7 @@
 .progressSeg {
   height: 4px;
   border-radius: 2px;
-  background: #2A2A2A;
+  background: #332F2A;
   transition: background 0.3s var(--ease);
 }
 
@@ -137,7 +137,7 @@
   touch-action: pan-y;
   padding: 0;
   min-height: 0;
-  background: #000000;
+  background: #0F0D0A;
 }
 
 /* Plats for vilodockan sa den inte tacker sista raden */
@@ -173,8 +173,8 @@
   width: 100%;
   max-width: 300px;
   padding: 14px;
-  background: #1c1c1c;
-  color: #fff;
+  background: #26231E;
+  color: #F6F0E5;
   border: none;
   border-radius: var(--radius-md, 12px);
   font-size: 15px;
@@ -215,10 +215,10 @@
 
 .addExerciseBtn {
   width: 100%;
-  background: #1c1c1c;
+  background: #26231E;
   border: none;
   border-radius: var(--radius-md);
-  color: #ffffff;
+  color: #F6F0E5;
   font-size: 16px;
   font-weight: 600;
   padding: 18px;
@@ -233,7 +233,7 @@
 
 .finishBtn {
   width: 100%;
-  background: #1c1c1c;
+  background: #26231E;
   border: none;
   border-radius: var(--radius-md);
   color: var(--danger);
@@ -271,7 +271,7 @@
   background: var(--accent);
   border: none;
   border-radius: var(--radius-sm);
-  color: #000;
+  color: #0F0D0A;
   font-size: 14px;
   font-weight: 700;
   padding: 7px 16px;
@@ -327,8 +327,8 @@
   bottom: calc(var(--safe-bottom, 0px) + 24px);
   left: 16px;
   right: 16px;
-  background: #1c1c1c;
-  border: 1px solid #2a2a2a;
+  background: #26231E;
+  border: 1px solid #332F2A;
   border-radius: var(--radius-md);
   padding: 14px 16px 14px 18px;
   display: flex;
@@ -407,7 +407,7 @@
   background: var(--accent);
   border: none;
   border-radius: var(--radius-md);
-  color: #000;
+  color: #0F0D0A;
   font-size: 16px;
   font-weight: 700;
   padding: 16px;
@@ -452,7 +452,7 @@
 
 .confirmText {
   font-size: 14px;
-  color: var(--text-2, #888);
+  color: var(--text-2, #8F8980);
   text-align: center;
   margin: 0 0 16px;
   line-height: 1.5;
@@ -483,7 +483,7 @@
   bottom: 0;
   margin: 0 auto;
   max-width: 480px;
-  background: var(--card-bg, #141414);
+  background: var(--card-bg, #1F1C18);
   border-radius: 20px 20px 0 0;
   z-index: 241;
   padding: 20px 16px calc(16px + env(safe-area-inset-bottom, 0px));
@@ -526,14 +526,14 @@
 /* Markerat val i Anpassa passet - tydligt gult sa man ser vad man klickat i */
 .ssPickItemActive {
   background: var(--accent);
-  color: #141414;
+  color: #1F1C18;
   border-radius: var(--radius-md, 12px);
   border-bottom-color: transparent;
   padding-left: 12px;
   padding-right: 12px;
 }
 .ssPickItemActive .ssPickNote {
-  color: #141414;
+  color: #1F1C18;
   opacity: 0.75;
 }
 .ssPickNote {
@@ -546,7 +546,7 @@
   background: var(--accent);
   border: none;
   border-radius: var(--radius-md, 12px);
-  color: #141414;
+  color: #1F1C18;
   font-size: 15px;
   font-weight: 700;
   font-family: var(--font);
@@ -579,7 +579,7 @@
 }
 
 /* ── Tomt fritt pass (designsprak 2026-11) ── */
-.emptyChoiceTitle { font-family: var(--font-num); font-size: 40px; line-height: 0.95; font-weight: 700; color: #fff; }
+.emptyChoiceTitle { font-family: var(--font-num); font-size: 40px; line-height: 0.95; font-weight: 700; color: #F6F0E5; }
 .emptyChoiceText { color: var(--d-muted); }
 .emptyAddBtn {
   width: 100%;
@@ -589,7 +589,7 @@
   border: 0;
   border-radius: 16px;
   background: var(--accent);
-  color: #141414;
+  color: #1F1C18;
   font-size: 17px;
   font-weight: 800;
 }
@@ -599,12 +599,12 @@
 .finishBtn { min-height: var(--btn-h); border: 1px solid var(--d-raised-border); border-radius: 16px; background: var(--d-raised); color: var(--danger); font-size: var(--btn-fs); font-weight: 700; }
 .confirmSheet { background: var(--d-card); border-radius: 28px 28px 0 0; box-shadow: 0 0 0 1px var(--d-card-border); }
 .ssPickSheet { background: var(--d-card); border-radius: 28px 28px 0 0; box-shadow: 0 0 0 1px var(--d-card-border); }
-.confirmPrimary { min-height: var(--btn-h); border: 0; border-radius: 16px; background: var(--accent); color: #141414; font-size: var(--btn-fs); font-weight: 800; }
-.ssPickApply { min-height: var(--btn-h); border: 0; border-radius: 16px; background: var(--accent); color: #141414; font-size: var(--btn-fs); font-weight: 800; }
+.confirmPrimary { min-height: var(--btn-h); border: 0; border-radius: 16px; background: var(--accent); color: #1F1C18; font-size: var(--btn-fs); font-weight: 800; }
+.ssPickApply { min-height: var(--btn-h); border: 0; border-radius: 16px; background: var(--accent); color: #1F1C18; font-size: var(--btn-fs); font-weight: 800; }
 .confirmSecondary { min-height: var(--btn-h); border: 1px solid var(--d-raised-border); border-radius: 16px; background: var(--d-raised); color: var(--text); font-size: var(--btn-fs); font-weight: 700; }
-.toast { border-radius: 16px; background: #1A1A1A; box-shadow: 0 0 0 1px var(--d-raised-border), 0 12px 24px rgba(0,0,0,0.5); }
-.confirmTitle { font-family: var(--font-num); font-size: 36px; line-height: 0.95; font-weight: 700; color: #fff; }
-.ssPickTitle { font-family: var(--font-num); font-size: 36px; line-height: 0.95; font-weight: 700; color: #fff; }
+.toast { border-radius: 16px; background: #24211D; box-shadow: 0 0 0 1px var(--d-raised-border), 0 12px 24px rgba(0,0,0,0.5); }
+.confirmTitle { font-family: var(--font-num); font-size: 36px; line-height: 0.95; font-weight: 700; color: #F6F0E5; }
+.ssPickTitle { font-family: var(--font-num); font-size: 36px; line-height: 0.95; font-weight: 700; color: #F6F0E5; }
 .ssPickItem { min-height: var(--btn-h); border-radius: 16px; border: 1px solid var(--d-raised-border); background: var(--d-raised); }
 .ssPickItemActive { border-color: var(--accent); background: var(--accent-dim); }
 .ssPickList { gap: 8px; }
@@ -661,11 +661,11 @@
   font-weight: 700;
 }
 .ssPickCancel:active,
-.confirmSecondary:active { background: #2A2A2A; }
+.confirmSecondary:active { background: #332F2A; }
 .ssPickApply:disabled {
   background: var(--d-raised);
   box-shadow: inset 0 0 0 1px var(--d-raised-border);
-  color: #6A6A6A;
+  color: #726C64;
 }
 /* Markerat val: gul ram och gul text (morkt pa gult gick inte att lasa) */
 .ssPickItemActive,
@@ -693,3 +693,36 @@
   min-height: var(--btn-h);
   font-size: var(--btn-fs);
 }
+
+/* ═══ Mognande banan i stallet for segment (2026-11c) ═══ */
+.progress {
+  display: block;
+  position: relative;
+  height: 26px;
+  margin: 0 28px 4px 16px;
+  padding: 0;
+}
+.progressTrack {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 11px;
+  height: 4px;
+  border-radius: 2px;
+  background: #2A2620;
+  overflow: hidden;
+}
+.progressFill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), background 0.45s;
+}
+.progressBanana {
+  position: absolute;
+  top: 0;
+  width: 22px;
+  height: 26px;
+  margin-left: -6px;
+  transition: left 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.progressBanana svg { width: 100%; height: 100%; display: block; }

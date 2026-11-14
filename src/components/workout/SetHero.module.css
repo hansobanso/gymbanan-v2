@@ -29,7 +29,7 @@
 
 .prev {
   font-size: 13px;
-  color: #B5B5B5;
+  color: #BAB3A9;
   font-variant-numeric: tabular-nums;
   text-align: right;
 }
@@ -59,7 +59,7 @@
   border: 0;
   border-radius: 10px;
   background: transparent;
-  color: #fff;
+  color: #F6F0E5;
   font-family: var(--font-num);
   /* !important: index.css tvingar 16px pa alla input (mot iOS-zoom) */
   font-size: clamp(48px, 17vw, 68px) !important;
@@ -78,11 +78,11 @@
   margin: 0;
 }
 
-.num::placeholder { color: #4A4A4A; }
+.num::placeholder { color: #524D47; }
 
 .num:focus {
   outline: none;
-  background: #1A1A1A;
+  background: #24211D;
 }
 
 .unit {
@@ -115,7 +115,7 @@
   touch-action: manipulation;
 }
 
-.step:active { background: #2A2A2A; }
+.step:active { background: #332F2A; }
 
 .actions {
   display: flex;
@@ -139,7 +139,7 @@
   touch-action: manipulation;
 }
 
-.rir:active { background: #2A2A2A; }
+.rir:active { background: #332F2A; }
 
 .rirSet {
   border-color: var(--accent-border);
@@ -166,7 +166,7 @@
   border-radius: 16px;
   border: 0;
   background: var(--accent);
-  color: #141414;
+  color: #1F1C18;
   font-size: var(--btn-fs);
   font-weight: 800;
   display: flex;
@@ -187,3 +187,7 @@
   from { opacity: 0; transform: translateY(6px) scale(0.985); }
   to { opacity: 1; transform: none; }
 }
+
+/* ═══ 2026-11c: ingen kant, bocken ar knappen ═══ */
+.card { border: 0; }
+.step { border-color: transparent; }

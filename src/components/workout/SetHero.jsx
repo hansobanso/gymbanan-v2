@@ -26,7 +26,7 @@ function getBest1RM(allSets) {
 }
 
 /**
- * Det oppna setet i passvyn: stora siffror, +/- och "Set klart".
+ * Det oppna setet i passvyn: stora siffror, +/- och en stor bock.
  * Siffrorna ar vanliga textfalt, sa man kan ocksa trycka och skriva.
  */
 export default function SetHero({
@@ -128,10 +128,10 @@ export default function SetHero({
           </button>
         )}
         <button className={styles.doneBtn} onClick={onComplete} type="button" aria-label="Markera set som klart">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          {/* En stor bock sager samma sak som "Set klart" (2026-11c) */}
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M5 12.5l4.5 4.5L19 7.5" />
           </svg>
-          Set klart
         </button>
       </div>
     </div>

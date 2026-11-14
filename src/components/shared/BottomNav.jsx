@@ -75,7 +75,9 @@ export default function BottomNav() {
                 <span className={styles.icon}>
                   <Icon active={isActive} />
                 </span>
-                <span className={styles.label}>{label}</span>
+                {/* Bara ikoner (2026-11c). Namnet finns kvar for skarmlasare. */}
+                <span className="sr-only">{label}</span>
+                <span className={styles.activeDot} aria-hidden="true" />
               </>
             )}
           </NavLink>

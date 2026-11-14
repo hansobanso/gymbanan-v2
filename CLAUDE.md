@@ -55,12 +55,12 @@ och om setState i effekter (befintligt mönster). Titta bara på nya fel.
 | `src/lib/progression.js` | Ren progressionslogik utan React. Har tester |
 | `src/screens/Workout.jsx` | Passvyn: timer, anpassa passet, avsluta, spara till program |
 | `src/components/workout/ExerciseBlock.jsx` | Övningsblock: klar/kommande som en rad, öppen med settabell (Set/Förra/Idag) |
-| `src/components/workout/SetHero.jsx` | Det öppna setet: stora siffror, +/−, RIR-knapp, "Set klart" |
+| `src/components/workout/SetHero.jsx` | Det öppna setet: stora siffror, +/−, RIR-knapp, stor bock |
 | `src/components/workout/RestDock.jsx` | Vilotimern som docka längst ner |
 | `src/components/home/HomeScreen.jsx`, `src/lib/homeStats.js` | Startsidan + ren logik (veckoremsa, muskelläge). Har tester |
 | `src/lib/db.js` | Alla Supabase-anrop + liten cache |
 | `src/App.jsx` | Routing, "Pågående pass"-dialogen, programlista |
-| `src/components/shared/MuscleMap.jsx` | Muskelgubben (grön veckovy hemma, röd i passet) |
+| `src/components/shared/MuscleMap.jsx` | Muskelgubben (gul skala överallt) |
 | `src/lib/restSound.js` | Pling när vilan är slut (bara Web Audio) |
 | `scripts/crash-lint.mjs` | Krasch-grinden |
 
@@ -149,10 +149,25 @@ och om setState i effekter (befintligt mönster). Titta bara på nya fel.
 - Får väljaren `sessionExercises` visar den muskelgubben för passet med
   det som är ibockat, och markerar befintliga övningar "I passet".
 
-**Designspråk** (nov 2026): svart bakgrund, kort `--d-card`, gul accent,
-grönt för klart, blå `--d-hint` för PT-besked, stora siffror i
-`--font-num` (Barlow Condensed). Variablerna `--d-*` ligger i
-`src/index.css`. Skisser: https://claude.ai/artifact/4S251Xb86AV2poTdM2m4hM
+**Designspråk** (nov 2026, omgång c 2026-11-15): tre färger. Varm svart
+bakgrund `--bg #0F0D0A`, grädvit text och banangul `--accent` som enda
+signalfärg. `--d-ok` (klart) är grädvitt, `--d-hint` är varm grå, och
+muskelgubben lyser gult (`muscleColor.js`). Rött bara för fel och radering.
+Det enda gröna är den omogna bananen i passets förloppsrad. Neutrala gråtoner
+är varma: använd tokens, eller kör `python3 scripts/warm-greys.py` efter
+att ha lagt till hårdkodade gråa. Kort och knappar har ingen synlig kant
+(`--d-card-border: transparent`). Sidrubriker och stora siffror i
+`--font-num` (Barlow Condensed). Skisser:
+https://claude.ai/artifact/4S251Xb86AV2poTdM2m4hM
+
+**Färre ord**: bottenmenyn är bara ikoner (namnen finns som `sr-only`),
+muskelläget är prick + namn (gul = redo, grå = vilar, ring = länge sen),
+Nästa pass-kortet är namn + en rad + knapp (tryck på toppen för övningarna),
+och setknappen är en stor bock. Lägg inte tillbaka förklaringstexter som
+bara behövs första gången.
+
+**Lekfullt**: bananen mognar i passets förloppsrad, PB ger en kort skur av
+bananer (`PbBurst`), och nyckeltal rullar till sitt värde (`RollNum`).
 
 **PB**: guldcirkel med "PB" när ett set slår tyngsta vikten någonsin (även
 1 rep) eller ger fler reps än någonsin på exakt den vikten. Första gången en

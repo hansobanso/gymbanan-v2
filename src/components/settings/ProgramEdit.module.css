@@ -234,7 +234,7 @@
 
 .saveBtn {
   background: var(--accent);
-  color: #000;
+  color: #0F0D0A;
   border: none;
   border-radius: var(--radius-md);
   font-size: 16px;
@@ -356,7 +356,7 @@
   gap: 12px;
   width: 100%;
   background: var(--surface);
-  border: 1px solid var(--border-1, #1f1f1f);
+  border: 1px solid var(--border-1, #292521);
   border-radius: var(--radius-sm);
   padding: 14px;
   cursor: pointer;
@@ -382,7 +382,7 @@
   width: 46px;
   height: 28px;
   border-radius: 14px;
-  background: #2a2a2a;
+  background: #332F2A;
   position: relative;
   transition: background 0.15s;
 }
@@ -396,7 +396,7 @@
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: #fff;
+  background: #F6F0E5;
   transition: transform 0.15s;
 }
 .switchOn .switchKnob {
@@ -419,19 +419,19 @@
 
 /* ═══ Designsprak 2026-11: skriver over reglerna ovan ═══ */
 .topBar { border-bottom: 0; padding-bottom: 4px; }
-.backBtn { width: 44px; height: 44px; margin-left: -12px; background: transparent; border-radius: 22px; color: #C9C9C9; }
-.backBtn:active { background: #1C1C1C; }
+.backBtn { width: 44px; height: 44px; margin-left: -12px; background: transparent; border-radius: 22px; color: #CDC6BB; }
+.backBtn:active { background: #26231E; }
 .topBarTitle { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
 .label { letter-spacing: 0.1em; color: var(--d-muted); }
 .nameInput {
   padding: 2px 0; background: transparent; border: 0; border-bottom: 1px solid transparent; border-radius: 0;
-  color: #fff; font-family: var(--font-num); font-size: 40px !important; line-height: 1; font-weight: 700;
+  color: #F6F0E5; font-family: var(--font-num); font-size: 40px !important; line-height: 1; font-weight: 700;
 }
 .nameInput:focus { border-bottom-color: var(--accent); }
 .sessionItem { background: var(--d-card); border: 1px solid var(--d-card-border); border-radius: 16px; min-height: 60px; }
 .sessionName { font-size: 15px; font-weight: 700; }
 .sessionMeta { font-size: 12px; color: var(--d-muted); }
-.saveBtn { min-height: var(--btn-h); border-radius: 16px; color: #141414; font-size: var(--btn-fs); font-weight: 800; }
+.saveBtn { min-height: var(--btn-h); border-radius: 16px; color: #1F1C18; font-size: var(--btn-fs); font-weight: 800; }
 .setActiveBtn, .setActiveBtnActive, .copyBtn { min-height: 48px; border-radius: 16px; }
 
 /* ═══ Knappsystem 2026-11: samma hojd, radie och vikt overallt ═══ */

@@ -14,7 +14,7 @@
   justify-content: space-between;
   padding: calc(var(--safe-top, 44px) + 8px) 16px 12px;
   flex-shrink: 0;
-  background: #000000;
+  background: #0F0D0A;
   gap: 12px;
 }
 
@@ -36,7 +36,7 @@
   font-size: 22px;
   line-height: 1.15;
   font-weight: 800;
-  color: #ffffff;
+  color: #F6F0E5;
   margin: 0;
   letter-spacing: -0.01em;
 }
@@ -92,7 +92,7 @@
   text-align: left;
   -webkit-tap-highlight-color: transparent;
 }
-.progressCard:active { background: #0E0E0E; }
+.progressCard:active { background: #1A1713; }
 
 .progressIcon {
   width: 36px;
@@ -129,7 +129,7 @@
 
 .progressArrow {
   flex-shrink: 0;
-  color: #6A6A6A;
+  color: #726C64;
 }
 
 /* ── Veckogrupper ── */
@@ -228,8 +228,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  background: var(--surface-2, #222);
-  border: 1px solid var(--border-2, #333);
+  background: var(--surface-2, #2C2823);
+  border: 1px solid var(--border-2, #3C3832);
   border-radius: 12px;
   padding: 12px 16px;
   color: var(--text);
@@ -249,7 +249,7 @@
 }
 
 /* ═══ Knappsystem 2026-11: samma hojd, radie och vikt overallt ═══ */
-.undoToast { border-radius: 16px; background: #1A1A1A; box-shadow: 0 0 0 1px var(--d-raised-border), 0 12px 24px rgba(0,0,0,0.5); }
+.undoToast { border-radius: 16px; background: #24211D; box-shadow: 0 0 0 1px var(--d-raised-border), 0 12px 24px rgba(0,0,0,0.5); }
 
 /* Veckorubriken ar en knapp: oppnar veckorapporten */
 .weekHead {
@@ -270,7 +270,7 @@
   align-items: center;
   gap: 8px;
 }
-.weekCount svg { color: #6A6A6A; }
+.weekCount svg { color: #726C64; }
 
 /* Rullytan. Regeln foll bort nar historiken gjordes om, sa listan gick inte
    att rulla. */
@@ -281,3 +281,6 @@
   -webkit-overflow-scrolling: touch;
   padding: 12px 0 16px;
 }
+
+/* Sidrubrik i den smala stilen (2026-11c) */
+.title { font-family: var(--font-num); font-size: 32px; line-height: 1; font-weight: 700; letter-spacing: 0; }

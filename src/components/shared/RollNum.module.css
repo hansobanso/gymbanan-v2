@@ -1,0 +1,20 @@
+.wrap { display: inline-flex; font-variant-numeric: tabular-nums; }
+.inner { display: inline-flex; white-space: pre; }
+.char { display: inline-block; }
+.col {
+  display: inline-block;
+  height: 1em;
+  line-height: 1em;
+  overflow: hidden;
+  vertical-align: top;
+}
+.strip {
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.digit { height: 1em; line-height: 1em; }
+
+@media (prefers-reduced-motion: reduce) {
+  .strip { transition: none; }
+}

@@ -1,7 +1,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background: var(--bg, #000);
+  background: var(--bg, #0F0D0A);
   z-index: 250;
   display: flex;
   flex-direction: column;
@@ -159,8 +159,8 @@
   border-radius: 20px;
 }
 .changePill.up {
-  color: #4ADE80;
-  background: rgba(74, 222, 128, 0.13);
+  color: var(--accent);
+  background: var(--accent-dim);
 }
 .changePill.down {
   color: var(--danger);
@@ -169,7 +169,7 @@
 
 /* ── Graf-kort ── */
 .chartCard {
-  background: var(--card-bg, #141414);
+  background: var(--card-bg, #1F1C18);
   border-radius: 16px;
   padding: 12px 8px 6px;
   margin-bottom: 14px;
@@ -181,7 +181,7 @@
 .line { stroke: var(--accent); stroke-width: 2.5; }
 .dot { fill: var(--accent); opacity: 0.55; }
 .dotLast { fill: var(--accent); }
-.dotPr { fill: var(--accent); stroke: var(--bg, #000); stroke-width: 1.5; }
+.dotPr { fill: var(--accent); stroke: var(--bg, #0F0D0A); stroke-width: 1.5; }
 .prLabel {
   font-size: 10px;
   font-weight: 800;
@@ -223,7 +223,7 @@
 }
 
 /* ═══ Knappsystem 2026-11: samma hojd, radie och vikt overallt ═══ */
-.closeBtn { width: 44px; height: 44px; margin: -7px -8px -7px 0; padding: 0; border: 0; border-radius: 22px; background: transparent; color: #C9C9C9; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.closeBtn { width: 44px; height: 44px; margin: -7px -8px -7px 0; padding: 0; border: 0; border-radius: 22px; background: transparent; color: #CDC6BB; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
 /* ═══ Knappgenomgang 2026-11b: matten kommer fran --btn-* i index.css ═══ */
 .search { height: var(--field-h); padding: 0 14px; border: 1px solid var(--d-raised-border); border-radius: var(--field-r); background: var(--d-raised); }

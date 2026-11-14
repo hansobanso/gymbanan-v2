@@ -1,3 +1,4 @@
+import RollNum from '../shared/RollNum'
 import { useMemo, useState } from 'react'
 import { progressOverview, fmtTonnage, fmtRough } from '../../lib/progressStats'
 import { displayWeightStr } from '../../lib/weightUtils'
@@ -23,7 +24,7 @@ function Spark({ points, up, width = 72, height = 26 }) {
   const x = i => 3 + (i / (points.length - 1)) * (width - 6)
   const y = v => height - 4 - ((v - min) / span) * (height - 8)
   const d = points.map((p, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(p.value).toFixed(1)}`).join(' ')
-  const color = up ? 'var(--d-ok)' : '#8A8A8A'
+  const color = up ? 'var(--accent)' : '#5D5851'
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-hidden="true" className={styles.spark}>
       <path d={d} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -83,7 +84,7 @@ export default function ProgressOverview({ workouts, loading, onSelect }) {
               </>
             ) : pct >= 1 ? (
               <>
-                <span className={styles.heroNum}>+{pct}<span className={styles.heroPct}>%</span></span>
+                <span className={styles.heroNum}><RollNum value={`+${pct}`} /><span className={styles.heroPct}>%</span></span>
                 <span className={styles.heroLabel}>starkare {p.text}</span>
                 <span className={styles.heroSub}>Typisk ökning över {o.headline.count} övningar, räknat på estimerat 1RM.</span>
               </>
@@ -97,9 +98,9 @@ export default function ProgressOverview({ workouts, loading, onSelect }) {
           </section>
 
           <div className={styles.stats}>
-            <div className={styles.stat}><span className={styles.num}>{o.count}</span><span className={styles.unit}>pass</span></div>
-            <div className={styles.stat}><span className={styles.num}>{fmtTonnage(o.tonnageKg)}</span><span className={styles.unit}>lyft totalt</span></div>
-            <div className={styles.stat}><span className={`${styles.num} ${o.pbs.length ? styles.numPb : ''}`}>{o.pbs.length}</span><span className={styles.unit}>PB</span></div>
+            <div className={styles.stat}><span className={styles.num}><RollNum value={o.count} /></span><span className={styles.unit}>pass</span></div>
+            <div className={styles.stat}><span className={styles.num}><RollNum value={fmtTonnage(o.tonnageKg)} /></span><span className={styles.unit}>lyft totalt</span></div>
+            <div className={styles.stat}><span className={`${styles.num} ${o.pbs.length ? styles.numPb : ''}`}><RollNum value={o.pbs.length} /></span><span className={styles.unit}>PB</span></div>
           </div>
 
           {o.bananas >= 1000 && (
@@ -169,7 +170,7 @@ export default function ProgressOverview({ workouts, loading, onSelect }) {
               ))}
               {shown.length === 0 && <p className={styles.noHit}>Ingen övning hittades</p>}
             </div>
-            <p className={styles.foot}>e1RM är estimerat max för ett rep, räknat från vikt och reps. Anpassade pass räknas inte med.</p>
+            <p className={styles.foot}>e1RM = estimerat max för ett rep.</p>
           </section>
         </>
       )}

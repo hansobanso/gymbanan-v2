@@ -1,3 +1,4 @@
+import RollNum from '../shared/RollNum'
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { weekReport, fmtMinutes } from '../../lib/homeStats'
@@ -66,10 +67,10 @@ export default function WeekSheet({ week, exerciseMap: givenMap, onClose }) {
               ) : (
                 <>
                   <div className={styles.stats}>
-                    <div className={styles.stat}><span className={styles.num}>{r.count}</span><span className={styles.unit}>pass</span></div>
-                    <div className={styles.stat}><span className={styles.num}>{fmtMinutes(r.minutes) ?? '0 min'}</span><span className={styles.unit}>tid</span></div>
-                    <div className={styles.stat}><span className={styles.num}>{r.sets}</span><span className={styles.unit}>set</span></div>
-                    <div className={styles.stat}><span className={`${styles.num} ${r.pbs.length ? styles.numPb : ''}`}>{r.pbs.length}</span><span className={styles.unit}>PB</span></div>
+                    <div className={styles.stat}><span className={styles.num}><RollNum value={r.count} /></span><span className={styles.unit}>pass</span></div>
+                    <div className={styles.stat}><span className={styles.num}><RollNum value={fmtMinutes(r.minutes) ?? '0 min'} /></span><span className={styles.unit}>tid</span></div>
+                    <div className={styles.stat}><span className={styles.num}><RollNum value={r.sets} /></span><span className={styles.unit}>set</span></div>
+                    <div className={styles.stat}><span className={`${styles.num} ${r.pbs.length ? styles.numPb : ''}`}><RollNum value={r.pbs.length} /></span><span className={styles.unit}>PB</span></div>
                   </div>
 
                   {r.groups.length > 0 && (

@@ -1,4 +1,4 @@
-import { nEx, exWord } from '../../lib/plural.js'
+import { nEx } from '../../lib/plural.js'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { calendarDaysAgo } from '../../lib/dates'
 import { useNavigate } from 'react-router-dom'
@@ -24,10 +24,6 @@ function relativeAgo(iso) {
   if (days === 1) return 'igår'
   if (days < 7) return WEEKDAYS_AGO[new Date(iso).getDay()]
   return `för ${days} dagar sedan`
-}
-
-function fmtKg(w) {
-  return String(Math.round(w * 100) / 100).replace('.', ',')
 }
 
 const CheckIcon = () => (
@@ -227,7 +223,6 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
   const trainedToday = !!today?.trained
   const next = nextSession ? sessionSummary(nextSession, recentWorkouts, exerciseMap) : null
   const nextCount = (nextSession?.exercises ?? []).length
-  const previewRows = next ? next.preview.slice(0, nextCount <= 3 ? 3 : 2) : []
   const muscles = muscleStatus(recentWorkouts, exerciseMap)
 
   // PT-besked pa kortet: sag i forvag om uppehallet paverkar dagens vikter.
@@ -376,51 +371,24 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
         {/* ── Nasta pass: sidans huvudsak ── */}
         {nextSession && (
           <section className={h.hero}>
-            <div className={h.heroTop}>
-              <div className={h.heroTitleCol}>
+            {/* Kortets topp: namn och en rad. Tryck for alla ovningar. */}
+            <button
+              className={h.heroTop}
+              onClick={() => setPreviewSession({ session: nextSession, program: activeProgram })}
+              type="button"
+              aria-label={`Visa övningarna i ${nextSession.name}`}
+            >
+              <span className={h.heroTitleCol}>
                 <span className={h.eyebrow}>{ongoing ? 'PÅGÅENDE PASS' : 'NÄSTA PASS'}</span>
                 <span className={h.heroName}>{nextSession.name}</span>
-                {next.muscles.length > 0 && (
-                  <span className={h.sub}>{next.muscles.slice(0, 3).join(' · ')}</span>
-                )}
-              </div>
-              <div className={h.heroStats}>
-                {nextCount > 0 && (
-                  <div className={h.stat}>
-                    <span className={h.statNum}>{nextCount}</span>
-                    <span className={h.statLabel}>{exWord(nextCount)}</span>
-                  </div>
-                )}
-                {next.estMin && (
-                  <div className={h.stat}>
-                    <span className={h.statNum}>~{next.estMin}</span>
-                    <span className={h.statLabel}>min</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {nextCount > 0 && (
-              <div className={h.preview}>
-                {previewRows.map((ex, i) => (
-                  <div key={i} className={h.previewRow}>
-                    <span className={h.previewName}>{ex.name}</span>
-                    <span className={h.previewMeta}>
-                      {ex.weight > 0 ? `${ex.sets} × ${fmtKg(ex.weight)} kg`
-                        : ex.repsMin && ex.repsMax ? `${ex.sets} × ${ex.repsMin}–${ex.repsMax}`
-                        : `${ex.sets} set`}
-                    </span>
-                  </div>
-                ))}
-                <button
-                  className={h.previewMore}
-                  onClick={() => setPreviewSession({ session: nextSession, program: activeProgram })}
-                  type="button"
-                >
-                  Visa alla {nextCount} övningar
-                </button>
-              </div>
-            )}
+                <span className={h.sub}>
+                  {[next.muscles.slice(0, 3).join(' · ') || null, nextCount ? nEx(nextCount) : null, next.estMin ? `~${next.estMin} min` : null].filter(Boolean).join('  ·  ')}
+                </span>
+              </span>
+              <span className={h.heroChevron} aria-hidden="true">
+                <svg width="8" height="14" viewBox="0 0 7 12" fill="none"><path d="M1 1l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </span>
+            </button>
 
             {extras.length > 0 && (
               <div className={h.extras}>
@@ -566,20 +534,23 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
           <section className={h.block}>
             <div className={h.labelRow}>
               <span className={h.label}>Muskelläge</span>
-              <span className={h.labelRight}>senast tränad</span>
+              <span className={h.legend} aria-hidden="true">
+                <span><i className={`${h.mDot} ${h.mDot_ready}`} />redo</span>
+                <span><i className={`${h.mDot} ${h.mDot_resting}`} />vilar</span>
+                <span><i className={`${h.mDot} ${h.mDot_neglected}`} />länge sen</span>
+              </span>
             </div>
             <div className={h.muscleGrid}>
               {muscles.map(m => (
-                <button key={m.group} className={h.muscle} onClick={() => setOpenMuscle(m.group)} type="button">
-                  <div className={h.muscleTop}>
-                    <span className={h.muscleName}>{m.group}</span>
-                    <span className={h.muscleDays}>{daysLabel(m.days)}</span>
-                  </div>
-                  {m.state === 'ready' && <span className={h.stateReady}>Redo</span>}
-                  {m.state === 'resting' && <span className={h.stateResting}>Vilar, {m.readyLabel}</span>}
-                  {m.state === 'neglected' && (
-                    <span className={h.stateNeglected}>{m.days == null ? 'Inte tränad' : 'Inte tränad på länge'}</span>
-                  )}
+                <button
+                  key={m.group}
+                  className={h.muscle}
+                  onClick={() => setOpenMuscle(m.group)}
+                  type="button"
+                  aria-label={`${m.group}: ${m.state === 'ready' ? 'redo' : m.state === 'resting' ? `vilar, ${m.readyLabel}` : 'inte tränad på länge'}`}
+                >
+                  <span className={`${h.mDot} ${h['mDot_' + m.state]}`} aria-hidden="true" />
+                  <span className={h.muscleName}>{m.group}</span>
                 </button>
               ))}
             </div>

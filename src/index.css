@@ -1,22 +1,22 @@
 :root {
   /* ── Backgrounds ── */
-  --bg: #000000;
-  --bg-2: #0a0a0a;
-  --bg-3: #141414;
+  --bg: #0F0D0A;
+  --bg-2: #171411;
+  --bg-3: #1F1C18;
 
   /* ── Surfaces (cards, inputs, sheets) ── */
-  --surface: #1a1a1a;
-  --surface-2: #222222;
-  --surface-3: #2a2a2a;
+  --surface: #24211D;
+  --surface-2: #2C2823;
+  --surface-3: #332F2A;
 
   /* ── Borders ── */
-  --border: #252525;
-  --border-2: #333333;
+  --border: #2E2B26;
+  --border-2: #3C3832;
 
   /* ── Text ── */
-  --text: #f0f0f0;
-  --text-2: #aaaaaa;
-  --text-3: #888888;
+  --text: #EBE4D9;
+  --text-2: #AFA99F;
+  --text-3: #8F8980;
 
   /* ── Accent – bananegul ── */
   --accent: #F5D020;
@@ -24,16 +24,16 @@
   --accent-border: rgba(245, 208, 32, 0.3);
 
   /* ── Designsprak 2026-11 (passvy D + startsida E) ── */
-  --d-card: #121212;          /* kortyta */
-  --d-card-border: #2A2A2A;
-  --d-raised: #1B1B1B;        /* knappar pa kort */
-  --d-raised-border: #2E2E2E;
-  --d-line: #1C1C1C;          /* radavdelare */
-  --d-muted: #9A9A9A;         /* sekundar text */
-  --d-dim: #8F8F8F;           /* etiketter, klara rader */
-  --d-hint: #A9BDD6;          /* PT-besked */
-  --d-ok: #3DBB4C;            /* klart / redo */
-  --d-ok-dim: #153A1B;
+  --d-card: #1D1A16;          /* kortyta */
+  --d-card-border: transparent; /* ytor utan kant (2026-11c) */
+  --d-raised: #25221E;        /* knappar pa kort */
+  --d-raised-border: #25221E;  /* samma som ytan: kanten syns inte men fokus kan farga den */
+  --d-line: #26231E;          /* radavdelare */
+  --d-muted: #A09A91;         /* sekundar text */
+  --d-dim: #958F87;           /* etiketter, klara rader */
+  --d-hint: #BDB4A6;          /* PT-besked: varm gra, ingen egen farg */
+  --d-ok: #EBE4D9;            /* klart: grädvitt. Appen har tre farger: svart, vitt, gult */
+  --d-ok-dim: #2A2620;
   --font-num: 'Barlow Condensed', var(--font); /* stora siffror */
 
   /* Knappar och falt: en uppsattning matt for hela appen.
@@ -51,23 +51,23 @@
   /* ── Semantiska färger ── */
   --danger: #FF3B30;
   --danger-dim: rgba(255, 59, 48, 0.15);
-  --warning: #FF9500;
-  --warning-dim: rgba(255, 149, 0, 0.15);
-  --success: #30D158;
-  --success-dim: rgba(48, 209, 88, 0.15);
+  --warning: #F5D020;
+  --warning-dim: rgba(245, 208, 32, 0.12);
+  --success: #EBE4D9;
+  --success-dim: rgba(235, 228, 217, 0.12);
 
   /* Klar-gron for ifyllda set + ovningsprickar - ljusare an muskelgron sa
      den syns tydligt mot svart, men hor till samma grona familj. */
-  --done-green: #4CAF3E;
+  --done-green: #EBE4D9;
 
   /* ── Vilotimer ── */
   --timer-safe: #F5D020;
-  --timer-warn: #FF9500;
+  --timer-warn: #F5D020;
   --timer-danger: #FF3B30;
 
   /* ── Muskelgubbe (skogsgron palette) ── */
-  --muscle-untrained: #1A2E10;  /* outranad - mork dov gron */
-  --muscle-rested:    #3D6B1F;  /* baseline vilad - intensity 0.15+ */
+  --muscle-untrained: #2E2A24;  /* outranad - mork dov gron */
+  --muscle-rested:    #5C4A1C;  /* baseline vilad - intensity 0.15+ */
   --muscle-trained:   #F5D020;  /* fulltranad - samma som accent */
 
   /* ── Typografi – iOS font-stack ── */
@@ -88,7 +88,7 @@
   --radius-full: 9999px;
 
   /* ── Card / Row design tokens ── */
-  --card-bg: #141414;
+  --card-bg: #1F1C18;
   --card-radius: 14px;
   --card-padding: 14px 16px;
   --card-gap: 10px;
@@ -278,7 +278,7 @@ input, textarea, select {
   font-size: 44px;
   line-height: 1;
   font-weight: 700;
-  color: #fff;
+  color: #F6F0E5;
   letter-spacing: 0.06em;
   opacity: 0;
   animation: riseIn 0.35s 0.3s ease-out forwards;
@@ -287,7 +287,7 @@ input, textarea, select {
   width: 148px;
   height: 3px;
   margin-top: 6px;
-  background: #1c1c1c;
+  background: #26231E;
   border-radius: 2px;
   overflow: hidden;
   position: relative;
@@ -364,7 +364,7 @@ input, textarea, select {
   padding: 8px 8px 8px 16px;
   border: 0;
   border-radius: 28px;
-  background: #1A1A1A;
+  background: #24211D;
   box-shadow: 0 0 0 1px var(--d-raised-border), 0 12px 24px rgba(0, 0, 0, 0.5);
   color: var(--text);
   font-family: var(--font);
@@ -410,7 +410,7 @@ input, textarea, select {
   padding: 0 16px;
   border-radius: 20px;
   background: var(--accent);
-  color: #141414;
+  color: #1F1C18;
   font-size: 14px;
   font-weight: 800;
   display: flex;
@@ -455,7 +455,7 @@ input, textarea, select {
   font-size: 40px;
   line-height: 0.95;
   font-weight: 700;
-  color: #fff;
+  color: #F6F0E5;
   overflow-wrap: anywhere;
 }
 
@@ -471,7 +471,7 @@ input, textarea, select {
   border: 0;
   border-radius: 16px;
   background: var(--accent);
-  color: #141414;
+  color: #1F1C18;
   font-family: var(--font);
   font-size: var(--btn-fs);
   font-weight: 800;
@@ -542,7 +542,7 @@ input, textarea, select {
   inset: 0;
   z-index: 300;
   transform: translateX(100%);
-  background: #000;
+  background: #0F0D0A;
   box-shadow: -1px 0 0 var(--d-card-border), -24px 0 48px rgba(0, 0, 0, 0.6);
   display: flex;
   flex-direction: column;
@@ -562,7 +562,7 @@ input, textarea, select {
   font-size: 56px;
   line-height: 0.95;
   font-weight: 700;
-  color: #fff;
+  color: #F6F0E5;
   padding: 0 24px;
   text-align: center;
 }

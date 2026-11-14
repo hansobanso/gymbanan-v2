@@ -23,7 +23,7 @@
   height: 100%;
   background: none;
   border: none;
-  color: #fff;
+  color: #F6F0E5;
   font-size: 13px;
   font-weight: 700;
   font-family: var(--font);
@@ -126,13 +126,13 @@
 .cardOpen .pbBadge {
   background: var(--accent);
   border-color: var(--accent);
-  color: #141414;
+  color: #1F1C18;
 }
 
 .chevron {
   flex-shrink: 0;
   display: flex;
-  color: #6A6A6A;
+  color: #726C64;
   transition: transform 0.2s var(--ease);
 }
 
@@ -155,7 +155,7 @@
   align-items: center;
   min-height: 40px;
   padding: 4px 2px;
-  border-top: 1px solid #1F1F1F;
+  border-top: 1px solid #292521;
 }
 
 .exName {
@@ -166,7 +166,7 @@
 }
 
 .exSets {
-  color: #B5B5B5;
+  color: #BAB3A9;
   text-align: right;
   max-width: 190px;
 }

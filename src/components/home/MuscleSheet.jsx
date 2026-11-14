@@ -101,11 +101,6 @@ export default function MuscleSheet({ muscle, detail, exerciseMap, extras, nextN
                 </>
               )}
 
-              {[...detail.inProgram, ...detail.suggestions].some(r => !r.inNext) && (
-                <p className={styles.foot}>
-                  "+ 2 set" lägger övningen sist i nästa pass du startar, en gång. Programmet ändras inte.
-                </p>
-              )}
             </div>
           </motion.div>
         </>

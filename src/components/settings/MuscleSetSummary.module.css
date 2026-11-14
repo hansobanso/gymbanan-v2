@@ -100,7 +100,7 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  border-bottom: 1px solid #1f1f1f;
+  border-bottom: 1px solid #292521;
   padding-bottom: 4px;
 }
 
@@ -131,7 +131,7 @@
 
 .volumeTrack {
   height: 6px;
-  background: #1a1a1a;
+  background: #24211D;
   border-radius: 3px;
   overflow: hidden;
 }
@@ -142,9 +142,9 @@
   transition: width 0.3s ease;
 }
 
-.volumeFill_ok { background: #4ade80; }
-.volumeFill_mid { background: var(--accent); }
-.volumeFill_low { background: #f87171; }
+.volumeFill_ok { background: var(--accent); }
+.volumeFill_mid { background: #A09A91; }
+.volumeFill_low { background: #5D5851; }
 
 /* Muskelgubbe-heatmap */
 .heatmapWrap {
