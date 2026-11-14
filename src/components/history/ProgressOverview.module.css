@@ -1,0 +1,320 @@
+/* Framsteg: oversikten (designsprak 2026-11). */
+
+.wrap {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 16px calc(32px + env(safe-area-inset-bottom, 0px));
+}
+
+.periods {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--d-card-border);
+  border-radius: 14px;
+  background: var(--d-card);
+}
+
+.period {
+  min-height: 36px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--d-muted);
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 700;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s var(--ease), color 0.15s var(--ease);
+}
+
+.periodOn {
+  background: var(--d-raised);
+  color: #fff;
+}
+
+/* ── Rubriken ── */
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 28px 0 20px;
+  animation: riseIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.heroNum {
+  font-family: var(--font-num);
+  font-size: 104px;
+  line-height: 0.86;
+  font-weight: 700;
+  color: var(--d-ok);
+  letter-spacing: -0.01em;
+}
+
+.heroPct {
+  margin-left: 4px;
+  font-size: 52px;
+}
+
+.heroWord {
+  font-family: var(--font-num);
+  font-size: 60px;
+  line-height: 0.95;
+  font-weight: 700;
+  color: #fff;
+}
+
+.heroLabel {
+  margin-top: 8px;
+  font-size: 20px;
+  line-height: 1.2;
+  font-weight: 800;
+  color: #fff;
+}
+
+.heroSub {
+  margin-top: 6px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--d-muted);
+}
+
+/* ── Nyckeltal ── */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 0;
+  border-top: 1px solid var(--d-line);
+  border-bottom: 1px solid var(--d-line);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.num {
+  font-family: var(--font-num);
+  font-size: 32px;
+  line-height: 1;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.numPb { color: var(--accent); }
+
+.unit {
+  font-size: 12px;
+  color: var(--d-muted);
+}
+
+.banana {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: #C9C9C9;
+}
+
+.bananaIcon {
+  display: flex;
+  width: 16px;
+  flex-shrink: 0;
+  color: var(--accent);
+}
+
+.bananaIcon svg { width: 100%; height: auto; }
+
+/* ── Sektioner ── */
+.block {
+  display: flex;
+  flex-direction: column;
+  margin-top: 28px;
+}
+
+.label {
+  margin-bottom: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--d-muted);
+}
+
+.movers {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mover {
+  min-height: 64px;
+  padding: 10px 14px;
+  border: 1px solid var(--d-card-border);
+  border-radius: 18px;
+  background: var(--d-card);
+  color: var(--text);
+  font-family: var(--font);
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mover:active { background: var(--d-raised); }
+
+.rank {
+  width: 22px;
+  flex-shrink: 0;
+  font-family: var(--font-num);
+  font-size: 28px;
+  line-height: 1;
+  font-weight: 700;
+  color: #4A4A4A;
+}
+
+.moverText,
+.rowText {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.moverName,
+.rowName {
+  font-size: 15px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.moverMeta,
+.rowMeta {
+  font-size: 12px;
+  color: var(--d-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.moverPct {
+  flex-shrink: 0;
+  font-family: var(--font-num);
+  font-size: 28px;
+  line-height: 1;
+  font-weight: 700;
+  color: var(--d-ok);
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid var(--d-line);
+}
+
+.row {
+  min-height: 60px;
+  padding: 8px 0;
+  border: 0;
+  border-top: 1px solid var(--d-line);
+  background: transparent;
+  color: var(--text);
+  font-family: var(--font);
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.row:active { opacity: 0.6; }
+
+.spark { flex-shrink: 0; }
+
+.change {
+  width: 68px;
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.up { color: var(--d-ok); }
+.flat { color: var(--d-muted); font-weight: 600; }
+
+.pbBadge {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 15px;
+  background: var(--accent);
+  color: #141414;
+  font-size: 10.5px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pbValue {
+  flex-shrink: 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.search {
+  height: var(--field-h);
+  margin-bottom: 8px;
+  padding: 0 14px;
+  border: 1px solid var(--d-raised-border);
+  border-radius: var(--field-r);
+  background: var(--d-raised);
+  color: var(--text);
+  font-family: var(--font);
+  outline: none;
+}
+
+.search:focus { border-color: var(--accent); }
+
+.noHit,
+.foot {
+  margin: 12px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--d-muted);
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 64px 24px;
+  text-align: center;
+}
+
+.emptyTitle {
+  margin: 8px 0 0;
+  font-size: 17px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.emptyText {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--d-muted);
+}

@@ -146,11 +146,11 @@ export default function History({ session }) {
                 </svg>
               </span>
               <span className={styles.progressText}>
-                <span className={styles.progressTitle}>Styrkeutveckling per övning</span>
+                <span className={styles.progressTitle}>Framsteg</span>
                 <span className={styles.progressSub}>
                   {latestPr
                     ? `Senaste rekord: ${latestPr.name} ${Math.round(displayWeight(latestPr.value, equipmentMap[latestPr.name]))} kg`
-                    : 'Se hur du blir starkare över tid'}
+                    : 'Se hur mycket starkare du blivit'}
                 </span>
               </span>
               <svg className={styles.progressArrow} width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">

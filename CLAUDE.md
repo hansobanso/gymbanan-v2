@@ -4,7 +4,7 @@ Läs den här filen först. Den ersätter att läsa gamla chattar. Kör sedan
 `git log --oneline -20` för att se exakt var arbetet står: commit-meddelandena
 är den mest pålitliga "var slutade vi"-källan.
 
-Senast uppdaterad: 2026-11-13.
+Senast uppdaterad: 2026-11-14.
 
 ## Vad det är
 
@@ -131,6 +131,15 @@ och om setState i effekter (befintligt mönster). Titta bara på nya fel.
 
 **Övningssidan** har två flikar: "Om övningen" och "Historik"
 (`ExerciseHistory`: bästa set, senaste passen, länk till kurvan).
+
+**Framsteg** (`ProgressOverview`, `src/lib/progressStats.js`, har tester)
+- Öppnas från kortet "Framsteg" i historiken. Börjar med en stor siffra:
+  medianökningen i estimerat 1RM över övningar med minst två pass i
+  perioden (3 mån / 1 år / allt). Sedan pass, ton, PB, bananjämförelsen,
+  "Går starkast framåt", senaste PB och alla övningar med gnistlinje.
+- Aldrig röda minus: under 1 % heter "stabil", noll eller lägre i rubriken
+  heter "Håller nivån". Anpassade pass räknas inte in i kurvorna.
+- Tryck på en övning ger kurvan (`ProgressView`), som förut.
 
 **Övningsväljaren** (`ExercisePicker`)
 - Lägga till = flerval: bocka i flera, knappen längst ner visar antalet.

@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { displayWeight } from '../../lib/weightUtils'
 import { getWorkouts, getEquipmentMap } from '../../lib/db'
+import ProgressOverview from './ProgressOverview'
 import styles from './ProgressView.module.css'
 
 // Epley-estimerat 1RM for ett set
@@ -163,40 +164,19 @@ export default function ProgressView({ open, onClose, workouts, equipmentMap = {
   }, [open, userId])
   const sourceWorkouts = allWorkouts ?? workouts
   const sourceEquipment = fullEquipment ?? equipmentMap
-  const [query, setQuery] = useState('')
   const [selected, setSelected] = useState(null)
 
   useEffect(() => {
-    if (open) { setSelected(initialExercise ?? null); setQuery('') }
+    if (open) setSelected(initialExercise ?? null)
   }, [open, initialExercise])
-
-  // Ovningar med data, sorterade efter mest tranade forst
-  const exercises = useMemo(() => {
-    const counts = new Map()
-    for (const w of sourceWorkouts) {
-      for (const ex of w.exercises ?? []) {
-        // Rakna med ovningar som har minst ett gjort arbetsset (med reps),
-        // aven om vikt saknas (kroppsvikt).
-        if ((ex.sets ?? []).some(s => s.type === 'work' && s.done && parseInt(s.reps) > 0)) {
-          counts.set(ex.name, (counts.get(ex.name) ?? 0) + 1)
-        }
-      }
-    }
-    return [...counts.entries()]
-      .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'sv'))
-  }, [sourceWorkouts])
-
-  const filtered = query.trim()
-    ? exercises.filter(e => e.name.toLowerCase().includes(query.toLowerCase()))
-    : exercises
 
   // Datapunkter for vald ovning. Mode: 'weight' (estimerat 1RM) om ovningen
   // har vikt nagon gang, annars 'reps' (basta reps) for kroppsviktsovningar.
   const data = useMemo(() => {
     if (!selected) return null
     const equipment = sourceEquipment[selected]
-    const sorted = [...sourceWorkouts].sort((a, b) => new Date(a.finished_at) - new Date(b.finished_at))
+    // Anpassade pass (latt dag, sjuk, deload) ska inte se ut som ett tapp
+    const sorted = sourceWorkouts.filter(w => !w.adjusted).sort((a, b) => new Date(a.finished_at) - new Date(b.finished_at))
 
     // Avgor lage: anvand vikt om ovningen har vikt i nagot pass
     const anyWeight = sorted.some(w => {
@@ -251,7 +231,7 @@ export default function ProgressView({ open, onClose, workouts, equipmentMap = {
             {selected}
           </button>
         ) : (
-          <span className={styles.title}>Min styrkeutveckling</span>
+          <span className={styles.eyebrow}>Framsteg</span>
         )}
         <button className={styles.closeBtn} onClick={onClose} type="button" aria-label="Stäng">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
@@ -309,30 +289,7 @@ export default function ProgressView({ open, onClose, workouts, equipmentMap = {
           )}
         </div>
       ) : (
-        <>
-          <div className={styles.searchWrap}>
-            <input
-              className={styles.search}
-              type="text"
-              placeholder="Sök övning…"
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-            />
-          </div>
-          <div className={styles.scrollArea}>
-            {filtered.map(e => (
-              <button key={e.name} className={styles.listItem} onClick={() => setSelected(e.name)} type="button">
-                <span className={styles.listItemName}>{e.name}</span>
-                <span className={styles.listItemMeta}>{e.count} pass</span>
-              </button>
-            ))}
-            {filtered.length === 0 && (
-              <p className={styles.noResults}>
-                {query ? 'Ingen övning hittades' : 'Träna några pass med vikter för att se din utveckling här.'}
-              </p>
-            )}
-          </div>
-        </>
+        <ProgressOverview workouts={sourceWorkouts} loading={!allWorkouts} onSelect={setSelected} />
       )}
     </div>
   )

@@ -227,3 +227,14 @@
 
 /* ═══ Knappgenomgang 2026-11b: matten kommer fran --btn-* i index.css ═══ */
 .search { height: var(--field-h); padding: 0 14px; border: 1px solid var(--d-raised-border); border-radius: var(--field-r); background: var(--d-raised); }
+
+/* ── Framsteg 2026-11: rubrik och stora siffror i samma sprak som resten ── */
+.header { border-bottom: 0; padding-bottom: 4px; }
+.eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.heroValue { font-family: var(--font-num); }
