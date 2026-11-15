@@ -203,7 +203,7 @@ sällan jämnt, Hannes vill ställa in exakt). Övriga följer övningens
 `weight_increment`, annars hantel 2, övrigt 2,5. Håll inne +/− för att stega
 snabbt (`StepButton` i SetHero). Långtrycket på setkortet (byt settyp)
 ignorerar allt inom `data-no-longpress`. Progressionens höjning använder
-fortfarande `weight_increment` (maskin 5).
+`weight_increment` (maskin 5), eller maskinens kända vikter (se nedan).
 
 **Maskinens kända vikter** (`knownMachineWeights`, `nearestKnownWeight`):
 för maskin och kabel samlas vikterna Hannes faktiskt kört (senaste 20
