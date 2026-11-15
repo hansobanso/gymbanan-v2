@@ -1,6 +1,10 @@
 .wrap {
   position: relative;
   overflow: hidden;
+  /* Langtryck ska inte oppna iOS meny for text */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 /* Det oppna setet: kortets marginal och rundning flyttas hit sa att
@@ -48,3 +52,6 @@
   background: var(--accent);
   color: #141414;
 }
+
+/* iOS: user-select: none pa en forfader kan hindra skrivning i falt */
+.wrap input { -webkit-user-select: text; user-select: text; }

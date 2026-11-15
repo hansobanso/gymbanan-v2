@@ -33,6 +33,7 @@ export default function SetHero({
   set,
   label,
   prevText,
+  onShowHistory,
   allSets,
   prev1RM,
   weightStep = 2.5,
@@ -75,7 +76,14 @@ export default function SetHero({
     <div className={styles.card} data-set-id={set.id}>
       <div className={styles.top}>
         <span className={styles.label}>{label}</span>
-        {prevText && <span className={styles.prev}>Förra: <b>{prevText}</b></span>}
+        {prevText && (onShowHistory ? (
+          <button className={`${styles.prev} ${styles.prevBtn}`} onClick={onShowHistory} type="button" aria-label={`Förra: ${prevText}. Visa historik`}>
+            Förra: <b>{prevText}</b>
+            <svg width="6" height="10" viewBox="0 0 7 12" fill="none" aria-hidden="true"><path d="M1 1l5 5-5 5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          </button>
+        ) : (
+          <span className={styles.prev}>Förra: <b>{prevText}</b></span>
+        ))}
       </div>
 
       <div className={styles.fields}>

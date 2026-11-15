@@ -10,7 +10,7 @@ const OPEN = 84
  * Raden stannar oppen tills man trycker pa knappen eller drar tillbaka.
  * Tillbaka fran gamla SetRow (forsvann nar passvyn byggdes om 2026-11).
  */
-export default function SwipeRow({ children, onRemove, onDuplicate, disabled = false, card = false }) {
+export default function SwipeRow({ children, onRemove, onDuplicate, onLongPress, disabled = false, card = false }) {
   const wrapRef = useRef(null)
   const moved = useRef(false)
   const x = useMotionValue(0)
@@ -20,11 +20,12 @@ export default function SwipeRow({ children, onRemove, onDuplicate, disabled = f
   // Egen fingerhantering i stallet for framer-motions drag: den startar inte
   // nar fingret borjar pa ett inmatningsfalt, och kortets stora siffror ar falt.
   const handlers = useRef({})
-  handlers.current = { onRemove, onDuplicate }
+  handlers.current = { onRemove, onDuplicate, onLongPress }
   useEffect(() => {
     const el = wrapRef.current
     if (!el || disabled) return
     let sx = 0, sy = 0, base = 0, dir = null, lastX = 0, lastT = 0, vel = 0
+    let longTimer = null, longFired = false
     const clamp = v => {
       const { onRemove: r, onDuplicate: d } = handlers.current
       const min = r ? -OPEN - 12 : 0, max = d ? OPEN + 12 : 0
@@ -35,11 +36,24 @@ export default function SwipeRow({ children, onRemove, onDuplicate, disabled = f
       sx = t.clientX; sy = t.clientY; base = x.get(); dir = null
       lastX = t.clientX; lastT = e.timeStamp; vel = 0
       moved.current = false
+      longFired = false
+      clearTimeout(longTimer)
+      // Langtryck: halla stilla en halv sekund
+      if (handlers.current.onLongPress) {
+        longTimer = setTimeout(() => {
+          if (dir !== null) return
+          longFired = true
+          moved.current = true // sa att trycket inte ocksa blir ett klick
+          hapticTick()
+          handlers.current.onLongPress()
+        }, 500)
+      }
     }
     const move = e => {
       const t = e.touches[0]
       const dx = t.clientX - sx, dy = t.clientY - sy
-      if (dir === null && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) dir = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v'
+      if (dir === null && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) { dir = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v'; clearTimeout(longTimer) }
+      if (longFired) { e.preventDefault(); return }
       if (dir !== 'h') return
       e.preventDefault()
       moved.current = true
@@ -48,7 +62,9 @@ export default function SwipeRow({ children, onRemove, onDuplicate, disabled = f
       if (dt > 0) vel = (t.clientX - lastX) / dt * 1000
       lastX = t.clientX; lastT = e.timeStamp
     }
-    const end = () => {
+    const end = e => {
+      clearTimeout(longTimer)
+      if (longFired && e?.cancelable) e.preventDefault()
       if (dir !== 'h') return
       const { onRemove: r, onDuplicate: d } = handlers.current
       // Beslut efter var raden hamnat, inte hur langt fingret dragit
@@ -61,7 +77,7 @@ export default function SwipeRow({ children, onRemove, onDuplicate, disabled = f
     }
     el.addEventListener('touchstart', start, { passive: true })
     el.addEventListener('touchmove', move, { passive: false })
-    el.addEventListener('touchend', end, { passive: true })
+    el.addEventListener('touchend', end, { passive: false })
     el.addEventListener('touchcancel', end, { passive: true })
     return () => {
       el.removeEventListener('touchstart', start)

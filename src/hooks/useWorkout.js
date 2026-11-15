@@ -742,6 +742,28 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
     }))
   }, [])
 
+  // Langtryck pa ett set: uppvarmning <-> arbetsset. Backoff blir uppvarmning.
+  // Antalet arbetsset andras, sa det raknas som programandring.
+  const toggleSetType = useCallback((exId, setId) => {
+    setProgramChanged(true)
+    setExercises(prev => {
+      const next = prev.map(ex => {
+        if (ex.localId !== exId) return ex
+        return {
+          ...ex,
+          sets: ex.sets.map(s => {
+            if (s.id !== setId) return s
+            return s.type === 'warmup'
+              ? { ...s, type: 'work', subtype: undefined }
+              : { ...s, type: 'warmup', subtype: undefined, rir: null, isPB: false }
+          }),
+        }
+      })
+      persistWorkout(next)
+      return next
+    })
+  }, [persistWorkout])
+
   const duplicateSet = useCallback((exId, setId) => {
     setExercises(prev => prev.map(ex => {
       if (ex.localId !== exId) return ex
@@ -1283,6 +1305,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
     addBackoffSet,
     removeSet,
     duplicateSet,
+    toggleSetType,
     addExercise,
     addGeneratedWorkout,
     removeExercise,

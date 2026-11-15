@@ -191,3 +191,19 @@
 /* ═══ 2026-11c: ingen kant, bocken ar knappen ═══ */
 .card { border: 0; }
 .step { border-color: transparent; }
+
+/* "Forra" ar en knapp: oppnar ovningens historik */
+.prevBtn {
+  min-height: 36px;
+  margin: -8px -4px -8px 0;
+  padding: 0 4px 0 8px;
+  border: 0;
+  background: transparent;
+  font-family: var(--font);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  -webkit-tap-highlight-color: transparent;
+}
+.prevBtn svg { color: #6A6A6A; }
+.prevBtn:active { color: var(--accent); }

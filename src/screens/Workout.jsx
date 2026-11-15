@@ -619,6 +619,7 @@ export default function Workout({ session }) {
                 onAddBackoffSet={workout.addBackoffSet}
                 onRemoveSet={workout.removeSet}
                 onDuplicateSet={workout.duplicateSet}
+                onToggleSetType={workout.toggleSetType}
                 onCompleteSet={workout.completeSet}
                 onUpdateExerciseReps={workout.updateExerciseReps}
                 onRemoveExercise={workout.removeExercise}

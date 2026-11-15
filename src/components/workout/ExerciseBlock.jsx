@@ -72,6 +72,7 @@ export default function ExerciseBlock({
   onAddBackoffSet,
   onRemoveSet,
   onDuplicateSet,
+  onToggleSetType,
   onCompleteSet,
   onUpdateExerciseReps,
   onRemoveExercise,
@@ -580,6 +581,7 @@ export default function ExerciseBlock({
               <SwipeRow
                 key={set.id}
                 card
+                onLongPress={onToggleSetType ? () => onToggleSetType(exercise.localId, set.id) : undefined}
                 onRemove={() => { onRemoveSet(exercise.localId, set.id); setEditSetId(null) }}
                 onDuplicate={onDuplicateSet ? () => onDuplicateSet(exercise.localId, set.id) : undefined}
               >
@@ -587,6 +589,7 @@ export default function ExerciseBlock({
                 set={set}
                 label={longLabel(set, exercise.sets)}
                 prevText={prev ? fmtSet(prev) : null}
+                onShowHistory={onShowHistory ? () => onShowHistory(exercise) : undefined}
                 allSets={exercise.sets}
                 prev1RM={prev1RM}
                 weightStep={weightStep}
@@ -602,7 +605,8 @@ export default function ExerciseBlock({
           const label = shortLabel(set, exercise.sets)
           if (set.done) {
             return (
-              <div key={set.id} className={`${styles.tr} ${styles.trDone}`} data-set-id={set.id}>
+              <SwipeRow key={set.id} onLongPress={onToggleSetType ? () => onToggleSetType(exercise.localId, set.id) : undefined}>
+              <div className={`${styles.tr} ${styles.trDone}`} data-set-id={set.id}>
                 <span className={styles.tdLabel}>{label}</span>
                 <span>{prev ? fmtSet(prev) : ''}</span>
                 <span>
@@ -618,11 +622,13 @@ export default function ExerciseBlock({
                   {set.isPB ? <span className={styles.pbLabel}>PB</span> : <CheckIcon />}
                 </button>
               </div>
+              </SwipeRow>
             )
           }
           return (
             <SwipeRow
               key={set.id}
+              onLongPress={onToggleSetType ? () => onToggleSetType(exercise.localId, set.id) : undefined}
               onRemove={() => onRemoveSet(exercise.localId, set.id)}
               onDuplicate={onDuplicateSet ? () => onDuplicateSet(exercise.localId, set.id) : undefined}
             >
