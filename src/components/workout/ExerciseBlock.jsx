@@ -268,6 +268,11 @@ export default function ExerciseBlock({
     : (Number(exercise.weightIncrement) || defaultWeightIncrement(exEquipment))
 
   const hasTarget = exercise.defaultRepsMin != null || exercise.defaultRepsMax != null
+  const goalText = (() => {
+    const lo = exercise.defaultRepsMin, hi = exercise.defaultRepsMax
+    const range = lo != null && hi != null && lo !== hi ? `${lo}–${hi}` : `${lo ?? hi}`
+    return `${range} ${repsUnit}`
+  })()
   const targetStr = hasTarget
     ? `${exercise.defaultRepsMin ?? ''}–${exercise.defaultRepsMax ?? ''} ${isTimeBased ? 'sek' : 'reps'}`
     : null
@@ -408,10 +413,10 @@ export default function ExerciseBlock({
           </div>
         </div>
 
-        {/* Raden under namnet visas bara nar den tillfor nagot: en egen
-            notering, superset, eller nar rep-malet saknas/redigeras.
-            (Malet andras annars via menyn.) */}
-        {(editingReps || !hasTarget || exercise.exNotes || supersetPartner) && (
+        {/* Raden under namnet: rep-malet (tryck for att andra), egen
+            notering och superset. Malet var dolt bakom menyn tidigare,
+            men Hannes vill alltid kunna se det (2026-11-15). */}
+        {(editingReps || !isCardio || exercise.exNotes || supersetPartner) && (
           <div className={styles.metaRow} onPointerDown={e => e.stopPropagation()}>
           {editingReps ? (
             <span className={styles.repsRangeEdit}>
@@ -441,9 +446,14 @@ export default function ExerciseBlock({
               />
             </span>
           ) : (
-            !hasTarget && (
+            !isCardio && (hasTarget ? (
+              <button className={styles.goalChip} onClick={startRepsEdit} type="button" aria-label={`Rep-mål ${goalText}, tryck för att ändra`}>
+                <span className={styles.goalLabel}>Mål</span>
+                <span className={styles.goalValue}>{goalText}</span>
+              </button>
+            ) : (
               <button className={styles.metaBtn} onClick={startRepsEdit} type="button">+ Sätt mål</button>
-            )
+            ))
           )}
           {exercise.exNotes && (
             <button className={styles.metaBtn} onClick={() => onShowDetail?.(detailId)} type="button">
