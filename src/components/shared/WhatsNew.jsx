@@ -4,24 +4,32 @@ import styles from './WhatsNew.module.css'
 // Hoj denna nar nya nyheter ska visas for alla igen. OBS: dev och live delar
 // databas, sa hoj den forst nar texten slapps till main. Annars visas rutan
 // om och om igen i den miljo som har den andra versionen.
-export const WHATSNEW_VERSION = '2026-07-polish'
+export const WHATSNEW_VERSION = '2026-11-design'
 
 const ITEMS = [
   {
-    title: 'Ny startsida',
-    body: 'Veckan överst: tryck på en tränad dag för att se passet, svep åt höger för tidigare veckor. Muskelläget visar vad som är redo, vad som vilar och vad du inte tränat på länge.',
+    title: 'Ny look',
+    body: 'Varm svart, gräddvitt och banangult. Färre ord överallt: bottenmenyn är bara ikoner och setknappen en stor bock.',
   },
   {
-    title: 'Enklare pass',
-    body: 'Setet du är på står i mitten med stora siffror. Klara övningar fälls ihop till en rad och får en PB-markering om du slog rekord.',
+    title: 'Bananer som mognar',
+    body: 'Överst i passet sitter en banan per övning. Den gulnar för varje klart set, och tryck på en för att hoppa dit. PB ger ett bananregn.',
+  },
+  {
+    title: 'Smartare pass',
+    body: 'Uppvärmningen fylls i från dagens arbetsvikt. Står en övning still i fyra pass får du förslag: sänk 10 %, byt rep-mål eller byt övning.',
+  },
+  {
+    title: 'Lägg till flera övningar',
+    body: 'Bocka i flera på en gång. Dina vanliga ligger överst, du kan filtrera på utrustning, och muskelgubben visar vad passet tränar.',
+  },
+  {
+    title: 'Framsteg och veckorapport',
+    body: 'Se hur mycket starkare du blivit, vilka övningar som går bäst och veckans pass. Tryck på en muskelgrupp för att lägga till set i nästa pass.',
   },
   {
     title: 'Svep mellan pass och startsida',
-    body: 'Dra från vänsterkanten för att lämna passet utan att avsluta det. Dra från högerkanten för att komma tillbaka.',
-  },
-  {
-    title: 'Se vad passet tränar',
-    body: 'Passbyggaren visar en muskelgubbe som lyser upp när du lägger till övningar. Varje övning visar primära, sekundära och tertiära muskler.',
+    body: 'Dra från vänsterkanten för att lämna passet utan att avsluta. Dra från högerkanten för att komma tillbaka.',
   },
 ]
 
