@@ -254,10 +254,13 @@ visas först när något ändrats. Använd `nEx()`/`fmtRest()` i
 - **`MuscleMap` med `workouts`** hoppar över pass äldre än sju dagar och
   tonar ner äldre. Ska en figur visa en bestämd mängd pass fullt ut
   (veckorapport, planerat pass) skickas passen in med `finished_at: null`.
-- **Startskärmen** renderas av flera komponenter efter varandra
-  (inloggningskollen, sedan overlayn i `AppRoutes`). Animationerna får negativ
-  fördröjning (`--splash-t`) från första visningen så loggan inte ritas två
-  gånger. Lägg inte till fler `<Splash />` utan att behålla det.
+- **Startskärmen** ligger i `index.html` (`#boot-splash`), inte i React.
+  Den syns direkt vid start, monteras aldrig om och animerar bara
+  transform/opacity så den går jämnt medan JavaScriptet laddas (förr ritades
+  loggan med stroke-dashoffset i React och flimrade). React tar bort den med
+  `window.__hideBootSplash()`: när startsidan har sin data (minst 1,3 s från
+  sidstart), direkt vid inloggningssidan, och i `ErrorBoundary`. Skyddsnät
+  efter 12 s. Rubrikens typsnitt laddas i förväg från `public/fonts/`.
 - **Omladdning mitt i pass**: pass-skärmen får inte monteras medan
   "Pågående pass"-dialogen är obesvarad (se `App.jsx`).
 - **`useState` initieras en gång**: härled från props eller synka på

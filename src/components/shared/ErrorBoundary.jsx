@@ -13,6 +13,7 @@ export default class ErrorBoundary extends Component {
     return { hasError: true, errorInfo: `${msg} ${stackLine}`.slice(0, 300) }
   }
   componentDidCatch(error, info) {
+    window.__hideBootSplash?.()
     console.error('ErrorBoundary fangade:', error, info)
   }
   render() {

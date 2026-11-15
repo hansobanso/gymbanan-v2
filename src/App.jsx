@@ -7,7 +7,6 @@ import Auth from './screens/Auth'
 import Home from './screens/Home'
 import BottomNav from './components/shared/BottomNav'
 import WhatsNew, { WHATSNEW_VERSION } from './components/shared/WhatsNew'
-import { BananaLogo } from './components/shared/Icons'
 import './App.css'
 
 // Lazy-ladda allt utom Home + Auth (forsta skarmarna man ser).
@@ -25,25 +24,13 @@ const TAB_PATHS = ['/', '/programs', '/history', '/settings']
 const ACTIVE_WORKOUT_KEY = 'gymbanan_active_workout'
 
 // Branded laddningsskarm: banan-logga + svepande gul bar (obestamd).
-// Startskarmen visas av flera komponenter efter varandra (inloggningskollen,
-// sedan overlayn medan startsidan laddar). Varje ny instans startar sina
-// animationer med negativ fordrojning sa de fortsatter dar den forra var,
-// i stallet for att loggan ritas upp tva ganger.
-let splashStart = null
+// Startskarmen ligger i index.html (#boot-splash) och tas bort med
+// window.__hideBootSplash. Medan React laddar visas bara bakgrunden.
 function Splash() {
-  if (splashStart == null) splashStart = performance.now()
-  const offset = Math.round(performance.now() - splashStart)
-  return (
-    <div className="loading-screen">
-      <div className="splash" style={{ '--splash-t': `-${offset}ms` }}>
-        <BananaLogo className="splashBananaLogo" />
-        <span className="splashTitle">GYMBANAN</span>
-        <div className="splashBar">
-          <div className="splashBarFill" />
-        </div>
-      </div>
-    </div>
-  )
+  return <div className="loading-screen" />
+}
+function hideBootSplash() {
+  window.__hideBootSplash?.()
 }
 
 // Loggan ritas upp pa drygt en halv sekund. Lat den hinna klart aven nar
@@ -71,9 +58,6 @@ function AppRoutes({ session }) {
   const [activeProgramId, setActiveProgramId] = useState(null)
   const [homeReady, setHomeReady] = useState(false)
   const [showWhatsNew, setShowWhatsNew] = useState(false)
-  const [splashGone, setSplashGone] = useState(false)
-  const [splashLeaving, setSplashLeaving] = useState(false)
-  const [splashShownAt] = useState(() => Date.now())
 
   // Nar ett pass sparats som kopia (och blivit aktivt) meddelar Workout
   // via event - synka programlistan och aktivt program utan omladdning.
@@ -100,14 +84,13 @@ function AppRoutes({ session }) {
   }, [])
 
   // Nar allt laddat: las baren till 100%, vanta en kort stund sa den hinner
-  // synas fylld, ta sen bort splash-overlayn.
+  // synas, ta sen bort startskarmen.
   useEffect(() => {
     if (!homeReady) return
-    // Forst tonas startskarmen ut (260 ms), sedan tas den bort.
-    const hold = Math.max(0, SPLASH_MIN_MS - (Date.now() - splashShownAt))
-    const t1 = setTimeout(() => setSplashLeaving(true), hold)
-    const t2 = setTimeout(() => setSplashGone(true), hold + 260)
-    return () => { clearTimeout(t1); clearTimeout(t2) }
+    // Startskarmen far synas minst SPLASH_MIN_MS fran sidstart, sedan tonas den ut.
+    const hold = Math.max(0, SPLASH_MIN_MS - performance.now())
+    const t1 = setTimeout(hideBootSplash, hold)
+    return () => clearTimeout(t1)
   }, [homeReady])
 
   const loadPrograms = useCallback(() => {
@@ -266,14 +249,6 @@ function AppRoutes({ session }) {
 
   return (
     <div className="app" onTouchStart={onAppTouchStart} onTouchMove={onAppTouchMove} onTouchEnd={onAppTouchEnd} onTouchCancel={onAppTouchEnd}>
-      {/* Splash ligger som overlay tills hemskarmen har laddat all sin data,
-          sa anvandaren ser en clean loader istallet for skelett som blinkar.
-          sa anvandaren ser en clean loader istallet for skelett som blinkar. */}
-      {!splashGone && (
-        <div className={`splash-overlay ${splashLeaving ? 'splash-overlay-out' : ''}`}>
-          <Splash />
-        </div>
-      )}
       {/* Resume active workout modal */}
       {askWorkout && (
         <div className="ask-backdrop">
@@ -408,6 +383,7 @@ export default function App() {
   }
 
   if (!session) {
+    hideBootSplash()
     return <Auth />
   }
 
