@@ -57,6 +57,7 @@ och om setState i effekter (befintligt mönster). Titta bara på nya fel.
 | `src/components/workout/ExerciseBlock.jsx` | Övningsblock: klar/kommande som en rad, öppen med settabell (Set/Förra/Idag) |
 | `src/components/workout/SetHero.jsx` | Det öppna setet: stora siffror, +/−, RIR-knapp, stor bock |
 | `src/components/workout/RestDock.jsx` | Vilotimern som docka längst ner |
+| `src/components/workout/SwipeRow.jsx` | Svep på ett set: vänster = Ta bort, höger = Dubblera. Egen fingerhantering, eftersom framer-motions drag inte startar på inmatningsfält |
 | `src/components/home/HomeScreen.jsx`, `src/lib/homeStats.js` | Startsidan + ren logik (veckoremsa, muskelläge). Har tester |
 | `src/lib/db.js` | Alla Supabase-anrop + liten cache |
 | `src/App.jsx` | Routing, "Pågående pass"-dialogen, programlista |

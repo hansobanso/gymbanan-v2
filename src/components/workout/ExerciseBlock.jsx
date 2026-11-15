@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import SetHero from './SetHero'
+import SwipeRow from './SwipeRow'
 import { getPreviousSetsForExercise, getExerciseByName } from '../../lib/db'
 import { displayWeightStr, defaultWeightIncrement } from '../../lib/weightUtils'
 import { hapticTick, hapticSuccess, hapticWarn } from '../../lib/haptics'
@@ -562,8 +563,13 @@ export default function ExerciseBlock({
           const prev = prevFor(set)
           if (set.id === openSetId) {
             return (
-              <SetHero
+              <SwipeRow
                 key={set.id}
+                card
+                onRemove={() => { onRemoveSet(exercise.localId, set.id); setEditSetId(null) }}
+                onDuplicate={onDuplicateSet ? () => onDuplicateSet(exercise.localId, set.id) : undefined}
+              >
+              <SetHero
                 set={set}
                 label={longLabel(set, exercise.sets)}
                 prevText={prev ? fmtSet(prev) : null}
@@ -576,6 +582,7 @@ export default function ExerciseBlock({
                 onUpdate={(field, value) => onUpdateSet(exercise.localId, set.id, field, value)}
                 onComplete={() => handleComplete(set.id)}
               />
+              </SwipeRow>
             )
           }
           const label = shortLabel(set, exercise.sets)
@@ -600,8 +607,12 @@ export default function ExerciseBlock({
             )
           }
           return (
-            <button
+            <SwipeRow
               key={set.id}
+              onRemove={() => onRemoveSet(exercise.localId, set.id)}
+              onDuplicate={onDuplicateSet ? () => onDuplicateSet(exercise.localId, set.id) : undefined}
+            >
+            <button
               className={`${styles.tr} ${styles.trTodo}`}
               data-set-id={set.id}
               onClick={() => setEditSetId(set.id)}
@@ -615,6 +626,7 @@ export default function ExerciseBlock({
               </span>
               <span className={styles.statusTodo} />
             </button>
+            </SwipeRow>
           )
         })}
       </div>
