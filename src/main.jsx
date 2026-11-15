@@ -26,8 +26,22 @@ if ('serviceWorker' in navigator) {
 
 installEdgeGuard()
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <ErrorBoundary><App /></ErrorBoundary>
-  </StrictMode>,
-)
+function renderApp() {
+  createRoot(document.getElementById('root')).render(
+    <StrictMode>
+      <ErrorBoundary><App /></ErrorBoundary>
+    </StrictMode>,
+  )
+}
+
+// Lat startskarmens logga ritas klart (ca 0,75 s fran sidstart) innan React
+// startar, annars hackar ritningen. Startskarmen visas anda minst 1,3 s, sa
+// det kostar i praktiken ingen tid. Utan startskarm (admin) eller med
+// reducerad rorelse: direkt.
+const LOGO_DRAWN_MS = 700
+const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+const wait = document.getElementById('boot-splash') && !reduced
+  ? Math.max(0, LOGO_DRAWN_MS - performance.now())
+  : 0
+if (wait > 0) setTimeout(renderApp, wait)
+else renderApp()

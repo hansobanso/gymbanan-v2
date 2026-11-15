@@ -255,9 +255,11 @@ visas först när något ändrats. Använd `nEx()`/`fmtRest()` i
   tonar ner äldre. Ska en figur visa en bestämd mängd pass fullt ut
   (veckorapport, planerat pass) skickas passen in med `finished_at: null`.
 - **Startskärmen** ligger i `index.html` (`#boot-splash`), inte i React.
-  Den syns direkt vid start, monteras aldrig om och animerar bara
-  transform/opacity så den går jämnt medan JavaScriptet laddas (förr ritades
-  loggan med stroke-dashoffset i React och flimrade). React tar bort den med
+  Den syns direkt vid start och monteras aldrig om. Loggan ritas streck för
+  streck (stroke-dashoffset, gap längre än strecket så runda ändar inte
+  syns som prickar), och `main.jsx` väntar med att starta React tills
+  loggan är klar (~0,7 s från sidstart) så ritningen inte hackar. Övrigt
+  animerar bara transform/opacity. React tar bort den med
   `window.__hideBootSplash()`: när startsidan har sin data (minst 1,3 s från
   sidstart), direkt vid inloggningssidan, och i `ErrorBoundary`. Skyddsnät
   efter 12 s. Rubrikens typsnitt laddas i förväg från `public/fonts/`.
