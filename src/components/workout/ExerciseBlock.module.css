@@ -464,31 +464,25 @@
 /* "Dags att oka": gront som den omogna bananen, det enda gronet i passet */
 .progressionUp { color: #9BC24A; font-weight: 600; }
 
-/* Rep-malet under ovningsnamnet: syns alltid, tryck for att andra */
+/* Rep-malet under ovningsnamnet: en liten malikon och siffrorna, tryck for att andra */
 .goalChip {
   min-height: 32px;
-  margin: -2px 0;
-  padding: 0 12px;
+  margin: -6px 0;
+  padding: 0 12px 0 0;
   border: 0;
-  border-radius: 16px;
-  background: #1D1A16;
+  background: transparent;
   display: inline-flex;
-  align-items: baseline;
+  align-items: center;
   gap: 6px;
+  color: var(--d-muted);
   font-family: var(--font);
   -webkit-tap-highlight-color: transparent;
   align-self: flex-start;
-  line-height: 32px;
 }
-.goalChip:active { background: #26231E; }
-.goalLabel {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--d-muted);
-}
+.goalChip:active { color: var(--accent); }
+.goalIcon { flex-shrink: 0; }
 .goalValue {
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }

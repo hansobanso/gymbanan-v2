@@ -273,6 +273,7 @@ export default function ExerciseBlock({
     const range = lo != null && hi != null && lo !== hi ? `${lo}–${hi}` : `${lo ?? hi}`
     return `${range} ${repsUnit}`
   })()
+  const goalRange = goalText.replace(/ (reps|sek|min)$/, '')
   const targetStr = hasTarget
     ? `${exercise.defaultRepsMin ?? ''}–${exercise.defaultRepsMax ?? ''} ${isTimeBased ? 'sek' : 'reps'}`
     : null
@@ -448,8 +449,11 @@ export default function ExerciseBlock({
           ) : (
             !isCardio && (hasTarget ? (
               <button className={styles.goalChip} onClick={startRepsEdit} type="button" aria-label={`Rep-mål ${goalText}, tryck för att ändra`}>
-                <span className={styles.goalLabel}>Mål</span>
-                <span className={styles.goalValue}>{goalText}</span>
+                {/* Malikon: tre ringar */}
+                <svg className={styles.goalIcon} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="5" /><circle cx="12" cy="12" r="1.2" fill="currentColor" />
+                </svg>
+                <span className={styles.goalValue}>{goalRange}</span>
               </button>
             ) : (
               <button className={styles.metaBtn} onClick={startRepsEdit} type="button">+ Sätt mål</button>
