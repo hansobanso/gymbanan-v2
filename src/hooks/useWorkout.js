@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { createWorkout, updateWorkout, deleteUnfinishedWorkout, getTwoPreviousSetsForExercise, getExerciseByName, getRestOverrides, getUserExerciseNote, getWorkouts, getExercises, getAllUserExerciseNotes, cacheInvalidate } from '../lib/db'
-import { computeProgression, deriveCategory, epleyAdjustedReps, detectGapAdjustment, suggestNextSetReps, warmupPlan, detectPlateau } from '../lib/progression'
+import { computeProgression, deriveCategory, epleyAdjustedReps, detectGapAdjustment, suggestNextSetReps, warmupPlan, detectPlateau, topWeightSets } from '../lib/progression'
 import { sortSupersetsAdjacent } from '../lib/superset.js'
 import { namesMatching } from '../lib/exerciseAliases.js'
 import { defaultWeightIncrement } from '../lib/weightUtils'
@@ -64,6 +64,7 @@ function holdAtLastSession(ex, days) {
   if (prevWork.length === 0) return ex
   const inc = ex.weightIncrement ?? defaultWeightIncrement(ex.exEquipment)
   const bestPrevW = Math.max(...prevWork.map(s => parseFloat(s.weight) || 0))
+  const topWork = topWeightSets(prevWork)
   let i = 0
   const sets = ex.sets.map(s => {
     if (s.done || s.type !== 'work') return s
@@ -73,7 +74,8 @@ function holdAtLastSession(ex, days) {
       const bw = Math.round(bestPrevW * 0.85 / inc) * inc
       return { ...s, weight: String(bw), _baseWeight: bw }
     }
-    const p = prevWork[Math.min(i, prevWork.length - 1)]
+    // Alla arbetsset pa forra passets tyngsta vikt, med reps fran seten pa den vikten
+    const p = topWork[Math.min(i, topWork.length - 1)]
     i++
     const w = parseFloat(p.weight) || 0
     return {

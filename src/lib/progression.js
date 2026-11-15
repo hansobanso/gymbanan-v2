@@ -82,10 +82,19 @@ function allSetsZeroRIR(sets) {
 // samma vikt och minst lika manga totalreps. Anvands sa "befast"-sparrarna
 // (0 RIR) bara haller igen EN gang - annars fastnar den som alltid tranar
 // till failure pa samma vikt och reps for evigt.
-function alreadyRepeated(workSets, prevPrevSets) {
-  const pp = (prevPrevSets ?? []).filter(s =>
+// Arbetsset pa passets tyngsta vikt. Lattare oppningsset (40 x 12 fore
+// 50 x 8 x 3) ska inte styra progressionen: forslaget utgar fran den tyngsta
+// vikten och dess reps. Kroppsvikt (0 kg) ger alla set.
+export function topWeightSets(sets) {
+  const work = (sets ?? []).filter(s =>
     s.type === 'work' && s.subtype !== 'backoff' && s.done
   )
+  const top = Math.max(0, ...work.map(s => parseFloat(s.weight) || 0))
+  return top > 0 ? work.filter(s => (parseFloat(s.weight) || 0) === top) : work
+}
+
+function alreadyRepeated(workSets, prevPrevSets) {
+  const pp = topWeightSets(prevPrevSets)
   if (pp.length === 0 || workSets.length === 0) return false
   const w = parseFloat(workSets[0].weight) || 0
   const ppw = parseFloat(pp[0].weight) || 0
@@ -161,9 +170,7 @@ export function computeProgression({
   }
 
   // Filtrera till bara work sets (ej warmup, ej backoff) som ar done
-  const workSets = prevSets.filter(s =>
-    s.type === 'work' && s.subtype !== 'backoff' && s.done
-  )
+  const workSets = topWeightSets(prevSets)
 
   if (workSets.length === 0) {
     return {
@@ -198,9 +205,7 @@ export function computeProgression({
   // ── Punkt 6: Under repMin tva pass i rad → flagga ──
   if (repsMin != null && anySetsUnderMin(workSets, repsMin)) {
     // Kolla om aven forega passet var under repMin
-    const prevPrevWork = (prevPrevSets ?? []).filter(s =>
-      s.type === 'work' && s.subtype !== 'backoff' && s.done
-    )
+    const prevPrevWork = topWeightSets(prevPrevSets)
     const twoInARow = prevPrevWork.length > 0 && anySetsUnderMin(prevPrevWork, repsMin)
 
     if (twoInARow) {

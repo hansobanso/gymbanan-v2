@@ -437,3 +437,20 @@ describe('detectPlateau', () => {
     expect(detectPlateau([ses(0, [10, 9]), ses(0, [10, 9]), ses(0, [10, 9]), ses(0, [10, 9])])).toMatchObject({ weight: 0 })
   })
 })
+
+import { topWeightSets } from './progression.js'
+
+describe('tyngsta vikten styr', () => {
+  const w = (weight, reps, rir) => ({ type: 'work', done: true, weight: String(weight), reps: String(reps), rir })
+  it('lattare oppningsset raknas inte (40x12 + 50x8x3)', () => {
+    const prevSets = [{ type: 'warmup', done: true, weight: '20', reps: '10' }, w(40, 12, 3), w(50, 8, 2), w(50, 8, 1), w(50, 8, 0)]
+    expect(topWeightSets(prevSets).length).toBe(3)
+    const p = computeProgression({ prevSets, repsMin: 8, repsMax: 12, numWorkSets: 4 })
+    expect(p.nextWeight).toBe(50)
+    // 24 reps pa 3 set -> 32 pa 4 set, snitt-RIR 1 -> +1
+    expect(p.nextTargetRepsPerSet).toEqual([8, 8, 8, 9])
+  })
+  it('kroppsvikt ger alla set', () => {
+    expect(topWeightSets([w(0, 10), w(0, 8)]).length).toBe(2)
+  })
+})
