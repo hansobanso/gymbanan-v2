@@ -1,62 +1,81 @@
-/* En banan per ovning overst i passet. --b = bananens storlek. */
+/* En banan per ovning overst i passet, liggande. --b = bananens storlek. */
 
 .row {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 2px 4px;
-  padding: 0 12px 6px;
+  gap: 0 2px;
+  padding: 2px 12px 6px;
   flex-shrink: 0;
 }
 
 .single,
 .pair {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
 }
 
-/* Superset: tva bananer tatt ihop, lite overlappande, som ett litet par */
+/* Superset: tva bananer tatt ihop pa en liten platta */
 .pair {
-  padding: 0 2px;
   border-radius: 12px;
   background: #1D1A16;
 }
 
-.pair .banana + .banana { margin-left: calc(var(--b) * -0.35); }
+.pair .banana + .banana { margin-left: calc(var(--b) * -0.25); }
 
 .banana {
-  width: calc(var(--b) + 10px);
-  height: calc(var(--b) + 12px);
-  padding: 6px 5px;
+  position: relative;
+  width: calc(var(--b) + 8px);
+  /* Liggande banan ar lagre an den ar bred */
+  height: calc(var(--b) * 0.8 + 8px);
+  padding: 0;
   border: 0;
   background: transparent;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
-  transform-origin: 50% 100%;
   transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.banana svg {
-  width: var(--b);
-  height: var(--b);
-  display: block;
-  transition: filter 0.3s;
-}
-
-.banana svg path { transition: stroke 0.45s; }
-
 .banana:active { transform: scale(0.9); }
 
-/* Den du star pa: storre */
-.active { transform: scale(1.28); }
-.active:active { transform: scale(1.15); }
+/* Den du star pa: lite storre. Raden har luft sa den inte kapas. */
+.active { transform: scale(1.2); }
+.active:active { transform: scale(1.1); }
+
+/* Bananen ligger ner: rotationen sitter pa skalet, animationerna pa svg:n */
+.fruit {
+  display: block;
+  width: var(--b);
+  height: var(--b);
+  transform: rotate(-90deg);
+}
+
+.fruit svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.fruit svg path { transition: stroke 0.45s; }
+
+.fruitPb { filter: drop-shadow(0 0 5px rgba(245, 208, 32, 0.55)); }
+
+.sparkle {
+  position: absolute;
+  top: -1px;
+  right: 1px;
+  width: calc(var(--b) * 0.42);
+  height: calc(var(--b) * 0.42);
+  fill: var(--accent);
+  animation: popIn 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
 
 /* Gungar till nar ett set blir klart */
-.wiggle svg { animation: wiggle 0.6s cubic-bezier(0.3, 0.7, 0.4, 1); transform-origin: 50% 90%; }
+.wiggle .fruit svg { animation: wiggle 0.6s cubic-bezier(0.3, 0.7, 0.4, 1); }
 
 @keyframes wiggle {
   0% { transform: rotate(0); }
@@ -67,39 +86,20 @@
 }
 
 /* Tillagd ovning dyker upp */
-.pop svg { animation: popIn 0.35s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.pop .fruit svg { animation: popIn 0.35s cubic-bezier(0.2, 0.8, 0.2, 1); }
 
 /* Allt klart: en vag genom raden */
-.wave .banana svg {
+.wave .banana {
   animation: hop 0.5s cubic-bezier(0.3, 0.7, 0.4, 1) both;
   animation-delay: calc(var(--i) * 70ms);
 }
 
 @keyframes hop {
-  0% { transform: translateY(0); }
-  40% { transform: translateY(-9px) rotate(-8deg); }
-  100% { transform: translateY(0); }
+  0% { translate: 0 0; }
+  40% { translate: 0 -6px; }
+  100% { translate: 0 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .wiggle svg, .pop svg, .wave .banana svg { animation: none; }
+  .wiggle .fruit svg, .pop .fruit svg, .wave .banana { animation: none; }
 }
-
-/* Bananen + eventuella sockerprickar ovanpa */
-.fruit {
-  position: relative;
-  display: block;
-  width: var(--b);
-  height: var(--b);
-}
-
-.spots {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  fill: #6B4A12;
-  animation: popIn 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.banana .spots { transition: none; }

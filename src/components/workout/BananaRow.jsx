@@ -21,7 +21,7 @@ const countSets = ex => {
  * gulnar for varje klart set, helt gul nar ovningen ar klar. Den aktiva
  * ar storre och gungar till nar ett set blir klart. Tryck for att hoppa
  * till ovningen. Superset sitter ihop som ett bananpar. En ovning med PB
- * far sockerprickar, som en riktigt mogen banan.
+ * far ett gult glitter. Bananerna ligger ner for att ta lite plats pa hojden.
  */
 export default function BananaRow({ exercises, activeExId, onJump }) {
   const known = useRef(null)          // ovningar som fanns forra renderingen
@@ -67,7 +67,7 @@ export default function BananaRow({ exercises, activeExId, onJump }) {
 
   const n = rows.length
   // Storlek efter antal: stort vid fa ovningar, mindre nar det ar manga
-  const size = n <= 6 ? 34 : n <= 9 ? 28 : n <= 12 ? 23 : 18
+  const size = n <= 6 ? 32 : n <= 9 ? 28 : n <= 12 ? 23 : 19
 
   return (
     <div className={`${styles.row} ${wave ? styles.wave : ''}`} key={`w${wave}`} style={{ '--b': `${size}px` }}>
@@ -92,17 +92,15 @@ export default function BananaRow({ exercises, activeExId, onJump }) {
                 aria-label={`${ex.name}: ${done} av ${total} set klara${pb ? ', nytt PB' : ''}`}
                 aria-current={active ? 'step' : undefined}
               >
-                <span className={styles.fruit}>
+                <span className={`${styles.fruit} ${pb ? styles.fruitPb : ''}`}>
                   <BananaIcon color={ripeColor(t)} />
-                  {/* Sockerprickar: en mogen banan med PB i den har ovningen */}
-                  {pb && (
-                    <svg className={styles.spots} viewBox="0 0 100 100" aria-hidden="true">
-                      <circle cx="40" cy="62" r="6" />
-                      <circle cx="56" cy="44" r="5" />
-                      <circle cx="34" cy="80" r="4.5" />
-                    </svg>
-                  )}
                 </span>
+                {/* PB i ovningen: ett litet gult glitter som syns mot det morka */}
+                {pb && (
+                  <svg className={styles.sparkle} viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 1.5c.6 4.8 2.4 7.4 7 8.4.6.1.6 1 0 1.1-4.6 1-6.4 3.6-7 8.4-.1.6-1 .6-1.1 0-.6-4.8-2.4-7.4-7-8.4-.6-.1-.6-1 0-1.1 4.6-1 6.4-3.6 7-8.4.1-.6 1-.6 1.1 0Z" />
+                  </svg>
+                )}
               </button>
             )
           })}

@@ -170,7 +170,9 @@ bara behövs första gången.
 Grön = inte påbörjad, gulnar set för set, gul = klar. Den aktiva är större
 och gungar när ett set blir klart, tryck hoppar till övningen, superset
 sitter ihop som ett par, nya övningar poppar in, och när allt är klart går
-en våg genom raden. En övning med PB får bruna sockerprickar. PB ger
+en våg genom raden. En övning med PB får ett gult glitter och ett svagt
+sken (bruna prickar syntes inte mot mörkret). Bananerna ligger ner för att
+ta lite höjd. PB ger
 dessutom en kort skur av bananer (`PbBurst`), och nyckeltal rullar till sitt
 värde (`RollNum`).
 
