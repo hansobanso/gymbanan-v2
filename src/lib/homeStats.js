@@ -76,7 +76,9 @@ export function weekStrip(workouts, now = new Date()) {
 export const STATUS_GROUPS = ['Bröst', 'Rygg', 'Axlar', 'Armar', 'Ben', 'Vader', 'Bål']
 
 // Vilotid i timmar innan gruppen raknas som redo igen.
-const REST_HOURS = { 'Bröst': 72, 'Rygg': 72, 'Ben': 72, 'Axlar': 48, 'Armar': 48, 'Vader': 48, 'Bål': 48 }
+// 2026-11-15: sankt fran 72/48 h. Hannes: torsdag -> sondag ar "definitivt utvilad".
+const REST_HOURS = { 'Bröst': 48, 'Rygg': 48, 'Ben': 48, 'Axlar': 36, 'Armar': 36, 'Vader': 36, 'Bål': 36 }
+const HEAVY_EXTRA_HOURS = 12
 // Ett pass med manga set pa samma grupp ger ett dygn extra.
 const HEAVY_SETS = 10
 const NEGLECTED_DAYS = 14
@@ -130,7 +132,7 @@ export function muscleStatus(workouts, exerciseMap, now = new Date()) {
     const l = last[group]
     if (!l) return { group, state: 'neglected', days: null, readyLabel: null }
     const days = calendarDaysBetween(l.at, now)
-    const restMs = (REST_HOURS[group] + (l.sets >= HEAVY_SETS ? 24 : 0)) * HOUR_MS
+    const restMs = (REST_HOURS[group] + (l.sets >= HEAVY_SETS ? HEAVY_EXTRA_HOURS : 0)) * HOUR_MS
     const readyAt = new Date(l.at.getTime() + restMs)
     if (readyAt > now) {
       const inDays = calendarDaysBetween(now, readyAt)

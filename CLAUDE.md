@@ -114,9 +114,10 @@ och om setState i effekter (befintligt mönster). Titta bara på nya fel.
 
 **Startsidan**
 - Inget veckomål. Veckoremsan visar bara gjorda pass, aldrig "missat".
-- Muskelläge: Redo / Vilar / Inte tränad på länge. Vila 72 h för bröst,
-  rygg och ben, 48 h för övriga, +24 h efter 10 set eller fler. "På länge"
-  är 14 dagar.
+- Muskelläge: Redo / Vilar / Inte tränad på länge. Vila 48 h för bröst,
+  rygg och ben, 36 h för övriga, +12 h efter 10 set eller fler. "På länge"
+  är 14 dagar. (Sänkt 2026-11-15 från 72/48/+24: torsdag kväll till
+  söndag ska vara utvilat.)
 
 - Muskelläget går att trycka på (`MuscleSheet`, `muscleDetail`): visar
   programmets övningar för gruppen och "+ 2 set", som lägger övningen sist

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { BananaIcon } from '../shared/Icons'
 import styles from './PbBurst.module.css'
 
@@ -24,22 +24,23 @@ export default function PbBurst({ exercises }) {
     return () => clearTimeout(t)
   }, [burst])
 
+  // Banorna slumpas en gang per skur. Slumpades de vid varje rendering
+  // (vilotimern ritar om passet varje sekund) bytte bananerna hall mitt i luften.
+  const paths = useMemo(() => Array.from({ length: COUNT }, (_, i) => ({
+    left: `${(i + 0.5) / COUNT * 100 + (Math.random() - 0.5) * 6}%`,
+    '--rise': `${45 + Math.random() * 30}vh`,
+    '--spin': `${(Math.random() - 0.5) * 540}deg`,
+    '--drift': `${(Math.random() - 0.5) * 60}px`,
+    animationDelay: `${Math.random() * 120}ms`,
+    width: `${18 + Math.random() * 12}px`,
+  })), [burst])
+
   if (!burst) return null
   return (
     <div className={styles.layer} key={burst} aria-hidden="true">
-      {Array.from({ length: COUNT }, (_, i) => {
-        // Spridning: jamnt over bredden, slumpad hojd, rotation och fordrojning
-        const x = (i + 0.5) / COUNT * 100 + (Math.random() - 0.5) * 6
-        const style = {
-          left: `${x}%`,
-          '--rise': `${45 + Math.random() * 30}vh`,
-          '--spin': `${(Math.random() - 0.5) * 540}deg`,
-          '--drift': `${(Math.random() - 0.5) * 60}px`,
-          animationDelay: `${Math.random() * 120}ms`,
-          width: `${18 + Math.random() * 12}px`,
-        }
-        return <span key={i} className={styles.banana} style={style}><BananaIcon /></span>
-      })}
+      {paths.map((style, i) => (
+        <span key={i} className={styles.banana} style={style}><BananaIcon /></span>
+      ))}
       <span className={styles.label}>PB</span>
     </div>
   )

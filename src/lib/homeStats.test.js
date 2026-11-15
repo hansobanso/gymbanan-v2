@@ -43,28 +43,41 @@ describe('muscleStatus', () => {
       wo(20, 'C', [{ name: 'z', muscle_group: 'Vader', sets: work(3) }]),
     ], {}, NOW))
     expect(rows.Ben.state).toBe('resting')
-    expect(rows.Ben.readyLabel).toBe('redo på lördag')
+    expect(rows.Ben.readyLabel).toBe('redo imorgon')
     expect(rows['Bröst']).toMatchObject({ state: 'ready', days: 5 })
     expect(rows.Vader).toMatchObject({ state: 'neglected', days: 20 })
     expect(rows.Rygg).toMatchObject({ state: 'neglected', days: null })
   })
 
-  it('liten grupp vilar 48 h, stor 72 h', () => {
+  it('liten grupp vilar 36 h, stor 48 h', () => {
+    // 40 timmar sedan
     const rows = byGroup(muscleStatus([
-      wo(2, 'A', [
+      { ...wo(2, 'A', []), finished_at: at(1, 2), exercises: [
         { name: 'a', muscle_group: 'Biceps', sets: work(3) },
         { name: 'b', muscle_group: 'Lats', sets: work(3) },
-      ]),
+      ] },
     ], {}, NOW))
     expect(rows.Armar.state).toBe('ready')
     expect(rows.Rygg).toMatchObject({ state: 'resting', readyLabel: 'redo imorgon' })
   })
 
-  it('manga set ger ett dygn extra', () => {
-    const rows = byGroup(muscleStatus([
-      wo(3, 'A', [{ name: 'a', muscle_group: 'Bröst', sets: work(10) }]),
-    ], {}, NOW))
-    expect(rows['Bröst'].state).toBe('resting')
+  it('manga set ger tolv timmar extra', () => {
+    // 54 timmar sedan: 48 h racker, 60 h gor det inte
+    const at54 = at(2, 12)
+    const few = byGroup(muscleStatus([{ ...wo(2, 'A', []), finished_at: at54, exercises: [{ name: 'a', muscle_group: 'Bröst', sets: work(9) }] }], {}, NOW))
+    const many = byGroup(muscleStatus([{ ...wo(2, 'A', []), finished_at: at54, exercises: [{ name: 'a', muscle_group: 'Bröst', sets: work(10) }] }], {}, NOW))
+    expect(few['Bröst'].state).toBe('ready')
+    expect(many['Bröst'].state).toBe('resting')
+  })
+  it('torsdag kvall till sondag morgon ar utvilat aven efter tunga pass', () => {
+    const sunday = new Date(2026, 10, 15, 10, 0)
+    const thu = new Date(2026, 10, 12, 19, 0).toISOString()
+    const rows = byGroup(muscleStatus([{ finished_at: thu, exercises: [
+      { name: 'a', muscle_group: 'Quads', sets: work(12) },
+      { name: 'b', muscle_group: 'Bröst', sets: work(10) },
+    ] }], {}, sunday))
+    expect(rows.Ben.state).toBe('ready')
+    expect(rows['Bröst'].state).toBe('ready')
   })
 
   it('uppvarmning och kardio raknas inte', () => {
