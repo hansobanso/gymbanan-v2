@@ -166,8 +166,13 @@ Nästa pass-kortet är namn + en rad + knapp (tryck på toppen för övningarna)
 och setknappen är en stor bock. Lägg inte tillbaka förklaringstexter som
 bara behövs första gången.
 
-**Lekfullt**: bananen mognar i passets förloppsrad, PB ger en kort skur av
-bananer (`PbBurst`), och nyckeltal rullar till sitt värde (`RollNum`).
+**Lekfullt**: överst i passet sitter en banan per övning (`BananaRow`).
+Grön = inte påbörjad, gulnar set för set, gul = klar. Den aktiva är större
+och gungar när ett set blir klart, tryck hoppar till övningen, superset
+sitter ihop som ett par, nya övningar poppar in, och när allt är klart går
+en våg genom raden. En övning med PB får bruna sockerprickar. PB ger
+dessutom en kort skur av bananer (`PbBurst`), och nyckeltal rullar till sitt
+värde (`RollNum`).
 
 **PB**: guldcirkel med "PB" när ett set slår tyngsta vikten någonsin (även
 1 rep) eller ger fler reps än någonsin på exakt den vikten. Första gången en

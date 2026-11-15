@@ -17,6 +17,7 @@ import { colorForIntensityRed } from '../lib/muscleColor'
 import PostWorkoutFeedback from '../components/workout/PostWorkoutFeedback'
 import { BananaIcon } from '../components/shared/Icons'
 import PbBurst from '../components/workout/PbBurst'
+import BananaRow from '../components/workout/BananaRow'
 import styles from './Workout.module.css'
 
 // Val i "Anpassa passet"-arket. Valet markeras forst (gult), applas vid Tillämpa.
@@ -32,14 +33,6 @@ function fmtElapsed(startedAt) {
   const h = Math.floor(m / 60)
   if (h > 0) return `${h} h ${m % 60} min`
   return `${m} min`
-}
-
-// Omogen gron banan -> mogen gul. Det enda stallet appen tillater gront.
-const RIPE_FROM = [141, 179, 58]
-const RIPE_TO = [245, 208, 32]
-function ripeColor(t) {
-  const c = RIPE_FROM.map((a, i) => Math.round(a + (RIPE_TO[i] - a) * Math.min(1, Math.max(0, t))))
-  return `rgb(${c[0]}, ${c[1]}, ${c[2]})`
 }
 
 export default function Workout({ session }) {
@@ -439,10 +432,7 @@ export default function Workout({ session }) {
     const activeIdx = workout.exercises.findIndex(ex => ex.localId === activeExId)
     const total = workout.exercises.length
     const label = activeIdx >= 0 ? `övning ${activeIdx + 1} av ${total}` : `${doneIds.size} av ${total} klara`
-    // Mognad 0-1: andel klara arbetsset i hela passet
-    const work = workout.exercises.flatMap(ex => ex.sets.filter(st => st.type === 'work'))
-    const ripe = work.length ? work.filter(st => st.done).length / work.length : 0
-    return { doneIds, done: doneIds.size, label, ripe }
+    return { doneIds, done: doneIds.size, label }
   })()
 
   // Visa laddningsspinner tills all övningsdata är förinläst
@@ -511,20 +501,9 @@ export default function Workout({ session }) {
         </div>
       </div>
 
-      {/* Framsteg: bananen mognar fran gron till gul ju fler set som ar klara */}
+      {/* Framsteg: en banan per ovning, mognar set for set. Tryck for att hoppa. */}
       {workout.exercises.length > 0 && (
-        <div
-          className={styles.progress}
-          role="img"
-          aria-label={`${progress.done} av ${workout.exercises.length} övningar klara`}
-        >
-          <div className={styles.progressTrack}>
-            <div className={styles.progressFill} style={{ width: `${progress.ripe * 100}%`, background: ripeColor(progress.ripe) }} />
-          </div>
-          <span className={styles.progressBanana} style={{ left: `${progress.ripe * 100}%` }}>
-            <BananaIcon color={ripeColor(progress.ripe)} />
-          </span>
-        </div>
+        <BananaRow exercises={workout.exercises} activeExId={activeExId} onJump={handleSupersetJump} />
       )}
 
       <PbBurst exercises={workout.exercises} />
