@@ -462,7 +462,7 @@
 }
 
 /* "Dags att oka": gront som den omogna bananen, det enda gronet i passet */
-.progressionUp { color: #9BC24A; font-weight: 600; }
+.progressionUp { color: var(--fresh); font-weight: 600; }
 
 /* Rep-malet under ovningsnamnet: en liten malikon och siffrorna, tryck for att andra */
 .goalChip {

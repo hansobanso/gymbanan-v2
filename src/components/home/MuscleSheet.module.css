@@ -6,8 +6,8 @@
   font-weight: 600;
 }
 
-.ready { color: var(--accent); }
-.resting { color: var(--d-muted); }
+.ready { color: var(--fresh); }
+.resting { color: var(--accent); }
 .neglected { color: var(--d-hint); }
 
 .label {

@@ -167,8 +167,9 @@ Uppehåll 8–14 dagar ger också tyngsta vikten på alla set.
 bakgrund `--bg #0F0D0A`, grädvit text och banangul `--accent` som enda
 signalfärg. `--d-ok` (klart) är grädvitt, `--d-hint` är varm grå, och
 muskelgubben lyser gult (`muscleColor.js`). Rött bara för fel och radering.
-Det gröna som finns: den omogna bananen i bananraden och "Dags att öka"
-(`.progressionUp`). Neutrala gråtoner
+Det gröna (`--fresh`, #9BC24A) finns på tre ställen: den omogna bananen
+i bananraden, "Dags att öka" (`.progressionUp`) och utvilad muskel i
+muskelläget. Neutrala gråtoner
 är varma: använd tokens, eller kör `python3 scripts/warm-greys.py` efter
 att ha lagt till hårdkodade gråa. Kort och knappar har ingen synlig kant
 (`--d-card-border: transparent`). Sidrubriker och stora siffror i
@@ -176,7 +177,8 @@ att ha lagt till hårdkodade gråa. Kort och knappar har ingen synlig kant
 https://claude.ai/artifact/4S251Xb86AV2poTdM2m4hM
 
 **Färre ord**: bottenmenyn är bara ikoner (namnen finns som `sr-only`),
-muskelläget är prick + namn (gul = redo, grå = vilar, ring = länge sen),
+muskelläget är prick + namn (grön = redo, gul = återhämtar sig, ring =
+länge sen; Hannes 2026-11-15),
 Nästa pass-kortet är namn + en rad + knapp (tryck på toppen för övningarna),
 och setknappen är en stor bock. Lägg inte tillbaka förklaringstexter som
 bara behövs första gången.

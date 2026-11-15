@@ -8,7 +8,7 @@ const MONTHS_SHORT = ['jan', 'feb', 'mars', 'april', 'maj', 'juni', 'juli', 'aug
 
 function statusLine(m) {
   const when = m.days == null ? null : m.days <= 1 ? `senast ${daysLabel(m.days)}` : `senast för ${daysLabel(m.days)} sedan`
-  if (m.state === 'resting') return ['Vilar', m.readyLabel, when].filter(Boolean).join(' · ')
+  if (m.state === 'resting') return ['Återhämtar sig', m.readyLabel, when].filter(Boolean).join(' · ')
   if (m.state === 'ready') return ['Redo', when].filter(Boolean).join(' · ')
   return m.days == null ? 'Inte tränad än' : ['Inte tränad på länge', when].filter(Boolean).join(' · ')
 }

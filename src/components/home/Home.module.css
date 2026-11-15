@@ -548,8 +548,9 @@
   border-radius: 5px;
   display: inline-block;
 }
-.mDot_ready { background: var(--accent); }
-.mDot_resting { background: #5D5851; }
+/* Gron = utvilad, gul = aterhamtar sig (Hannes 2026-11-15) */
+.mDot_ready { background: var(--fresh); }
+.mDot_resting { background: var(--accent); }
 .mDot_neglected { border: 1.5px solid #7A746B; }
 .legend {
   display: flex;

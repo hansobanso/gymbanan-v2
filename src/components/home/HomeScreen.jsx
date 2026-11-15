@@ -536,7 +536,7 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
               <span className={h.label}>Muskelläge</span>
               <span className={h.legend} aria-hidden="true">
                 <span><i className={`${h.mDot} ${h.mDot_ready}`} />redo</span>
-                <span><i className={`${h.mDot} ${h.mDot_resting}`} />vilar</span>
+                <span><i className={`${h.mDot} ${h.mDot_resting}`} />återhämtar</span>
                 <span><i className={`${h.mDot} ${h.mDot_neglected}`} />länge sen</span>
               </span>
             </div>
@@ -547,7 +547,7 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
                   className={h.muscle}
                   onClick={() => setOpenMuscle(m.group)}
                   type="button"
-                  aria-label={`${m.group}: ${m.state === 'ready' ? 'redo' : m.state === 'resting' ? `vilar, ${m.readyLabel}` : 'inte tränad på länge'}`}
+                  aria-label={`${m.group}: ${m.state === 'ready' ? 'redo' : m.state === 'resting' ? `återhämtar sig, ${m.readyLabel}` : 'inte tränad på länge'}`}
                 >
                   <span className={`${h.mDot} ${h['mDot_' + m.state]}`} aria-hidden="true" />
                   <span className={h.muscleName}>{m.group}</span>
