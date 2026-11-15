@@ -39,7 +39,8 @@ export default function SwipeRow({ children, onRemove, onDuplicate, onLongPress,
       longFired = false
       clearTimeout(longTimer)
       // Langtryck: halla stilla en halv sekund
-      if (handlers.current.onLongPress) {
+      // Inte pa +/- och knapparna i setkortet: dar betyder halla inne annat
+      if (handlers.current.onLongPress && !e.target.closest?.('[data-no-longpress]')) {
         longTimer = setTimeout(() => {
           if (dir !== null) return
           longFired = true

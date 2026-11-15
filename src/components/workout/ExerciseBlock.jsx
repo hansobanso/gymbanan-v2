@@ -262,9 +262,13 @@ export default function ExerciseBlock({
     ? exercise.exerciseId
     : encodeURIComponent('__builtin__' + exercise.name)
 
-  // +/- pa vikten foljer ovningens eget viktsteg (hantel 2, maskin 5,
-  // annars 2,5 - eller det som ar satt pa ovningen). Kardio stegar 0,5 km.
-  const weightStep = isCardio
+  // +/- pa vikten: maskin och kabel stegar 0,5 kg, eftersom viktstackarna
+  // sallan gar jamnt (46, 52, 59 ...) och man vill kunna stalla in exakt.
+  // Hall inne knappen for att stega snabbt. Ovriga foljer ovningens viktsteg
+  // (hantel 2, annars 2,5). Kardio stegar 0,5 km. Progressionens hojning
+  // anvander fortfarande ovningens viktsteg.
+  const eqLower = (exEquipment ?? '').toLowerCase()
+  const weightStep = isCardio || eqLower === 'maskin' || eqLower === 'kabel'
     ? 0.5
     : (Number(exercise.weightIncrement) || defaultWeightIncrement(exEquipment))
 

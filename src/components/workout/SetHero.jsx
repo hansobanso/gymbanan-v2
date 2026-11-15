@@ -1,4 +1,44 @@
+import { useRef, useEffect } from 'react'
 import styles from './SetHero.module.css'
+
+// Hall inne +/- for att stega snabbt: forsta steget direkt vid tryck,
+// sedan upprepning efter 400 ms som gar fortare ju langre man haller.
+function StepButton({ label, onStep, children }) {
+  const timer = useRef(null)
+  const fired = useRef(false)
+  const stepRef = useRef(onStep)
+  stepRef.current = onStep
+  const stop = () => { clearTimeout(timer.current); timer.current = null }
+  useEffect(() => stop, [])
+  const startHold = () => {
+    fired.current = false
+    stop()
+    let n = 0
+    const tick = () => {
+      fired.current = true
+      stepRef.current()
+      n++
+      timer.current = setTimeout(tick, n < 6 ? 140 : n < 16 ? 80 : 45)
+    }
+    timer.current = setTimeout(tick, 400)
+  }
+  return (
+    <button
+      className={styles.step}
+      type="button"
+      aria-label={label}
+      tabIndex={-1}
+      onPointerDown={startHold}
+      onPointerUp={stop}
+      onPointerLeave={stop}
+      onPointerCancel={stop}
+      onContextMenu={e => e.preventDefault()}
+      onClick={() => { if (fired.current) { fired.current = false; return } stepRef.current() }}
+    >
+      {children}
+    </button>
+  )
+}
 
 function epley(weight, reps) {
   const w = parseFloat(weight), r = parseInt(reps)
@@ -47,16 +87,22 @@ export default function SetHero({
   const best1RM = isWork ? (getBest1RM(allSets) || prev1RM) : null
   const suggested = isWork && repsUnit === 'reps' && set.weight ? suggestReps(set.weight, best1RM) : null
 
+  // Senaste vardena, sa att upprepade steg (hall inne) inte laser en gammal vikt
+  const live = useRef({ weight: set.weight, reps: set.reps })
+  live.current = { weight: set.weight, reps: set.reps }
+
   function adjustWeight(delta) {
-    const cur = parseFloat(set.weight) || 0
+    const cur = parseFloat(live.current.weight) || 0
     // Avrunda bara bort flyttalsbrus (13,75 + 2,5 ska bli 16,25).
     const next = Math.max(0, Math.round((cur + delta) * 100) / 100)
+    live.current.weight = String(next)
     onUpdate('weight', String(next))
   }
 
   function adjustReps(delta) {
-    const cur = parseInt(set.reps) || 0
+    const cur = parseInt(live.current.reps) || 0
     const next = Math.max(0, cur + delta)
+    live.current.reps = next > 0 ? String(next) : ''
     onUpdate('reps', next > 0 ? String(next) : '')
   }
 
@@ -99,9 +145,9 @@ export default function SetHero({
             aria-label={weightUnit === 'km' ? 'Distans i km' : 'Vikt i kg'}
           />
           <span className={styles.unit}>{weightUnit}</span>
-          <div className={styles.steppers}>
-            <button className={styles.step} onClick={() => adjustWeight(-weightStep)} type="button" aria-label="Minska vikt" tabIndex={-1}>−</button>
-            <button className={styles.step} onClick={() => adjustWeight(weightStep)} type="button" aria-label="Öka vikt" tabIndex={-1}>+</button>
+          <div className={styles.steppers} data-no-longpress>
+            <StepButton label="Minska vikt" onStep={() => adjustWeight(-weightStep)}>−</StepButton>
+            <StepButton label="Öka vikt" onStep={() => adjustWeight(weightStep)}>+</StepButton>
           </div>
         </div>
         <div className={styles.field}>
@@ -116,14 +162,14 @@ export default function SetHero({
             aria-label={repsUnit === 'reps' ? 'Reps' : repsUnit === 'min' ? 'Minuter' : 'Sekunder'}
           />
           <span className={styles.unit}>{repsUnit}</span>
-          <div className={styles.steppers}>
-            <button className={styles.step} onClick={() => adjustReps(-1)} type="button" aria-label="Minska reps" tabIndex={-1}>−</button>
-            <button className={styles.step} onClick={() => adjustReps(1)} type="button" aria-label="Öka reps" tabIndex={-1}>+</button>
+          <div className={styles.steppers} data-no-longpress>
+            <StepButton label="Minska reps" onStep={() => adjustReps(-1)}>−</StepButton>
+            <StepButton label="Öka reps" onStep={() => adjustReps(1)}>+</StepButton>
           </div>
         </div>
       </div>
 
-      <div className={styles.actions}>
+      <div className={styles.actions} data-no-longpress>
         {showRir && (
           <button
             className={`${styles.rir} ${hasRir ? styles.rirSet : ''}`}

@@ -207,3 +207,6 @@
 }
 .prevBtn svg { color: #6A6A6A; }
 .prevBtn:active { color: var(--accent); }
+
+/* Halla inne +/- ska inte markera text eller visa iOS-menyn */
+.step { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }

@@ -196,8 +196,12 @@ värde (`RollNum`).
 1 rep) eller ger fler reps än någonsin på exakt den vikten. Första gången en
 övning körs flaggas inget.
 
-**Viktknapparna** följer övningens `weight_increment`, annars hantel 2,
-maskin 5, övrigt 2,5.
+**Viktknapparna**: maskin och kabel stegar 0,5 kg per tryck (stackarna går
+sällan jämnt, Hannes vill ställa in exakt). Övriga följer övningens
+`weight_increment`, annars hantel 2, övrigt 2,5. Håll inne +/− för att stega
+snabbt (`StepButton` i SetHero). Långtrycket på setkortet (byt settyp)
+ignorerar allt inom `data-no-longpress`. Progressionens höjning använder
+fortfarande `weight_increment` (maskin 5).
 
 **AI-coachen är borttagen** (2026-11-13, Hannes: "den tillför inget"). PT-chatt,
 PT-intro, `ai.js`, `useAI.js` och `AiChat` finns inte längre. Bygg inte
