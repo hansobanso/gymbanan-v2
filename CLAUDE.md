@@ -305,6 +305,12 @@ visas först när något ändrats. Använd `nEx()`/`fmtRest()` i
   Vader som tertiär. Läget före finns i `exercises_muscle_backup_20261116`.
   Gamla pass har kvar sin sparade `muscle_group` per övning (den går före
   biblioteket i `homeStats`), så ändrade primärer slår igenom från nya pass.
+- 2026-11-16 slogs 30 dubbletter ihop (236 → 206 övningar), t.ex. Bencurl
+  och Liggande lårcurl → Liggande bencurl, Pec deck → Maskinflyes,
+  Uppåtlutande hantelpress → Lutande hantelpress. Namn och `exercise_id`
+  byttes i pass, program, anteckningar och vilotider. Gamla namnen ligger
+  som alias i `exerciseAliases.js`. Läget före: tabellerna
+  `merge_backup_20261116_exercises/_workouts/_programs`.
 - Supabase gratisnivå pausar efter 7 dagars inaktivitet → svart app.
   Bara Hannes kan väcka den i Supabase-panelen.
 
