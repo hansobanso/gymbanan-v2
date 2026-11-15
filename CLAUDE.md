@@ -299,6 +299,12 @@ visas först när något ändrats. Använd `nEx()`/`fmtRest()` i
   från `secondary_muscles` till `tertiary_muscles` på 90 övningar. Läget
   före finns i tabellen `exercises_muscle_backup_20261113` (RLS på, inga
   policys). Ta bort den när Hannes är nöjd.
+- 2026-11-16 gick alla 236 övningar igenom: 73 rättade (muskler och några
+  uppenbara utrustningsfel). Rumänska/raka marklyft har nu Hamstrings som
+  primär, rodd och latsdrag har Övre rygg som sekundär, lårcurl har bara
+  Vader som tertiär. Läget före finns i `exercises_muscle_backup_20261116`.
+  Gamla pass har kvar sin sparade `muscle_group` per övning (den går före
+  biblioteket i `homeStats`), så ändrade primärer slår igenom från nya pass.
 - Supabase gratisnivå pausar efter 7 dagars inaktivitet → svart app.
   Bara Hannes kan väcka den i Supabase-panelen.
 
