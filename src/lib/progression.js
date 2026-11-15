@@ -93,6 +93,20 @@ export function topWeightSets(sets) {
   return top > 0 ? work.filter(s => (parseFloat(s.weight) || 0) === top) : work
 }
 
+// Narmaste vikt som faktiskt korts pa maskinen, uppat (dir +1) eller nedat
+// (-1). Bara inom 2,5 viktsteg, annars ar det troligen en annan maskin eller
+// en gammal niva, och vanliga viktsteget galler. 46 kg + maskin (5) med
+// kanda vikter [39, 46, 52, 59] ger 52, inte 50.
+export function nearestKnownWeight(current, knownWeights, increment, dir) {
+  if (!knownWeights?.length || !(current > 0)) return null
+  const maxGap = Math.max(increment, 0.5) * 2.5
+  const cands = knownWeights
+    .map(Number)
+    .filter(w => w > 0 && (dir > 0 ? w > current + 0.01 : w < current - 0.01) && Math.abs(w - current) <= maxGap)
+  if (!cands.length) return null
+  return dir > 0 ? Math.min(...cands) : Math.max(...cands)
+}
+
 function alreadyRepeated(workSets, prevPrevSets) {
   const pp = topWeightSets(prevPrevSets)
   if (pp.length === 0 || workSets.length === 0) return false
@@ -145,6 +159,11 @@ export function epleyAdjustedReps(plannedWeight, plannedReps, actualWeight) {
  * @param {string} params.category        - 'heavy_compound' | 'compound' | 'isolation_or_machine'
  * @param {number} params.weightIncrement - Tillgangligt viktsteg (default 2.5)
  * @param {number} params.numWorkSets     - Antal work sets i nuvarande program (for maalberakning)
+ * @param {Array}  params.knownWeights    - Vikter som faktiskt korts pa maskinen (maskin/kabel). Nar
+ *                                          vikten ska hojas eller sankas valjs narmaste sadan vikt
+ *                                          i stallet for +/- viktsteget, om den ligger rimligt nara.
+ * @param {Array}  params.latestRirSets   - Set fran ett nyare pass pa annat gym. Vikterna ignoreras,
+ *                                          men RIR:en dar styr hur stort repkliv som tas.
  *
  * @returns {Object} Progressionsforslag
  */
@@ -156,6 +175,8 @@ export function computeProgression({
   category = 'compound',
   weightIncrement = 2.5,
   numWorkSets = 2,
+  knownWeights = null,
+  latestRirSets = null,
 }) {
   // ── Edge case: inga prev-sets ──
   if (!prevSets || prevSets.length === 0) {
@@ -200,7 +221,8 @@ export function computeProgression({
   const atStr = isBodyweight ? 'kroppsvikt' : `${currentWeight} kg`
   const nextWeight = isBodyweight
     ? weightIncrement
-    : roundToIncrement(currentWeight + weightIncrement, weightIncrement)
+    : (nearestKnownWeight(currentWeight, knownWeights, weightIncrement, +1)
+      ?? roundToIncrement(currentWeight + weightIncrement, weightIncrement))
 
   // ── Punkt 6: Under repMin tva pass i rad → flagga ──
   if (repsMin != null && anySetsUnderMin(workSets, repsMin)) {
@@ -211,7 +233,8 @@ export function computeProgression({
     if (twoInARow) {
       const lowerWeight = isBodyweight
         ? 0
-        : roundToIncrement(currentWeight - weightIncrement, weightIncrement)
+        : (nearestKnownWeight(currentWeight, knownWeights, weightIncrement, -1)
+          ?? roundToIncrement(currentWeight - weightIncrement, weightIncrement))
       return {
         action: 'too_heavy_flag',
         nextWeight: Math.max(0, lowerWeight),
@@ -311,7 +334,10 @@ export function computeProgression({
   // Marginal kvar (snitt-RIR >= 3) -> ta ett större kliv (+2 reps).
   // Nära failure (snitt-RIR < 0.5) -> befäst samma mål (+0) istället för
   // att kräva mer när du redan var slut. Annars +1 som vanligt.
-  const avgRir = averageRIR(workSets)
+  // RIR fran ett nyare pass pa annat gym ar den farskaste signalen om hur
+  // hart du kor, aven om vikterna dar inte gar att jamfora.
+  const rirBasis = latestRirSets?.length ? topWeightSets(latestRirSets) : []
+  const avgRir = averageRIR(rirBasis.length ? rirBasis : workSets)
   let repStep = 1
   if (avgRir != null && avgRir >= 3) repStep = 2
   // Befast bara en gang - har samma resultat redan upprepats gar vi vidare (+1).

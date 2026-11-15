@@ -1,3 +1,4 @@
+import { isOtherGym } from '../lib/otherGym'
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Reorder, AnimatePresence, motion } from 'framer-motion'
@@ -247,13 +248,14 @@ export default function Workout({ session }) {
       try {
         const prs = []
         for (const ex of snapshotForPrs) {
+          if (ex.otherGym) continue // annat gym: inget PB
           const today = best1RM(ex.sets)
           if (today <= 0) continue
           let hist = 0
           let seen = false
           for (const w of recent) {
             if (w.id === workoutId) continue
-            const match = (w.exercises ?? []).find(e => e.name === ex.name)
+            const match = (w.exercises ?? []).find(e => e.name === ex.name && !isOtherGym(e))
             if (!match) continue
             seen = true
             const b = best1RM(match.sets)
@@ -620,6 +622,7 @@ export default function Workout({ session }) {
                 onRemoveSet={workout.removeSet}
                 onDuplicateSet={workout.duplicateSet}
                 onToggleSetType={workout.toggleSetType}
+                onToggleOtherGym={workout.toggleOtherGym}
                 onCompleteSet={workout.completeSet}
                 onUpdateExerciseReps={workout.updateExerciseReps}
                 onRemoveExercise={workout.removeExercise}

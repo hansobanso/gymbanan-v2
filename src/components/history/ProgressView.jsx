@@ -1,3 +1,4 @@
+import { isOtherGym } from '../../lib/otherGym'
 import { useState, useMemo, useEffect } from 'react'
 import { displayWeight } from '../../lib/weightUtils'
 import { getWorkouts, getEquipmentMap } from '../../lib/db'
@@ -180,14 +181,14 @@ export default function ProgressView({ open, onClose, workouts, equipmentMap = {
 
     // Avgor lage: anvand vikt om ovningen har vikt i nagot pass
     const anyWeight = sorted.some(w => {
-      const ex = (w.exercises ?? []).find(e => e.name === selected)
+      const ex = (w.exercises ?? []).find(e => e.name === selected && !isOtherGym(e))
       return ex && hasWeight(ex.sets)
     })
     const mode = anyWeight ? 'weight' : 'reps'
 
     const points = []
     for (const w of sorted) {
-      const ex = (w.exercises ?? []).find(e => e.name === selected)
+      const ex = (w.exercises ?? []).find(e => e.name === selected && !isOtherGym(e))
       if (!ex) continue
       if (mode === 'weight') {
         const { value, set } = bestRM(ex.sets, equipment)

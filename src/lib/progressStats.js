@@ -1,3 +1,4 @@
+import { isOtherGym } from './otherGym'
 // Ren logik for Framsteg-vyn. Inga React-beroenden. Har tester.
 
 const DAY = 24 * 60 * 60 * 1000
@@ -26,6 +27,7 @@ export function exerciseSeries(workouts) {
   const raw = new Map()
   for (const w of sorted) {
     for (const ex of w.exercises ?? []) {
+      if (isOtherGym(ex)) continue
       const sets = workSets(ex)
       if (!sets.length) continue
       const best = sets.reduce((m, s) => Math.max(m, e1rm(s.weight, s.reps)), 0)

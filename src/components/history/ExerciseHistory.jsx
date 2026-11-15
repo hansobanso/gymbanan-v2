@@ -1,3 +1,4 @@
+import { isOtherGym } from '../../lib/otherGym'
 import { useEffect, useState } from 'react'
 import { getWorkouts } from '../../lib/db'
 import { displayWeightStr } from '../../lib/weightUtils'
@@ -15,11 +16,12 @@ export function exerciseSessions(name, workouts) {
     if (!w.finished_at) continue
     const ex = (w.exercises ?? []).find(e => e.name === name)
     const sets = (ex?.sets ?? []).filter(s => s.done && s.type !== 'warmup')
-    if (sets.length) rows.push({ id: w.id, at: new Date(w.finished_at), session: w.session_name ?? 'Pass', adjusted: !!w.adjusted, sets })
+    if (sets.length) rows.push({ id: w.id, at: new Date(w.finished_at), session: w.session_name ?? 'Pass', adjusted: !!w.adjusted, away: isOtherGym(ex), sets })
   }
   rows.sort((a, b) => b.at - a.at)
   let best = null
   for (const r of rows) {
+    if (r.away) continue // annat gym: vikterna jamfors inte
     for (const s of r.sets) {
       const weight = parseFloat(s.weight) || 0
       const reps = parseInt(s.reps) || 0
@@ -80,7 +82,7 @@ export default function ExerciseHistory({ name, userId, equipment, onShowProgres
           <div key={r.id ?? i} className={styles.row}>
             <div className={styles.rowText}>
               <span className={styles.rowDate}>{fmtDate(r.at)}</span>
-              <span className={styles.rowMeta}>{r.adjusted ? `${r.session} · anpassat` : r.session}</span>
+              <span className={styles.rowMeta}>{[r.session, r.adjusted && 'anpassat', r.away && 'annat gym'].filter(Boolean).join(' · ')}</span>
             </div>
             <span className={styles.rowSets}>
               <SetSummary sets={r.sets} equipment={equipment} className={styles.pbSet} />

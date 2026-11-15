@@ -1,3 +1,4 @@
+import { isOtherGym } from './otherGym'
 import { supabase } from './supabase'
 import { namesMatching } from './exerciseAliases.js'
 import { EXERCISES } from '../data/exercises'
@@ -322,7 +323,7 @@ export async function getPreviousSetsForExercise(userId, exerciseName) {
   // de representerar inte användarens normala progression.
   for (const workout of data) {
     if (workout.adjusted) continue
-    const ex = (workout.exercises ?? []).find(e => aliasNames.has(e.name))
+    const ex = (workout.exercises ?? []).find(e => aliasNames.has(e.name) && !isOtherGym(e))
     if (!ex) continue
     const allSets = (ex.sets ?? []).filter(s => s.done && (s.weight !== undefined && s.weight !== null))
     if (allSets.length > 0) return allSets
@@ -330,7 +331,7 @@ export async function getPreviousSetsForExercise(userId, exerciseName) {
   // Fallback: om INGA icke-anpassade pass finns, ta första bästa - hellre någon
   // data än ingen alls.
   for (const workout of data) {
-    const ex = (workout.exercises ?? []).find(e => aliasNames.has(e.name))
+    const ex = (workout.exercises ?? []).find(e => aliasNames.has(e.name) && !isOtherGym(e))
     if (!ex) continue
     const allSets = (ex.sets ?? []).filter(s => s.done && (s.weight !== undefined && s.weight !== null))
     if (allSets.length > 0) return allSets
@@ -354,7 +355,7 @@ export async function getTwoPreviousSetsForExercise(userId, exerciseName) {
   const found = []
   for (const workout of data) {
     if (workout.adjusted) continue
-    const ex = (workout.exercises ?? []).find(e => aliasNames.has(e.name))
+    const ex = (workout.exercises ?? []).find(e => aliasNames.has(e.name) && !isOtherGym(e))
     if (!ex) continue
     const allSets = (ex.sets ?? []).filter(s => s.done && (s.weight !== undefined && s.weight !== null))
     if (allSets.length > 0) {

@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
+import { isOtherGym, canBeOtherGym, knownMachineWeights } from '../lib/otherGym'
 import { createWorkout, updateWorkout, deleteUnfinishedWorkout, getTwoPreviousSetsForExercise, getExerciseByName, getRestOverrides, upsertRestOverride, getUserExerciseNote, getWorkouts, getExercises, getAllUserExerciseNotes, cacheInvalidate } from '../lib/db'
 import { computeProgression, deriveCategory, epleyAdjustedReps, detectGapAdjustment, suggestNextSetReps, warmupPlan, detectPlateau, topWeightSets } from '../lib/progression'
 import { sortSupersetsAdjacent } from '../lib/superset.js'
@@ -13,7 +14,7 @@ function buildPbMap(workouts) {
   const map = {}
   for (const w of workouts ?? []) {
     for (const ex of w.exercises ?? []) {
-      if (!ex?.name) continue
+      if (!ex?.name || isOtherGym(ex)) continue
       let e = map[ex.name]
       if (!e) e = map[ex.name] = { maxWeight: null, reps: {} }
       for (const s of ex.sets ?? []) {
@@ -164,12 +165,19 @@ function extractPrevSets(recentWorkouts, exerciseName) {
   // alias-medveten (omdopta ovningar) och returnerar datum for spårbarhet.
   const aliasNames = namesMatching(exerciseName)
   const found = []
+  // Nyare pass pa annat gym (fore forsta hemmapasset): vikterna ignoreras,
+  // men RIR:en dar far styra repklivet.
+  let awaySets = null
   for (const workout of recentWorkouts ?? []) {
     if (workout.adjusted) continue
     if (!workout.finished_at) continue
     const ex = (workout.exercises ?? []).find(e => aliasNames.has(e.name))
     if (!ex) continue
     const allSets = (ex.sets ?? []).filter(s => s.done && s.weight !== undefined && s.weight !== null)
+    if (isOtherGym(ex)) {
+      if (!found.length && !awaySets && allSets.length > 0) awaySets = allSets
+      continue
+    }
     if (allSets.length > 0) {
       found.push({ sets: allSets, date: workout.finished_at ?? null })
       if (found.length >= PLATEAU_SESSIONS) break
@@ -180,6 +188,8 @@ function extractPrevSets(recentWorkouts, exerciseName) {
     prevPrev: found[1]?.sets ?? null,
     prevDate: found[0]?.date ?? null,
     history: found,
+    awaySets,
+    knownWeights: knownMachineWeights(recentWorkouts, aliasNames),
   }
 }
 
@@ -225,7 +235,7 @@ async function loadExerciseData(ex, userId, restOverrides, caches = {}) {
     ? Promise.resolve(notesMap[name] ?? null)
     : getUserExerciseNote(userId, name)
 
-  const [{ prev: prevSets, prevPrev: prevPrevSets, prevDate, history = null }, exData, userNote] = await Promise.all([
+  const [{ prev: prevSets, prevPrev: prevPrevSets, prevDate, history = null, awaySets = null, knownWeights = null }, exData, userNote] = await Promise.all([
     prevPromise, exDataPromise, notePromise,
   ])
   const exInstructions = exData?.instructions || null
@@ -284,6 +294,8 @@ async function loadExerciseData(ex, userId, restOverrides, caches = {}) {
     category,
     weightIncrement,
     numWorkSets,
+    knownWeights: canBeOtherGym(equipment) ? knownWeights : null,
+    latestRirSets: awaySets,
   })
 
   // Prefyll set baserat pa progressionens forslag
@@ -747,6 +759,20 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
 
   // Langtryck pa ett set: uppvarmning <-> arbetsset. Backoff blir uppvarmning.
   // Antalet arbetsset andras, sa det raknas som programandring.
+  // Annat gym (maskin/kabel): vikterna jamfors inte med hemmagymmet. PB
+  // tas bort fran ovningens set nar det slas pa och flaggas inte medan det ar pa.
+  const toggleOtherGym = useCallback((exId) => {
+    setExercises(prev => {
+      const next = prev.map(ex => {
+        if (ex.localId !== exId) return ex
+        const on = !ex.otherGym
+        return { ...ex, otherGym: on, sets: on ? ex.sets.map(s => s.isPB ? { ...s, isPB: false } : s) : ex.sets }
+      })
+      persistWorkout(next)
+      return next
+    })
+  }, [persistWorkout])
+
   const toggleSetType = useCallback((exId, setId) => {
     setProgramChanged(true)
     setExercises(prev => {
@@ -1013,7 +1039,8 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
         // PB-koll nar setet bockas av (ej vid angra). Work-set, ej backoff.
         const willBeDone = !wasCompleted
         let isPB = false
-        if (willBeDone && completingSet?.type === 'work' && completingSet.subtype !== 'backoff') {
+        // Annat gym: vikterna gar inte att jamfora, sa inget PB.
+        if (willBeDone && !ex.otherGym && completingSet?.type === 'work' && completingSet.subtype !== 'backoff') {
           const idx = ex.sets.findIndex(s => s.id === setId)
           const earlierDone = ex.sets.slice(0, idx).filter(s =>
             s.done && s.type === 'work' && s.subtype !== 'backoff'
@@ -1110,6 +1137,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
       muscle_group: ex.muscleGroup,
       ai_comment: ex.aiComment,
       sets: ex.sets,
+      ...(ex.otherGym ? { other_gym: true } : {}),
     }))
     const fields = {
       finished_at: new Date().toISOString(),
@@ -1327,6 +1355,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
     removeSet,
     duplicateSet,
     toggleSetType,
+    toggleOtherGym,
     addExercise,
     addGeneratedWorkout,
     removeExercise,

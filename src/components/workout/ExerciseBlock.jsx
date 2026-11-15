@@ -5,6 +5,7 @@ import SwipeRow from './SwipeRow'
 import { getPreviousSetsForExercise, getExerciseByName } from '../../lib/db'
 import { displayWeightStr, defaultWeightIncrement } from '../../lib/weightUtils'
 import { hapticTick, hapticSuccess, hapticWarn } from '../../lib/haptics'
+import { canBeOtherGym } from '../../lib/otherGym'
 import styles from './ExerciseBlock.module.css'
 
 // Tre slags set: uppvarmning (w), arbetsset (k) och backoff (b). Samma
@@ -77,6 +78,7 @@ export default function ExerciseBlock({
   onUpdateExerciseReps,
   onRemoveExercise,
   onReplaceExercise,
+  onToggleOtherGym,
   onShowHistory,
   onShowInstructions,
   onLongPressStart,
@@ -422,7 +424,7 @@ export default function ExerciseBlock({
         {/* Raden under namnet: rep-malet (tryck for att andra), egen
             notering och superset. Malet var dolt bakom menyn tidigare,
             men Hannes vill alltid kunna se det (2026-11-15). */}
-        {(editingReps || !isCardio || exercise.exNotes || supersetPartner) && (
+        {(editingReps || !isCardio || exercise.exNotes || supersetPartner || exercise.otherGym) && (
           <div className={styles.metaRow} onPointerDown={e => e.stopPropagation()}>
           {editingReps ? (
             <span className={styles.repsRangeEdit}>
@@ -463,6 +465,20 @@ export default function ExerciseBlock({
             ) : (
               <button className={styles.metaBtn} onClick={startRepsEdit} type="button">+ Sätt mål</button>
             ))
+          )}
+          {exercise.otherGym && (
+            <button
+              className={`${styles.goalChip} ${styles.awayChip}`}
+              onClick={() => onToggleOtherGym?.(exercise.localId)}
+              type="button"
+              aria-label="Annat gym: vikterna räknas inte för PB och viktförslag. Tryck för att stänga av"
+            >
+              {/* Platsnal */}
+              <svg className={styles.goalIcon} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z" /><circle cx="12" cy="9.5" r="2.5" />
+              </svg>
+              <span className={styles.goalValue}>Annat gym</span>
+            </button>
           )}
           {exercise.exNotes && (
             <button className={styles.metaBtn} onClick={() => onShowDetail?.(detailId)} type="button">
@@ -549,6 +565,11 @@ export default function ExerciseBlock({
             <button className={styles.menuItem} onClick={() => { onReplaceExercise?.(exercise); setMenuOpen(false) }}>
               Byt övning
             </button>
+            {canBeOtherGym(exEquipment) && onToggleOtherGym && (
+              <button className={styles.menuItem} onClick={() => { onToggleOtherGym(exercise.localId); setMenuOpen(false) }} aria-pressed={!!exercise.otherGym}>
+                {exercise.otherGym ? 'Tillbaka till mitt gym' : 'Annat gym idag'}
+              </button>
+            )}
             {supersetPartner ? (
               <button className={styles.menuItem} onClick={() => { onSupersetUnlink?.(exercise); setMenuOpen(false) }}>
                 Ta bort superset

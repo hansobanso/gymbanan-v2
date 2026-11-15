@@ -454,3 +454,26 @@ describe('tyngsta vikten styr', () => {
     expect(topWeightSets([w(0, 10), w(0, 8)]).length).toBe(2)
   })
 })
+
+import { nearestKnownWeight } from './progression.js'
+
+describe('maskinens kanda vikter', () => {
+  const w = (weight, reps, rir) => ({ type: 'work', done: true, weight: String(weight), reps: String(reps), rir })
+  it('nasta kanda vikt i stallet for +5', () => {
+    expect(nearestKnownWeight(46, [39, 46, 52, 59], 5, 1)).toBe(52)
+    expect(nearestKnownWeight(46, [39, 46, 52, 59], 5, -1)).toBe(39)
+    expect(nearestKnownWeight(46, [46, 80], 5, 1)).toBe(null)
+  })
+  it('hojning anvander kand vikt', () => {
+    const p = computeProgression({ prevSets: [w(46, 13, 2), w(46, 13, 2)], repsMin: 8, repsMax: 12, numWorkSets: 2, weightIncrement: 5, knownWeights: [39, 46, 52] })
+    expect(p.action).toBe('increase_weight')
+    expect(p.nextWeight).toBe(52)
+  })
+  it('RIR fran annat gym styr repklivet', () => {
+    const base = { prevSets: [w(46, 9, 1), w(46, 9, 1)], repsMin: 8, repsMax: 12, numWorkSets: 2, weightIncrement: 5 }
+    expect(computeProgression(base).nextTargetTotalReps).toBe(19)
+    const easyAway = computeProgression({ ...base, latestRirSets: [w(70, 10, 3), w(70, 10, 4)] })
+    expect(easyAway.nextTargetTotalReps).toBe(20)
+    expect(easyAway.nextWeight).toBe(46)
+  })
+})

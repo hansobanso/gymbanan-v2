@@ -205,6 +205,22 @@ snabbt (`StepButton` i SetHero). Långtrycket på setkortet (byt settyp)
 ignorerar allt inom `data-no-longpress`. Progressionens höjning använder
 fortfarande `weight_increment` (maskin 5).
 
+**Maskinens kända vikter** (`knownMachineWeights`, `nearestKnownWeight`):
+för maskin och kabel samlas vikterna Hannes faktiskt kört (senaste 20
+passen). När progressionen höjer eller sänker vikten väljs närmaste sådan
+vikt inom 2,5 viktsteg (46 → 52, inte 50), annars vanliga viktsteget.
+
+**Annat gym** (`src/lib/otherGym.js`): i övningens ⋯-meny för maskin och
+kabel, "Annat gym idag". Visas som gult chip "Annat gym" under namnet (tryck
+stänger av). Sparas som `other_gym: true` på övningen i `workouts.exercises`.
+Hoppas över för PB (både under passet och på klart-skärmen), viktförslag
+(`extractPrevSets`, db-uppslagen), kända vikter, kurvor, Framsteg och
+"Bästa set". Räknas som vanligt i muskelläge, veckorapport och set. Är det
+nyaste passet för övningen på annat gym styr dess RIR repklivet nästa gång
+(`latestRirSets`), medan vikterna kommer från senaste hemmapasset. Historiken
+märker sådana pass "annat gym". Träningsarkivet (schemalagd artifact) vet
+inget om flaggan än.
+
 **AI-coachen är borttagen** (2026-11-13, Hannes: "den tillför inget"). PT-chatt,
 PT-intro, `ai.js`, `useAI.js` och `AiChat` finns inte längre. Bygg inte
 tillbaka något AI utan att fråga. "Anpassa passet" är kvar och är manuell.

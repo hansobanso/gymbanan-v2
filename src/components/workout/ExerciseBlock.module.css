@@ -486,3 +486,6 @@
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
+
+/* Annat gym: gul markering i raden under namnet, tryck stanger av */
+.awayChip { color: var(--accent); }

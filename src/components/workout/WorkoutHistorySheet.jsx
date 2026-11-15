@@ -1,3 +1,4 @@
+import { isOtherGym } from '../../lib/otherGym'
 import { useState, useEffect } from 'react'
 import { calendarDaysAgo } from '../../lib/dates'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -98,7 +99,7 @@ export default function WorkoutHistorySheet({ open, userId, onClose }) {
                         if (!workSets.length) return null
                         return (
                           <div key={i} className={wStyles.exRow}>
-                            <span className={wStyles.exName}>{ex.name}</span>
+                            <span className={wStyles.exName}>{ex.name}{isOtherGym(ex) ? ' · annat gym' : ''}</span>
                             <span className={wStyles.exSets}>
                               <SetSummary sets={workSets} className={wStyles.pbSet} />
                             </span>

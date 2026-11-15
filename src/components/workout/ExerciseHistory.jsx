@@ -1,3 +1,4 @@
+import { isOtherGym } from '../../lib/otherGym'
 import { useState, useEffect } from 'react'
 import { calendarDaysAgo } from '../../lib/dates'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -30,7 +31,7 @@ export default function ExerciseHistory({ open, exerciseName, userId, onClose })
           if (!match) continue
           const workSets = (match.sets ?? []).filter(s => s.type === 'work' && s.done)
           if (workSets.length === 0) continue
-          entries.push({ date: w.finished_at, sets: workSets })
+          entries.push({ date: w.finished_at, sets: workSets, away: isOtherGym(match) })
         }
         setHistory(entries)
       })
@@ -76,7 +77,7 @@ export default function ExerciseHistory({ open, exerciseName, userId, onClose })
               )}
               {!loading && history.map((entry, i) => (
                 <div key={i} className={styles.entry}>
-                  <div className={styles.entryDate}>{relativeDate(entry.date)}</div>
+                  <div className={styles.entryDate}>{relativeDate(entry.date)}{entry.away ? ' · annat gym' : ''}</div>
                   <div className={styles.sets}>
                     {entry.sets.map((s, j) => (
                       <div key={j} className={styles.setRow}>
