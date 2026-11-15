@@ -5,7 +5,6 @@ import SwipeRow from './SwipeRow'
 import { getPreviousSetsForExercise, getExerciseByName } from '../../lib/db'
 import { displayWeightStr, defaultWeightIncrement } from '../../lib/weightUtils'
 import { hapticTick, hapticSuccess, hapticWarn } from '../../lib/haptics'
-import { fmtRest } from '../../lib/plural'
 import styles from './ExerciseBlock.module.css'
 
 // Tre slags set: uppvarmning (w), arbetsset (k) och backoff (b). Samma
@@ -56,12 +55,6 @@ const SupersetChip = () => (
   </span>
 )
 
-// Vilotider att valja mellan per ovning
-const REST_CHOICES = [60, 90, 120, 150, 180, 240, 300]
-function fmtRestShort(s) {
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
-}
-
 const MONTHS_SHORT = ['jan', 'feb', 'mars', 'april', 'maj', 'juni', 'juli', 'aug', 'sep', 'okt', 'nov', 'dec']
 function plateauDate(iso) {
   const d = new Date(iso)
@@ -82,7 +75,6 @@ export default function ExerciseBlock({
   onToggleSetType,
   onCompleteSet,
   onUpdateExerciseReps,
-  onUpdateRest,
   onRemoveExercise,
   onReplaceExercise,
   onShowHistory,
@@ -102,7 +94,6 @@ export default function ExerciseBlock({
   const [menuOpen, setMenuOpen] = useState(false)
   const [menuPos, setMenuPos] = useState({ top: 0, right: 0 })
   const [editingReps, setEditingReps] = useState(false)
-  const [editingRest, setEditingRest] = useState(false)
   const [repsEditMin, setRepsEditMin] = useState('')
   const [repsEditMax, setRepsEditMax] = useState('')
   const repsBlurTimer = useRef(null)
@@ -323,8 +314,6 @@ export default function ExerciseBlock({
     return () => cancelAnimationFrame(raf)
   }, [openSetId, autoCenter])
 
-  const restNow = exercise.restSeconds ?? defaultRestSeconds ?? 120
-
   function startRepsEdit(e) {
     e.stopPropagation()
     setRepsEditMin(exercise.defaultRepsMin != null ? String(exercise.defaultRepsMin) : '')
@@ -471,21 +460,6 @@ export default function ExerciseBlock({
               <button className={styles.metaBtn} onClick={startRepsEdit} type="button">+ Sätt mål</button>
             ))
           )}
-          {!editingReps && onUpdateRest && (
-            <button
-              className={`${styles.goalChip} ${editingRest ? styles.goalChipOn : ''}`}
-              onClick={e => { e.stopPropagation(); setEditingRest(v => !v) }}
-              type="button"
-              aria-expanded={editingRest}
-              aria-label={`Vila ${fmtRest(restNow)}, tryck för att ändra`}
-            >
-              {/* Klockikon */}
-              <svg className={styles.goalIcon} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
-                <circle cx="12" cy="13" r="8" /><path d="M12 9v4l2.5 2.5M9.5 2.5h5" />
-              </svg>
-              <span className={styles.goalValue}>{fmtRestShort(restNow)}</span>
-            </button>
-          )}
           {exercise.exNotes && (
             <button className={styles.metaBtn} onClick={() => onShowDetail?.(detailId)} type="button">
               {exercise.exNotes}
@@ -493,26 +467,6 @@ export default function ExerciseBlock({
           )}
           {supersetPartner && <SupersetChip />}
         </div>
-        )}
-        {editingRest && (
-          <div className={styles.restPick} role="group" aria-label="Vila efter varje set" onPointerDown={e => e.stopPropagation()}>
-            {REST_CHOICES.map(sec => (
-              <button
-                key={sec}
-                type="button"
-                className={`${styles.restOpt} ${sec === restNow ? styles.restOptOn : ''}`}
-                aria-pressed={sec === restNow}
-                onClick={e => {
-                  e.stopPropagation()
-                  hapticTick()
-                  onUpdateRest?.(exercise.localId, sec)
-                  setEditingRest(false)
-                }}
-              >
-                {fmtRestShort(sec)}
-              </button>
-            ))}
-          </div>
         )}
 
         {mode === 'open' && exercise.plateau && (

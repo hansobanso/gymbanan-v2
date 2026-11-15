@@ -233,7 +233,8 @@ async function loadExerciseData(ex, userId, restOverrides, caches = {}) {
   const exEquipment = exData?.equipment || null
   const isTimeBased = exData?.is_time_based === true
   const isCardio = exData?.is_cardio === true
-  const restSeconds = ex.restSeconds ?? (restOverrides?.[ex.name] ?? null)
+  // Vilan som satts pa ovningen (ovningssidan) galler fore programmets
+  const restSeconds = restOverrides?.[ex.name] ?? ex.restSeconds ?? null
   // Berika med muskelgrupp fran biblioteket - programmets pass lagrar den
   // inte, sa utan detta loggas passet med muscle_group: null.
   const muscleGroup = ex.muscleGroup ?? exData?.muscle_group ?? null
@@ -975,10 +976,9 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
     }))
   }, [])
 
-  // Vilotid per ovning, satt fran passet. Galler direkt, sparas som anvandarens
-  // vilotid for ovningen (alla program) och kan sparas in i programmet vid avslut.
+  // Vilotid per ovning, satt pa ovningens sida under passet. Galler direkt
+  // och sparas som ovningens vila (user_rest_overrides, alla program).
   const updateExerciseRest = useCallback((exId, secs) => {
-    setProgramChanged(true)
     let name = null
     setExercises(prev => {
       const next = prev.map(ex => {

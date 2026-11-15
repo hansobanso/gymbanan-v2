@@ -131,11 +131,12 @@ och om setState i effekter (befintligt mönster). Titta bara på nya fel.
   och tränade muskler. Inga mål och inga jämförelser med andra veckor;
   grupper utan set står som "Fick vila".
 
-**Vila per övning**: klockchippet bredvid rep-målet i den öppna övningen
-(t.ex. "2:00") öppnar val 1:00–5:00. Valet gäller direkt i passet, sparas i
-`user_rest_overrides` (gäller i alla program) och flaggar `programChanged`, så
-avslutet erbjuder att spara in det i programmet. Programmets egen vilotid går
-före `user_rest_overrides` när passet laddas.
+**Vila per övning**: sätts på övningens sida (tryck på övningsnamnet i
+passet, där instruktioner och egen anteckning finns): "Vila mellan set",
+1:00–5:00. Gäller direkt i passet och sparas i `user_rest_overrides`, samma
+som "Standardvila" i övningsbiblioteket. Den vilan går före programmets
+`restSeconds` när ett pass laddas. Inte i själva övningsblocket: Hannes
+vill ha det bara på övningens sida (2026-11-15).
 
 **Progressionen utgår från tyngsta arbetsvikten** (`topWeightSets`): lättare
 öppningsset räknas inte. 40 × 12 + 50 × 8 × 3 ger förslag på 50 kg för alla

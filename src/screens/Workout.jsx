@@ -622,7 +622,6 @@ export default function Workout({ session }) {
                 onToggleSetType={workout.toggleSetType}
                 onCompleteSet={workout.completeSet}
                 onUpdateExerciseReps={workout.updateExerciseReps}
-                onUpdateRest={workout.updateExerciseRest}
                 onRemoveExercise={workout.removeExercise}
                 onReplaceExercise={ex => setPickerTarget(ex)}
                 onShowHistory={ex => setHistoryTarget(ex)}
@@ -976,6 +975,14 @@ export default function Workout({ session }) {
         id={detailExerciseId}
         context="workout"
         onClose={() => setDetailExerciseId(null)}
+        currentRest={(() => {
+          const ex = workout.exercises.find(e => (e.exerciseId || encodeURIComponent('__builtin__' + e.name)) === detailExerciseId)
+          return ex ? (ex.restSeconds ?? defaultRest ?? 120) : null
+        })()}
+        onRestChange={secs => {
+          const ex = workout.exercises.find(e => (e.exerciseId || encodeURIComponent('__builtin__' + e.name)) === detailExerciseId)
+          if (ex) workout.updateExerciseRest(ex.localId, secs)
+        }}
         onNotesSaved={(name, notes) => {
           workout.setExercises(prev => prev.map(ex =>
             ex.name === name ? { ...ex, exNotes: notes } : ex

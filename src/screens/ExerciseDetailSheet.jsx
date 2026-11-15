@@ -28,7 +28,11 @@ function builtinDefaults(name) {
   }
 }
 
-export default function ExerciseDetailSheet({ id, onClose, onNotesSaved, context }) {
+// Vila mellan set, valbar pa ovningens sida under passet
+const REST_CHOICES = [60, 90, 120, 150, 180, 240, 300]
+const fmtClock = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
+
+export default function ExerciseDetailSheet({ id, onClose, onNotesSaved, context, currentRest = null, onRestChange }) {
   const isWorkoutContext = context === 'workout'
   const decoded    = id ? decodeURIComponent(id) : ''
   const isBuiltin  = decoded.startsWith('__builtin__')
@@ -40,6 +44,9 @@ export default function ExerciseDetailSheet({ id, onClose, onNotesSaved, context
   const [personalNote, setPersonalNote] = useState('')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved]   = useState(false)
+  const [rest, setRest]     = useState(currentRest)
+  // Ny ovning i arket: borja fran dess vila
+  useEffect(() => { setRest(currentRest) }, [id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!id) return
@@ -217,6 +224,26 @@ export default function ExerciseDetailSheet({ id, onClose, onNotesSaved, context
                     </div>
                   </div>
                 </>
+              )}
+
+              {/* Vila mellan set: galler direkt och sparas pa ovningen */}
+              {isWorkoutContext && onRestChange && rest != null && (
+                <div className={detailStyles.section}>
+                  <label className={detailStyles.label} id="rest-label">Vila mellan set</label>
+                  <div className={styles.restPick} role="group" aria-labelledby="rest-label">
+                    {REST_CHOICES.map(sec => (
+                      <button
+                        key={sec}
+                        type="button"
+                        className={`${styles.restOpt} ${sec === rest ? styles.restOptOn : ''}`}
+                        aria-pressed={sec === rest}
+                        onClick={() => { setRest(sec); onRestChange(sec) }}
+                      >
+                        {fmtClock(sec)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               )}
 
               {/* Instruktioner - globala, admin-redigerbara.
