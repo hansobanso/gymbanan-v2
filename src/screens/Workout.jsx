@@ -622,6 +622,7 @@ export default function Workout({ session }) {
                 onToggleSetType={workout.toggleSetType}
                 onCompleteSet={workout.completeSet}
                 onUpdateExerciseReps={workout.updateExerciseReps}
+                onUpdateRest={workout.updateExerciseRest}
                 onRemoveExercise={workout.removeExercise}
                 onReplaceExercise={ex => setPickerTarget(ex)}
                 onShowHistory={ex => setHistoryTarget(ex)}

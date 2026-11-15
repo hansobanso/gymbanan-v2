@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { createWorkout, updateWorkout, deleteUnfinishedWorkout, getTwoPreviousSetsForExercise, getExerciseByName, getRestOverrides, getUserExerciseNote, getWorkouts, getExercises, getAllUserExerciseNotes, cacheInvalidate } from '../lib/db'
+import { createWorkout, updateWorkout, deleteUnfinishedWorkout, getTwoPreviousSetsForExercise, getExerciseByName, getRestOverrides, upsertRestOverride, getUserExerciseNote, getWorkouts, getExercises, getAllUserExerciseNotes, cacheInvalidate } from '../lib/db'
 import { computeProgression, deriveCategory, epleyAdjustedReps, detectGapAdjustment, suggestNextSetReps, warmupPlan, detectPlateau, topWeightSets } from '../lib/progression'
 import { sortSupersetsAdjacent } from '../lib/superset.js'
 import { namesMatching } from '../lib/exerciseAliases.js'
@@ -975,6 +975,25 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
     }))
   }, [])
 
+  // Vilotid per ovning, satt fran passet. Galler direkt, sparas som anvandarens
+  // vilotid for ovningen (alla program) och kan sparas in i programmet vid avslut.
+  const updateExerciseRest = useCallback((exId, secs) => {
+    setProgramChanged(true)
+    let name = null
+    setExercises(prev => {
+      const next = prev.map(ex => {
+        if (ex.localId !== exId) return ex
+        name = ex.name
+        return { ...ex, restSeconds: secs }
+      })
+      persistWorkout(next)
+      return next
+    })
+    queueMicrotask(() => {
+      if (userId && name) upsertRestOverride(userId, name, secs).catch(() => {})
+    })
+  }, [persistWorkout, userId])
+
   const updateExercise = useCallback((exId, field, value) => {
     setExercises(prev => prev.map(ex =>
       ex.localId !== exId ? ex : { ...ex, [field]: value }
@@ -1325,6 +1344,7 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
     resolvePlateau,
     resetAdjustments,
     programChanged,
+    updateExerciseRest,
     isAdjustedSession,
     repsUpdatedAt,
   }
