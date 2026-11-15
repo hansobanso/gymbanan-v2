@@ -218,8 +218,7 @@ Hoppas över för PB (både under passet och på klart-skärmen), viktförslag
 "Bästa set". Räknas som vanligt i muskelläge, veckorapport och set. Är det
 nyaste passet för övningen på annat gym styr dess RIR repklivet nästa gång
 (`latestRirSets`), medan vikterna kommer från senaste hemmapasset. Historiken
-märker sådana pass "annat gym". Träningsarkivet (schemalagd artifact) vet
-inget om flaggan än.
+märker sådana pass "annat gym", och Träningsarkivet gör likadant.
 
 **AI-coachen är borttagen** (2026-11-13, Hannes: "den tillför inget"). PT-chatt,
 PT-intro, `ai.js`, `useAI.js` och `AiChat` finns inte längre. Bygg inte
@@ -323,8 +322,10 @@ Tester och bygge räcker inte för passflödet. Två metoder som fungerat:
 ## Utanför repot
 
 - **Träningsarkivet**: privat artifact med muskelbalans, övningstabell och
-  frågeruta. Uppdateras av en schemalagd uppgift varje söndag 07:23.
-  Länk: https://claude.ai/artifact/WbyvCMLRJhUTBRZ4U8AwXb
+  frågeruta. Hämtar live från Supabase varje gång den öppnas (den gamla
+  söndagsuppgiften är avstängd). Räknar `other_gym` som set och
+  muskelvolym men inte i tyngsta vikt, 1RM, PB eller jämförelsen med förra
+  gången. Länk: https://claude.ai/artifact/WbyvCMLRJhUTBRZ4U8AwXb
 - **Keep-alive-worker** (`keepalive/`): pingar Supabase dagligen så den
   inte pausas. Ligger i repot men är inte kopplad i Cloudflare ännu
   (Workers & Pages → Create → importera repot → rotkatalog `keepalive`).
