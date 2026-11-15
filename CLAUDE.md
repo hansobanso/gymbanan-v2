@@ -153,7 +153,8 @@ och om setState i effekter (befintligt mönster). Titta bara på nya fel.
 bakgrund `--bg #0F0D0A`, grädvit text och banangul `--accent` som enda
 signalfärg. `--d-ok` (klart) är grädvitt, `--d-hint` är varm grå, och
 muskelgubben lyser gult (`muscleColor.js`). Rött bara för fel och radering.
-Det enda gröna är den omogna bananen i passets förloppsrad. Neutrala gråtoner
+Det gröna som finns: den omogna bananen i bananraden och "Dags att öka"
+(`.progressionUp`). Neutrala gråtoner
 är varma: använd tokens, eller kör `python3 scripts/warm-greys.py` efter
 att ha lagt till hårdkodade gråa. Kort och knappar har ingen synlig kant
 (`--d-card-border: transparent`). Sidrubriker och stora siffror i
@@ -166,7 +167,8 @@ Nästa pass-kortet är namn + en rad + knapp (tryck på toppen för övningarna)
 och setknappen är en stor bock. Lägg inte tillbaka förklaringstexter som
 bara behövs första gången.
 
-**Lekfullt**: överst i passet sitter en banan per övning (`BananaRow`).
+**Lekfullt**: i passets sidhuvud, mellan passnamnet och knapparna, sitter
+en banan per övning (`BananaRow compact`). Passtiden står som h:mm (0:42).
 Grön = inte påbörjad, gulnar set för set, gul = klar. Den aktiva är större
 och gungar när ett set blir klart, tryck hoppar till övningen, superset
 sitter ihop som ett par, nya övningar poppar in, och när allt är klart går
@@ -232,6 +234,10 @@ visas först när något ändrats. Använd `nEx()`/`fmtRest()` i
 - **`MuscleMap` med `workouts`** hoppar över pass äldre än sju dagar och
   tonar ner äldre. Ska en figur visa en bestämd mängd pass fullt ut
   (veckorapport, planerat pass) skickas passen in med `finished_at: null`.
+- **Startskärmen** renderas av flera komponenter efter varandra
+  (inloggningskollen, sedan overlayn i `AppRoutes`). Animationerna får negativ
+  fördröjning (`--splash-t`) från första visningen så loggan inte ritas två
+  gånger. Lägg inte till fler `<Splash />` utan att behålla det.
 - **Omladdning mitt i pass**: pass-skärmen får inte monteras medan
   "Pågående pass"-dialogen är obesvarad (se `App.jsx`).
 - **`useState` initieras en gång**: härled från props eller synka på

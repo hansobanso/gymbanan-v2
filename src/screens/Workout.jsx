@@ -31,8 +31,8 @@ function fmtElapsed(startedAt) {
   const s = Math.floor((Date.now() - startedAt) / 1000)
   const m = Math.floor(s / 60)
   const h = Math.floor(m / 60)
-  if (h > 0) return `${h} h ${m % 60} min`
-  return `${m} min`
+  // Timmar och minuter som en klocka: 0:42, 1:05
+  return `${h}:${String(m % 60).padStart(2, '0')}`
 }
 
 export default function Workout({ session }) {
@@ -55,7 +55,7 @@ export default function Workout({ session }) {
   })
   const timer = useTimer()
 
-  const [elapsed, setElapsed] = useState('0m')
+  const [elapsed, setElapsed] = useState('0:00')
   const [headerMenuOpen, setHeaderMenuOpen] = useState(false)
   const [timerExpandedOpen, setTimerExpandedOpen] = useState(false)
   const [adjustOpen, setAdjustOpen] = useState(false)
@@ -475,6 +475,10 @@ export default function Workout({ session }) {
           <span className={styles.sessionBtn}>{sessionName}</span>
           <span className={styles.elapsed}>{elapsed}</span>
         </div>
+        {/* Framsteg: en banan per ovning, mognar set for set. Tryck for att hoppa. */}
+        {workout.exercises.length > 0 && (
+          <BananaRow exercises={workout.exercises} activeExId={activeExId} onJump={handleSupersetJump} compact />
+        )}
         <div className={styles.headerRight}>
           {/* Anpassa passet (lätt dag / sjuk / deload) - snabbval utan chatt */}
           <button
@@ -500,11 +504,6 @@ export default function Workout({ session }) {
           </button>
         </div>
       </div>
-
-      {/* Framsteg: en banan per ovning, mognar set for set. Tryck for att hoppa. */}
-      {workout.exercises.length > 0 && (
-        <BananaRow exercises={workout.exercises} activeExId={activeExId} onJump={handleSupersetJump} />
-      )}
 
       <PbBurst exercises={workout.exercises} />
 

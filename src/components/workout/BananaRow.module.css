@@ -103,3 +103,16 @@
 @media (prefers-reduced-motion: reduce) {
   .wiggle .fruit svg, .pop .fruit svg, .wave .banana { animation: none; }
 }
+
+/* I passets sidhuvud: ingen egen luft, tar bara mittenytan */
+.compact {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  gap: 0;
+}
+.compact .banana {
+  width: calc(var(--b) + 6px);
+  height: 40px;
+}
+.compact .sparkle { top: 5px; right: -1px; }

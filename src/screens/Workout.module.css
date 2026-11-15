@@ -726,3 +726,6 @@
   transition: left 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .progressBanana svg { width: 100%; height: 100%; display: block; }
+
+/* Bananerna sitter i sidhuvudet mellan namnet och knapparna (2026-11) */
+.headerLeft { flex: 0 1 auto; max-width: 34%; }

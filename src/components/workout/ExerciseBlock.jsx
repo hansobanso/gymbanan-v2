@@ -478,7 +478,8 @@ export default function ExerciseBlock({
         )}
         {showHint && (
           <div className={`${styles.progressionHint} ${
-            exercise.progressionAction === 'too_heavy_flag' ? styles.progressionWarn : ''
+            exercise.progressionAction === 'too_heavy_flag' ? styles.progressionWarn
+              : exercise.progressionAction === 'increase_weight' ? styles.progressionUp : ''
           }`}>{exercise.progressionHint}</div>
         )}
         {/* Utan rep-mal kan vi inte gora progression (vet inte nar vi ska

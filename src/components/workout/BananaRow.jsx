@@ -23,7 +23,7 @@ const countSets = ex => {
  * till ovningen. Superset sitter ihop som ett bananpar. En ovning med PB
  * far ett gult glitter. Bananerna ligger ner for att ta lite plats pa hojden.
  */
-export default function BananaRow({ exercises, activeExId, onJump }) {
+export default function BananaRow({ exercises, activeExId, onJump, compact = false }) {
   const known = useRef(null)          // ovningar som fanns forra renderingen
   const prevDone = useRef({})         // klara set per ovning, for gungningen
   const [wiggle, setWiggle] = useState({}) // localId -> raknare (ny nyckel = ny animation)
@@ -67,10 +67,13 @@ export default function BananaRow({ exercises, activeExId, onJump }) {
 
   const n = rows.length
   // Storlek efter antal: stort vid fa ovningar, mindre nar det ar manga
-  const size = n <= 6 ? 32 : n <= 9 ? 28 : n <= 12 ? 23 : 19
+  // compact = i passets sidhuvud, mellan namnet och knapparna
+  const size = compact
+    ? (n <= 4 ? 26 : n <= 6 ? 22 : n <= 8 ? 18 : 15)
+    : (n <= 6 ? 32 : n <= 9 ? 28 : n <= 12 ? 23 : 19)
 
   return (
-    <div className={`${styles.row} ${wave ? styles.wave : ''}`} key={`w${wave}`} style={{ '--b': `${size}px` }}>
+    <div className={`${styles.row} ${compact ? styles.compact : ''} ${wave ? styles.wave : ''}`} key={`w${wave}`} style={{ '--b': `${size}px` }}>
       {groups.map(g => (
         <span key={g[0].ex.localId} className={g.length > 1 ? styles.pair : styles.single}>
           {g.map(({ ex, total, done, pb }) => {

@@ -25,10 +25,17 @@ const TAB_PATHS = ['/', '/programs', '/history', '/settings']
 const ACTIVE_WORKOUT_KEY = 'gymbanan_active_workout'
 
 // Branded laddningsskarm: banan-logga + svepande gul bar (obestamd).
+// Startskarmen visas av flera komponenter efter varandra (inloggningskollen,
+// sedan overlayn medan startsidan laddar). Varje ny instans startar sina
+// animationer med negativ fordrojning sa de fortsatter dar den forra var,
+// i stallet for att loggan ritas upp tva ganger.
+let splashStart = null
 function Splash() {
+  if (splashStart == null) splashStart = performance.now()
+  const offset = Math.round(performance.now() - splashStart)
   return (
     <div className="loading-screen">
-      <div className="splash">
+      <div className="splash" style={{ '--splash-t': `-${offset}ms` }}>
         <BananaLogo className="splashBananaLogo" />
         <span className="splashTitle">GYMBANAN</span>
         <div className="splashBar">

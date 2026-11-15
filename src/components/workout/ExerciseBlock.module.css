@@ -460,3 +460,6 @@
   justify-content: center;
   -webkit-tap-highlight-color: transparent;
 }
+
+/* "Dags att oka": gront som den omogna bananen, det enda gronet i passet */
+.progressionUp { color: #9BC24A; font-weight: 600; }
