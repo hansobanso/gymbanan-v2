@@ -748,11 +748,11 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
   }, [])
 
   const removeSet = useCallback((exId, setId) => {
+    // Borttaget arbets-/backoffset raknas som programandring (ej uppvarmning).
+    const removed = exercisesRef.current.find(ex => ex.localId === exId)?.sets.find(s => s.id === setId)
+    if (removed && removed.type !== 'warmup') setProgramChanged(true)
     setExercises(prev => prev.map(ex => {
       if (ex.localId !== exId) return ex
-      const removed = ex.sets.find(s => s.id === setId)
-      // Borttaget arbets-/backoffset raknas som programandring (ej uppvarmning).
-      if (removed && removed.type !== 'warmup') setProgramChanged(true)
       return { ...ex, sets: ex.sets.filter(s => s.id !== setId) }
     }))
   }, [])
@@ -794,11 +794,12 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
   }, [persistWorkout])
 
   const duplicateSet = useCallback((exId, setId) => {
+    const src = exercisesRef.current.find(ex => ex.localId === exId)?.sets.find(s => s.id === setId)
+    if (src && src.type !== 'warmup') setProgramChanged(true)
     setExercises(prev => prev.map(ex => {
       if (ex.localId !== exId) return ex
       const idx = ex.sets.findIndex(s => s.id === setId)
       if (idx === -1) return ex
-      if (ex.sets[idx]?.type !== 'warmup') setProgramChanged(true)
       const orig = ex.sets[idx]
       // Clone the set with a new id and reset done/completedAt
       const cloned = {
@@ -807,6 +808,8 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
         done: false,
         completedAt: null,
         prefilled: false,
+        isPB: false, // kopian ar inte klar, sa den kan inte vara PB
+        rir: null,
       }
       const sets = [...ex.sets]
       sets.splice(idx + 1, 0, cloned)
@@ -1005,19 +1008,14 @@ export function useWorkout({ sessionName, sessionExercises = [], programId, user
   // Vilotid per ovning, satt pa ovningens sida under passet. Galler direkt
   // och sparas som ovningens vila (user_rest_overrides, alla program).
   const updateExerciseRest = useCallback((exId, secs) => {
-    let name = null
+    // Namnet hamtas fran ref:en, inte fran uppdateraren (den kan koras senare)
+    const name = exercisesRef.current.find(ex => ex.localId === exId)?.name
     setExercises(prev => {
-      const next = prev.map(ex => {
-        if (ex.localId !== exId) return ex
-        name = ex.name
-        return { ...ex, restSeconds: secs }
-      })
+      const next = prev.map(ex => ex.localId !== exId ? ex : { ...ex, restSeconds: secs })
       persistWorkout(next)
       return next
     })
-    queueMicrotask(() => {
-      if (userId && name) upsertRestOverride(userId, name, secs).catch(() => {})
-    })
+    if (userId && name) upsertRestOverride(userId, name, secs).catch(() => {})
   }, [persistWorkout, userId])
 
   const updateExercise = useCallback((exId, field, value) => {
