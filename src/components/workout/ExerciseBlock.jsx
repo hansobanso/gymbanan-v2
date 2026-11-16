@@ -5,7 +5,6 @@ import SwipeRow from './SwipeRow'
 import { getPreviousSetsForExercise, getExerciseByName } from '../../lib/db'
 import { displayWeightStr, defaultWeightIncrement } from '../../lib/weightUtils'
 import { hapticTick, hapticSuccess, hapticWarn } from '../../lib/haptics'
-import { canBeOtherGym } from '../../lib/otherGym'
 import styles from './ExerciseBlock.module.css'
 
 // Tre slags set: uppvarmning (w), arbetsset (k) och backoff (b). Samma
@@ -550,11 +549,11 @@ export default function ExerciseBlock({
             </button>
             {openSetId && (
               <>
-                <button className={styles.menuItem} onClick={() => { onDuplicateSet?.(exercise.localId, openSetId); setMenuOpen(false) }}>
-                  Dubblera det öppna setet
+                <button className={styles.menuItem} aria-label="Dubblera setet som är öppet" onClick={() => { onDuplicateSet?.(exercise.localId, openSetId); setMenuOpen(false) }}>
+                  ×2 set
                 </button>
-                <button className={styles.menuItem} onClick={() => { onRemoveSet(exercise.localId, openSetId); setEditSetId(null); setMenuOpen(false) }}>
-                  Ta bort det öppna setet
+                <button className={styles.menuItem} aria-label="Ta bort setet som är öppet" onClick={() => { onRemoveSet(exercise.localId, openSetId); setEditSetId(null); setMenuOpen(false) }}>
+                  − set
                 </button>
               </>
             )}
@@ -565,11 +564,6 @@ export default function ExerciseBlock({
             <button className={styles.menuItem} onClick={() => { onReplaceExercise?.(exercise); setMenuOpen(false) }}>
               Byt övning
             </button>
-            {canBeOtherGym(exEquipment) && onToggleOtherGym && (
-              <button className={styles.menuItem} onClick={() => { onToggleOtherGym(exercise.localId); setMenuOpen(false) }} aria-pressed={!!exercise.otherGym}>
-                {exercise.otherGym ? 'Tillbaka till mitt gym' : 'Annat gym idag'}
-              </button>
-            )}
             {supersetPartner ? (
               <button className={styles.menuItem} onClick={() => { onSupersetUnlink?.(exercise); setMenuOpen(false) }}>
                 Ta bort superset

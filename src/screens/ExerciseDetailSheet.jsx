@@ -32,7 +32,7 @@ function builtinDefaults(name) {
 const REST_CHOICES = [60, 90, 120, 150, 180, 240, 300]
 const fmtClock = s => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
 
-export default function ExerciseDetailSheet({ id, onClose, onNotesSaved, context, currentRest = null, onRestChange }) {
+export default function ExerciseDetailSheet({ id, onClose, onNotesSaved, context, currentRest = null, onRestChange, otherGym = null, onToggleOtherGym }) {
   const isWorkoutContext = context === 'workout'
   const decoded    = id ? decodeURIComponent(id) : ''
   const isBuiltin  = decoded.startsWith('__builtin__')
@@ -243,6 +243,25 @@ export default function ExerciseDetailSheet({ id, onClose, onNotesSaved, context
                       </button>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {/* Annat gym (maskin/kabel): vikterna jamfors inte med hemmagymmet */}
+              {isWorkoutContext && otherGym !== null && onToggleOtherGym && (
+                <div className={detailStyles.section}>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={otherGym}
+                    className={`${styles.awayRow} ${otherGym ? styles.awayRowOn : ''}`}
+                    onClick={onToggleOtherGym}
+                  >
+                    <span className={styles.awayText}>
+                      <span className={styles.awayTitle}>Annat gym idag</span>
+                      <span className={styles.awaySub}>Vikterna räknas inte för PB och viktförslag</span>
+                    </span>
+                    <span className={styles.switch} aria-hidden="true"><span className={styles.knob} /></span>
+                  </button>
                 </div>
               )}
 

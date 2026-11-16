@@ -80,7 +80,7 @@ const ok = (cond, what, extra = '') => { console.log(`${cond ? 'OK ' : 'FEL'}  $
   const state = () => page.evaluate(() => JSON.parse(localStorage.getItem('gymbanan_active_workout') || 'null'))
   const exState = async i => (await state())?.exercises?.[i]
   const shot = n => page.screenshot({ path: path.join(OUT, n + '.png') })
-  const step = async (name, fn) => { try { await fn() } catch (e) { ok(false, name, String(e).split('\n')[0].slice(0, 160)) } }
+  const step = async (name, fn) => { try { await fn() } catch (e) { ok(false, name, String(e).split('\n').filter(l => /intercept|waiting for|locator\./.test(l)).slice(0, 4).join(' ¦ ').slice(0, 400)) } }
 
   // ── Startsidan ──
   await step('startsidan laddar', async () => {
@@ -171,6 +171,18 @@ const ok = (cond, what, extra = '') => { console.log(`${cond ? 'OK ' : 'FEL'}  $
     await shot('04-rows')
   })
 
+  // ── Ovningsmenyn: korta etiketter for det oppna setet ──
+  await step('ovningsmenyn', async () => {
+    await page.getByRole('button', { name: 'Fler alternativ' }).filter({ visible: true }).first().click()
+    await page.waitForTimeout(300)
+    const dup = page.getByRole('button', { name: 'Dubblera setet som är öppet' })
+    ok(await dup.isVisible() && (await dup.innerText()).trim() === '×2 set', 'menyn visar ×2 set')
+    ok((await page.getByRole('button', { name: 'Ta bort setet som är öppet' }).innerText()).trim() === '− set', 'menyn visar − set')
+    ok(await page.getByRole('button', { name: /Annat gym/ }).count() === 0, 'Annat gym finns inte i menyn')
+    await shot('04b-menu')
+    await page.getByRole('button', { name: 'Fler alternativ' }).filter({ visible: true }).first().click(); await page.waitForTimeout(300)
+  })
+
   // ── Forra -> historik ──
   await step('forra historik', async () => {
     await page.getByRole('button', { name: /^Förra: .*Visa historik/ }).click()
@@ -194,7 +206,7 @@ const ok = (cond, what, extra = '') => { console.log(`${cond ? 'OK ' : 'FEL'}  $
     ok((await exState(0)).restSeconds === 180, 'vilan galler direkt i passet')
     ok(writes.some(w => w.table === 'user_rest_overrides'), 'vilan sparas pa ovningen')
     await shot('06-detail')
-    await page.getByRole('button', { name: 'Stäng' }).filter({ visible: true }).first().click()
+    await page.getByRole('button', { name: 'Stäng' }).filter({ visible: true }).last().click()
     await page.waitForTimeout(500)
   })
 
@@ -202,11 +214,17 @@ const ok = (cond, what, extra = '') => { console.log(`${cond ? 'OK ' : 'FEL'}  $
   await step('annat gym', async () => {
     await page.getByRole('button', { name: /Latsdrag med smalt/ }).first().click()
     await page.waitForTimeout(800)
-    await page.getByRole('button', { name: 'Fler alternativ' }).filter({ visible: true }).first().click()
+    // Annat gym sitter pa ovningens sida (tryck pa namnet)
+    await page.getByRole('button', { name: 'Latsdrag med smalt neutralt grepp', exact: true }).first().click()
+    await page.waitForTimeout(800)
+    await shot('07a-sheet')
+    await page.getByRole('switch', { name: /Annat gym idag/ }).click({ timeout: 5000 })
     await page.waitForTimeout(300)
-    await page.getByRole('button', { name: 'Annat gym idag' }).click()
-    await page.waitForTimeout(300)
-    ok((await exState(1)).otherGym === true, 'Annat gym slas pa')
+    await shot('07b-switched')
+    // Arket ligger overst: dess Stang-knapp ar den sista synliga
+    await page.getByRole('button', { name: 'Stäng' }).filter({ visible: true }).last().click({ timeout: 5000 })
+    await page.waitForTimeout(500)
+    ok((await exState(1)).otherGym === true, 'Annat gym slas pa fran ovningens sida')
     ok(await page.getByRole('button', { name: /^Annat gym:/ }).isVisible(), 'Annat gym-chippet visas')
     await page.getByRole('spinbutton', { name: 'Vikt i kg' }).fill('200')
     await page.getByRole('button', { name: 'Markera set som klart' }).click()

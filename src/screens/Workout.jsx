@@ -1,4 +1,4 @@
-import { isOtherGym } from '../lib/otherGym'
+import { isOtherGym, canBeOtherGym } from '../lib/otherGym'
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Reorder, AnimatePresence, motion } from 'framer-motion'
@@ -982,6 +982,14 @@ export default function Workout({ session }) {
           const ex = workout.exercises.find(e => (e.exerciseId || encodeURIComponent('__builtin__' + e.name)) === detailExerciseId)
           return ex ? (ex.restSeconds ?? defaultRest ?? 120) : null
         })()}
+        otherGym={(() => {
+          const ex = workout.exercises.find(e => (e.exerciseId || encodeURIComponent('__builtin__' + e.name)) === detailExerciseId)
+          return ex && canBeOtherGym(ex.exEquipment) ? !!ex.otherGym : null
+        })()}
+        onToggleOtherGym={() => {
+          const ex = workout.exercises.find(e => (e.exerciseId || encodeURIComponent('__builtin__' + e.name)) === detailExerciseId)
+          if (ex) workout.toggleOtherGym(ex.localId)
+        }}
         onRestChange={secs => {
           const ex = workout.exercises.find(e => (e.exerciseId || encodeURIComponent('__builtin__' + e.name)) === detailExerciseId)
           if (ex) workout.updateExerciseRest(ex.localId, secs)

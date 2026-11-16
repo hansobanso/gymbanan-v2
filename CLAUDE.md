@@ -210,9 +210,11 @@ för maskin och kabel samlas vikterna Hannes faktiskt kört (senaste 20
 passen). När progressionen höjer eller sänker vikten väljs närmaste sådan
 vikt inom 2,5 viktsteg (46 → 52, inte 50), annars vanliga viktsteget.
 
-**Annat gym** (`src/lib/otherGym.js`): i övningens ⋯-meny för maskin och
-kabel, "Annat gym idag". Visas som gult chip "Annat gym" under namnet (tryck
-stänger av). Sparas som `other_gym: true` på övningen i `workouts.exercises`.
+**Annat gym** (`src/lib/otherGym.js`): strömbrytare "Annat gym idag" på
+övningens sida (tryck på namnet i passet), bara för maskin och kabel. Inte
+i ⋯-menyn (Hannes 2026-11-16). Visas som gult chip "Annat gym" under namnet
+(tryck stänger av). I ⋯-menyn heter åtgärderna för det öppna setet "×2 set"
+och "− set". Sparas som `other_gym: true` på övningen i `workouts.exercises`.
 Hoppas över för PB (både under passet och på klart-skärmen), viktförslag
 (`extractPrevSets`, db-uppslagen), kända vikter, kurvor, Framsteg och
 "Bästa set". Räknas som vanligt i muskelläge, veckorapport och set. Är det
