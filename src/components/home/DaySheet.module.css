@@ -147,3 +147,6 @@
   font-weight: 800;
   color: var(--accent);
 }
+
+/* Flera pass samma dag: luft mellan dem */
+.workout + .workout { margin-top: 28px; }

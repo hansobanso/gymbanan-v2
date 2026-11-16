@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { EXERCISES } from '../../data/exercises'
 import MuscleFigure from '../MuscleFigure'
+import { figureIntensities } from '../shared/MuscleMap'
 import { colorForIntensity } from '../../lib/muscleColor'
 import { broadOf, BROAD_MUSCLE_GROUPS } from '../../data/muscleGroups'
 import { EXERCISE_ALIASES } from '../../lib/exerciseAliases'
@@ -38,6 +39,10 @@ export function computeMuscleSets(exercises, allExercises) {
     if (primary) add(primary, sets)
     for (const secondary of secondaryArr) {
       if (secondary && secondary !== primary) add(secondary, sets * 0.5)
+    }
+    // Tertiara (stabilisatorer, t.ex. core i knaboj) far 0,2 som i muskelgubben
+    for (const t of data.tertiary_muscles ?? []) {
+      if (t && t !== primary && !secondaryArr.includes(t)) add(t, sets * 0.2)
     }
   }
   return Object.entries(totals)
@@ -212,13 +217,13 @@ export function ProgramMuscleSetSummary({ sessions, allExercises, defaultOpen = 
 // ── Muskelgubbe-heatmap: farglagger varje muskel efter volymniva ─────────
 function MuscleHeatmap({ breakdown }) {
   const colors = useMemo(() => {
-    const out = {}
+    const raw = {}
     for (const { muscle, sets } of breakdown) {
       const max = MAX_SETS_PER_WEEK[muscle] ?? 12
-      // Mappa pct (0-1+) till intensity (0-1). Anvand skogsgron-paletten.
-      const intensity = Math.min(1, sets / max)
-      out[muscle] = colorForIntensity(intensity)
+      raw[muscle] = Math.min(1, sets / max)
     }
+    const out = {}
+    for (const [m, v] of Object.entries(figureIntensities(raw))) out[m] = colorForIntensity(v)
     return out
   }, [breakdown])
 

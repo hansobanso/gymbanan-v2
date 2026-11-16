@@ -266,6 +266,11 @@ visas först när något ändrats. Använd `nEx()`/`fmtRest()` i
   för att `.body` (rullytan) föll bort när sidan gjordes om, medan JSX
   fortfarande använde den. Efter större CSS-ändringar: kontrollera att
   varje `styles.x` i JSX finns i modulen, och rulla sidan i webbläsartestet.
+- **Muskelgubben har ingen yta för Övre rygg.** `figureIntensities` i
+  `MuscleMap.jsx` ritar den på trapeziusytan (starkast vinner) och ger allt
+  som tränats minst 0,12, så små tertiära bidrag som core syns svagt.
+  Programgubben (`MuscleSetSummary`) går via samma funktion och räknar
+  tertiära muskler med 0,2.
 - **`MuscleMap` med `workouts`** hoppar över pass äldre än sju dagar och
   tonar ner äldre. Ska en figur visa en bestämd mängd pass fullt ut
   (veckorapport, planerat pass) skickas passen in med `finished_at: null`.

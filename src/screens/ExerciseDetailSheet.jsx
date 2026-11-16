@@ -229,7 +229,7 @@ export default function ExerciseDetailSheet({ id, onClose, onNotesSaved, context
               {/* Vila mellan set: galler direkt och sparas pa ovningen */}
               {isWorkoutContext && onRestChange && rest != null && (
                 <div className={detailStyles.section}>
-                  <label className={detailStyles.label} id="rest-label">Vila mellan set</label>
+                  <label className={detailStyles.sectionLabel} id="rest-label">Vila mellan set</label>
                   <div className={styles.restPick} role="group" aria-labelledby="rest-label">
                     {REST_CHOICES.map(sec => (
                       <button

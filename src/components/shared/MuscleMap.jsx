@@ -27,6 +27,24 @@ const LEGACY_FALLBACK = {
 
 // Alias for omdopta ovningar delas med vikthistoriken (lib/exerciseAliases).
 
+// Muskler som saknar egen yta pa gubben ritas pa grannytan. Ovre rygg
+// (rhomboider, mellersta trapezius) ligger under trapeziusytan pa baksidan;
+// utan detta lyste rodd och latsdrag aldrig upp mitt pa ryggen.
+// Den starkaste av de tva bestammer fargen.
+const FIGURE_AREA = { 'Övre rygg': 'Trapezius' }
+// Allt som tranats alls ska synas svagt, aven sma tertiara bidrag (core).
+const MIN_VISIBLE = 0.12
+
+export function figureIntensities(intensities) {
+  const out = {}
+  for (const [m, v] of Object.entries(intensities ?? {})) {
+    if (!(v > 0)) continue
+    const area = FIGURE_AREA[m] ?? m
+    out[area] = Math.max(out[area] ?? 0, Math.max(MIN_VISIBLE, Math.min(1, v)))
+  }
+  return out
+}
+
 function intensityFromSets(sets) {
   if (!sets || sets <= 0) return 0
   return Math.min(1, sets / 12)
@@ -149,7 +167,7 @@ export default function MuscleMap({ breakdown, workouts, intensities: customInte
   // (grona) paletten - anvands t.ex. for den roda pass-sammanfattningen.
   const paint = colorFn || colorFor
   const colors = {}
-  for (const [muscle, intensity] of Object.entries(intensities)) {
+  for (const [muscle, intensity] of Object.entries(figureIntensities(intensities))) {
     colors[muscle] = paint(intensity)
   }
 
