@@ -25,3 +25,4 @@ dist-ssr
 
 # Lokalt arbetsmaterial (traningsdata hor inte hemma i repot)
 traningsarkiv.html
+e2e/out/

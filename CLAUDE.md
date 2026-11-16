@@ -321,6 +321,15 @@ visas först när något ändrats. Använd `nEx()`/`fmtRest()` i
 
 ## Så testar man utan iPhone
 
+**Kör `npm run e2e` efter varje ändring i passflödet.** `e2e/passflow.cjs`
+klickar igenom hela flödet i mobilvy mot fejkad Supabase och skriver OK/FEL
+per kontroll (~30 st): startsidan och startskärmen, start, uppvärmning och
+vila, håll inne +, nästa set fylls i, svep (dubblera/ta bort), långtryck,
+Förra-historiken, vila på övningens sida, Annat gym utan PB, avslut och
+sparning, inga konsolfel. Skärmdumpar i `e2e/out/` (ignoreras av git).
+Kräver Playwright (förinstallerat i Claudes miljö), körs inte i CI.
+Ändras en knapps namn eller ett flöde: uppdatera skriptet i samma commit.
+
 Tester och bygge räcker inte för passflödet. Två metoder som fungerat:
 
 1. **Hook-test**: `npm i --no-save @testing-library/react jsdom`, mocka
