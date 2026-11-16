@@ -9,7 +9,11 @@ export const EXERCISE_ALIASES = {
   'Lat-nedragning': 'Latsdrag med smalt neutralt grepp',
   'Lutande hantel press bort': 'Lutande hantelpress',
   'Uppåtlutande hantelpress': 'Lutande hantelpress',
-  'Pullups nära neutral': 'Pullups',
+  'Pullups nära neutral': 'Pullups med smalt neutralt grepp',
+  'Hantelrodd med stöd': 'Hantelrodd med stöd för bröst',
+  'Kabel curl': 'Kabelcurl med stång',
+  'Lutad bicepscurl': 'Incline biceps curl',
+  'Hantelcurl': 'Bicepscurl alternerande',
   // Dubbletter som slogs ihop i databasen 2026-11-16 (historik och program
   // ar omdopta, men lokalt sparade pass kan ha kvar gamla namn)
   'Knäböj Smith maskin': 'Knäböj i smithmaskin',

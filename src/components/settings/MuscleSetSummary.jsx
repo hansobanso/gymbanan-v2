@@ -3,6 +3,7 @@ import { EXERCISES } from '../../data/exercises'
 import MuscleFigure from '../MuscleFigure'
 import { colorForIntensity } from '../../lib/muscleColor'
 import { broadOf, BROAD_MUSCLE_GROUPS } from '../../data/muscleGroups'
+import { EXERCISE_ALIASES } from '../../lib/exerciseAliases'
 import styles from './MuscleSetSummary.module.css'
 
 // ── Volume calculation ─────────────────────────────────────────
@@ -11,6 +12,11 @@ import styles from './MuscleSetSummary.module.css'
 //
 // Tar in en lista av `exercises` (en session) ELLER en lista av sessions.
 // När `multiSession` = true tolkas första argumentet som array av sessions.
+const LEGACY_SPLIT = {
+  'Axlar': ['Främre axel', 'Mellersta axel', 'Bakre axel'],
+  'Rygg': ['Lats', 'Övre rygg', 'Ländrygg'],
+}
+
 export function computeMuscleSets(exercises, allExercises) {
   const lookupBy = {}
   for (const ex of allExercises ?? []) lookupBy[ex.name] = ex
@@ -18,14 +24,20 @@ export function computeMuscleSets(exercises, allExercises) {
   for (const ex of exercises) {
     const sets = (ex.workSets ?? 3) + (ex.backoffSets ?? 0)
     if (sets <= 0) continue
-    const data = lookupBy[ex.name] ?? EXERCISES[ex.name] ?? {}
+    // Gamla/omdopta namn i programmet slas upp via alias, sa de inte
+    // faller tillbaka pa det inbyggda biblioteket med grova grupper.
+    const alias = EXERCISE_ALIASES[ex.name]
+    const data = lookupBy[ex.name] ?? (alias ? lookupBy[alias] : null) ?? EXERCISES[ex.name] ?? (alias ? EXERCISES[alias] : null) ?? {}
     const primary = data.muscle_group
     const secondaryArr = (data.secondary_muscles && data.secondary_muscles.length ? data.secondary_muscles : (data.secondary_muscle ? [data.secondary_muscle] : []))
-    if (primary) totals[primary] = (totals[primary] ?? 0) + sets
+    const add = (m, v) => {
+      // Grova gamla grupper (Rygg, Axlar) sprids pa sina delar sa gubben kan farga dem
+      const parts = LEGACY_SPLIT[m] ?? [m]
+      for (const p of parts) totals[p] = (totals[p] ?? 0) + v / parts.length
+    }
+    if (primary) add(primary, sets)
     for (const secondary of secondaryArr) {
-      if (secondary && secondary !== primary) {
-        totals[secondary] = (totals[secondary] ?? 0) + sets * 0.5
-      }
+      if (secondary && secondary !== primary) add(secondary, sets * 0.5)
     }
   }
   return Object.entries(totals)

@@ -270,3 +270,17 @@
 .chip { min-height: var(--chip-h); padding: 0 14px; border: 1px solid var(--d-raised-border); border-radius: 18px; background: var(--d-raised); color: #CDC6BB; font-size: 13px; font-weight: 600; padding: 0 4px; }
 .chipActive { border-color: var(--accent); background: var(--accent); color: #1F1C18; font-weight: 700; }
 .repsInput { width: 64px; height: 44px; padding: 0 4px; border: 1px solid var(--d-raised-border); border-radius: 12px; background: var(--d-raised); }
+
+/* Repintervall med +/- */
+.repNum { display: flex; align-items: center; gap: 6px; }
+.repBtn {
+  width: 40px; height: 40px; border-radius: 50%; border: 0;
+  background: var(--d-raised); color: var(--text, #F2EDE4);
+  font-size: 20px; font-weight: 600; line-height: 1;
+  display: inline-flex; align-items: center; justify-content: center;
+  -webkit-user-select: none; user-select: none;
+}
+.repBtn:active { transform: scale(.94); }
+
+.repsRow { flex-wrap: wrap; row-gap: 10px; }
+.repsRow .repsInput { width: 46px; }

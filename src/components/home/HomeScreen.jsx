@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { getWorkouts, getDeloadStatus, endDeloadWeek, getProfile, cacheInvalidate, getExercises } from '../../lib/db'
 import { supabase } from '../../lib/supabase'
 import { detectGapAdjustment } from '../../lib/progression'
-import { weekStrips, muscleStatus, sessionSummary, daysLabel, workoutMinutes, pbCount, muscleDetail, withExtras } from '../../lib/homeStats'
+import { weekStrips, muscleStatus, sessionSummary, daysLabel, workoutMinutes, pbCount, muscleDetail, withExtras, fmtMinutes } from '../../lib/homeStats'
 import { BananaIcon } from '../shared/Icons'
 import AppInfo from '../shared/AppInfo'
 import SessionPreview from './SessionPreview'
@@ -382,7 +382,7 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
                 <span className={h.eyebrow}>{ongoing ? 'PÅGÅENDE PASS' : 'NÄSTA PASS'}</span>
                 <span className={h.heroName}>{nextSession.name}</span>
                 <span className={h.sub}>
-                  {[next.muscles.slice(0, 3).join(' · ') || null, nextCount ? nEx(nextCount) : null, next.estMin ? `~${next.estMin} min` : null].filter(Boolean).join('  ·  ')}
+                  {[next.muscles.slice(0, 3).join(' · ') || null, nextCount ? nEx(nextCount) : null, next.estMin ? `~${fmtMinutes(next.estMin)}` : null].filter(Boolean).join('  ·  ')}
                 </span>
               </span>
               <span className={h.heroChevron} aria-hidden="true">
@@ -430,7 +430,7 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
                 const pbs = pbCount(sum.last)
                 const count = (s.exercises ?? []).length
                 const meta = sum.last
-                  ? [`Senast ${relativeAgo(sum.last.finished_at)}`, mins ? `${mins} min` : null, pbs ? `${pbs} PB` : null]
+                  ? [`Senast ${relativeAgo(sum.last.finished_at)}`, mins ? fmtMinutes(mins) : null, pbs ? `${pbs} PB` : null]
                   : [count ? nEx(count) : null, 'inte kört än']
                 return (
                   <button

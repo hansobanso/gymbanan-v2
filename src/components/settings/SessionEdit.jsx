@@ -1,3 +1,4 @@
+import { EXERCISE_ALIASES } from '../../lib/exerciseAliases'
 import { nEx } from '../../lib/plural.js'
 import { useState, useRef } from 'react'
 import { Reorder, useDragControls } from 'framer-motion'
@@ -470,6 +471,7 @@ export default function SessionEdit({ session, allExercises, onSave, onDelete, o
       {/* ── Övningsdetalj bottom sheet ── */}
       <ExerciseDetailBottomSheet
         exercise={selectedEx}
+        info={selectedEx ? (infoByName[selectedEx.name] ?? infoByName[EXERCISE_ALIASES[selectedEx.name]] ?? null) : null}
         isCardio={selectedEx ? cardioNames.has(selectedEx.name) : false}
         onUpdate={patch => selectedExId && updateEx(selectedExId, patch)}
         onClose={() => setSelectedExId(null)}

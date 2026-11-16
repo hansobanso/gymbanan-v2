@@ -1,5 +1,6 @@
 import { fmtRest } from '../../lib/plural.js'
 import { AnimatePresence, motion } from 'framer-motion'
+import ExerciseMuscles from '../shared/ExerciseMuscles'
 import styles from './ExerciseDetailBottomSheet.module.css'
 
 const REST_OPTIONS = [null, 30, 60, 90, 120, 180].map(value => ({ label: fmtRest(value), value }))
@@ -27,7 +28,29 @@ function Stepper({ label, value, min = 0, onChange }) {
   )
 }
 
-export default function ExerciseDetailBottomSheet({ exercise, onUpdate, onClose, onSwap, isCardio }) {
+// Ett tal i repintervallet: - [tal] +. Talet gar fortfarande att skriva i.
+function RepNum({ value, onChange, label }) {
+  return (
+    <div className={styles.repNum}>
+      <button className={styles.repBtn} type="button" aria-label={`${label} minus ett`} onClick={() => onChange(-1)}>−</button>
+      <input
+        type="text" inputMode="numeric"
+        className={styles.repsInput}
+        aria-label={label}
+        value={value ?? ''}
+        placeholder="–"
+        onFocus={e => e.target.select()}
+        onChange={e => {
+          const v = e.target.value.replace(/\D/g, '')
+          onChange(null, v === '' ? null : parseInt(v))
+        }}
+      />
+      <button className={styles.repBtn} type="button" aria-label={`${label} plus ett`} onClick={() => onChange(1)}>+</button>
+    </div>
+  )
+}
+
+export default function ExerciseDetailBottomSheet({ exercise, info, onUpdate, onClose, onSwap, isCardio }) {
   if (!exercise) return null
 
   const repsMin = exercise.repsMin ?? ''
@@ -64,6 +87,13 @@ export default function ExerciseDetailBottomSheet({ exercise, onUpdate, onClose,
 
             {/* Content */}
             <div className={styles.content}>
+              {info && !isCardio && (
+                <ExerciseMuscles
+                  primary={info.muscle_group}
+                  secondary={info.secondary_muscles ?? []}
+                  tertiary={info.tertiary_muscles ?? []}
+                />
+              )}
               <div className={styles.stepGrid}>
               {!isCardio && (
                 <Stepper
@@ -98,30 +128,28 @@ export default function ExerciseDetailBottomSheet({ exercise, onUpdate, onClose,
               <div className={styles.repsRow}>
                 <span className={styles.stepperLabel}>Reps</span>
                 <div className={styles.repsInputs}>
-                  <input
-                    type="text" inputMode="numeric"
-                    className={styles.repsInput}
-                    value={repsMin}
-                    placeholder="–"
-                    onFocus={e => e.target.select()}
-                    onChange={e => {
-                      const v = e.target.value.replace(/\D/g, '')
-                      onUpdate({ repsMin: v === '' ? null : parseInt(v) })
+                  <RepNum
+                    label="Minsta reps"
+                    value={exercise.repsMin}
+                    onChange={(d, typed) => {
+                      if (d == null) return onUpdate({ repsMin: typed })
+                      const cur = exercise.repsMin ?? 8
+                      const next = Math.max(1, cur + d)
+                      const max = exercise.repsMax ?? Math.max(next, 12)
+                      onUpdate({ repsMin: next, repsMax: Math.max(max, next) })
                     }}
-                    onBlur={e => { if (!e.target.value.trim()) onUpdate({ repsMin: null }) }}
                   />
                   <span className={styles.repsDash}>–</span>
-                  <input
-                    type="text" inputMode="numeric"
-                    className={styles.repsInput}
-                    value={repsMax}
-                    placeholder="–"
-                    onFocus={e => e.target.select()}
-                    onChange={e => {
-                      const v = e.target.value.replace(/\D/g, '')
-                      onUpdate({ repsMax: v === '' ? null : parseInt(v) })
+                  <RepNum
+                    label="Högsta reps"
+                    value={exercise.repsMax}
+                    onChange={(d, typed) => {
+                      if (d == null) return onUpdate({ repsMax: typed })
+                      const cur = exercise.repsMax ?? 12
+                      const next = Math.max(1, cur + d)
+                      const min = exercise.repsMin ?? Math.min(next, 8)
+                      onUpdate({ repsMax: next, repsMin: Math.min(min, next) })
                     }}
-                    onBlur={e => { if (!e.target.value.trim()) onUpdate({ repsMax: null }) }}
                   />
                 </div>
               </div>
