@@ -253,7 +253,14 @@ async function loadExerciseData(ex, userId, restOverrides, caches = {}) {
   const weightIncrement = Number(exData?.weight_increment) || defaultWeightIncrement(exData?.equipment ?? null)
 
   if (!prevSets?.length) {
-    return { ...ex, muscleGroup, weightIncrement, restSeconds, exInstructions, exNotes, exEquipment, isTimeBased, isCardio, prevSets: null, prevDate: null, progressionHint: null, progressionAction: null, dataLoaded: true }
+    // Forsta gangen (t.ex. en ny anvandare): fyll i rep-malets nedre del sa
+    // setet gar att bocka av direkt; vikten valjer man sjalv.
+    const firstMin = !isTimeBased && !isCardio ? (ex.defaultRepsMin ?? null) : null
+    const firstSets = firstMin
+      ? ex.sets.map(s => s.type === 'work' && !s.reps ? { ...s, reps: String(firstMin) } : s)
+      : ex.sets
+    const firstHint = !isTimeBased && !isCardio ? 'Första gången: välj en vikt du kan köra kontrollerat.' : null
+    return { ...ex, muscleGroup, weightIncrement, sets: firstSets, restSeconds, exInstructions, exNotes, exEquipment, isTimeBased, isCardio, prevSets: null, prevDate: null, progressionHint: firstHint, progressionAction: firstHint ? 'first_time' : null, _planHint: firstHint, _planAction: firstHint ? 'first_time' : null, dataLoaded: true }
   }
 
   // Tidsbaserade ovningar (planka etc): ingen vikt/tid-progression.
