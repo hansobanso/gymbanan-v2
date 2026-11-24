@@ -73,10 +73,15 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
   const navigate = useNavigate()
 
   // Veckoremsan borjar pa innevarande vecka, som ligger langst till hoger.
+  // Kors vid varje rendering sa lange ingen tidigare vecka valts: remsan kan
+  // monteras senare an datan (t.ex. nar programmet laddas efter passen), och
+  // da stod rubriken pa innevarande vecka medan remsan visade den aldsta.
   useLayoutEffect(() => {
     const el = weekScrollRef.current
-    if (el) el.scrollLeft = el.scrollWidth
-  }, [workoutsLoaded, programsLoaded])
+    if (el && weekIdx === null && el.scrollLeft < el.scrollWidth - el.clientWidth - 1) {
+      el.scrollLeft = el.scrollWidth
+    }
+  })
 
   useEffect(() => {
     let cancelled = false
@@ -328,8 +333,10 @@ export default function HomeScreen({ session, programs = [], programsLoaded = fa
               ref={weekScrollRef}
               onScroll={e => {
                 const el = e.currentTarget
-                const idx = Math.round(el.scrollLeft / el.clientWidth)
-                if (idx !== (weekIdx ?? weeks.length - 1)) setWeekIdx(idx)
+                const idx = Math.max(0, Math.min(weeks.length - 1, Math.round(el.scrollLeft / el.clientWidth)))
+                // Tillbaka pa innevarande vecka = null, sa remsan fortsatter folja den
+                const next = idx === weeks.length - 1 ? null : idx
+                if (next !== weekIdx) setWeekIdx(next)
               }}
             >
               {weeks.map(wk => (
