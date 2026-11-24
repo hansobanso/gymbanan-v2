@@ -8,7 +8,7 @@ Senast uppdaterad: 2026-11-14.
 
 ## Vad det är
 
-Svensk gym-app (PWA) för styrketräning med automatisk progression. Hannes är ensam utvecklare och i praktiken enda användare. Han testar
+Svensk gym-app (PWA) för styrketräning med automatisk progression. Hannes är ensam utvecklare. Sedan 2026-11-24 finns riktiga användare utöver Hannes, så nya användare (inga pass, färdigt program) måste fungera: `npm run e2e` kör flödet både med historik och som ny användare. Han testar
 i den riktiga appen på sin iPhone och ger feedback på svenska, ofta mitt i
 ett pass.
 
@@ -287,6 +287,13 @@ visas först när något ändrats. Använd `nEx()`/`fmtRest()` i
   efter 12 s. Rubrikens typsnitt laddas i förväg från `public/fonts/`.
 - **Omladdning mitt i pass**: pass-skärmen får inte monteras medan
   "Pågående pass"-dialogen är obesvarad (se `App.jsx`).
+- **Veckoremsan på startsidan** kan monteras efter datan (t.ex. när
+  programmet laddas sist). En `useLayoutEffect` utan beroenden scrollar den
+  till innevarande vecka så länge användaren inte svept bakåt
+  (`weekIdx === null`), annars visade rubriken vecka 48 och remsan en gammal
+  vecka. Klicktestet kontrollerar att de stämmer.
+- **Första gången en övning körs** fylls reps i från rep-målets nedre del
+  och tipset "Första gången: välj en vikt…" visas. Vikten väljer man själv.
 - **`useState` initieras en gång**: härled från props eller synka på
   namn/id när en komponent återanvänds.
 - **"Vad är nytt?"**: dev och live delar databas. Höj `WHATSNEW_VERSION`

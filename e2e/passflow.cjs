@@ -36,6 +36,10 @@ const history = [
   wo('h2', 'Pass B', 5, 62, [{ name: 'Lutande hantelpress', sets: [set(22, 8), set(22, 8), set(22, 8)] }, { name: 'Latsdrag med smalt neutralt grepp', sets: [set(55, 7), set(55, 7)] }, { name: 'Triceps pushdown', sets: [set(30, 10)] }]),
 ]
 
+// NEWUSER=1: ny anvandare utan pass (forsta passet). Forra-steget hoppas over.
+const NEWUSER = !!process.env.NEWUSER
+if (NEWUSER) { history.length = 0; program.sessions.reverse() } // forsta passet = det med uppvarmning
+
 let failures = 0
 const ok = (cond, what, extra = '') => { console.log(`${cond ? 'OK ' : 'FEL'}  ${what}${extra ? '  (' + extra + ')' : ''}`); if (!cond) failures++ }
 
@@ -63,8 +67,8 @@ const ok = (cond, what, extra = '') => { console.log(`${cond ? 'OK ' : 'FEL'}  $
       return json(single ? hit : lib)
     }
     if (table === 'workouts') {
-      if (m === 'GET') return json(single ? history[0] : history)
-      const rec = { ...history[0], id: 'new-1', finished_at: null }
+      if (m === 'GET') return json(single ? (history[0] ?? null) : history)
+      const rec = { id: 'new-1', user_id: UID, session_name: 'Pass', started_at: new Date().toISOString(), adjusted: false, exercises: [], ...(history[0] ?? {}), finished_at: null }
       return json(single ? rec : [rec])
     }
     if (table === 'user_rest_overrides' && m !== 'GET') return json(single ? { exercise_name: 'x', rest_seconds: 180 } : [])
@@ -90,6 +94,12 @@ const ok = (cond, what, extra = '') => { console.log(`${cond ? 'OK ' : 'FEL'}  $
     ok(true, 'startsidan laddar och startskarmen forsvinner')
     const txt = await page.locator('body').innerText()
     ok(!/\b(6\d|[7-9]\d|\d{3}) min\b/.test(txt), 'passtid over en timme visas som h + min', (txt.match(/\d+ h \d+ min|\d+ min/) || [''])[0])
+    // Veckorubriken och remsan ska visa samma vecka: innevarande ISO-vecka
+    const isoWeek = (() => { const d = new Date(); const u = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = u.getUTCDay() || 7; u.setUTCDate(u.getUTCDate() + 4 - day); const y0 = new Date(Date.UTC(u.getUTCFullYear(), 0, 1)); return Math.ceil(((u - y0) / 864e5 + 1) / 7) })()
+    const label = await page.getByRole('button', { name: /^Veckorapport vecka/ }).getAttribute('aria-label')
+    ok(label === `Veckorapport vecka ${isoWeek}`, 'veckorubriken visar innevarande vecka', label)
+    const shown = await page.evaluate(() => { const el = document.querySelector('[class*="weekScroll"]'); if (!el) return null; const r = el.getBoundingClientRect(); const g = [...el.querySelectorAll('[role=group]')].find(n => { const b = n.getBoundingClientRect(); return b.left >= r.left - 2 && b.left < r.left + 10 }); return g?.getAttribute('aria-label') })
+    ok(shown === `Vecka ${isoWeek}`, 'remsan visar samma vecka som rubriken', shown)
     await shot('01-home')
   })
 
@@ -118,6 +128,11 @@ const ok = (cond, what, extra = '') => { console.log(`${cond ? 'OK ' : 'FEL'}  $
 
   // ── Hall inne + ──
   await step('hall inne plus', async () => {
+    if (NEWUSER) {
+      const s1 = (await exState(0)).sets[1]
+      ok(s1.reps === '8', 'forsta gangen: reps fylls i fran rep-malet', `reps ${s1.reps}`)
+      await page.getByRole('spinbutton', { name: 'Vikt i kg' }).fill('20'); await page.waitForTimeout(200)
+    }
     const before = parseFloat((await exState(0)).sets[1].weight)
     const box = await page.getByRole('button', { name: 'Öka vikt' }).boundingBox()
     await hold(box.x + box.width / 2, box.y + box.height / 2, 1200)
@@ -184,7 +199,7 @@ const ok = (cond, what, extra = '') => { console.log(`${cond ? 'OK ' : 'FEL'}  $
   })
 
   // ── Forra -> historik ──
-  await step('forra historik', async () => {
+  if (!NEWUSER) await step('forra historik', async () => {
     await page.getByRole('button', { name: /^Förra: .*Visa historik/ }).click()
     await page.waitForTimeout(700)
     ok(await page.getByText(/Lutande hantelpress/).last().isVisible(), 'Förra oppnar ovningens historik')

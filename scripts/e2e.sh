@@ -5,5 +5,6 @@ VITE_SUPABASE_URL=https://test.supabase.co VITE_SUPABASE_ANON_KEY=anon npx vite 
 VP=$!
 for i in $(seq 1 60); do curl -s -o /dev/null http://localhost:5199/ && break; sleep 0.5; done
 node e2e/passflow.cjs; CODE=$?
+if [ $CODE -eq 0 ]; then echo "--- ny anvandare ---"; NEWUSER=1 node e2e/passflow.cjs; CODE=$?; fi
 kill $VP 2>/dev/null; pkill -f "vite --port 5199" 2>/dev/null
 exit $CODE
